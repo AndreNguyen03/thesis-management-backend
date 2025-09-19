@@ -1,50 +1,53 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { Observable } from 'rxjs';
-import jwtConfig from 'src/auth/config/jwt.config';
-import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants';
+import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common'
+import { ConfigType } from '@nestjs/config'
+import { JwtService } from '@nestjs/jwt'
+import { Request } from 'express'
+import jwtConfig from 'src/auth/config/jwt.config'
+import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants'
+import { AccessTokenExpiredException, TokenInvalidException } from 'src/common/exceptions/auth-exceptions'
+import { CacheService } from 'src/redis/providers/cache.service'
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
-
     constructor(
         private readonly jwtService: JwtService,
+        private readonly cacheService: CacheService,
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>
-    ) { }
+    ) {}
 
-    async canActivate(
-        context: ExecutionContext,
-    ): Promise<boolean> {
-        // extract the request from the execution context
-        const request = context.switchToHttp().getRequest();
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+        const request = context.switchToHttp().getRequest<Request>()
+        const token = this.extractTokenFromHeader(request)
 
-        // extract the token from header
-        const token = this.extractRequestFromHeader(request);
+        if (!token) throw new TokenInvalidException()
 
-        // validate token
-        if (!token) {
-            throw new UnauthorizedException();
+        //  Check blacklist trong Redis
+        const blacklisted = await this.cacheService.get<boolean>(`blacklist:access:${token}`)
+        if (blacklisted) {
+            throw new UnauthorizedException('Access token has been revoked')
         }
 
         try {
-            const payload = await this.jwtService.verifyAsync(
-                token,
-                this.jwtConfiguration
-            );
-            request[REQUEST_USER_KEY] = payload;
-            
-        } catch (error) {
-            throw new UnauthorizedException();
+            const payload = await this.jwtService.verifyAsync(token, {
+                secret: this.jwtConfiguration.secret,
+                audience: this.jwtConfiguration.audience,
+                issuer: this.jwtConfiguration.issuer
+            })
+
+            request[REQUEST_USER_KEY] = payload
+        } catch (error: any) {
+            if (error.name === 'TokenExpiredError') {
+                throw new AccessTokenExpiredException()
+            }
+            throw new TokenInvalidException()
         }
 
-        return true;
+        return true
     }
 
-    private extractRequestFromHeader(request: Request): string | undefined {
-        const [_, token] = request.headers.authorization?.split(' ') ?? [];
-        return token;
+    private extractTokenFromHeader(request: Request): string | undefined {
+        const [_, token] = request.headers.authorization?.split(' ') ?? []
+        return token
     }
 }

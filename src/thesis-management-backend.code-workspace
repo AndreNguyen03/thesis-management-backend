@@ -1,0 +1,13 @@
+{
+    "folders": [
+        {
+            "path": ".."
+        },
+        {
+            "path": "../../thesis-management-frontend"
+        }
+    ],
+    "settings": {
+        "postman.settings.dotenv-detection-notification-visibility": false
+    }
+}
