@@ -1,7 +1,13 @@
 export interface ActiveUserData {
-    // ID of the user
-    sub: number;
+    // id of user
+    sub: string
 
     // email of user
-    email: string;
+    email: string
+
+    // device id
+    deviceId: string
+
+    // role
+    role: 'student' | 'teacher' | 'admin'
 }

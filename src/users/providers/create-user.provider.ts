@@ -1,61 +1,50 @@
-import { BadRequestException, forwardRef, Inject, Injectable, RequestTimeoutException } from '@nestjs/common';
-import { User } from '../user.entity';
-import { CreateUserDto } from '../dtos/create-user.dto';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { HashingProvider } from 'src/auth/providers/hashing.provider';
-import { MailService } from 'src/mail/providers/mail.service';
+import { BadRequestException, forwardRef, Inject, Injectable, RequestTimeoutException } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { User, UserDocument } from '../schemas/user.schema'
+import { CreateUserDto } from '../dtos/create-user.dto'
+import { HashingProvider } from 'src/auth/providers/hashing.provider'
+import { MailService } from 'src/mail/providers/mail.service'
 
 @Injectable()
 export class CreateUserProvider {
-
     constructor(
-        @InjectRepository(User)
-        private readonly usersRepository: Repository<User>,
+        @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
         @Inject(forwardRef(() => HashingProvider))
         private readonly hashingProvider: HashingProvider,
-        private readonly mailService: MailService,
-    ) { }
+        private readonly mailService: MailService
+    ) {}
 
-    public async createUser(createUserDto: CreateUserDto): Promise<User> {
+    public async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
+        let existingUser: UserDocument | null = null
 
-        let existingUser: User | null = null;
-        // check is user exists with same email
+        // check if user exists with same email
         try {
-            existingUser = await this.usersRepository.findOne({
-                where: {
+            existingUser = await this.userModel
+                .findOne({
                     email: createUserDto.email
-                }
-            })
+                })
+                .exec()
         } catch (error) {
-            throw new RequestTimeoutException('Unable to process your request at the moment please try again later'),
-            {
-                description: 'Error connecting to the database'
-            }
+            throw new RequestTimeoutException('Unable to process your request at the moment, please try again later')
         }
-        // handle exception
 
         if (existingUser) {
-            throw new BadRequestException(
-                'The user already exists, please check your email.'
-            )
+            throw new BadRequestException('The user already exists, please check your email.')
         }
 
         // create a new user
-        let newUser = this.usersRepository.create({
+        const hashedPassword = await this.hashingProvider.hashPassword(createUserDto.password)
+
+        const newUser = new this.userModel({
             ...createUserDto,
-            password: await this.hashingProvider.hashPassword(createUserDto.password)
+            password_hash: hashedPassword
         })
 
         try {
-            newUser = await this.usersRepository.save(newUser);
+            await newUser.save()
         } catch (error) {
-            throw new RequestTimeoutException(
-                'Unable to process your request at the moment please try later',
-                {
-                    description: 'Error connecting to the database'
-                }
-            )
+            throw new RequestTimeoutException('Unable to process your request at the moment please try later')
         }
 
         try {
@@ -64,6 +53,6 @@ export class CreateUserProvider {
             throw new RequestTimeoutException(error)
         }
 
-        return newUser;
+        return newUser
     }
 }

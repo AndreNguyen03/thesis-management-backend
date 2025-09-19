@@ -1,0 +1,19 @@
+# Bỏ thư mục node_modules
+node_modules
+
+# Bỏ thư mục build
+dist
+build
+coverage
+
+# Bỏ lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Bỏ environment files
+.env
+.env.*
+
+# Bỏ generated files
+*.log

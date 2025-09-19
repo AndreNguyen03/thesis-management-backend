@@ -1,31 +1,39 @@
-import { forwardRef, Inject, Injectable, RequestTimeoutException, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from 'src/users/providers/users.service';
-import { SignInDto } from '../dtos/sign-in.dto';
-import { User } from 'src/users/user.entity';
-import { SignInProvider } from './sign-in.provider';
-import { RefreshTokensProvider } from './refresh-tokens.provider';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { Injectable } from '@nestjs/common'
+import { SignInDto } from '../dtos/sign-in.dto'
+import { SignInProvider } from './sign-in.provider'
+import { RefreshTokensProvider } from './refresh-tokens.provider'
+import { RefreshTokenDto } from '../dtos/refresh-token.dto'
+import { ForgotPasswordProvider } from './forgot-password.provider'
+import { ResetPasswordProvider } from './reset-password.provider'
+import { LogoutProvider } from './logout.provider'
 
 @Injectable()
 export class AuthService {
-
     constructor(
-        @Inject(forwardRef(() => UsersService)) private readonly usersService: UsersService,
         private readonly signInProvider: SignInProvider,
-        private readonly refreshTokensProvider: RefreshTokensProvider
-    ) { }
+        private readonly refreshTokensProvider: RefreshTokensProvider,
+        private readonly forgotPasswordProvider: ForgotPasswordProvider,
+        private readonly resetPasswordProvider: ResetPasswordProvider,
+        private readonly logoutProvider: LogoutProvider
+    ) {}
 
-    public async signIn(signInDto: SignInDto) {
-        return await this.signInProvider.signIn(signInDto);
-    }
-
-    public isAuth() {
-        return true;
+    public async signIn(signInDto: SignInDto, ipAddress: string) {
+        return await this.signInProvider.signIn(signInDto, ipAddress)
     }
 
     public async refreshTokens(refreshToken: RefreshTokenDto) {
-        return await this.refreshTokensProvider.refreshTokens(refreshToken);
+        return await this.refreshTokensProvider.refreshTokens(refreshToken)
     }
 
-}
+    async forgotPassword(email: string) {
+        return await this.forgotPasswordProvider.forgotPassword(email)
+    }
 
+    async resetPassword(token: string, newPasswword: string) {
+        return await this.resetPasswordProvider.resetPassword(token, newPasswword)
+    }
+    
+    async logout(accessToken?: string, refreshToken?: string) {
+        return await this.logoutProvider.logout(accessToken, refreshToken);
+    }
+}

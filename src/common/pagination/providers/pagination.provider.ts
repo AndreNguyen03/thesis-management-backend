@@ -1,19 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { PaginationQueryDto } from '../dtos/pagination-query.dto';
-import { ObjectLiteral, Repository } from 'typeorm';
+import { Inject, Injectable } from '@nestjs/common'
+import { PaginationQueryDto } from '../dtos/pagination-query.dto'
+import { ObjectLiteral, Repository } from 'typeorm'
 import { Request } from 'express'
-import { REQUEST } from '@nestjs/core';
-import { Paginated } from '../interface/paginated.interface';
+import { REQUEST } from '@nestjs/core'
+import { Paginated } from '../interface/paginated.interface'
 @Injectable()
 export class PaginationProvider {
-
     constructor(
         /**
          * Inject request
          */
         @Inject(REQUEST)
         private readonly request: Request
-    ) { }
+    ) {}
 
     public async paginateQuery<T extends ObjectLiteral>(
         paginationQuery: PaginationQueryDto,
@@ -27,17 +26,17 @@ export class PaginationProvider {
         /**
          * Create the request URLs
          */
-        const baseURL = this.request.protocol + '://' + this.request.headers.host + '/';
+        const baseURL = this.request.protocol + '://' + this.request.headers.host + '/'
 
-        const newURL = new URL(this.request.url, baseURL);
+        const newURL = new URL(this.request.url, baseURL)
 
         /**
-         * Calculating page number 
+         * Calculating page number
          */
-        const totalItems = await repository.count();
-        const totalPages = Math.ceil(totalItems / paginationQuery.limit);
-        const nextPage = paginationQuery.page === totalPages ? paginationQuery.page : paginationQuery.page + 1;
-        const previousPage = paginationQuery.page === totalPages ? paginationQuery.page : paginationQuery.page - 1;
+        const totalItems = await repository.count()
+        const totalPages = Math.ceil(totalItems / paginationQuery.limit)
+        const nextPage = paginationQuery.page === totalPages ? paginationQuery.page : paginationQuery.page + 1
+        const previousPage = paginationQuery.page === totalPages ? paginationQuery.page : paginationQuery.page - 1
 
         const finalResponse: Paginated<T> = {
             data: items,
@@ -52,11 +51,10 @@ export class PaginationProvider {
                 last: `${newURL.origin}${newURL.pathname}?limit=${paginationQuery.limit}&page=${totalPages}`,
                 current: `${newURL.origin}${newURL.pathname}?limit=${paginationQuery.limit}&page=${paginationQuery.page}`,
                 next: `${newURL.origin}${newURL.pathname}?limit=${paginationQuery.limit}&page=${nextPage}`,
-                previous: `${newURL.origin}${newURL.pathname}?limit=${paginationQuery.limit}&page=${previousPage}`,
+                previous: `${newURL.origin}${newURL.pathname}?limit=${paginationQuery.limit}&page=${previousPage}`
             }
         }
 
-        return finalResponse;
+        return finalResponse
     }
 }
-
