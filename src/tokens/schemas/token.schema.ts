@@ -1,10 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document, Types } from 'mongoose'
+import { HydratedDocument, Schema as MongooseSchema } from 'mongoose'
+import { User } from '../../users/schemas/user.schema'
+import { BaseEntity } from 'src/shared/base/entity/base.entity'
 
-@Schema({ timestamps: true })
-export class UserToken extends Document {
-    @Prop({ type: Types.ObjectId, required: true, ref: 'User' })
-    userId: Types.ObjectId
+export type UserTokenDocument = HydratedDocument<UserToken>
+
+@Schema({
+    timestamps: {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
+    }
+})
+export class UserToken extends BaseEntity {
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: User.name })
+    userId: string // ObjectId ở dạng string cho dễ serialize
 
     @Prop({ required: true })
     refreshToken: string

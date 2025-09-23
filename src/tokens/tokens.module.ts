@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { TokensService } from './providers/tokens.service'
 import { UserToken, UserTokenSchema } from './schemas/token.schema'
+import { UserTokenRepository } from './repository/impl/user-tokens.repository'
+import { UserTokensService } from './application/tokens.service'
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: UserToken.name, schema: UserTokenSchema }])],
-    providers: [TokensService],
-    exports: [TokensService] // để AuthModule hoặc UsersModule dùng
+    providers: [
+        {
+            provide: 'UserTokenRepositoryInterface',
+            useClass: UserTokenRepository
+        },
+        UserTokensService
+    ],
+    exports: [UserTokensService] // để AuthModule hoặc UsersModule dùng
 })
 export class TokensModule {}

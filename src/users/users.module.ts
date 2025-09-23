@@ -1,17 +1,22 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { UsersController } from './users.controller'
-import { UsersService } from './providers/users.service'
+import { UsersService } from './application/users.service'
 import { AuthModule } from 'src/auth/auth.module'
 import { ConfigModule } from '@nestjs/config'
-import { CreateUserProvider } from './providers/create-user.provider'
-import { FindOneUserByEmailProvider } from './providers/find-one-user-by-email.provider'
 import profileConfig from './config/profile.config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { User, UserSchema } from './schemas/user.schema'
+import { UsersRepository } from './repository/impl/users.repository'
 
 @Module({
     controllers: [UsersController],
-    providers: [UsersService, CreateUserProvider, FindOneUserByEmailProvider],
+    providers: [
+        UsersService,
+        {
+            provide: 'UserRepositoryInterface',
+            useClass: UsersRepository
+        }
+    ],
     exports: [UsersService], // Export UsersService if you want to use it in other modules
     imports: [
         forwardRef(() => AuthModule),

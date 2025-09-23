@@ -3,8 +3,11 @@ import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { config } from 'aws-sdk'
 import { LoggingInterceptor } from './common/logger/logging.interceptor'
+import * as cookieParser from 'cookie-parser'
 
 export function appMiddleware(app: INestApplication) {
+    app.setGlobalPrefix('api')
+    
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true, // Strips properties that do not have decorators
@@ -19,6 +22,9 @@ export function appMiddleware(app: INestApplication) {
     // logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor())
 
+    // cookie parser
+    app.use(cookieParser())
+
     const swaggerConfig = new DocumentBuilder()
         .setTitle('NestJS API')
         .setDescription('API documentation for the NestJS Blog application, base URL on http://localhost:3000')
@@ -30,7 +36,7 @@ export function appMiddleware(app: INestApplication) {
 
     const document = SwaggerModule.createDocument(app, swaggerConfig)
 
-    SwaggerModule.setup('api', app, document)
+    SwaggerModule.setup('docs', app, document)
 
     // setup aws sdk used uploading thefiles to aws s3 bucket
     const configService = app.get(ConfigService)
@@ -43,5 +49,10 @@ export function appMiddleware(app: INestApplication) {
     })
 
     // enable cors;
-    app.enableCors()
+    app.enableCors({
+        origin: ['http://localhost:5173'], // hoặc mảng các origin hợp lệ
+        credentials: true, // bắt buộc nếu bạn dùng cookie / session / Authorization header
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        allowedHeaders: 'Content-Type, Accept, Authorization'
+    })
 }

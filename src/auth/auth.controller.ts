@@ -1,12 +1,11 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common'
-import { AuthService } from './providers/auth.service'
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common'
+import { AuthService } from './application/auth.service'
 import { ApiTags } from '@nestjs/swagger'
 import { SignInDto } from './dtos/sign-in.dto'
 import { Auth } from './decorator/auth.decorator'
 import { AuthType } from './enum/auth-type.enum'
-import { RefreshTokenDto } from './dtos/refresh-token.dto'
-import { Request } from 'express'
-import { ActiveUserData } from './interface/active-user-data.interface'
+import { Request, Response } from 'express'
+import { TokenNotFoundException } from 'src/common/exceptions'
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -16,16 +15,38 @@ export class AuthController {
     @Post('sign-in')
     @HttpCode(HttpStatus.OK)
     @Auth(AuthType.None)
-    public async signIn(@Body() signInDto: SignInDto, @Req() req: Request) {
+    public async signIn(@Body() signInDto: SignInDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
         const ipAddress = (req.headers['x-forwarded-for'] || req.socket.remoteAddress) as string
-        return this.authService.signIn(signInDto, ipAddress)
+        const { accessToken, refreshToken } = await this.authService.signIn(signInDto, ipAddress)
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        return { accessToken }
     }
 
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
     @Auth(AuthType.None)
-    public async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
-        return this.authService.refreshTokens(refreshTokenDto)
+    public async refreshTokens(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const refreshTokenFromCookie = req.cookies?.refreshToken
+
+        if (!refreshTokenFromCookie) throw new TokenNotFoundException()
+
+        const tokens = await this.authService.refreshTokens(refreshTokenFromCookie)
+
+        res.cookie('refreshToken', tokens.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
+        return { accessToken: tokens.accessToken }
     }
 
     @Get('access-token')
@@ -51,9 +72,22 @@ export class AuthController {
     @Post('logout')
     @Auth(AuthType.Bearer)
     @HttpCode(HttpStatus.OK)
-    async logout(@Req() req: Request, @Body('refreshToken') refreshToken: string) {
-        const accessToken = req.headers.authorization?.split(' ')[1];
-        console.log({accessToken,refreshToken});
-        return await this.authService.logout(accessToken,refreshToken);
+    async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+        const accessToken = req.headers.authorization?.split(' ')[1]
+        const refreshToken = req.cookies['refreshToken']
+        if (!refreshToken) {
+            throw new BadRequestException('Refresh token not found')
+        }
+
+        await this.authService.logout(accessToken, refreshToken)
+
+        // Xoá cookie refresh token
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax'
+        })
+
+        return { message: 'Logout successfully' }
     }
 }
