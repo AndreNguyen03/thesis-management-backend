@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose'
-import { User } from '../../users/schemas/user.schema'
 import { BaseEntity } from 'src/shared/base/entity/base.entity'
 
 export type UserTokenDocument = HydratedDocument<UserToken>
+
+export type UserRole = 'student' | 'lecturer' | 'admin'
 
 @Schema({
     timestamps: {
@@ -12,7 +13,7 @@ export type UserTokenDocument = HydratedDocument<UserToken>
     }
 })
 export class UserToken extends BaseEntity {
-    @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: User.name })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
     userId: string // ObjectId ở dạng string cho dễ serialize
 
     @Prop({ required: true })

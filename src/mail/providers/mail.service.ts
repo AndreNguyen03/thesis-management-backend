@@ -1,7 +1,9 @@
 import { MailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { User } from '../../users/schemas/user.schema'
+import { Admin, AdminDocument } from 'src/users/schemas/admin.schema'
+import { Lecturer, LecturerDocument } from 'src/users/schemas/lecturer.schema'
+import { Student, StudentDocument } from 'src/users/schemas/student.schema'
 
 @Injectable()
 export class MailService {
@@ -10,7 +12,7 @@ export class MailService {
         private readonly configService: ConfigService
     ) {}
 
-    public async sendUserWelcomeMail(user: User): Promise<void> {
+    public async sendUserWelcomeMail(user: StudentDocument | LecturerDocument | AdminDocument ): Promise<void> {
         const env = this.configService.get<string>('NODE_ENV')
 
         if (env === 'test') {
@@ -31,7 +33,7 @@ export class MailService {
         })
     }
 
-    public async sendResetPasswordMail(user: User, token: string): Promise<void> {
+    public async sendResetPasswordMail(user: Student | Lecturer | Admin , token: string): Promise<void> {
         const env = this.configService.get<string>('NODE_ENV')
 
         if (env === 'test') {

@@ -1,7 +1,12 @@
-import { Injectable, RequestTimeoutException, UnauthorizedException } from '@nestjs/common'
+import {
+    HttpException,
+    HttpStatus,
+    Inject,
+    Injectable,
+    RequestTimeoutException,
+    UnauthorizedException
+} from '@nestjs/common'
 import { SignInDto } from '../dtos/sign-in.dto'
-import { TokenProvider } from '../providers/token.provider'
-import { UsersService } from 'src/users/application/users.service'
 import { HashingProvider } from '../providers/hashing.provider'
 import { TokenInvalidException, TokenNotFoundException, UserNotFoundException } from 'src/common/exceptions'
 import { MailService } from 'src/mail/providers/mail.service'
@@ -9,29 +14,36 @@ import { CacheService } from 'src/redis/providers/cache.service'
 import { ActiveUserData } from '../interface/active-user-data.interface'
 import { JwtService } from '@nestjs/jwt'
 import { UserTokensService } from 'src/tokens/application/tokens.service'
+import { StudentDocument } from 'src/users/schemas/student.schema'
+import { LecturerDocument } from 'src/users/schemas/lecturer.schema'
+import { AdminDocument } from 'src/users/schemas/admin.schema'
+import { AdminRepositoryInterface } from 'src/users/repository/admin.repository.interface'
+import { StudentRepositoryInterface } from 'src/users/repository/student.repository.interface'
+import { LecturerRepositoryInterface } from 'src/users/repository/lecturer.repository.interface'
+import { TokenProvider } from '../providers/token.provider'
+import { UserService } from 'src/users/application/users.service'
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly tokenProvider: TokenProvider,
-        private readonly usersService: UsersService,
         private readonly hashingProvider: HashingProvider,
         private readonly mailService: MailService,
         private readonly cacheService: CacheService,
         private readonly userTokensService: UserTokensService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly usersService : UserService
     ) {}
+
 
     public async signIn(signInDto: SignInDto, ipAddress: string) {
         // find user if exists
-        let user = await this.usersService.findOneByEmail(signInDto.email)
-
+        const user = await this.usersService.findByEmail(signInDto.email)
         if (!user) throw new UserNotFoundException()
-
         // compare password hash
         let isEqual: boolean = false
         try {
-            isEqual = await this.hashingProvider.comparePassword(signInDto.password, user.password_hash as string)
+            isEqual = await this.hashingProvider.comparePassword(signInDto.password, user.password_hash)
         } catch (error) {
             throw new RequestTimeoutException(error, {
                 description: 'could not compare passwords'
@@ -50,7 +62,7 @@ export class AuthService {
     }
 
     public async forgotPassword(email: string) {
-        const user = await this.usersService.findOneByEmail(email)
+        const user = await this.usersService.findByEmail(email)
         if (!user) throw new UserNotFoundException()
 
         const token = crypto.randomUUID()
@@ -66,16 +78,18 @@ export class AuthService {
     }
 
     public async resetPassword(token: string, newPassword: string) {
-        console.log(`token, newPassword`, token, newPassword)
         const userId = await this.cacheService.get<string>(`reset_token:${token}`)
-        console.log(userId)
         if (!userId) throw new TokenNotFoundException()
 
-        const user = await this.usersService.findOneById(userId)
+        const user = await this.usersService.findById(userId)
         if (!user) throw new UserNotFoundException()
 
         const newPasswordHash = await this.hashingProvider.hashPassword(newPassword)
-        await this.usersService.updatePassword(userId, newPasswordHash)
+        try {
+            await this.usersService.updatePassword(userId, newPasswordHash)
+        } catch (error) {
+            throw new HttpException('Update password failed', HttpStatus.BAD_REQUEST)
+        }
 
         // xóa token để ngăn reuse
         await this.cacheService.del(`reset_token:${token}`)
