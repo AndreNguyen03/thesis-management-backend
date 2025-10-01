@@ -1,23 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { CreateUserTokenDto } from '../dtos/create-user-token.dto'
 import { UserTokenRepositoryInterface } from '../repository/user-tokens.repository.interface'
+import { UserTokenRepository } from '../repository/impl/user-tokens.repository'
 
 @Injectable()
 export class UserTokensService {
-    constructor(
-        @Inject('UserTokenRepositoryInterface')
-        private readonly userTokenRepo: UserTokenRepositoryInterface
-    ) {}
+    constructor(private readonly userTokenRepo: UserTokenRepository) {}
 
     /**
      * Tạo refresh token mới cho device
      */
     async createToken(createUserTokenDto: CreateUserTokenDto) {
-        const token = await this.userTokenRepo.create({
-            ...createUserTokenDto,
-            isValid: true
-        })
-        return token
+        return await this.userTokenRepo.createToken(createUserTokenDto)
     }
 
     /**
@@ -55,10 +49,7 @@ export class UserTokensService {
      * Invalidate token (logout device)
      */
     async invalidateToken(userId: string, deviceId: string, refreshToken?: string) {
-        const query: any = { userId, deviceId }
-        if (refreshToken) query.refreshToken = refreshToken
-
-        return this.userTokenRepo.updateByCondition(query, { isValid: false })
+        return await this.userTokenRepo.invalidateToken(userId, deviceId, refreshToken)
     }
 
     /**

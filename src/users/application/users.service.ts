@@ -1,70 +1,69 @@
-import { BadRequestException, Injectable, RequestTimeoutException, Inject } from '@nestjs/common'
-import { User } from '../schemas/user.schema'
-import { CreateUserDto } from '../dtos/create-user.dto'
-import { UserRepositoryInterface } from '../repository/users.repository.interface'
-import { BaseServiceAbstract } from 'src/shared/base/service/base.abstract.service'
+import { Injectable } from '@nestjs/common'
+import { StudentService } from './student.service'
+import { LecturerService } from './lecturer.service'
+import { AdminService } from './admin.service'
+import { Admin } from '../schemas/admin.schema'
+import { Student } from '../schemas/student.schema'
+import { Lecturer } from '../schemas/lecturer.schema'
+import { AdminResponseDto } from '../dtos/admin.dto'
+import { StudentResponseDto } from '../dtos/student.dto'
+import { LecturerResponseDto } from '../dtos/lecturer.dto'
 
 @Injectable()
-export class UsersService extends BaseServiceAbstract<User> {
+export class UserService {
     constructor(
-        @Inject('UserRepositoryInterface')
-        private readonly usersRepository: UserRepositoryInterface
-    ) {
-        super(usersRepository)
+        private readonly studentService: StudentService,
+        private readonly lecturerService: LecturerService,
+        private readonly adminService: AdminService
+    ) {}
+
+    toResponseDto(user: Admin | Student | Lecturer): AdminResponseDto | StudentResponseDto | LecturerResponseDto {
+        switch (user.role) {
+            case 'admin':
+                return this.adminService.toResponseDto(user)
+            case 'student':
+                return this.studentService.toResponseDto(user)
+            case 'lecturer':
+                return this.lecturerService.toResponseDto(user)
+        }
     }
 
-    /**
-     * Tìm user theo _id (ẩn password_hash)
-     */
-    public async findOneById(userId: string): Promise<User> {
-        let user: User | null = null
+    async findById(id: string) {
+        const admin = await this.adminService.getById(id)
+        if (admin) return admin
 
-        try {
-            user = await this.usersRepository.findOneById(userId, '-password_hash')
-        } catch (error) {
-            throw new RequestTimeoutException('Unable to process your request at the moment, please try again later', {
-                description: 'Error connecting to the database'
-            })
-        }
+        const lecturer = await this.lecturerService.getById(id)
+        if (lecturer) return lecturer
 
-        if (!user) {
-            throw new BadRequestException('The user id does not exist')
-        }
+        const student = await this.studentService.getById(id)
+        if (student) return student
 
-        return user
+        return null
     }
 
-    /**
-     * Tìm user theo email
-     */
-    public async findOneByEmail(email: string): Promise<User> {
-        const user = await this.usersRepository.findByEmail(email)
+    async findByEmail(email: string) {
+        const admin = await this.adminService.findByEmail(email)
+        if (admin) return admin
 
-        if (!user) {
-            throw new BadRequestException('The email does not exist')
-        }
+        const lecturer = await this.lecturerService.findByEmail(email)
+        if (lecturer) return lecturer
 
-        return user
+        const student = await this.studentService.findByEmail(email)
+        if (student) return student
+
+        return null
     }
 
-    /**
-     * Tạo user
-     */
+    async updatePassword(id: string, newPasswordHash: string) {
+        const admin = await this.adminService.getById(id)
+        if (admin) return this.adminService.updatePassword(id, newPasswordHash)
 
-    public async createUser(createUserDto: CreateUserDto): Promise<User> {
-        return this.create(createUserDto) 
-    }
+        const lecturer = await this.lecturerService.getById(id)
+        if (lecturer) return this.lecturerService.updatePassword(id, newPasswordHash)
 
-    /**
-     * Cập nhật mật khẩu user
-     */
-    public async updatePassword(userId: string, newPasswordHash: string): Promise<User> {
-        const updated = await this.usersRepository.updatePassword(userId, newPasswordHash)
-        console.log(updated)
-        if (!updated) {
-            throw new BadRequestException('Failed to update password')
-        }
+        const student = await this.studentService.getById(id)
+        if (student) return this.studentService.updatePassword(id, newPasswordHash)
 
-        return updated
+        return null
     }
 }

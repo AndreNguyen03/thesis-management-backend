@@ -1,11 +1,11 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common'
-import { AuthService } from './application/auth.service'
 import { ApiTags } from '@nestjs/swagger'
 import { SignInDto } from './dtos/sign-in.dto'
 import { Auth } from './decorator/auth.decorator'
 import { AuthType } from './enum/auth-type.enum'
 import { Request, Response } from 'express'
 import { TokenNotFoundException } from 'src/common/exceptions'
+import { AuthService } from './application/auth.service'
 
 @Controller('auth')
 @ApiTags('Auth')

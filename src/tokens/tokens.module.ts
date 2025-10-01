@@ -6,13 +6,7 @@ import { UserTokensService } from './application/tokens.service'
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: UserToken.name, schema: UserTokenSchema }])],
-    providers: [
-        {
-            provide: 'UserTokenRepositoryInterface',
-            useClass: UserTokenRepository
-        },
-        UserTokensService
-    ],
-    exports: [UserTokensService] // để AuthModule hoặc UsersModule dùng
+    providers: [UserTokenRepository, UserTokensService],
+    exports: [UserTokenRepository, UserTokensService] // để AuthModule hoặc UsersModule dùng
 })
 export class TokensModule {}
