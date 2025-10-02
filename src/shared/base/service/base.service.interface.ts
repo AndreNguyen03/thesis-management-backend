@@ -1,4 +1,4 @@
-import { FindAllResponse } from '../repository/base.interface.repository'
+import { FindAllResponse } from 'src/shared/types/common.type'
 
 export interface Write<T> {
     create(item: T | any): Promise<T>
