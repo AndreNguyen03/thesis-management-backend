@@ -20,6 +20,9 @@ import { ConfigService } from '@nestjs/config'
 import { LoggerMiddleware } from './common/logger/logger.middleware'
 import { redisConfig } from './config/redis.config'
 import { RedisModule } from './redis/redis.module'
+import { ThesisModule } from './thesis/thesis.module';
+import { ThesisRegistrationController } from './thesis-registration/thesis-registration.controller';
+import { ThesisRegistrationModule } from './thesis-registration/thesis-registration.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -56,9 +59,13 @@ const ENV = process.env.NODE_ENV
         JwtModule.registerAsync(jwtConfig.asProvider()),
 
         // Redis cache module
-        RedisModule
+        RedisModule,
+
+        ThesisModule,
+
+        ThesisRegistrationModule
     ],
-    controllers: [AppController],
+    controllers: [AppController, ThesisRegistrationController],
     providers: [
         AppService,
         {

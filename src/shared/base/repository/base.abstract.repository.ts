@@ -11,7 +11,9 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
         const created = await this.model.create(dto)
         return created.save()
     }
-
+    async getAll(): Promise<T[]> {
+        return this.model.find({ deleted_at: null }).exec()
+    }
     async findOneById(id: string, projection?: string): Promise<T | null> {
         const item = await this.model.findById(id, projection).exec()
         if (!item || item.deleted_at) {

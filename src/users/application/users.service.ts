@@ -64,7 +64,6 @@ export class UsersService extends BaseServiceAbstract<User> {
         if (!updated) {
             throw new BadRequestException('Failed to update password')
         }
-
         return updated
     }
 }

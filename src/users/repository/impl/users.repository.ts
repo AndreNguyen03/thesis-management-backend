@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { UserRepositoryInterface } from '../users.repository.interface'
 
-@Injectable()
+@Injectable()   
 export class UsersRepository extends BaseRepositoryAbstract<User> implements UserRepositoryInterface {
     constructor(
         @InjectModel(User.name)

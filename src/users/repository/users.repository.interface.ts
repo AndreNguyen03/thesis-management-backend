@@ -5,3 +5,4 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     findByEmail(email: string): Promise<User | null>
     updatePassword(userId: string, newPasswordHash: string): Promise<User | null>
 }
+        

@@ -19,7 +19,7 @@ export enum USER_ROLE {
     }
 })
 export class User extends BaseEntity {
-    @Prop({ required: true, unique: true })
+    @Prop({ required: true, unique: true }) // có unique không ?
     username: string
 
     @Prop({ required: true})
