@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { AdminRepositoryInterface } from '../admin.repository.interface'
-import { Admin, AdminDocument } from 'src/users/schemas/admin.schema'
-import { BaseRepositoryAbstract } from 'src/shared/base/repository/base.repository.abstract'
+import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
+import { Admin, AdminDocument } from '../../schemas/admin.schema'
 
 @Injectable()
 export class AdminRepository extends BaseRepositoryAbstract<Admin> implements AdminRepositoryInterface {

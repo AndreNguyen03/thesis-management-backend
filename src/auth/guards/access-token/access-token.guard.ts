@@ -2,10 +2,10 @@ import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedExceptio
 import { ConfigType } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { Request } from 'express'
-import jwtConfig from 'src/auth/config/jwt.config'
-import { REQUEST_USER_KEY } from 'src/auth/constants/auth.constants'
-import { AccessTokenExpiredException, TokenInvalidException } from 'src/common/exceptions/auth-exceptions'
-import { CacheService } from 'src/redis/providers/cache.service'
+import { CacheService } from '../../../redis/providers/cache.service'
+import jwtConfig from '../../config/jwt.config'
+import { REQUEST_USER_KEY } from '../../constants/auth.constants'
+import { AccessTokenExpiredException, TokenInvalidException } from '../../../common/exceptions'
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {

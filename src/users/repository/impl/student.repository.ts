@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { StudentRepositoryInterface } from '../student.repository.interface'
-import { Student, StudentDocument } from 'src/users/schemas/student.schema'
-import { BaseRepositoryAbstract } from 'src/shared/base/repository/base.repository.abstract'
+import { Student, StudentDocument } from '../../schemas/student.schema'
+import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 
 @Injectable()
 export class StudentRepository extends BaseRepositoryAbstract<Student> implements StudentRepositoryInterface {

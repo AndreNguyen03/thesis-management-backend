@@ -1,15 +1,13 @@
 import { Controller, Get, Param, Patch, Body, Req } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import { Auth } from 'src/auth/decorator/auth.decorator'
-import { AuthType } from 'src/auth/enum/auth-type.enum'
+import { Auth } from '../auth/decorator/auth.decorator'
+import { AuthType } from '../auth/enum/auth-type.enum'
 import { StudentService } from './application/student.service'
 import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
 import { UpdateStudentDto } from './dtos/student.dto'
 import { UpdateLecturerDto } from './dtos/lecturer.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
-import { plainToInstance } from 'class-transformer'
-import { Lecturer } from './schemas/lecturer.schema'
 
 @Controller('users')
 @ApiTags('Users')
@@ -51,7 +49,9 @@ export class UserController {
                 throw new Error('Invalid role')
         }
     }
-
+    @Get('studnt/:id/saved-theses')
+    async getStudentSavedTheses(@Param('id') id: string) {
+    }
     @Patch('student/:id')
     async updateStudent(@Param('id') id: string, @Body() dto: UpdateStudentDto) {
         return this.studentService.update(id, dto)

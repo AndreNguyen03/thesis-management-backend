@@ -1,9 +1,9 @@
 import { MailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { Admin, AdminDocument } from 'src/users/schemas/admin.schema'
-import { Lecturer, LecturerDocument } from 'src/users/schemas/lecturer.schema'
-import { Student, StudentDocument } from 'src/users/schemas/student.schema'
+import { Student, StudentDocument } from '../../users/schemas/student.schema'
+import { Lecturer, LecturerDocument } from '../../users/schemas/lecturer.schema'
+import { Admin, AdminDocument } from '../../users/schemas/admin.schema'
 
 @Injectable()
 export class MailService {

@@ -1,8 +1,8 @@
 import { Module, Global } from '@nestjs/common'
 import { ConfigModule, ConfigType } from '@nestjs/config'
-import { redisConfig } from 'src/config/redis.config'
 import Redis from 'ioredis'
 import { CacheService } from './providers/cache.service'
+import { redisConfig } from '../config/redis.config'
 
 @Global() // để module này có thể được inject ở bất kỳ đâu mà không cần import nhiều lần
 @Module({

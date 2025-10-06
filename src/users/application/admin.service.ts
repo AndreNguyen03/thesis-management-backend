@@ -3,8 +3,8 @@ import { plainToInstance } from 'class-transformer'
 import { AdminResponseDto, UpdateAdminDto } from '../dtos/admin.dto'
 import { Admin, AdminDocument } from '../schemas/admin.schema'
 import { AdminRepositoryInterface } from '../repository/admin.repository.interface'
-import { BaseServiceAbstract } from 'src/shared/base/service/base.service.abstract'
 import { validateOrReject } from 'class-validator'
+import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 
 @Injectable()
 export class AdminService extends BaseServiceAbstract<Admin> {

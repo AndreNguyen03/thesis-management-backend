@@ -38,3 +38,9 @@ export class UserCannotDeleteException extends BaseHttpException {
         super('Cannot delete user', 'USER_CANNOT_DELETE', HttpStatus.FORBIDDEN)
     }
 }
+
+export class StudentNotFoundException extends BaseHttpException {   
+    constructor() {
+        super('Student not found', 'STUDENT_NOT_FOUND', HttpStatus.NOT_FOUND)
+    }
+}

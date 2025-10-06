@@ -1,7 +1,7 @@
 import mongoose, { FilterQuery, HydratedDocument, Model, QueryOptions } from 'mongoose'
 import { BaseEntity } from '../entity/base.entity'
 import { BaseRepositoryInterface } from './base.repository.interface'
-import { FindAllResponse } from 'src/shared/types/common.type'
+import { FindAllResponse } from '../../types/common.type'
 
 export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements BaseRepositoryInterface<T> {
     protected constructor(private readonly model: Model<T>) {
@@ -13,6 +13,10 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
         return created_data.save()
     }
 
+    async getAll(): Promise<T[]> {
+        return this.model.find({ deleted_at: null }).exec()
+    }
+    
     async findOneById(id: string): Promise<T | null> {
         const item = await this.model.findOne({ _id: id })
         if (!item) return null

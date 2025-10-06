@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
-import { BaseRepositoryAbstract } from 'src/shared/base/repository/base.repository.abstract'
-import { Lecturer, LecturerDocument } from 'src/users/schemas/lecturer.schema'
 import { LecturerRepositoryInterface } from '../lecturer.repository.interface'
+import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
+import { Lecturer, LecturerDocument } from '../../schemas/lecturer.schema'
 
 @Injectable()
 export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> implements LecturerRepositoryInterface {

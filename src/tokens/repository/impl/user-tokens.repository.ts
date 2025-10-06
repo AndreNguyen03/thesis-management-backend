@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { UserToken } from '../../schemas/token.schema'
 import { UserTokenRepositoryInterface } from '../user-tokens.repository.interface'
-import { CreateUserTokenDto } from 'src/tokens/dtos/create-user-token.dto'
+import { CreateUserTokenDto } from '../../dtos/create-user-token.dto'
 
 @Injectable()
 export class UserTokenRepository implements UserTokenRepositoryInterface {
@@ -28,7 +28,7 @@ export class UserTokenRepository implements UserTokenRepositoryInterface {
         }
     }
 
-    async findValidToken(userId: string, deviceId: string, refreshToken: string) {
+    async findValidToken(userId: string, deviceId: string, refreshToken: string): Promise<UserToken | null> {
         return this.userTokensRepository
             .findOne({
                 userId: this.mapUserId(userId),
@@ -54,7 +54,7 @@ export class UserTokenRepository implements UserTokenRepositoryInterface {
         return this.userTokensRepository.updateMany({ userId: this.mapUserId(userId) }, { isValid: false }).lean()
     }
 
-    async findAllValidTokens(userId: string) {
+    async findAllValidTokens(userId: string): Promise<UserToken[]> {
         return this.userTokensRepository
             .find({
                 userId: this.mapUserId(userId),

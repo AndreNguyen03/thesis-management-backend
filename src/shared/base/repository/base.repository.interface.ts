@@ -1,4 +1,4 @@
-import { FindAllResponse } from 'src/shared/types/common.type'
+import { FindAllResponse } from '../../types/common.type'
 
 export interface BaseRepositoryInterface<T> {
     create(dto: T | any): Promise<T>
