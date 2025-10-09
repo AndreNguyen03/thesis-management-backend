@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import mongoose, { Model, Types } from 'mongoose'
 import { UserToken } from '../../schemas/token.schema'
 import { UserTokenRepositoryInterface } from '../user-tokens.repository.interface'
 import { CreateUserTokenDto } from '../../dtos/create-user-token.dto'
@@ -20,10 +20,12 @@ export class UserTokenRepository implements UserTokenRepositoryInterface {
         try {
             const token = await this.userTokensRepository.create({
                 ...createUserTokenDto,
+                userId: this.mapUserId(createUserTokenDto.userId), // Chuyển đổi userId sang ObjectId
                 isValid: true
             })
             return token.toObject()
         } catch (err) {
+            console.error('Error creating token:', err) // Thêm log để debug
             throw new InternalServerErrorException('Failed to create token')
         }
     }

@@ -13,8 +13,8 @@ export type UserRole = 'student' | 'lecturer' | 'admin'
     }
 })
 export class UserToken extends BaseEntity {
-    @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
-    userId: string // ObjectId ở dạng string cho dễ serialize
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+    userId: MongooseSchema.Types.ObjectId // ObjectId ở dạng string cho dễ serialize
 
     @Prop({ required: true })
     refreshToken: string

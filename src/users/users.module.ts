@@ -42,7 +42,8 @@ import { UserService } from './application/users.service'
         StudentService,
         LecturerService,
         AdminService,
-        UserService
+        UserService,
+        MongooseModule
     ],
     imports: [
         forwardRef(() => AuthModule),

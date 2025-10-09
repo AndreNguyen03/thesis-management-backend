@@ -21,7 +21,7 @@ import { LoggerMiddleware } from './common/logger/logger.middleware'
 import { redisConfig } from './config/redis.config'
 import { RedisModule } from './redis/redis.module'
 import { ThesisModule } from './thesis/thesis.module'
-import { ChatBotModule } from './chat/chatbot.module'
+import { ChatBotModule } from './chatbot/chatbot.module'
 
 const ENV = process.env.NODE_ENV
 

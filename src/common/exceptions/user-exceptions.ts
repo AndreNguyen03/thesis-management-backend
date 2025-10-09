@@ -39,8 +39,20 @@ export class UserCannotDeleteException extends BaseHttpException {
     }
 }
 
-export class StudentNotFoundException extends BaseHttpException {   
+export class StudentNotFoundException extends BaseHttpException {
     constructor() {
         super('Student not found', 'STUDENT_NOT_FOUND', HttpStatus.NOT_FOUND)
+    }
+}
+
+export class LecturerNotFoundException extends BaseHttpException {
+    constructor() {
+        super('Lecturer not found', 'LECTURER_NOT_FOUND', HttpStatus.NOT_FOUND)
+    }
+}
+
+export class WrongRoleException extends BaseHttpException {
+    constructor(message?: string) {
+        super(`Need student role ${message ? "for " + message : ""}`, 'WRONG_ROLE', HttpStatus.BAD_REQUEST)
     }
 }

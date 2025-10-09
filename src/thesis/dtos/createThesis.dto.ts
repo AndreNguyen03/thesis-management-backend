@@ -19,6 +19,14 @@ export class CreateThesisDto {
     department?: string
 
     @IsOptional()
+    @IsString({ each: true })
+    studentIds?: mongoose.Schema.Types.ObjectId[]
+
+    @IsOptional()
+    @IsString({ each: true })
+    registrationIds?: mongoose.Schema.Types.ObjectId[]
+
+    @IsOptional()
     @IsString()
     field?: string
 
@@ -26,7 +34,7 @@ export class CreateThesisDto {
     maxStudents?: number
 
     @IsNumber()
-    registerdStudents?: number = 0
+    registeredStudents?: number = 0
 
     @IsOptional()
     @IsDate()

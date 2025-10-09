@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
-import { ThesisStats } from '../../users/schemas/lecturer.schema'
 import { ThesisStatus } from '../enum/thesis-status.enum'
+import { RegistrationSchema } from './registration.schema'
 
 export class SavedUserRef {
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
@@ -18,7 +18,7 @@ export class SavedUserRef {
         updatedAt: 'updated_at'
     }
 })
-
+@Schema({ collection: 'theses', timestamps: true })
 export class Thesis extends BaseEntity {
     @Prop({ required: true })
     title: string
@@ -26,12 +26,15 @@ export class Thesis extends BaseEntity {
     @Prop({ required: true })
     description: string
 
-    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Lecturer', default: [] })
-    lecturerIds: mongoose.Schema.Types.ObjectId[]
-    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Student', default: [] })
-    studentIds: mongoose.Schema.Types.ObjectId[]
+    @Prop({
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Registration',
+        default: []
+    })
+    registrationIds: mongoose.Schema.Types.ObjectId[]
+
     @Prop({ type: [SavedUserRef], default: [] })
-    savedBy: SavedUserRef[]
+    savedBy: SavedUserRef[] 
 
     @Prop()
     department: string
@@ -44,7 +47,7 @@ export class Thesis extends BaseEntity {
 
     @Prop({ default: 0 })
     registeredStudents: number
- 
+
     @Prop()
     deadline: Date
 
@@ -54,10 +57,9 @@ export class Thesis extends BaseEntity {
     @Prop({ enum: ThesisStatus, default: ThesisStatus.OPEN })
     status: ThesisStatus
 
-    @Prop()
-    rating: number
+    @Prop({ default: 0 }) rating: number
 
+    @Prop({ default: 0 })
     views: number
 }
-// total number property is 12
 export const ThesisSchema = SchemaFactory.createForClass(Thesis)

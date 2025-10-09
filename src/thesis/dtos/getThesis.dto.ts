@@ -3,14 +3,13 @@ import { ThesisStatus } from '../enum/thesis-status.enum'
 import { IsEnum } from 'class-validator'
 import { de } from '@faker-js/faker/.'
 export class GetThesisResponseDto {
+    _id: string
     title: string
 
     description: string
 
-    lecturers: string[]
+    registrantIds: mongoose.Schema.Types.ObjectId[]
 
-    studentIds: mongoose.Schema.Types.ObjectId[]
-    
     department: string
 
     field: string
@@ -23,10 +22,12 @@ export class GetThesisResponseDto {
 
     requirements: string[]
 
-    @IsEnum({ThesisStatus,default: ThesisStatus.OPEN})
+    @IsEnum({ ThesisStatus, default: ThesisStatus.OPEN })
     status: ThesisStatus
 
     rating: number
+    updatedAt: Date
+    createdAt: Date
 
     views: number
 }

@@ -8,7 +8,13 @@ import { Admin } from '../../users/schemas/admin.schema'
 import { Lecturer } from '../../users/schemas/lecturer.schema'
 import { Student } from '../../users/schemas/student.schema'
 import { UserService } from '../../users/application/users.service'
-import { RefreshTokenExpiredException, TokenDeviceMismatchException, TokenInvalidException, TokenNotFoundException, UserNotFoundException } from '../../common/exceptions'
+import {
+    RefreshTokenExpiredException,
+    TokenDeviceMismatchException,
+    TokenInvalidException,
+    TokenNotFoundException,
+    UserNotFoundException
+} from '../../common/exceptions'
 
 @Injectable()
 export class TokenProvider {
@@ -21,7 +27,6 @@ export class TokenProvider {
     ) {}
 
     public async issueTokens(user: Student | Lecturer | Admin, deviceInfo: string, ipAddress: string) {
-
         const userId = user._id?.toString()
 
         if (!userId) {
@@ -104,7 +109,7 @@ export class TokenProvider {
         )
     }
 
-    public async generateToken(userId: string, user: Student | Lecturer| Admin, deviceId: string) {
+    public async generateToken(userId: string, user: Student | Lecturer | Admin, deviceId: string) {
         if (!userId) {
             throw new Error('User ID is missing')
         }
