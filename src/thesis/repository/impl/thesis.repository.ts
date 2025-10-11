@@ -6,15 +6,24 @@ import mongoose, { Model } from 'mongoose'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 import { GetThesisResponseDto } from '../../dtos'
 import { plainToInstance } from 'class-transformer'
+import { Archive } from '../../schemas/archive.schemas'
+import { getUserModelFromRole } from '../../utils/get-user-model'
 
 export class ThesisRepository extends BaseRepositoryAbstract<Thesis> implements ThesisRepositoryInterface {
     public constructor(
         @InjectModel(Thesis.name)
-        private readonly thesisRepository: Model<Thesis>
+        private readonly thesisRepository: Model<Thesis>,
+        @InjectModel(Archive.name) private readonly archiveRepository: Model<Archive>
     ) {
         super(thesisRepository)
     }
     async getAllTheses(userId: string, role: string): Promise<GetThesisResponseDto[]> {
+        const userArchive = await this.archiveRepository
+            .findOne({ userId: new mongoose.Types.ObjectId(userId), userModel: getUserModelFromRole(role) })
+            .select('savedTheses')
+            .lean()
+        const savedThesesIds = userArchive ? userArchive.savedTheses.map((id) => id.toString()) : []
+
         const theses = await this.thesisRepository
             .find({ deleted_at: null })
             .populate({
@@ -24,8 +33,11 @@ export class ThesisRepository extends BaseRepositoryAbstract<Thesis> implements 
             })
             .lean()
             .exec()
-
-        const res = plainToInstance(GetThesisResponseDto, theses, {
+        const thesesWithSavedStatus = theses.map((thesis) => ({
+            ...thesis,
+            isSaved: savedThesesIds.includes(thesis._id.toString())
+        }))
+        const res = plainToInstance(GetThesisResponseDto, thesesWithSavedStatus, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -47,26 +59,4 @@ export class ThesisRepository extends BaseRepositoryAbstract<Thesis> implements 
             .findByIdAndUpdate(thesisId, { $addToSet: { savedBy: { userId, role } } }, { new: true })
             .exec()
     }
-
-    /*    async studentCancelRegistration(studentId: string, thesisId: string) {
-        const thesis = await this.thesisRepository.findOne({ _id: thesisId, deleted_at: null }).exec()
-
-        if (!thesis) {
-            throw new ThesisNotFoundException()
-        }
-
-        const registrationToCancel = thesis.registrations.find(
-            (reg) =>
-                reg.registrantId.toString() === studentId && !reg.isDeleted && reg.status === RegistrationStatus.PENDING
-        )
-        if (!registrationToCancel) {
-            throw new BadRequestException('Bạn chưa đăng ký đề tài này hoặc đã bị từ chối')
-        }
-        registrationToCancel.isDeleted = true
-        registrationToCancel.deletedAt = new Date()
-        registrationToCancel.status = RegistrationStatus.CANCELED
-        // Giảm số lượng sinh viên đã đăng ký
-        thesis.registeredStudents = Math.max(0, thesis.registeredStudents - 1)
-        return await thesis.save()
-    }*/
 }

@@ -69,13 +69,12 @@ export class ThesisService {
         await this._validateUser(userId, role)
         return await this.archiveRepository.unarchiveThesis(userId, thesisId, role)
     }
-    // async lecturerReplyRegistration(lecturerId: string, replyRegistrationDto: ReplyRegistrationDto) {
-    //     const { thesisId, status, message } = replyRegistrationDto
-    //     const thesis = await this.thesisRepository.findOneById(thesisId)
-    //     if (!thesis) {
-    //         throw new ThesisNotFoundException()
-    //     }
-    // }
+
+    async getCanceledRegistrations(userId:string, role:string) {
+        await this._validateUser(userId, role)
+        return this.registrationRepository.getCanceledRegistrationByUser(userId, role)
+    }
+
     private async _validateUser(userId: string, role: string) {
         if (role === UserRole.STUDENT) {
             const user = await this.studentRepository.findOneById(userId)

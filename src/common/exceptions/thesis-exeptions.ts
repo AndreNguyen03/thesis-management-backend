@@ -29,6 +29,6 @@ export class RejectedException extends BaseHttpException {
 
 export class ThesisNotArchivedException extends BaseHttpException {
     constructor() {
-        super('Đề tài chưa được lưu trữ', 'THESIS_NOT_ARCHIVED', HttpStatus.BAD_REQUEST)
+        super('Đăng ký đề tài đã bị từ chối', 'THESIS_REGISTRATION_REJECTED', HttpStatus.BAD_REQUEST)
     }
 }

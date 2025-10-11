@@ -81,6 +81,12 @@ export class ThesisController {
         const { sub: userId, role } = req.user
         return await this.thesisService.cancelRegistration(userId, thesisId, role)
     }
+    @Get('/canceled-registrations')
+    @Auth(AuthType.Bearer)
+    async getCanceledRegistration(@Req() req: { user: ActiveUserData }) {
+        const { sub: userId, role } = req.user
+        return await this.thesisService.getCanceledRegistrations(userId, role)
+    }
 
     // @Patch('/lecturer/reply-registration')
     // @Auth(AuthType.Bearer)
