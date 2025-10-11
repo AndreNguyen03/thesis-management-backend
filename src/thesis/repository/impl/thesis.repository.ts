@@ -14,32 +14,23 @@ export class ThesisRepository extends BaseRepositoryAbstract<Thesis> implements 
     ) {
         super(thesisRepository)
     }
-    async getAllTheses() {
-        const theses = this.thesisRepository.find({ deleted_at: null }).exec()
-        return theses
+    async getAllTheses(userId: string, role: string): Promise<GetThesisResponseDto[]> {
+        const theses = await this.thesisRepository
+            .find({ deleted_at: null })
+            .populate({
+                path: 'registrationIds',
+                select: 'registrantId registrantModel status',
+                populate: { path: 'registrantId', select: '_id fullName role' }
+            })
+            .lean()
+            .exec()
+
+        const res = plainToInstance(GetThesisResponseDto, theses, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+        return res
     }
-
-    // async studentCancelRegistration(studentId: string, thesisId: string) {
-    //     const thesis = await this.thesisRepository.findOne({ _id: thesisId, deleted_at: null }).exec()
-
-    //     if (!thesis) {
-    //         throw new ThesisNotFoundException()
-    //     }
-
-    //     const registrationToCancel = thesis.studentRegistrations.find(
-    //         (reg) =>
-    //             reg.registrantId.toString() === studentId && !reg.isDeleted && reg.status === RegistrationStatus.PENDING
-    //     )
-    //     if (!registrationToCancel) {
-    //         throw new BadRequestException('Bạn chưa đăng ký đề tài này ')
-    //     }
-    //     registrationToCancel.isDeleted = true
-    //     registrationToCancel.deletedAt = new Date()
-    //     registrationToCancel.status = RegistrationStatus.CANCELED
-    //     // Giảm số lượng sinh viên đã đăng ký
-    //     thesis.registeredStudents = Math.max(0, thesis.registeredStudents - 1)
-    //     return await thesis.save()
-    // }
 
     async findSavedByUser(userId: string, role: string): Promise<GetThesisResponseDto[]> {
         const theses = await this.thesisRepository

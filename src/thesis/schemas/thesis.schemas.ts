@@ -33,9 +33,6 @@ export class Thesis extends BaseEntity {
     })
     registrationIds: mongoose.Schema.Types.ObjectId[]
 
-    @Prop({ type: [SavedUserRef], default: [] })
-    savedBy: SavedUserRef[] 
-
     @Prop()
     department: string
 

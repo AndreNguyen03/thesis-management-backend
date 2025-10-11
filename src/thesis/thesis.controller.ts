@@ -16,10 +16,25 @@ export class ThesisController {
         return await this.thesisService.getRegisteredThesis(req.user)
     }
 
-    @Get('saved-by-user')
-    @Auth(AuthType.None)
-    async getSavedTheses(@Query('userId') userId: string, @Query('role') role: string) {
-        return this.thesisService.getSavedThesesByUser(userId, role)
+    @Post('/save-thesis/:thesisId')
+    @Auth(AuthType.Bearer)
+    async createThesisSaving(@Req() req: { user: ActiveUserData }, @Param('thesisId') thesisId: string) {
+        const { sub: userId, role } = req.user
+        return this.thesisService.saveThesis(userId, role, thesisId)
+    }
+
+    @Patch('/unsave-thesis/:thesisId')
+    @Auth(AuthType.Bearer)
+    async unarchiveThesis(@Req() req: { user: ActiveUserData }, @Param('thesisId') thesisId: string) {
+        const { sub: userId, role } = req.user
+        return this.thesisService.unarchiveThesis(userId, thesisId, role)
+    }
+
+    @Get('saved-theses')
+    @Auth(AuthType.Bearer)
+    async getSavedTheses(@Req() req: { user: ActiveUserData }) {
+        const { sub: userId, role } = req.user
+        return this.thesisService.getSavedTheses(userId, role)
     }
 
     @Post('save')
@@ -28,10 +43,12 @@ export class ThesisController {
         return this.thesisService.saveThesis(userId, role, thesisId)
     }
 
-    @Get('/student')
-    @Auth(AuthType.None)
-    async getTheses() {
-        return await this.thesisService.getAllTheses()
+    @Get()
+    @Auth(AuthType.Bearer)
+    async getTheses(@Req() req: { user: ActiveUserData }) {
+        const { sub: userId, role } = req.user
+
+        return await this.thesisService.getAllTheses(userId, role)
     }
 
     @Post()
@@ -52,7 +69,7 @@ export class ThesisController {
         return await this.thesisService.deleteThesis(id)
     }
 
-    @Patch('/register-thesis/:thesisId')
+    @Post('/register-thesis/:thesisId')
     @Auth(AuthType.Bearer)
     async createThesisRegistration(@Req() req: { user: ActiveUserData }, @Param('thesisId') thesisId: string) {
         const { sub: userId, role } = req.user

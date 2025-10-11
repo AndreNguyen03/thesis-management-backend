@@ -3,7 +3,7 @@ import { GetThesisResponseDto } from '../dtos'
 import { Thesis } from '../schemas/thesis.schemas'
 
 export interface ThesisRepositoryInterface extends BaseRepositoryInterface<Thesis> {
-    getAllTheses(): Promise<Thesis[]>
+    getAllTheses(userId: string, role: string): Promise<GetThesisResponseDto[]>
     findSavedByUser(userId: string, role: string): Promise<GetThesisResponseDto[]>
     saveThesis(userId: string, role: string, thesisId: string)
 }

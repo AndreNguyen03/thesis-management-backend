@@ -1,12 +1,11 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
-import { ThesisRepositoryInterface } from '../repository/thesis.repository.interface'
-import { CreateThesisDto, PatchThesisDto, ReplyRegistrationDto } from '../dtos'
-import { ThesisNotFoundException } from '../../common/exceptions/thesis-exeptions'
+import { CreateThesisDto, GetThesisResponseDto, PatchThesisDto, ReplyRegistrationDto } from '../dtos'
 import { StudentRepositoryInterface } from '../../users/repository/student.repository.interface'
 import { LecturerNotFoundException, StudentNotFoundException, WrongRoleException } from '../../common/exceptions'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
-import { RegistrationRepositoryInterface } from '../repository/registration.repository.interface'
 import { LecturerRepositoryInterface } from '../../users/repository/lecturer.repository.interface'
+import { UserRole } from '../../auth/enum/user-role.enum'
+import { ArchiveRepositoryInterface, RegistrationRepositoryInterface, ThesisRepositoryInterface } from '../repository'
 
 @Injectable()
 export class ThesisService {
@@ -18,14 +17,16 @@ export class ThesisService {
         @Inject('RegistrationRepositoryInterface')
         private readonly registrationRepository: RegistrationRepositoryInterface,
         @Inject('LecturerRepositoryInterface')
-        private readonly lecturerRepository: LecturerRepositoryInterface
+        private readonly lecturerRepository: LecturerRepositoryInterface,
+        @Inject('ArchiveRepositoryInterface')
+        private readonly archiveRepository: ArchiveRepositoryInterface
     ) {}
     public async getRegisteredThesis(user: ActiveUserData) {
         await this._validateUser(user.sub, user.role)
         return this.registrationRepository.getThesisRegistrationsByUser(user.sub, user.role)
     }
-    public async getAllTheses() {
-        return this.thesisRepository.getAllTheses()
+    public async getAllTheses(userId: string, role: string) {
+        return this.thesisRepository.getAllTheses(userId, role)
     }
     public async createThesis(thesisData: CreateThesisDto) {
         return this.thesisRepository.create(thesisData)
@@ -54,13 +55,20 @@ export class ThesisService {
         return this.registrationRepository.deleteRegistration(thesisId, userId, role)
     }
 
-    async getSavedThesesByUser(userId: string, role: string) {
-        // return this.thesisRepository.findSavedByUser(userId, role)
+    public async getSavedTheses(userId: string, role: string): Promise<GetThesisResponseDto[]> {
+        await this._validateUser(userId, role)
+
+        return await this.archiveRepository.findSavedThesesByUserId(userId, role)
     }
-    async saveThesis(userId: string, role: string, thesisId: string) {
-        // return this.thesisRepository.saveThesis(userId, role, thesisId)
+    public async saveThesis(userId: string, role: string, thesisId: string) {
+        await this._validateUser(userId, role)
+        return await this.archiveRepository.archiveThesis(userId, role, thesisId)
     }
 
+    public async unarchiveThesis(userId: string, thesisId: string, role: string) {
+        await this._validateUser(userId, role)
+        return await this.archiveRepository.unarchiveThesis(userId, thesisId, role)
+    }
     // async lecturerReplyRegistration(lecturerId: string, replyRegistrationDto: ReplyRegistrationDto) {
     //     const { thesisId, status, message } = replyRegistrationDto
     //     const thesis = await this.thesisRepository.findOneById(thesisId)
@@ -69,13 +77,13 @@ export class ThesisService {
     //     }
     // }
     private async _validateUser(userId: string, role: string) {
-        if (role === 'student') {
+        if (role === UserRole.STUDENT) {
             const user = await this.studentRepository.findOneById(userId)
             if (!user) {
                 throw new StudentNotFoundException()
             }
             return user
-        } else if (role === 'lecturer') {
+        } else if (role === UserRole.LECTURER) {
             const user = await this.lecturerRepository.findOneById(userId)
             if (!user) {
                 throw new LecturerNotFoundException()
