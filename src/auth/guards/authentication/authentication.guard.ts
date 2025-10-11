@@ -2,8 +2,8 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Reflector } from '@nestjs/core'
 import { Observable } from 'rxjs'
 import { AccessTokenGuard } from '../access-token/access-token.guard'
-import { AuthType } from 'src/auth/enum/auth-type.enum'
-import { AUTH_TYPE_KEY } from 'src/auth/constants/auth.constants'
+import { AuthType } from '../../enum/auth-type.enum'
+import { AUTH_TYPE_KEY } from '../../constants/auth.constants'
 
 @Injectable()
 export class AuthenticationGuard implements CanActivate {

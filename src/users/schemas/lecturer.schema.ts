@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
-import { BaseEntity } from 'src/shared/base/entity/base.entity'
+import { BaseEntity } from '../../shared/base/entity/base.entity'
+import { Thesis } from '../../thesis/schemas/thesis.schemas'
 
 export class Education {
     @Prop({ default: '' })
@@ -53,42 +54,42 @@ export class Project {
     budget: string
 }
 
-export class Thesis {
-    @Prop({ default: '' })
-    year: string
+// export class Thesis {
+//     @Prop({ default: '' })
+//     year: string
 
-    @Prop({ default: '' })
-    title: string
+//     @Prop({ default: '' })
+//     title: string
 
-    @Prop({ default: '' })
-    student: string
+//     @Prop({ default: '' })
+//     student: string
 
-    @Prop({ default: '' })
-    result: string
+//     @Prop({ default: '' })
+//     result: string
 
-    @Prop({ default: '' })
-    field: string
-}
+//     @Prop({ default: '' })
+//     field: string
+// }
 
-export class CurrentThesis {
-    @Prop({ default: '' })
-    title: string
+// export class CurrentThesis {
+//     @Prop({ default: '' })
+//     title: string
 
-    @Prop({ default: '' })
-    field: string
+//     @Prop({ default: '' })
+//     field: string
 
-    @Prop({ default: 0 })
-    slotsLeft: number
+//     @Prop({ default: 0 })
+//     slotsLeft: number
 
-    @Prop({ default: 0 })
-    totalSlots: number
+//     @Prop({ default: 0 })
+//     totalSlots: number
 
-    @Prop({ default: '' })
-    deadline: string
+//     @Prop({ default: '' })
+//     deadline: string
 
-    @Prop({ default: 0 })
-    difficulty: number
-}
+//     @Prop({ default: 0 })
+//     difficulty: number
+// }
 
 export class ThesisStats {
     @Prop({ default: 0 })
@@ -172,14 +173,16 @@ export class Lecturer extends BaseEntity {
     @Prop({ type: [Project], default: [] })
     projects: Project[]
 
-    @Prop({ type: ThesisStats, default: () => ({}) })
-    thesisStats: ThesisStats
+    @Prop({type: [String], ref: 'Thesis', default: [] })
+    supervisedThesisIds: string[]
+    // @Prop({ type: ThesisStats, default: () => ({}) })
+    // thesisStats: ThesisStats
 
-    @Prop({ type: [Thesis], default: [] })
-    completedThesis: Thesis[]
+    // @Prop({ type: [Thesis], default: [] })
+    // completedThesis: Thesis[]
 
-    @Prop({ type: [CurrentThesis], default: [] })
-    currentThesis: CurrentThesis[]
+    // @Prop({ type: [CurrentThesis], default: [] })
+    // currentThesis: CurrentThesis[]
 }
 
 export const LecturerSchema = SchemaFactory.createForClass(Lecturer)

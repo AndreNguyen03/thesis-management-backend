@@ -1,4 +1,4 @@
-import { FindAllResponse } from "src/shared/types/common.type"
+import { FindAllResponse } from "../../types/common.type"
 import { BaseEntity } from "../entity/base.entity"
 import { BaseRepositoryInterface } from "../repository/base.repository.interface"
 import { BaseServiceInterface } from "./base.service.interface"

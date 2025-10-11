@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
-import { BaseEntity } from 'src/shared/base/entity/base.entity'
+import { BaseEntity } from '../../shared/base/entity/base.entity'
 
 @Schema()
 export class StudentProject {

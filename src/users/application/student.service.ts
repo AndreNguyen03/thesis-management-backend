@@ -3,8 +3,8 @@ import { plainToInstance } from 'class-transformer'
 import { StudentResponseDto, UpdateStudentDto } from '../dtos/student.dto'
 import { Student, StudentDocument } from '../schemas/student.schema'
 import { StudentRepositoryInterface } from '../repository/student.repository.interface'
-import { BaseServiceAbstract } from 'src/shared/base/service/base.service.abstract'
 import { validateOrReject } from 'class-validator'
+import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {

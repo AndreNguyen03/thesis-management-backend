@@ -2,26 +2,19 @@ import { Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import jwtConfig from '../config/jwt.config'
 import { ConfigType } from '@nestjs/config'
+import { ActiveUserData } from '../interface/active-user-data.interface'
+import { UserTokensService } from '../../tokens/application/tokens.service'
+import { Admin } from '../../users/schemas/admin.schema'
+import { Lecturer } from '../../users/schemas/lecturer.schema'
+import { Student } from '../../users/schemas/student.schema'
+import { UserService } from '../../users/application/users.service'
 import {
     RefreshTokenExpiredException,
     TokenDeviceMismatchException,
     TokenInvalidException,
     TokenNotFoundException,
-    UserInactiveException,
     UserNotFoundException
-} from 'src/common/exceptions'
-import { ActiveUserData } from '../interface/active-user-data.interface'
-import { UserTokensService } from 'src/tokens/application/tokens.service'
-import { Student, StudentDocument } from 'src/users/schemas/student.schema'
-import { Lecturer, LecturerDocument } from 'src/users/schemas/lecturer.schema'
-import { Admin, AdminDocument } from 'src/users/schemas/admin.schema'
-import { AdminRepositoryInterface } from 'src/users/repository/admin.repository.interface'
-import { StudentRepositoryInterface } from 'src/users/repository/student.repository.interface'
-import { LecturerRepositoryInterface } from 'src/users/repository/lecturer.repository.interface'
-import { UserService } from 'src/users/application/users.service'
-import { StudentResponseDto } from 'src/users/dtos/student.dto'
-import { LecturerResponseDto } from 'src/users/dtos/lecturer.dto'
-import { AdminResponseDto } from 'src/users/dtos/admin.dto'
+} from '../../common/exceptions'
 
 @Injectable()
 export class TokenProvider {
@@ -34,7 +27,6 @@ export class TokenProvider {
     ) {}
 
     public async issueTokens(user: Student | Lecturer | Admin, deviceInfo: string, ipAddress: string) {
-
         const userId = user._id?.toString()
 
         if (!userId) {
@@ -117,7 +109,7 @@ export class TokenProvider {
         )
     }
 
-    public async generateToken(userId: string, user: Student | Lecturer| Admin, deviceId: string) {
+    public async generateToken(userId: string, user: Student | Lecturer | Admin, deviceId: string) {
         if (!userId) {
             throw new Error('User ID is missing')
         }

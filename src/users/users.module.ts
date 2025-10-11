@@ -1,5 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common'
-import { AuthModule } from 'src/auth/auth.module'
+import { AuthModule } from '../auth/auth.module'
 import { ConfigModule } from '@nestjs/config'
 import profileConfig from './config/profile.config'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -42,7 +42,8 @@ import { UserService } from './application/users.service'
         StudentService,
         LecturerService,
         AdminService,
-        UserService
+        UserService,
+        MongooseModule
     ],
     imports: [
         forwardRef(() => AuthModule),
