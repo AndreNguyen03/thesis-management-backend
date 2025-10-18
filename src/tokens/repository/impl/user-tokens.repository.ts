@@ -20,7 +20,6 @@ export class UserTokenRepository implements UserTokenRepositoryInterface {
         try {
             const token = await this.userTokensRepository.create({
                 ...createUserTokenDto,
-                userId: this.mapUserId(createUserTokenDto.userId), // Chuyển đổi userId sang ObjectId
                 isValid: true
             })
             return token.toObject()

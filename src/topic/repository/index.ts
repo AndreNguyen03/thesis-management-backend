@@ -1,0 +1,6 @@
+export * from './archive.repository.interface'
+export * from './topic.repository.interface'
+export * from './registration.repository.interface'
+export * from './impl/archive.repository'
+export * from './impl/topic.repository'
+export * from './impl/registration.repository'

@@ -22,6 +22,7 @@ import { redisConfig } from './config/redis.config'
 import { RedisModule } from './redis/redis.module'
 import { ThesisModule } from './thesis/thesis.module'
 import { ChatBotModule } from './chatbot/chatbot.module'
+import { AiModule } from './ai/ai.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -62,7 +63,9 @@ const ENV = process.env.NODE_ENV
 
         ThesisModule,
 
-        ChatBotModule   
+        ChatBotModule,
+
+        AiModule   
     ],
     controllers: [AppController],
     providers: [

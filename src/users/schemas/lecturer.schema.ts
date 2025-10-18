@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
-import { Thesis } from '../../thesis/schemas/thesis.schemas'
+import { Thesis } from '../../thesis/schemas/topic.schemas'
 
 export class Education {
     @Prop({ default: '' })
@@ -118,7 +118,6 @@ export type LecturerDocument = HydratedDocument<Lecturer>
 
 @Schema({ collection: 'lecturers', timestamps: true })
 export class Lecturer extends BaseEntity {
-
     @Prop({ required: true, default: '' })
     email: string
 
@@ -143,13 +142,13 @@ export class Lecturer extends BaseEntity {
     @Prop({ required: true, default: '' })
     position: string
 
-    @Prop({required: true, default: '' })
+    @Prop({ required: true, default: '' })
     department: string
 
-    @Prop({required: true, default: '' })
+    @Prop({ required: true, default: '' })
     faculty: string
 
-    @Prop({required: true, default: '' })
+    @Prop({ required: true, default: '' })
     university: string
 
     @Prop({ default: '' })
@@ -173,7 +172,7 @@ export class Lecturer extends BaseEntity {
     @Prop({ type: [Project], default: [] })
     projects: Project[]
 
-    @Prop({type: [String], ref: 'Thesis', default: [] })
+    @Prop({ type: [String], ref: 'Thesis', default: [] })
     supervisedThesisIds: string[]
     // @Prop({ type: ThesisStats, default: () => ({}) })
     // thesisStats: ThesisStats

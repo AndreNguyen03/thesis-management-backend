@@ -10,13 +10,13 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
 
     async create(dto: T | any): Promise<T> {
         const created_data = await this.model.create(dto)
-        return created_data.save()
+        return created_data
     }
 
     async getAll(): Promise<T[]> {
         return this.model.find({ deleted_at: null }).exec()
     }
-    
+
     async findOneById(id: string): Promise<T | null> {
         const item = await this.model.findOne({ _id: id })
         if (!item) return null
@@ -44,7 +44,6 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
     }
 
     async update(id: string, dto: Partial<T>): Promise<T | null> {
-        
         return await this.model.findOneAndUpdate({ _id: id, deleted_at: null }, dto, { new: true })
     }
 

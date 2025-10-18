@@ -28,7 +28,7 @@ export class ProjectDto {
     @IsOptional() @IsString() @Expose() budget?: string
 }
 
-export class ThesisDto {
+export class TopicDto {
     @IsOptional() @IsString() @Expose() year?: string
     @IsOptional() @IsString() @Expose() title?: string
     @IsOptional() @IsString() @Expose() student?: string
@@ -36,7 +36,7 @@ export class ThesisDto {
     @IsOptional() @IsString() @Expose() field?: string
 }
 
-export class CurrentThesisDto {
+export class CurrentTopicDto {
     @IsOptional() @IsString() @Expose() title?: string
     @IsOptional() @IsString() @Expose() field?: string
     @IsOptional() @IsNumber() @Expose() slotsLeft?: number
@@ -45,7 +45,7 @@ export class CurrentThesisDto {
     @IsOptional() @IsNumber() @Expose() difficulty?: number
 }
 
-export class ThesisStatsDto {
+export class TopicStatsDto {
     @IsOptional() @IsNumber() @Expose() total?: number
     @IsOptional() @IsNumber() @Expose() completed?: number
     @IsOptional() @IsNumber() @Expose() ongoing?: number
@@ -77,9 +77,9 @@ export class UpdateLecturerDto {
     @IsOptional() @ValidateNested({ each: true }) @Type(() => EducationDto) education?: EducationDto[]
     @IsOptional() @ValidateNested({ each: true }) @Type(() => PublicationDto) publications?: PublicationDto[]
     @IsOptional() @ValidateNested({ each: true }) @Type(() => ProjectDto) projects?: ProjectDto[]
-    @IsOptional() @ValidateNested() @Type(() => ThesisStatsDto) thesisStats?: ThesisStatsDto
-    @IsOptional() @ValidateNested({ each: true }) @Type(() => ThesisDto) completedThesis?: ThesisDto[]
-    @IsOptional() @ValidateNested({ each: true }) @Type(() => CurrentThesisDto) currentThesis?: CurrentThesisDto[]
+    @IsOptional() @ValidateNested() @Type(() => TopicStatsDto) TopicStats?: TopicStatsDto
+    @IsOptional() @ValidateNested({ each: true }) @Type(() => TopicDto) completedTopic?: TopicDto[]
+    @IsOptional() @ValidateNested({ each: true }) @Type(() => CurrentTopicDto) currentTopic?: CurrentTopicDto[]
 }
 
 // --- Lecturer Response DTO (output) ---
@@ -103,7 +103,7 @@ export class LecturerResponseDto {
     @Expose() @ValidateNested({ each: true }) @Type(() => EducationDto) education: EducationDto[]
     @Expose() @ValidateNested({ each: true }) @Type(() => PublicationDto) publications: PublicationDto[]
     @Expose() @ValidateNested({ each: true }) @Type(() => ProjectDto) projects: ProjectDto[]
-    @Expose() @ValidateNested() @Type(() => ThesisStatsDto) thesisStats: ThesisStatsDto
-    @Expose() @ValidateNested({ each: true }) @Type(() => ThesisDto) completedThesis: ThesisDto[]
-    @Expose() @ValidateNested({ each: true }) @Type(() => CurrentThesisDto) currentThesis: CurrentThesisDto[]
+    @Expose() @ValidateNested() @Type(() => TopicStatsDto) TopicStats: TopicStatsDto
+    @Expose() @ValidateNested({ each: true }) @Type(() => TopicDto) completedTopic: TopicDto[]
+    @Expose() @ValidateNested({ each: true }) @Type(() => CurrentTopicDto) currentTopic: CurrentTopicDto[]
 }
