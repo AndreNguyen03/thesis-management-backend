@@ -5,7 +5,7 @@ import { TopicType } from '../enum/topic-type.enum'
 export class CreateTopicDto {
     @IsNotEmpty()
     @IsString()
-    tittle: string
+    title: string
 
     @IsNotEmpty()
     @IsString()
@@ -21,9 +21,6 @@ export class CreateTopicDto {
     @IsNumber()
     maxStudents: number
 
-    @IsNumber()
-    registeredStudents?: number = 0
-
     @IsString()
     @IsNotEmpty()
     createBy: string
@@ -34,18 +31,17 @@ export class CreateTopicDto {
     @IsEnum(TopicStatus)
     status?: TopicStatus = TopicStatus.OPEN
 
-    @IsOptional()
-    @IsNumber()
-    rating?: number | 0
+    // @IsOptional()
+    // @IsNumber()
+    // rating?: number | 0 // 
 
-    @IsOptional()
-    @IsNumber()
-    views?: number | 0
+    // @IsOptional()
+    // @IsNumber()
+    // views?: number | 0
 
     //temp fields
     @IsArray()
-    @IsOptional()
-    fieldIds?: string[] | []
+    fieldIds: string[] 
 
     @IsArray()
     @IsOptional()
@@ -53,8 +49,8 @@ export class CreateTopicDto {
 
     @IsArray()
     @IsOptional()
-    studentIds?: string[] | []
-    
+    studentIds?: string[] | []  
+
     @IsArray()
     @IsOptional()
     lecturerIds?: string[] | []

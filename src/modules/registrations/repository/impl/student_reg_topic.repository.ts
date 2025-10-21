@@ -7,17 +7,18 @@ import { Student } from '../../../../users/schemas/student.schema'
 import { NotFoundException } from '@nestjs/common'
 import {
     StudentAlreadyRegisteredException,
-    TopicIsFullRegisteredException,
     TopicNotFoundException
 } from '../../../../common/exceptions/thesis-exeptions'
-import { RegistrationNotFoundException } from '../../../../common/exceptions/registration-exeptions'
+import {
+    RegistrationNotFoundException,
+    TopicIsFullRegisteredException
+} from '../../../../common/exceptions/registration-exeptions'
 import { GetRegistrationDto } from '../../../topics/dtos/registration/get-registration.dto'
 import { plainToInstance } from 'class-transformer'
 import { getUserModelFromRole } from '../../../topics/utils/get-user-model'
 import { StudentRegTopicRepositoryInterface } from '../student-reg-topic.repository.interface'
 import { StudentRegisterTopic } from '../../schemas/ref_students_topics.schemas'
 import { Topic } from '../../../topics/schemas/topic.schemas'
-import { GetTopicResponseDto } from '../../../topics/dtos'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -31,6 +32,26 @@ export class StudentRegTopicRepository
     ) {
         super(studentRegTopicModel)
     }
+    async createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<string[]> {
+        const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
+        //topic not found or deleted
+        if (!topic) {
+            throw new TopicNotFoundException()
+        }
+        const createdStudentRegs = await this.studentRegTopicModel.insertMany(
+            studentIds.map((studentId) => ({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                studentId: new mongoose.Types.ObjectId(studentId),
+                status: RegistrationStatus.SUCCESS
+            }))
+        )
+        const populated = await this.studentRegTopicModel.populate(createdStudentRegs, {
+            path: 'studentId',
+           select: 'name'
+        })
+        return populated.map((d)=>(d.studentId as any)?.name).filter(Boolean) as string[]
+    }
+
     async cancelRegistration(topicId: string, studentId: string): Promise<string> {
         const registration = await this.studentRegTopicModel.findOne({
             topicId: topicId,
@@ -74,15 +95,19 @@ export class StudentRegTopicRepository
         })
     }
 
-    async createRegistration(topicId: string, studentId: string): Promise<any> {
+    async createSingleRegistration(topicId: string, studentId: string): Promise<any> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
         }
 
+        const studentRegTopicCount = await this.studentRegTopicModel.countDocuments({
+            topicId: topicId,
+            deleted_at: null
+        })
         //check if topic is full registered
-        if (topic.registeredStudents === topic.maxStudents) {
+        if (studentRegTopicCount === topic.maxStudents) {
             throw new TopicIsFullRegisteredException()
         }
 
@@ -96,21 +121,12 @@ export class StudentRegTopicRepository
             throw new StudentAlreadyRegisteredException()
         }
 
-        if (topic.maxStudents === topic.registeredStudents) {
-            throw new TopicIsFullRegisteredException()
-        }
-        await this.studentRegTopicModel.create({
+        const res = await this.studentRegTopicModel.create({
             topicId: topicId,
             studentId: studentId,
             status: RegistrationStatus.SUCCESS
         })
-        topic.registeredStudents += 1
-        await topic.save()
 
-        const res = plainToInstance(GetTopicResponseDto, topic, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
         return res
     }
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {

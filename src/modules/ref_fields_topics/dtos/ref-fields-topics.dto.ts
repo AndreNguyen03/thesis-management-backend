@@ -7,5 +7,5 @@ export class CreateRefFieldsTopicDto {
     @IsArray()
     @IsNotEmpty()
     @IsString({ each: true })
-    fieldId: string[]
+    fieldIds: string[]
 }

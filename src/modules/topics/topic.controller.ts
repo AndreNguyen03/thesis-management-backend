@@ -1,10 +1,12 @@
-import { Controller, Get, Body, Post, Patch, Param, Delete, Query, Req } from '@nestjs/common'
+import { Controller, Get, Body, Post, Patch, Param, Delete, Query, Req, HttpStatus } from '@nestjs/common'
 
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { TopicService } from './application/topic.service'
-import { CreateTopicDto, PatchTopicDto } from './dtos'
+import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto } from './dtos'
+import { BaseHttpException } from '../../common/exceptions'
+import { plainToInstance } from 'class-transformer'
 
 @Controller('topics')
 export class TopicController {
@@ -12,16 +14,18 @@ export class TopicController {
     constructor(private readonly topicService: TopicService) {}
     @Get()
     @Auth(AuthType.Bearer)
-    async getTheses(@Req() req: { user: ActiveUserData }) {
-        const { sub: userId, role } = req.user
-
-        return await this.topicService.getAllTopics(userId, role)
+    async getTopic() {
+        return await this.topicService.getAllTopics()
     }
 
     @Post()
     @Auth(AuthType.Bearer)
-    async createTopic(@Body() topic: CreateTopicDto) {
-        return await this.topicService.createTopic(topic)
+    async createTopic(@Req() req: { user: ActiveUserData }, @Body() topic: CreateTopicDto) {
+        if (req.user.role !== 'lecturer') {
+            throw new BaseHttpException('Only lecturers can create topics', 'Authen', HttpStatus.FORBIDDEN)
+        }
+        const newTopic = await this.topicService.createTopic(req.user.sub, topic)
+        return newTopic
     }
 
     @Patch(':topicId')
@@ -43,7 +47,7 @@ export class TopicController {
     @Post('/save-topic/:topicId')
     @Auth(AuthType.Bearer)
     async createTopicSaving(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        const { sub: userId,} = req.user
+        const { sub: userId } = req.user
         return this.topicService.saveTopic(userId, topicId)
     }
 
@@ -60,7 +64,6 @@ export class TopicController {
         const { sub: userId, role } = req.user
         return this.topicService.getSavedTopics(userId, role)
     }
-
 
     // @Post('/register-thesis/:thesisId')
     // @Auth(AuthType.Bearer)

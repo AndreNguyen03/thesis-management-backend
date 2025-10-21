@@ -1,8 +1,9 @@
-import { Controller, Delete, Get, Param, Post, Req } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common'
 import { StudentRegTopicRepositoryInterface } from './repository/student-reg-topic.repository.interface'
 import { StudentRegTopicService } from './application/student-reg-topic.service'
 import { LecturerRegTopicService } from './application/lecturer-reg-topic.service'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
+import { CreateRegistrationLecturerDto } from './dtos/create-registration-lecturer.dto'
 
 @Controller('registrations')
 export class RegistrationsController {
@@ -15,9 +16,9 @@ export class RegistrationsController {
     async registerTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         const { sub: userId, role } = req.user
         if (role === 'student') {
-            return this.studentRegTopicService.registerTopic(userId, topicId)
+            return this.studentRegTopicService.createSingleRegistration(userId, topicId)
         } else if (role === 'lecturer') {
-            return this.lecturerRegTopicService.registerTopic(userId, topicId)
+            return this.lecturerRegTopicService.createSingleRegistration(userId, topicId)
         } else {
             throw new Error('Invalid user role')
         }
@@ -55,5 +56,11 @@ export class RegistrationsController {
         } else {
             throw new Error('Invalid user role')
         }
+    }
+
+    @Post('register-topic-with-lecturers')
+    async registerTopicWithLecturers(@Body() registrationDto: CreateRegistrationLecturerDto) {
+        const { topicId, lecturerIds } = registrationDto
+        return this.lecturerRegTopicService.createRegistrationWithLecturers(lecturerIds, topicId)
     }
 }

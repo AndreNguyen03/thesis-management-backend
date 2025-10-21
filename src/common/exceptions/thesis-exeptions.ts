@@ -10,11 +10,8 @@ export class StudentAlreadyRegisteredException extends BaseHttpException {
         )
     }
 }
-export class TopicIsFullRegisteredException extends BaseHttpException {
-    constructor() {
-        super('Đề tài đã đạt số lượng sinh viên đăng ký tối đa', 'TOPIC_FULL_REGISTERED', HttpStatus.BAD_REQUEST)
-    }
-}
+
+
 
 export class TopicNotFoundException extends BaseHttpException {
     constructor() {

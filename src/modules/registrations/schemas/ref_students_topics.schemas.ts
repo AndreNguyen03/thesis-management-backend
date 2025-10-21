@@ -13,8 +13,9 @@ export class StudentRegisterTopic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, refPath: 'Student', required: true, unique: true })
     studentId: mongoose.Schema.Types.ObjectId
 
-    @Prop({type: mongoose.Schema.Types.ObjectId, ref: 'Topic', required: true})
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Topic', required: true })
     topicId: mongoose.Schema.Types.ObjectId
 }
 
 export const StudentRegisterTopicSchema = SchemaFactory.createForClass(StudentRegisterTopic)
+StudentRegisterTopicSchema.index({ studentId: 1, topicId: 1 }, { unique: true })

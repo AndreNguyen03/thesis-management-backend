@@ -7,6 +7,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
         updatedAt: 'updated_at'
     }
 })
+@Schema({ collection: 'ref_fields_topics', timestamps: true })
 export class RefFieldTopics extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Field', required: true })
     fieldId: mongoose.Schema.Types.ObjectId
@@ -14,3 +15,4 @@ export class RefFieldTopics extends BaseEntity {
     topicId: mongoose.Schema.Types.ObjectId
 }
 export const RefFieldTopicSchema = SchemaFactory.createForClass(RefFieldTopics)
+        

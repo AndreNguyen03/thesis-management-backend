@@ -1,13 +1,12 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import mongoose, { Model } from 'mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { plainToInstance } from 'class-transformer'
-import { getUserModelFromRole } from '../../utils/get-user-model'
 import { Topic } from '../../schemas/topic.schemas'
-import { UserSavedTopics } from '../../schemas/user_saved_topics.schemas'
-import { GetTopicResponseDto } from '../../dtos'
+import { CreateTopicDto, GetTopicResponseDto } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
+import { Model } from 'mongoose'
+import { title } from 'process'
+import { Lecturer } from '../../../../users/schemas/lecturer.schema'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -17,26 +16,145 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
-    async getAllTopics(userId: string, role: string): Promise<any> {
-        // const userArchive = await this.archiveRepository
-        //     .findOne({ userId: new mongoose.Types.ObjectId(userId), userModel: getUserModelFromRole(role) })
-        //     .select('savedTheses')
-        //     .lean()
-        //const savedThesesIds = userArchive ? userArchive.savedTheses.map((id) => id.toString()) : []
-
-        const theses = await this.topicRepository.aggregate([
+    async createTopic(topicData: CreateTopicDto): Promise<GetTopicResponseDto> {
+        const createdTopic = await (await this.topicRepository.create(topicData)).populate('majorId', 'name')
+        return plainToInstance(GetTopicResponseDto, createdTopic, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+    async findByTitle(title: string): Promise<Topic | null> {
+        return this.topicRepository.findOne({ title, deleted_at: null }).lean()
+    }
+    async getAllTopics(): Promise<GetTopicResponseDto[]> {
+        // const topics = await this.topicRepository.find({ deleted_at: null }).populate('majorId', 'name')
+        // return plainToInstance(GetTopicResponseDto, topics, {
+        //     excludeExtraneousValues: true,
+        //     enableImplicitConversion: true
+        // })
+        return await this.topicRepository.aggregate([
             { $match: { deleted_at: null } },
+            //join major
             {
                 $lookup: {
-                    from: 'registrations', // tên collection
+                    from: 'majors',
+                    localField: 'majorId',
+                    foreignField: '_id',
+                    as: 'major'
+                }
+            },
+            // Join lecturers qua ref_lecturer_topic
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
                     localField: '_id',
-                    foreignField: 'thesisId',
-                    as: 'registrations'
+                    foreignField: 'topicId',
+                    as: 'lecturerRefs'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'lecturerRefs.lecturerId',
+                    foreignField: '_id',
+                    as: 'lecturers'
+                }
+            },
+            // Join students qua ref_students_topics
+            {
+                $lookup: {
+                    from: 'ref_students_topics',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'studentRefs'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'students',
+                    localField: 'studentRefs.studentId',
+                    foreignField: '_id',
+                    as: 'students'
+                }
+            },
+            //join fields qua ref_fields_topics
+            {
+                $lookup: {
+                    from: 'ref_fields_topics',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'fieldRefs'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'fields',
+                    localField: 'fieldRefs.fieldId',
+                    foreignField: '_id',
+                    as: 'fields'
+                }
+            },
+            //join requirements qua ref_requirements_topics
+            {
+                $lookup: {
+                    from: 'ref_requirements_topics',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'requirementRefs'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'requirements',
+                    localField: 'requirementRefs.requirementId',
+                    foreignField: '_id',
+                    as: 'requirements'
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    type: 1,
+                    status: 1,
+                    major: {
+                        $map: {
+                            input: '$major',
+                            as: 'm',
+                            in: '$$m.name'
+                        }
+                    },
+                    lecturerNames: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: '$$lecturer.fullName'
+                        }
+                    },
+                    studentNames: {
+                        $map: {
+                            input: '$students',
+                            as: 'student',
+                            in: '$$student.fullName'
+                        }
+                    },
+                    fields: {
+                        $map: {
+                            input: '$fields',
+                            as: 'field',
+                            in: '$$field.name'
+                        }
+                    },
+                    requirements: {
+                        $map: {
+                            input: '$requirements',
+                            as: 'requirement',
+                            in: '$$requirement.name'
+                        }
+                    }
                 }
             }
         ])
-
-        return theses
     }
 
     async findSavedByUser(userId: string, role: string): Promise<GetTopicResponseDto[]> {

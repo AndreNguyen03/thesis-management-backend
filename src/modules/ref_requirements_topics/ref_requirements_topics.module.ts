@@ -14,6 +14,7 @@ import { RefRequirementsTopicsController } from './ref_requirements_topics.contr
             useClass: RefRequirementTopicsRepository
         }
     ],
-    controllers: [RefRequirementsTopicsController]
+    controllers: [RefRequirementsTopicsController],
+    exports: [RefRequirementsTopicsService]
 })
 export class RefRequirementsTopicsModule {}

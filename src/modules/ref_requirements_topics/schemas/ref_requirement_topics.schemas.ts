@@ -7,6 +7,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
         updatedAt: 'updated_at'
     }
 })
+@Schema({ collection: 'ref_requirements_topics', timestamps: true })
+
 export class RefRequirementTopics extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Requirement', required: true })
     requirementId: mongoose.Schema.Types.ObjectId

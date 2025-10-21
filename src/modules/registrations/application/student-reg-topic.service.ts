@@ -7,8 +7,11 @@ export class StudentRegTopicService {
         @Inject('StudentRegTopicRepositoryInterface')
         private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface
     ) {}
-    public registerTopic(studentId: string, topicId: string) {
-        return this.studentRegTopicRepository.createRegistration(topicId, studentId)
+    public createSingleRegistration(studentId: string, topicId: string) {
+        return this.studentRegTopicRepository.createSingleRegistration(topicId, studentId)
+    }
+    public createRegistrationWithStudents(studentIds: string[], topicId: string) {
+        return this.studentRegTopicRepository.createRegistrationWithStudents(topicId, studentIds)
     }
     public getRegisteredTopics(studentId: string) {
         return this.studentRegTopicRepository.getRegisteredTopicsByUser(studentId)

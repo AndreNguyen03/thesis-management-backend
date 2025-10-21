@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { IRefFieldsTopicsRepository } from '../repository/ref-requirement-topics.repository.interface'
+import { IRefFieldsTopicsRepository } from '../repository/ref-fields-topics.repository.interface'
 
 @Injectable()
 export class RefFieldsTopicsService {
@@ -7,13 +7,17 @@ export class RefFieldsTopicsService {
         @Inject('IRefFieldsTopicsRepository')
         private readonly refFieldsTopicsRepository: IRefFieldsTopicsRepository
     ) {}
-    createRefFieldsTopic(topicId: string, fieldId: string[]) {
-        this.refFieldsTopicsRepository.createWithFieldIds(topicId, fieldId)
+    async createWithFieldIds(topicId: string, fieldId: string[]) {
+        if (!fieldId || fieldId.length === 0) {
+            return []
+        }
+        const names = await this.refFieldsTopicsRepository.createWithFieldIds(topicId, fieldId)
+        return names
     }
-    deleteRefFieldsTopicByFieldIdsAndTopicId(topicId: string, fieldIds: string[]) {
-        return this.refFieldsTopicsRepository.deleteManyByFieldIdsAndTopicId(topicId, fieldIds)
+    async deleteRefFieldsTopicByFieldIdsAndTopicId(topicId: string, fieldIds: string[]) {
+        return await this.refFieldsTopicsRepository.deleteManyByFieldIdsAndTopicId(topicId, fieldIds)
     }
-    deleteManyByTopicId(topicId: string) {
-        return this.refFieldsTopicsRepository.deleteManyByTopicId(topicId)
+    async deleteAllByTopicId(topicId: string) {
+        return await this.refFieldsTopicsRepository.deleteAllByTopicId(topicId)
     }
 }

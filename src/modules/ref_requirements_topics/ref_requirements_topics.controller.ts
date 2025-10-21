@@ -7,17 +7,17 @@ export class RefRequirementsTopicsController {
     constructor(private readonly refRequirementsTopicsService: RefRequirementsTopicsService) {}
     @Post()
     createRefRequirementsTopic(@Body() createDto: CreateRefRequirementsTopicDto) {
-        return this.refRequirementsTopicsService.createRefRequirementsTopic(createDto.topicId, createDto.requirementId)
+        return this.refRequirementsTopicsService.createRefRequirementsTopic(createDto.topicId, createDto.requirementIds)
     }
     @Delete('/delete-requirements-topic')
     deleteByRequirementIdsAndTopicId(@Body() deleteDto: CreateRefRequirementsTopicDto) {
         return this.refRequirementsTopicsService.deleteRefRequirementTopicByRequirementIdsAndTopicId(
             deleteDto.topicId,
-            deleteDto.requirementId
+            deleteDto.requirementIds
         )
     }
     @Delete('/delete-by-topic/:topicId')
     deleteByTopicId(@Param('topicId') topicId: string) {
-        return this.refRequirementsTopicsService.deleteManyByTopicId(topicId)
+        return this.refRequirementsTopicsService.deleteAllByTopicId(topicId)
     }
 }

@@ -1,6 +1,8 @@
-import { Expose } from 'class-transformer'
+import { Expose, Transform } from 'class-transformer'
 
 export class GetTopicResponseDto {
+    @Expose()
+    _id:string
     @Expose()
     title: string
     @Expose()
@@ -9,9 +11,8 @@ export class GetTopicResponseDto {
     @Expose()
     type: string
 
-    @Expose()
-    department: string
-    @Expose()
+    @Expose({ name: 'major' })
+    @Transform(({ obj }) => obj.majorId)
     major: string
 
     @Expose()
@@ -20,15 +21,28 @@ export class GetTopicResponseDto {
     @Expose()
     deadline: Date
 
-    @Expose()
-    referenceDocs: string[]
+    // @Expose()
+    // referenceDocs: string[]
 
     @Expose()
     createBy: string
-
+    @Expose()
+    createdAt: Date
+    @Expose()
+    updatedAt: Date
     @Expose()
     status: string
 
     @Expose()
     registeredStudents: number
+
+    //temp fields
+    @Expose()
+    fieldNames: string[]
+    @Expose()
+    requirementNames: string[]
+    @Expose()
+    studentNames: string[]
+    @Expose()
+    lecturerNames: string[]
 }

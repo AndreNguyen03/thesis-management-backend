@@ -2,7 +2,7 @@ import { BaseRepositoryInterface } from '../../../shared/base/repository/base.re
 import { RefFieldTopics } from '../schemas/ref_fields_topics.schemas'
 
 export interface IRefFieldsTopicsRepository extends BaseRepositoryInterface<RefFieldTopics> {
-    createWithFieldIds(topicId: string, fieldIds: string[]): Promise<RefFieldTopics[]>
-    deleteManyByTopicId(topicId: string): Promise<any>
+    createWithFieldIds(topicId: string, fieldIds: string[]): Promise<string[]>
+    deleteAllByTopicId(topicId: string): Promise<any>
     deleteManyByFieldIdsAndTopicId(topicId: string, fieldIds: string[]): Promise<any>
 }

@@ -27,6 +27,8 @@ import { FacultyModule } from './modules/faculties/faculty.module'
 import { RefRequirementsTopicsModule } from './modules/ref_requirements_topics/ref_requirements_topics.module'
 import { RefFieldsTopicsModule } from './modules/ref_fields_topics/ref_fields_topics.module'
 import { RequirementsModule } from './modules/requirements/requirements.module';
+import { FieldsModule } from './modules/fields/fields.module';
+import { MajorsModule } from './modules/majors/majors.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -78,6 +80,10 @@ const ENV = process.env.NODE_ENV
         RefFieldsTopicsModule,
 
         RequirementsModule,
+
+        FieldsModule,
+
+        MajorsModule,
 
     ],
     controllers: [AppController],

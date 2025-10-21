@@ -12,6 +12,10 @@ import {
 } from '../registrations/schemas/ref_lecturers_topics.schemas'
 import { UserSavedTopics, UserSavedTopicsSchema } from './schemas/user_saved_topics.schemas'
 import { RegistrationsModule } from '../registrations/registerations.module'
+import { RefFieldsTopicsModule } from '../ref_fields_topics/ref_fields_topics.module'
+import { RefRequirementTopics } from '../ref_requirements_topics/schemas/ref_requirement_topics.schemas'
+import { RefRequirementsTopicsModule } from '../ref_requirements_topics/ref_requirements_topics.module'
+import { LecturerRegTopicService } from '../registrations/application/lecturer-reg-topic.service'
 @Module({
     controllers: [TopicController],
     providers: [
@@ -36,6 +40,9 @@ import { RegistrationsModule } from '../registrations/registerations.module'
             { name: UserSavedTopics.name, schema: UserSavedTopicsSchema }
         ]),
         forwardRef(() => UsersModule),
+        RegistrationsModule,
+        RefFieldsTopicsModule,
+        RefRequirementsTopicsModule,
         RegistrationsModule
     ]
 })

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { TopicType } from '../enum/topic-type.enum'
-import { TopicStatus } from 'aws-sdk/clients/directoryservice'
+import { TopicStatus } from '../enum'
 
 @Schema({
     timestamps: {
@@ -12,8 +12,8 @@ import { TopicStatus } from 'aws-sdk/clients/directoryservice'
 })
 @Schema({ collection: 'topics', timestamps: true })
 export class Topic extends BaseEntity {
-    @Prop({ required: true })
-    tittle: string
+    @Prop({ required: true, unique: true })
+    title: string
 
     @Prop({ required: true })
     description: string
@@ -38,8 +38,5 @@ export class Topic extends BaseEntity {
 
     @Prop({ type: String, required: true })
     status: TopicStatus
-
-    @Prop({ default: 0 })
-    registeredStudents: number
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)

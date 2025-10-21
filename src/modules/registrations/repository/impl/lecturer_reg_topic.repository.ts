@@ -7,7 +7,6 @@ import { Student } from '../../../../users/schemas/student.schema'
 import { NotFoundException } from '@nestjs/common'
 import {
     StudentAlreadyRegisteredException,
-    TopicIsFullRegisteredException,
     TopicNotFoundException
 } from '../../../../common/exceptions/thesis-exeptions'
 import {
@@ -37,6 +36,27 @@ export class LecturerRegTopicRepository
         super(lecturerRegTopicModel)
     }
 
+    async createRegistrationWithLecturers(topicId: string, lecturerIds: string[]): Promise<string[]> {
+        const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
+        //topic not found or deleted
+        if (!topic) {
+            throw new TopicNotFoundException()
+        }
+        const createdLecturerRegs = await this.lecturerRegTopicModel.insertMany(
+            lecturerIds.map((lecturerId) => ({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                lecturerId: new mongoose.Types.ObjectId(lecturerId),
+                status: RegistrationStatus.SUCCESS
+            }))
+        )
+        const populated = await this.lecturerRegTopicModel.populate(createdLecturerRegs, {
+            path: 'lecturerId',
+            select: 'fullName'
+        })
+        console.log('populated lecturer regs:', populated)
+        const names = populated.map((d) => (d.lecturerId as any)?.fullName).filter(Boolean) as string[]
+        return names
+    }
     async getCanceledRegistrationByUser(studentId: string): Promise<any> {
         const canceledRegistration = await this.lecturerRegTopicModel
             .find({
@@ -56,16 +76,11 @@ export class LecturerRegTopicRepository
             enableImplicitConversion: true
         })
     }
-    async createRegistration(topicId: string, lecturerId: string): Promise<any> {
+    async createSingleRegistration(topicId: string, lecturerId: string): Promise<any> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
-        }
-
-        //check if topic is full registered
-        if (topic.registeredStudents === topic.maxStudents) {
-            throw new TopicIsFullRegisteredException()
         }
 
         const existingRegistration = await this.lecturerRegTopicModel.findOne({
@@ -87,19 +102,12 @@ export class LecturerRegTopicRepository
             throw new FullLecturerSlotException()
         }
 
-        await this.lecturerRegTopicModel.create({
-            topicId: topicId,
-            lecturerId: lecturerId,
+        const res = await this.lecturerRegTopicModel.create({
+            topicId: new mongoose.Types.ObjectId(topicId),
+            lecturerId: new mongoose.Types.ObjectId(lecturerId),
             status: RegistrationStatus.SUCCESS
         })
-        topic.registeredStudents += 1
-        await topic.save()
-
-        const res = plainToInstance(GetTopicResponseDto, topic, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-        return res
+        const populated = await res.populate('topicId')
     }
     async getRegisteredTopicsByUser(lecturerId: string): Promise<GetRegistrationDto[]> {
         const registrations = await this.lecturerRegTopicModel

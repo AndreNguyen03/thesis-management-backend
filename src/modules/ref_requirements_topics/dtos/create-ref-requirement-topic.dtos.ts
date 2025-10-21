@@ -7,5 +7,5 @@ export class CreateRefRequirementsTopicDto {
     @IsNotEmpty()
     @IsArray()
     @IsString({ each: true })
-    requirementId: string[]
+    requirementIds: string[]
 }

@@ -1,8 +1,10 @@
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
-import { GetTopicResponseDto } from '../dtos'
+import { CreateTopicDto, GetTopicResponseDto } from '../dtos'
 import { Topic } from '../schemas/topic.schemas'
 
 export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic> {
-    getAllTopics(userId: string, role: string): Promise<any>
+    createTopic(topicData: CreateTopicDto): Promise<GetTopicResponseDto>
+    getAllTopics(): Promise<GetTopicResponseDto[]>
     findSavedByUser(userId: string, role: string): Promise<GetTopicResponseDto[]>
+    findByTitle(title: string): Promise<Topic | null>
 }
