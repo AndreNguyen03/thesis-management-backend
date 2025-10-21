@@ -1,0 +1,6 @@
+export * from './user-saved-topic.interface'
+export * from './topic.repository.interface'
+export * from '../../registrations/repository/student-reg-topic.repository.interface'
+export * from './impl/save-topic.repository'
+export * from './impl/topics.repository'
+export * from '../../registrations/repository/impl/student_reg_topic.repository'

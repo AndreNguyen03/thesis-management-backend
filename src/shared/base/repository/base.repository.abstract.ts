@@ -10,7 +10,7 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
 
     async create(dto: T | any): Promise<T> {
         const created_data = await this.model.create(dto)
-        return created_data.save()
+        return created_data.toObject() as T
     }
 
     async getAll(): Promise<T[]> {

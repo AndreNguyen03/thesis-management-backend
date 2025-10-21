@@ -1,6 +1,0 @@
-export * from './archive.repository.interface'
-export * from './thesis.repository.interface'
-export * from './registration.repository.interface'
-export * from './impl/archive.repository'
-export * from './impl/thesis.repository'
-export * from './impl/registration.repository'
