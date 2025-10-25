@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { LecturerRegTopicRepository } from '../repository/impl/lecturer_reg_topic.repository'
-import { CreateErrorException, DeleteErrorException } from '../../../common/exceptions'
+import { CreateErrorException, DeleteErrorException, FullLecturerSlotException } from '../../../common/exceptions'
 import { LecturerRegTopicRepositoryInterface } from '../repository/lecturer-reg-topic.reposittory.interface'
 
 @Injectable()
@@ -11,6 +11,10 @@ export class LecturerRegTopicService {
     ) {}
 
     public async createSingleRegistration(lecturerId: string, topicId: string) {
+        const isFull = await this.lecturerRegTopicRepository.checkFullSlot(topicId)
+        if (isFull) {
+            throw new FullLecturerSlotException()
+        }
         const res = await this.lecturerRegTopicRepository.createSingleRegistration(topicId, lecturerId)
         if (!res) {
             throw new CreateErrorException('topic')
@@ -18,7 +22,10 @@ export class LecturerRegTopicService {
         return res
     }
     public async createRegistrationWithLecturers(lecturerIds: string[], topicId: string) {
-        console.log('lecturerIds in service:', lecturerIds, topicId)
+        const isFull = await this.lecturerRegTopicRepository.checkFullSlot(topicId)
+        if (isFull) {
+            throw new FullLecturerSlotException()
+        }
         const res = await this.lecturerRegTopicRepository.createRegistrationWithLecturers(topicId, lecturerIds)
         if (!res) {
             throw new CreateErrorException('topic')

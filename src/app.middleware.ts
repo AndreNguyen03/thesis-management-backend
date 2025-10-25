@@ -7,7 +7,7 @@ import * as cookieParser from 'cookie-parser'
 
 export function appMiddleware(app: INestApplication) {
     app.setGlobalPrefix('api')
-    
+
     app.useGlobalPipes(
         new ValidationPipe({
             whitelist: true, // Strips properties that do not have decorators

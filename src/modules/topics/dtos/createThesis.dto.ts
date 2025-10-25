@@ -22,7 +22,7 @@ export class CreateTopicDto {
     maxStudents: number
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     createBy: string
     @IsOptional()
     deadline?: Date

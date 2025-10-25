@@ -14,16 +14,39 @@ export class TopicController {
     constructor(private readonly topicService: TopicService) {}
     @Get()
     @Auth(AuthType.Bearer)
-    async getTopic() {
-        return await this.topicService.getAllTopics()
+    async getTopicList(@Req() req: { user: ActiveUserData }) {
+        const topics = await this.topicService.getAllTopics(req.user.sub)
+        return plainToInstance(GetTopicResponseDto, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+    @Get('/saved-topics')
+    @Auth(AuthType.Bearer)
+    async getSavedTopics(@Req() req: { user: ActiveUserData }) {
+        const savedTopics = await this.topicService.getSavedTopics(req.user.sub)
+        return plainToInstance(GetTopicResponseDto, savedTopics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
+    @Get('/:topicId')
+    @Auth(AuthType.Bearer)
+    async getTopicById(@Param('topicId') topicId: string, @Req() req: { user: ActiveUserData }) {
+        const topic = await this.topicService.getTopicById(topicId, req.user.sub)
+        return plainToInstance(GetTopicResponseDto, topic, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
     @Post()
     @Auth(AuthType.Bearer)
     async createTopic(@Req() req: { user: ActiveUserData }, @Body() topic: CreateTopicDto) {
         if (req.user.role !== 'lecturer') {
             throw new BaseHttpException('Only lecturers can create topics', 'Authen', HttpStatus.FORBIDDEN)
         }
+        topic.createBy = req.user.sub
         const newTopic = await this.topicService.createTopic(req.user.sub, topic)
         return newTopic
     }
@@ -39,48 +62,21 @@ export class TopicController {
     async deleteTopic(@Param('topicId') id: string) {
         return await this.topicService.deleteThesis(id)
     }
-    @Get('/get-registered')
-    @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
-        return await this.topicService.getRegisteredThesis(req.user)
-    }
+
     @Post('/save-topic/:topicId')
     @Auth(AuthType.Bearer)
-    async createTopicSaving(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        const { sub: userId } = req.user
-        return this.topicService.saveTopic(userId, topicId)
+    async saveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        return await this.topicService.assignSaveTopic(req.user.sub, topicId)
     }
 
     @Delete('/unsave-topic/:topicId')
     @Auth(AuthType.Bearer)
-    async unarchiveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        const { sub: userId, role } = req.user
-        return this.topicService.unSaveTopic(userId, topicId)
+    async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
     }
-
-    @Get('saved-topics')
-    @Auth(AuthType.Bearer)
-    async getSavedTopics(@Req() req: { user: ActiveUserData }) {
-        const { sub: userId, role } = req.user
-        return this.topicService.getSavedTopics(userId, role)
-    }
-
-    // @Post('/register-thesis/:thesisId')
+    // @Get('/get-registered')
     // @Auth(AuthType.Bearer)
-    // async createThesisRegistration(@Req() req: { user: ActiveUserData }, @Param('thesisId') thesisId: string) {
-    //     // const { sub: userId, role } = req.user
-    //     // return await this.topicService.registerForThesis(userId, thesisId, role)
-    // }
-    // @Delete('/cancel-registration/:thesisId')
-    // @Auth(AuthType.Bearer)
-    // async cancelRegistration(@Req() req: { user: ActiveUserData }, @Param('thesisId') thesisId: string) {
-    //     const { sub: userId, role } = req.user
-    //     return await this.topicService.cancelRegistration(userId, thesisId, role)
-    // }
-    // @Get('/canceled-registrations')
-    // @Auth(AuthType.Bearer)
-    // async getCanceledRegistration(@Req() req: { user: ActiveUserData }) {
-    //     // const { sub: userId, role } = req.user
-    //     // return await this.topicService.getCanceledRegistrations(userId, role)
+    // async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
+    //     return await this.topicService.getRegisteredThesis(req.user)
     // }
 }

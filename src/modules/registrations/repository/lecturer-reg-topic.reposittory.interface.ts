@@ -7,4 +7,5 @@ export interface LecturerRegTopicRepositoryInterface extends BaseRepositoryInter
     getRegisteredTopicsByUser(lecturerId: string): Promise<any[]>
     cancelRegistration(topicId: string, lecturerId: string): Promise<string>
     getCanceledRegistrationByUser(lecturerId: string): Promise<any[]>
+    checkFullSlot(topicId: string): Promise<boolean>
 }

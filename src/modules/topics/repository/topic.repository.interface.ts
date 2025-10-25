@@ -4,7 +4,8 @@ import { Topic } from '../schemas/topic.schemas'
 
 export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic> {
     createTopic(topicData: CreateTopicDto): Promise<GetTopicResponseDto>
-    getAllTopics(): Promise<GetTopicResponseDto[]>
-    findSavedByUser(userId: string, role: string): Promise<GetTopicResponseDto[]>
+    getTopicById(topicId: string, userId: string): Promise<GetTopicResponseDto | null>
+    getAllTopics(userId: string): Promise<GetTopicResponseDto[]>
     findByTitle(title: string): Promise<Topic | null>
+    findSavedTopicsByUserId(userId:string): Promise<GetTopicResponseDto[]>
 }

@@ -57,10 +57,4 @@ export class RegistrationsController {
             throw new Error('Invalid user role')
         }
     }
-
-    @Post('register-topic-with-lecturers')
-    async registerTopicWithLecturers(@Body() registrationDto: CreateRegistrationLecturerDto) {
-        const { topicId, lecturerIds } = registrationDto
-        return this.lecturerRegTopicService.createRegistrationWithLecturers(lecturerIds, topicId)
-    }
 }

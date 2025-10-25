@@ -10,7 +10,7 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 })
 @Schema({ collection: 'ref_students_topics', timestamps: true })
 export class StudentRegisterTopic extends BaseEntity {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, refPath: 'Student', required: true, unique: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true })
     studentId: mongoose.Schema.Types.ObjectId
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Topic', required: true })
