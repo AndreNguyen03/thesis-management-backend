@@ -4,7 +4,7 @@ import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { TopicService } from './application/topic.service'
-import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto } from './dtos'
+import { CreateTopicDto, GetCancelRegisteredTopicResponseDto, GetTopicResponseDto, PatchTopicDto } from './dtos'
 import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
 
@@ -26,6 +26,25 @@ export class TopicController {
     async getSavedTopics(@Req() req: { user: ActiveUserData }) {
         const savedTopics = await this.topicService.getSavedTopics(req.user.sub)
         return plainToInstance(GetTopicResponseDto, savedTopics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+    @Get('/registered-topics')
+    @Auth(AuthType.Bearer)
+    async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
+        const topics = await this.topicService.getRegisteredTopics(req.user.sub)
+        return plainToInstance(GetTopicResponseDto, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/canceled-registered-topics')
+    @Auth(AuthType.Bearer)
+    async getCanceledRegisteredTopics(@Req() req: { user: ActiveUserData }) {
+        const topics = await this.topicService.getCanceledRegisteredTopics(req.user.sub, req.user.role)
+        return plainToInstance(GetCancelRegisteredTopicResponseDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -74,9 +93,4 @@ export class TopicController {
     async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
     }
-    // @Get('/get-registered')
-    // @Auth(AuthType.Bearer)
-    // async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
-    //     return await this.topicService.getRegisteredThesis(req.user)
-    // }
 }

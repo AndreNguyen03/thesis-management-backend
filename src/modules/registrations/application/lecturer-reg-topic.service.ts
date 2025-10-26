@@ -32,19 +32,12 @@ export class LecturerRegTopicService {
         }
         return res
     }
-    public getRegisteredTopics(lecturerId: string) {
-        return this.lecturerRegTopicRepository.getRegisteredTopicsByUser(lecturerId)
-    }
+
     public async cancelRegistration(topicId: string, studentId: string) {
         const res = await this.lecturerRegTopicRepository.cancelRegistration(topicId, studentId)
         if (!res) {
             throw new DeleteErrorException('registration')
         }
     }
-    public async getCanceledRegistrations(lecturerId: string) {
-        const res = await this.lecturerRegTopicRepository.getCanceledRegistrationByUser(lecturerId)
-        if (!res) {
-            throw new DeleteErrorException('registrations')
-        }
-    }
+ 
 }

@@ -53,3 +53,8 @@ export class GetTopicResponseDto {
     @Expose()
     isSaved: boolean
 }
+
+export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
+    @Expose()
+    lastestCanceledRegisteredAt?: Date
+}

@@ -59,7 +59,7 @@ export class StudentRegTopicRepository
         return populated.map((d) => (d.studentId as any)?.name).filter(Boolean) as string[]
     }
 
-    async cancelRegistration(topicId: string, studentId: string): Promise<string> {
+    async cancelRegistration(topicId: string, studentId: string): Promise<{message: string}> {
         const registration = await this.studentRegTopicModel.findOne({
             topicId: topicId,
             studentId: studentId,
@@ -82,26 +82,7 @@ export class StudentRegTopicRepository
 
         await registration.save()
 
-        return topicId
-    }
-    async getCanceledRegistrationByUser(studentId: string): Promise<any> {
-        const canceledRegistration = await this.studentRegTopicModel
-            .find({
-                studentId: new mongoose.Schema.Types.ObjectId(studentId),
-                deleted_at: { $ne: null }
-            })
-            .populate('topicId')
-            .lean()
-        const newRegistrations = canceledRegistration.map((registration) => {
-            return {
-                ...registration,
-                topic: registration.topicId
-            }
-        })
-        return plainToInstance(GetRegistrationDto, newRegistrations, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
+        return { message: 'Đã xóa thành công đăng ký' }
     }
 
     async createSingleRegistration(topicId: string, studentId: string): Promise<any> {

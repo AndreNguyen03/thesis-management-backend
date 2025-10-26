@@ -116,20 +116,10 @@ export class TopicService {
         return await this.userSavedTopicRepository.unassignSaveTopic(userId, topicId)
     }
 
-    private async _validateUser(userId: string, role: string) {
-        if (role === UserRole.STUDENT) {
-            const user = await this.studentRepository.findOneById(userId)
-            if (!user) {
-                throw new StudentNotFoundException()
-            }
-            return user
-        } else if (role === UserRole.LECTURER) {
-            const user = await this.lecturerRepository.findOneById(userId)
-            if (!user) {
-                throw new LecturerNotFoundException()
-            }
-            return user
-        }
-        throw new WrongRoleException('Vai trò không hợp lệ.')
+    public async getRegisteredTopics(userId: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findRegisteredTopicsByUserId(userId)
+    }
+    public async getCanceledRegisteredTopics(userId: string,userRole:string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId,userRole)
     }
 }

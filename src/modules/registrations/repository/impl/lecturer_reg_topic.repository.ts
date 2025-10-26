@@ -48,25 +48,7 @@ export class LecturerRegTopicRepository
         const names = populated.map((d) => (d.lecturerId as any)?.fullName).filter(Boolean) as string[]
         return names
     }
-    async getCanceledRegistrationByUser(studentId: string): Promise<any> {
-        const canceledRegistration = await this.lecturerRegTopicModel
-            .find({
-                studentId: new mongoose.Schema.Types.ObjectId(studentId),
-                deleted_at: { $ne: null }
-            })
-            .populate('topicId')
-            .lean()
-        const newRegistrations = canceledRegistration.map((registration) => {
-            return {
-                ...registration,
-                topic: registration.topicId
-            }
-        })
-        return plainToInstance(GetRegistrationDto, newRegistrations, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
+
     async createSingleRegistration(topicId: string, lecturerId: string): Promise<any> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
@@ -94,26 +76,7 @@ export class LecturerRegTopicRepository
         })
         const populated = await res.populate('topicId')
     }
-    async getRegisteredTopicsByUser(lecturerId: string): Promise<GetRegistrationDto[]> {
-        const registrations = await this.lecturerRegTopicModel
-            .find({
-                lecturer: new mongoose.Schema.Types.ObjectId(lecturerId)
-            })
-            .populate('topicId')
-            .lean()
-        const newRegistrations = registrations.map((registration) => {
-            return {
-                ...registration,
-                topic: registration.topicId
-            }
-        })
-        return plainToInstance(GetRegistrationDto, newRegistrations, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
-
-    async cancelRegistration(topicId: string, lecturerId: string): Promise<string> {
+    async cancelRegistration(topicId: string, lecturerId: string): Promise<{message: string}> {
         const registration = await this.lecturerRegTopicModel.findOne({
             topicId: topicId,
             lecturerId: lecturerId,
@@ -127,7 +90,7 @@ export class LecturerRegTopicRepository
 
         await registration.save()
 
-        return topicId
+        return { message: 'Đã xóa thành công đăng ký' }
     }
     async checkFullSlot(topicId: string): Promise<boolean> {
         const registrationCount = await this.lecturerRegTopicModel.countDocuments({
