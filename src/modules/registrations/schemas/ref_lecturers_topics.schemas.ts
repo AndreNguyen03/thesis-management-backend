@@ -18,4 +18,3 @@ export class LecturerRegisterTopic extends BaseEntity {
 }
 
 export const LecturerRegisterTopicSchema = SchemaFactory.createForClass(LecturerRegisterTopic)
-LecturerRegisterTopicSchema.index({ lecturerId: 1, topicId: 1 }, { unique: true })

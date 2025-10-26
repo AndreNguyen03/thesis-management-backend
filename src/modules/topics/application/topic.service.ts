@@ -34,11 +34,16 @@ export class TopicService {
         private readonly lecturerRegTopicService: LecturerRegTopicService,
         private readonly studentRegTopicService: StudentRegTopicService
     ) {}
-    public async getRegisteredThesis(user: ActiveUserData) {
-        //cancale
+
+    public async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.getAllTopics(userId)
     }
-    public async getAllTopics(): Promise<GetTopicResponseDto[]> {
-        return await this.topicRepository.getAllTopics()
+    public async getTopicById(topicId: string, userId: string): Promise<GetTopicResponseDto> {
+        const topic = await this.topicRepository.getTopicById(topicId, userId)
+        if (!topic) {
+            throw new NotFoundException('Đề tài không tồn tại.')
+        }
+        return topic
     }
     public async createTopic(lecturerId: string, topicData: CreateTopicDto): Promise<GetTopicResponseDto> {
         const { fieldIds, requirementIds, studentIds, lecturerIds, ...newTopic } = topicData
@@ -82,8 +87,8 @@ export class TopicService {
         //filter output
         return {
             ...createdTopic,
-            fieldNames,
-            requirementNames,
+            fieldNames: fieldNames,
+            requirementNames: requirementNames,
             lecturerNames,
             studentNames
         }
@@ -98,46 +103,23 @@ export class TopicService {
         }
         return 'Xóa đề tài thành công'
     }
-    public async registerForThesis(userId: string, thesisId: string, role: string) {
-        //cancale
+
+    public async getSavedTopics(userId: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findSavedTopicsByUserId(userId)
     }
 
-    public async cancelRegistration(userId: string, thesisId: string, role: string) {
-        //cancale
+    public async assignSaveTopic(userId: string, topicId: string) {
+        return await this.userSavedTopicRepository.assignSaveTopic(userId, topicId)
     }
 
-    public async getSavedTopics(userId: string, role: string): Promise<GetTopicResponseDto[]> {
-        //  await this._validateUser(userId, role)
-
-        return await this.userSavedTopicRepository.findSavedTopicsByUserId(userId)
-    }
-    public async saveTopic(userId: string, thesisId: string) {
-        const saveTopicDto = plainToInstance(CreateSaveTopicDto, { userId, thesisId })
-        return await this.userSavedTopicRepository.create(saveTopicDto)
+    public async unassignSaveTopic(userId: string, topicId: string) {
+        return await this.userSavedTopicRepository.unassignSaveTopic(userId, topicId)
     }
 
-    public async unSaveTopic(userId: string, topicId: string) {
-        return await this.userSavedTopicRepository.unsaveTopic(userId, topicId)
+    public async getRegisteredTopics(userId: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findRegisteredTopicsByUserId(userId)
     }
-
-    async getCanceledRegistrations(userId: string, role: string) {
-        //cancale
-    }
-
-    private async _validateUser(userId: string, role: string) {
-        if (role === UserRole.STUDENT) {
-            const user = await this.studentRepository.findOneById(userId)
-            if (!user) {
-                throw new StudentNotFoundException()
-            }
-            return user
-        } else if (role === UserRole.LECTURER) {
-            const user = await this.lecturerRepository.findOneById(userId)
-            if (!user) {
-                throw new LecturerNotFoundException()
-            }
-            return user
-        }
-        throw new WrongRoleException('Vai trò không hợp lệ.')
+    public async getCanceledRegisteredTopics(userId: string,userRole:string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId,userRole)
     }
 }

@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import mongoose, { Model } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
-import { RegistrationStatus } from '../../../topics/enum'
+import { RegistrationStatus, TopicStatus } from '../../../topics/enum'
 import { Student } from '../../../../users/schemas/student.schema'
 import { NotFoundException } from '@nestjs/common'
 import {
@@ -32,6 +32,13 @@ export class StudentRegTopicRepository
     ) {
         super(studentRegTopicModel)
     }
+    async checkFullSlot(maxStudents: number, topicId: string): Promise<boolean> {
+        const registeredCount = await this.studentRegTopicModel.countDocuments({
+            topicId: topicId,
+            deleted_at: null
+        })
+        return registeredCount === maxStudents
+    }
     async createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<string[]> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
@@ -47,12 +54,12 @@ export class StudentRegTopicRepository
         )
         const populated = await this.studentRegTopicModel.populate(createdStudentRegs, {
             path: 'studentId',
-           select: 'name'
+            select: 'name'
         })
-        return populated.map((d)=>(d.studentId as any)?.name).filter(Boolean) as string[]
+        return populated.map((d) => (d.studentId as any)?.name).filter(Boolean) as string[]
     }
 
-    async cancelRegistration(topicId: string, studentId: string): Promise<string> {
+    async cancelRegistration(topicId: string, studentId: string): Promise<{message: string}> {
         const registration = await this.studentRegTopicModel.findOne({
             topicId: topicId,
             studentId: studentId,
@@ -65,7 +72,9 @@ export class StudentRegTopicRepository
 
         const topic = await this.topicModel.findOne({ _id: registration.topicId, deleted_at: null }).exec()
         if (topic) {
-            topic.updateOne({ $inc: { registeredStudents: -1 } }).exec()
+            if (!(await this.checkFullSlot(topic.maxStudents, topicId))) {
+                topic.status = TopicStatus.OPEN
+            }
             await topic.save()
         } else {
             throw new TopicNotFoundException()
@@ -73,26 +82,7 @@ export class StudentRegTopicRepository
 
         await registration.save()
 
-        return topicId
-    }
-    async getCanceledRegistrationByUser(studentId: string): Promise<any> {
-        const canceledRegistration = await this.studentRegTopicModel
-            .find({
-                studentId: new mongoose.Schema.Types.ObjectId(studentId),
-                deleted_at: { $ne: null }
-            })
-            .populate('topicId')
-            .lean()
-        const newRegistrations = canceledRegistration.map((registration) => {
-            return {
-                ...registration,
-                topic: registration.topicId
-            }
-        })
-        return plainToInstance(GetRegistrationDto, newRegistrations, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
+        return { message: 'Đã xóa thành công đăng ký' }
     }
 
     async createSingleRegistration(topicId: string, studentId: string): Promise<any> {
@@ -102,18 +92,9 @@ export class StudentRegTopicRepository
             throw new TopicNotFoundException()
         }
 
-        const studentRegTopicCount = await this.studentRegTopicModel.countDocuments({
-            topicId: topicId,
-            deleted_at: null
-        })
-        //check if topic is full registered
-        if (studentRegTopicCount === topic.maxStudents) {
-            throw new TopicIsFullRegisteredException()
-        }
-
         const existingRegistration = await this.studentRegTopicModel.findOne({
-            topicId: topicId,
-            studentId: studentId,
+            topicId: new mongoose.Types.ObjectId(topicId),
+            studentId: new mongoose.Types.ObjectId(studentId),
             deleted_at: null
         })
 
@@ -121,20 +102,34 @@ export class StudentRegTopicRepository
             throw new StudentAlreadyRegisteredException()
         }
 
+        //check if topic is full registered
+        const registeredCount = await this.studentRegTopicModel.countDocuments({
+            topicId: topicId,
+            deleted_at: null
+        })
+
+        if (registeredCount == topic.maxStudents) {
+            throw new TopicIsFullRegisteredException()
+        }
+
         const res = await this.studentRegTopicModel.create({
             topicId: topicId,
             studentId: studentId,
             status: RegistrationStatus.SUCCESS
         })
-
+        if (registeredCount === topic.maxStudents - 1) {
+            //update topic to full registered
+            topic.status = TopicStatus.FULL
+            await topic.save()
+        }
         return res
     }
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {
         const registrations = await this.studentRegTopicModel
             .find({
-                studentId: new mongoose.Schema.Types.ObjectId(studentId)
+                studentId: new mongoose.Types.ObjectId(studentId),
+                deleted_at: null
             })
-            .populate('topicId')
             .lean()
         const newRegistrations = registrations.map((registration) => {
             return {

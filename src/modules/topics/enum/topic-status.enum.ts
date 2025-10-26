@@ -1,5 +1,6 @@
 export enum TopicStatus {
-    OPEN = 'Còn mở',
-    CLOSED = 'Đã đóng',
-    COMPLETED = 'Đã hoàn thành',
+    OPEN = 'open',
+    FULL = 'full',
+    CLOSED = 'closed', // đã đóng khi hết hạn đăng ký
+    COMPLETED = 'completed'
 }

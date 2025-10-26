@@ -11,6 +11,7 @@ export class RefFieldTopicsRepository
     constructor(@InjectModel(RefFieldTopics.name) private readonly refFieldsTopics: Model<RefFieldTopics>) {
         super(refFieldsTopics)
     }
+  
     async createWithFieldIds(topicId: string, fieldIds: string[]): Promise<string[]> {
         const docs = await this.refFieldsTopics.insertMany(
             fieldIds.map((fieldId) => ({

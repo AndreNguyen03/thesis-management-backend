@@ -14,6 +14,7 @@ export class RefFieldsTopicsService {
         const names = await this.refFieldsTopicsRepository.createWithFieldIds(topicId, fieldId)
         return names
     }
+
     async deleteRefFieldsTopicByFieldIdsAndTopicId(topicId: string, fieldIds: string[]) {
         return await this.refFieldsTopicsRepository.deleteManyByFieldIdsAndTopicId(topicId, fieldIds)
     }

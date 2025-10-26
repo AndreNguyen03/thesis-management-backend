@@ -2,17 +2,18 @@ import { Expose, Transform } from 'class-transformer'
 
 export class GetTopicResponseDto {
     @Expose()
-    _id:string
+    _id: string
+
     @Expose()
     title: string
+
     @Expose()
     description: string
 
     @Expose()
     type: string
 
-    @Expose({ name: 'major' })
-    @Transform(({ obj }) => obj.majorId)
+    @Expose()
     major: string
 
     @Expose()
@@ -21,28 +22,39 @@ export class GetTopicResponseDto {
     @Expose()
     deadline: Date
 
-    // @Expose()
-    // referenceDocs: string[]
-
     @Expose()
     createBy: string
+
     @Expose()
     createdAt: Date
+
     @Expose()
     updatedAt: Date
+
     @Expose()
     status: string
-
-    @Expose()
-    registeredStudents: number
-
     //temp fields
+
     @Expose()
     fieldNames: string[]
+
     @Expose()
     requirementNames: string[]
+
     @Expose()
     studentNames: string[]
+
     @Expose()
     lecturerNames: string[]
+
+    @Expose()
+    isRegistered: boolean
+
+    @Expose()
+    isSaved: boolean
+}
+
+export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
+    @Expose()
+    lastestCanceledRegisteredAt?: Date
 }

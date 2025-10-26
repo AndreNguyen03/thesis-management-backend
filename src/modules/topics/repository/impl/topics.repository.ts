@@ -4,9 +4,8 @@ import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../schemas/topic.schemas'
 import { CreateTopicDto, GetTopicResponseDto } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
-import { Model } from 'mongoose'
-import { title } from 'process'
-import { Lecturer } from '../../../../users/schemas/lecturer.schema'
+import mongoose, { Model, mongo } from 'mongoose'
+import { UserRole } from '../../../../auth/enum/user-role.enum'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -16,8 +15,133 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
+    async findCanceledRegisteredTopicsByUserId(userId: string, role: string): Promise<GetTopicResponseDto[]> {
+        let pipeline: any[] = []
+        let student_reg_embedded_pl: any[] = []
+        let lecturer_reg_embedded_pl: any[] = []
+        pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
+
+        student_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: ['$studentId', new mongoose.Types.ObjectId(userId)] },
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $ne: ['$deleted_at', null] }
+                    ]
+                }
+            }
+        })
+
+        lecturer_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: ['$lecturerId', new mongoose.Types.ObjectId(userId)] },
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $ne: ['$deleted_at', null] }
+                    ]
+                }
+            }
+        })
+
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'ref_students_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: student_reg_embedded_pl,
+                    as: 'studentCancelRefs'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'lecturerCancelRefs'
+                }
+            }
+        )
+
+        pipeline.push({
+            $addFields: {
+                lastestCanceledRegisteredAt: {
+                    $cond: {
+                        if: { $eq: [role, UserRole.STUDENT] },
+                        then: { $arrayElemAt: ['$studentCancelRefs.deleted_at', 0] },
+                        else: { $arrayElemAt: ['$lecturerCancelRefs.deleted_at', 0] }
+                    }
+                },
+                //đã bị xóa và chưa đăng ký lại
+                isCanceledRegistered: {
+                    $cond: {
+                        if: { $eq: [role, UserRole.STUDENT] },
+                        then: {
+                            $expr: {
+                                $and: [
+                                    {
+                                        $not: {
+                                            $in: [
+                                                new mongoose.Types.ObjectId(userId),
+                                                { $ifNull: ['$studentRefs.studentId', []] }
+                                            ]
+                                        }
+                                    },
+                                    { $gt: [{ $size: '$studentCancelRefs' }, 0] }
+                                ]
+                            }
+                        },
+                        else: {
+                            $expr: {
+                                $and: [
+                                    {
+                                        $not: {
+                                            $in: [
+                                                new mongoose.Types.ObjectId(userId),
+                                                { $ifNull: ['$lecturerRefs.lecturerId', []] }
+                                            ]
+                                        }
+                                    },
+                                    { $gt: [{ $size: '$lecturerCancelRefs' }, 0] }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        pipeline.push({
+            $match: {
+                deleted_at: null,
+                isCanceledRegistered: true
+            }
+        })
+        return await this.topicRepository.aggregate(pipeline)
+    }
+    async findSavedTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]> {
+        let pipeline: any[] = []
+        pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
+        pipeline.push({ $match: { deleted_at: null, isSaved: true } })
+
+        //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
+        const topic = await this.topicRepository.aggregate(pipeline)
+        return topic
+    }
+    async getTopicById(topicId: string, userId: string): Promise<GetTopicResponseDto | null> {
+        console.log('getTopicByIduserId:', userId)
+
+        let pipeline: any[] = []
+        pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
+        pipeline.push({ $match: { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null } })
+        const topic = await this.topicRepository.aggregate(pipeline)
+        return topic[0]
+    }
     async createTopic(topicData: CreateTopicDto): Promise<GetTopicResponseDto> {
-        const createdTopic = await (await this.topicRepository.create(topicData)).populate('majorId', 'name')
+        const createdTopic = (
+            await (await this.topicRepository.create(topicData)).populate('majorId', 'name')
+        ).populate('createBy', 'fullName')
         return plainToInstance(GetTopicResponseDto, createdTopic, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -26,14 +150,88 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     async findByTitle(title: string): Promise<Topic | null> {
         return this.topicRepository.findOne({ title, deleted_at: null }).lean()
     }
-    async getAllTopics(): Promise<GetTopicResponseDto[]> {
-        // const topics = await this.topicRepository.find({ deleted_at: null }).populate('majorId', 'name')
-        // return plainToInstance(GetTopicResponseDto, topics, {
-        //     excludeExtraneousValues: true,
-        //     enableImplicitConversion: true
-        // })
-        return await this.topicRepository.aggregate([
-            { $match: { deleted_at: null } },
+    async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
+        let pipeline: any[] = []
+        pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
+        pipeline.push({ $match: { deleted_at: null } })
+        return await this.topicRepository.aggregate(pipeline)
+    }
+    async findRegisteredTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]> {
+        let pipeline: any[] = []
+        pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
+        pipeline.push({ $match: { deleted_at: null, isRegistered: true } })
+        //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
+        const topics = await this.topicRepository.aggregate(pipeline)
+        return topics
+    }
+    private getTopicInfoPipelineAbstract(userId: string) {
+        let pipeline: any[] = []
+        let save_embedded_pl: any[] = []
+        // lấy các bài viết đã lưu liên quan tới cặp {userId,topicId(for each)}
+        save_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
+                        { $eq: ['$deleted_at', null] }
+                    ]
+                }
+            }
+        })
+        pipeline.push({
+            $lookup: {
+                from: 'user_saved_topics',
+                let: { topicId: '$_id' },
+                pipeline: save_embedded_pl,
+                as: 'savedInfo'
+            }
+        })
+        // tìm kiếm đăng ký liên quan tới cặp {studentId,topicId(for each)}
+        let student_reg_embedded_pl: any[] = []
+        let lecturer_reg_embedded_pl: any[] = []
+        student_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $eq: ['$studentId', new mongoose.Types.ObjectId(userId)] },
+                        { $eq: ['$deleted_at', null] }
+                    ]
+                }
+            }
+        })
+        lecturer_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $eq: ['$lecturerId', new mongoose.Types.ObjectId(userId)] },
+                        { $eq: ['$deleted_at', null] }
+                    ]
+                }
+            }
+        })
+        pipeline.push(
+            // Join students qua ref_students_topics
+            {
+                $lookup: {
+                    from: 'ref_students_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: student_reg_embedded_pl,
+                    as: 'studentRefs'
+                }
+            }, // Join lecturers qua ref_lecturer_topic
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'lecturerRefs'
+                }
+            }
+        )
+        pipeline.push(
             //join major
             {
                 $lookup: {
@@ -43,15 +241,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     as: 'major'
                 }
             },
-            // Join lecturers qua ref_lecturer_topic
-            {
-                $lookup: {
-                    from: 'ref_lecturers_topics',
-                    localField: '_id',
-                    foreignField: 'topicId',
-                    as: 'lecturerRefs'
-                }
-            },
+
+            // Join students qua ref_students_topics
             {
                 $lookup: {
                     from: 'lecturers',
@@ -63,18 +254,28 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             // Join students qua ref_students_topics
             {
                 $lookup: {
-                    from: 'ref_students_topics',
-                    localField: '_id',
-                    foreignField: 'topicId',
-                    as: 'studentRefs'
-                }
-            },
-            {
-                $lookup: {
                     from: 'students',
                     localField: 'studentRefs.studentId',
                     foreignField: '_id',
                     as: 'students'
+                }
+            },
+            {
+                $addFields: {
+                    isRegistered: {
+                        $or: [
+                            {
+                                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$studentRefs.studentId', []] }]
+                            },
+                            {
+                                $in: [
+                                    new mongoose.Types.ObjectId(userId),
+                                    { $ifNull: ['$lecturerRefs.lecturerId', []] }
+                                ]
+                            }
+                        ]
+                    },
+                    isSaved: { $gt: [{ $size: '$savedInfo' }, 0] }
                 }
             },
             //join fields qua ref_fields_topics
@@ -117,13 +318,14 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     description: 1,
                     type: 1,
                     status: 1,
-                    major: {
-                        $map: {
-                            input: '$major',
-                            as: 'm',
-                            in: '$$m.name'
-                        }
-                    },
+                    createBy: 1,
+                    deadline: 1,
+                    maxStudents: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    isRegistered: 1,
+                    isSaved: 1,
+                    major: { $arrayElemAt: ['$major.name', 0] },
                     lecturerNames: {
                         $map: {
                             input: '$lecturers',
@@ -138,14 +340,14 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                             in: '$$student.fullName'
                         }
                     },
-                    fields: {
+                    fieldNames: {
                         $map: {
                             input: '$fields',
                             as: 'field',
                             in: '$$field.name'
                         }
                     },
-                    requirements: {
+                    requirementNames: {
                         $map: {
                             input: '$requirements',
                             as: 'requirement',
@@ -154,17 +356,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     }
                 }
             }
-        ])
-    }
-
-    async findSavedByUser(userId: string, role: string): Promise<GetTopicResponseDto[]> {
-        const theses = await this.topicRepository
-            .find({
-                savedBy: { $elemMatch: { userId, role } }
-            })
-            .lean()
-            .exec()
-        // Chuyển đổi sang DTO
-        return plainToInstance(GetTopicResponseDto, theses)
+        )
+        return pipeline
     }
 }

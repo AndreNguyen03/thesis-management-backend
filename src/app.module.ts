@@ -22,13 +22,13 @@ import { redisConfig } from './config/redis.config'
 import { RedisModule } from './redis/redis.module'
 import { TopicModule } from './modules/topics/topic.module'
 import { ChatBotModule } from './modules/chatbot/chatbot.module'
-import { RegistrationsModule } from './modules/registrations/registerations.module'
 import { FacultyModule } from './modules/faculties/faculty.module'
 import { RefRequirementsTopicsModule } from './modules/ref_requirements_topics/ref_requirements_topics.module'
 import { RefFieldsTopicsModule } from './modules/ref_fields_topics/ref_fields_topics.module'
-import { RequirementsModule } from './modules/requirements/requirements.module';
-import { FieldsModule } from './modules/fields/fields.module';
-import { MajorsModule } from './modules/majors/majors.module';
+import { RequirementsModule } from './modules/requirements/requirements.module'
+import { FieldsModule } from './modules/fields/fields.module'
+import { MajorsModule } from './modules/majors/majors.module'
+import { RegistrationsModule } from './modules/registrations/registrations.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -83,8 +83,7 @@ const ENV = process.env.NODE_ENV
 
         FieldsModule,
 
-        MajorsModule,
-
+        MajorsModule
     ],
     controllers: [AppController],
     providers: [

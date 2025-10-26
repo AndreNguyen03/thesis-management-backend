@@ -15,26 +15,25 @@ export class UserSavedTopicsRepository
     extends BaseRepositoryAbstract<UserSavedTopics>
     implements UserSavedTopicRepositoryInterface
 {
-    constructor(
-        @InjectModel(UserSavedTopics.name) private readonly userSavedTopics: Model<UserSavedTopics>,
-        @InjectModel(Topic.name) private readonly thesisModel: Model<Topic> // Inject Thesis model
-    ) {
+    constructor(@InjectModel(UserSavedTopics.name) private readonly userSavedTopics: Model<UserSavedTopics>) {
         super(userSavedTopics)
     }
-    async unsaveTopic(userId: string, topicId: string): Promise<string> {
-        const result = await this.userSavedTopics
-            .deleteOne({
-                userId: new mongoose.Schema.Types.ObjectId(userId),
-                topicId: new mongoose.Schema.Types.ObjectId(topicId)
-            })
-            .exec()
-        return "Topic unsaved successfully"
+    async assignSaveTopic(userId: string, topicId: string): Promise<UserSavedTopics> {
+        const newSavedTopic = new this.userSavedTopics({
+            userId: new mongoose.Types.ObjectId(userId),
+            topicId: new mongoose.Types.ObjectId(topicId)
+        })
+        return await newSavedTopic.save()
     }
-    async findSavedTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]> {
-        const savedTopics = await this.userSavedTopics
-            .find({ userId: new mongoose.Schema.Types.ObjectId(userId) })
-            .lean()
-            .exec()
-        return plainToInstance(GetTopicResponseDto, savedTopics)
+    async unassignSaveTopic(userId: string, topicId: string): Promise<string> {
+        await this.userSavedTopics.findOneAndUpdate(
+            {
+                userId: new mongoose.Types.ObjectId(userId),
+                topicId: new mongoose.Types.ObjectId(topicId),
+                deleted_at: null
+            },
+            { deleted_at: new Date() }
+        )
+        return 'Đã bỏ lưu đề tài thành công.'
     }
 }

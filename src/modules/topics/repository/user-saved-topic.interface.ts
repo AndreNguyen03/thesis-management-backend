@@ -4,7 +4,7 @@ import { GetTopicResponseDto } from '../dtos'
 import { UserSavedTopics } from '../schemas/user_saved_topics.schemas'
 
 export interface UserSavedTopicRepositoryInterface extends BaseRepositoryInterface<UserSavedTopics> {
-    findSavedTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]>
-    unsaveTopic(userId: string, topicId: string): Promise<string>
+    assignSaveTopic(userId: string, topicId: string): Promise<UserSavedTopics>
+    unassignSaveTopic(userId: string, topicId: string): Promise<string>
     // findSavedLecturesByUserIds(userIds: string): Promise<string[]>
 }
