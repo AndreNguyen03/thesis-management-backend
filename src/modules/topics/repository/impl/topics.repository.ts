@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../schemas/topic.schemas'
-import { CreateTopicDto, GetTopicResponseDto } from '../../dtos'
+import { CreateTopicDto, GetTopicDetailResponseDto, GetTopicResponseDto } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
 import mongoose, { Model, mongo } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
@@ -129,12 +129,75 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         const topic = await this.topicRepository.aggregate(pipeline)
         return topic
     }
-    async getTopicById(topicId: string, userId: string): Promise<GetTopicResponseDto | null> {
-        console.log('getTopicByIduserId:', userId)
-
+    async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
-        pipeline.push({ $match: { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null } })
+
+        if (role === UserRole.STUDENT) {
+            let student_reg_embedded_pl: any[] = []
+            student_reg_embedded_pl.push({
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: ['$topicId', '$$topicId'] },
+                            { $eq: ['$studentId', new mongoose.Types.ObjectId(userId)] }
+                        ]
+                    }
+                }
+            })
+            pipeline.push({
+                $lookup: {
+                    from: 'ref_students_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: student_reg_embedded_pl,
+                    as: 'allRegistrationOfStudentRefs'
+                }
+            })
+            pipeline.push({
+                $addFields: {
+                    allUserRegistrations: {
+                        $sortArray: {
+                            input: '$allRegistrationOfStudentRefs',
+                            sortBy: { updatedAt: -1 }
+                        }
+                    }
+                }
+            })
+        } else {
+            let lecturer_reg_embedded_pl: any[] = []
+            lecturer_reg_embedded_pl.push({
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $eq: ['$topicId', '$$topicId'] },
+                            { $eq: ['$lecturerId', new mongoose.Types.ObjectId(userId)] }
+                        ]
+                    }
+                }
+            })
+            pipeline.push({
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'allRegistrationOfLecturerRefs'
+                }
+            })
+            pipeline.push({
+                $addFields: {
+                    allUserRegistrations: {
+                        $sortArray: {
+                            input: '$allRegistrationOfLecturerRefs',
+                            sortBy: { updatedAt: -1 }
+                        }
+                    }
+                }
+            })
+        }
+
+        pipeline.push({
+            $match: { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null }
+        })
         const topic = await this.topicRepository.aggregate(pipeline)
         return topic[0]
     }
@@ -161,8 +224,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
         pipeline.push({ $match: { deleted_at: null, isRegistered: true } })
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
-        const topics = await this.topicRepository.aggregate(pipeline)
-        return topics
+        return await this.topicRepository.aggregate(pipeline)
     }
     private getTopicInfoPipelineAbstract(userId: string) {
         let pipeline: any[] = []
@@ -193,22 +255,14 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         student_reg_embedded_pl.push({
             $match: {
                 $expr: {
-                    $and: [
-                        { $eq: ['$topicId', '$$topicId'] },
-                        { $eq: ['$studentId', new mongoose.Types.ObjectId(userId)] },
-                        { $eq: ['$deleted_at', null] }
-                    ]
+                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
                 }
             }
         })
         lecturer_reg_embedded_pl.push({
             $match: {
                 $expr: {
-                    $and: [
-                        { $eq: ['$topicId', '$$topicId'] },
-                        { $eq: ['$lecturerId', new mongoose.Types.ObjectId(userId)] },
-                        { $eq: ['$deleted_at', null] }
-                    ]
+                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
                 }
             }
         })

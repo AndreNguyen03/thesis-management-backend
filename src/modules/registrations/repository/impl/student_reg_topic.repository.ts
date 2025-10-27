@@ -7,6 +7,7 @@ import { Student } from '../../../../users/schemas/student.schema'
 import { NotFoundException } from '@nestjs/common'
 import {
     StudentAlreadyRegisteredException,
+    StudentJustRegisterOnlyOneTopicEachType,
     TopicNotFoundException
 } from '../../../../common/exceptions/thesis-exeptions'
 import {
@@ -59,7 +60,7 @@ export class StudentRegTopicRepository
         return populated.map((d) => (d.studentId as any)?.name).filter(Boolean) as string[]
     }
 
-    async cancelRegistration(topicId: string, studentId: string): Promise<{message: string}> {
+    async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
         const registration = await this.studentRegTopicModel.findOne({
             topicId: topicId,
             studentId: studentId,
@@ -97,9 +98,35 @@ export class StudentRegTopicRepository
             studentId: new mongoose.Types.ObjectId(studentId),
             deleted_at: null
         })
-
         if (existingRegistration) {
             throw new StudentAlreadyRegisteredException()
+        }
+        const checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
+            {
+                $match: {
+                    studentId: new mongoose.Types.ObjectId(studentId),
+                    deleted_at: null
+                }
+            },
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: 'topicId',
+                    foreignField: '_id',
+                    as: 'topicInfo'
+                }
+            },
+            {
+                $unwind: '$topicInfo'
+            },
+            {
+                $match: {
+                    'topicInfo.type': topic.type
+                }
+            }
+        ])
+        if (checkExistingRegisterOtherSameType.length > 0) {
+            throw new StudentJustRegisterOnlyOneTopicEachType(topic.type)
         }
 
         //check if topic is full registered

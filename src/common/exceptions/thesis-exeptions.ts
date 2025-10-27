@@ -2,15 +2,15 @@ import { HttpStatus } from '@nestjs/common'
 import { BaseHttpException } from './base-http.exception'
 
 export class StudentAlreadyRegisteredException extends BaseHttpException {
-    constructor(submessage?: string) {
-        super(
-            `Student already registered ${'and' + submessage || ''}`,
-            'STUDENT_ALREADY_REGISTERED',
-            HttpStatus.BAD_REQUEST
-        )
+    constructor() {
+        super(`Sinh viên đã đăng ký đề tài này rồi`, 'STUDENT_ALREADY_REGISTERED', HttpStatus.BAD_REQUEST)
     }
 }
-
+export class StudentJustRegisterOnlyOneTopicEachType extends BaseHttpException {
+    constructor(message: string) {
+        super(`Sinh viên chỉ được đăng ký một đề tài thuộc: ${message}`, 'STUDENT_JUST_REGISTER_ONE_TOPIC_EACH_TYPE', HttpStatus.BAD_REQUEST)
+    }
+}
 
 
 export class TopicNotFoundException extends BaseHttpException {
