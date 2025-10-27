@@ -38,8 +38,8 @@ export class TopicService {
     public async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.getAllTopics(userId)
     }
-    public async getTopicById(topicId: string, userId: string): Promise<GetTopicResponseDto> {
-        const topic = await this.topicRepository.getTopicById(topicId, userId)
+    public async getTopicById(topicId: string, userId: string,role:string): Promise<GetTopicResponseDto> {
+        const topic = await this.topicRepository.getTopicById(topicId, userId,role)
         if (!topic) {
             throw new NotFoundException('Đề tài không tồn tại.')
         }

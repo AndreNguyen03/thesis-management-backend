@@ -1,4 +1,5 @@
-import { Expose, Transform } from 'class-transformer'
+import { Expose, Transform, Type } from 'class-transformer'
+import { GetRegistrationInTopicDto } from '../../registrations/dtos/get-registration-in-topic.dtos'
 
 export class GetTopicResponseDto {
     @Expose()
@@ -57,4 +58,10 @@ export class GetTopicResponseDto {
 export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
     @Expose()
     lastestCanceledRegisteredAt?: Date
+}
+
+export class GetTopicDetailResponseDto extends GetTopicResponseDto {
+    @Expose()
+    @Type(() => GetRegistrationInTopicDto)
+    allUserRegistrations: GetRegistrationInTopicDto[]
 }

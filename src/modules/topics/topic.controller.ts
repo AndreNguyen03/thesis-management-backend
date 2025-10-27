@@ -4,7 +4,13 @@ import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { TopicService } from './application/topic.service'
-import { CreateTopicDto, GetCancelRegisteredTopicResponseDto, GetTopicResponseDto, PatchTopicDto } from './dtos'
+import {
+    CreateTopicDto,
+    GetCancelRegisteredTopicResponseDto,
+    GetTopicDetailResponseDto,
+    GetTopicResponseDto,
+    PatchTopicDto
+} from './dtos'
 import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
 
@@ -53,8 +59,8 @@ export class TopicController {
     @Get('/:topicId')
     @Auth(AuthType.Bearer)
     async getTopicById(@Param('topicId') topicId: string, @Req() req: { user: ActiveUserData }) {
-        const topic = await this.topicService.getTopicById(topicId, req.user.sub)
-        return plainToInstance(GetTopicResponseDto, topic, {
+        const topic = await this.topicService.getTopicById(topicId, req.user.sub, req.user.role)
+        return plainToInstance(GetTopicDetailResponseDto, topic, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
