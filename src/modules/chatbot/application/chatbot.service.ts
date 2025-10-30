@@ -1,17 +1,18 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common'
-import { Response } from 'express'
-import { convertToModelMessages, streamText } from 'ai'
-import { google } from '@ai-sdk/google'
 import { AIIntegrationService } from './ai-integration.service'
 import { ChatRequestDto } from '../dtos'
+import { BuildAstraDB } from '../dtos/build-astra-db.dto'
 
 @Injectable()
 export class ChatBotService {
     private readonly systemPrompt = `
-        Bạn là một trợ lý AI thông minh giúp sinh viên về các vấn đề học tập và luận văn.
-        Hãy trả lời một cách chính xác và hữu ích dựa trên ngữ cảnh được cung cấp.
-    `
-
+        You are an AI assistant who knows everything about the principle of register a thesis
+         at University of Information Technology - VNUHCM and relevant regulations about thesis,
+        project1, project2 registration. Use the below context to augment what you know about topic registration proccess. 
+        The context will provide you with the most recent page from uit website that is place to publish regulations about thesis registration with students.
+        If the context doesn't include the information you need, answer based on your existing knowledge and don't mention the source of your information or what the context does or doesn't include.
+        Format responses using markdown where applicable and don't return images.
+        `
     constructor(private readonly aiIntegrationService: AIIntegrationService) {}
 
     async requestChatbot(chatRequest: ChatRequestDto) {
@@ -91,5 +92,9 @@ export class ChatBotService {
             }
             throw new HttpException('Error processing chat', HttpStatus.INTERNAL_SERVER_ERROR)
         }
+    }
+
+    async buildAstraDB(buildAstraDB: BuildAstraDB) {
+        return await this.aiIntegrationService.buildAstraDB(buildAstraDB)
     }
 }

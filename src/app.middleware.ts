@@ -50,7 +50,7 @@ export function appMiddleware(app: INestApplication) {
 
     // enable cors;
     app.enableCors({
-        origin: ['http://localhost:5173'], // hoặc mảng các origin hợp lệ
+        origin: ['http://localhost:5173', 'http://localhost:3001'], // hoặc mảng các origin hợp lệ
         credentials: true, // bắt buộc nếu bạn dùng cookie / session / Authorization header
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         allowedHeaders: 'Content-Type, Accept, Authorization'
