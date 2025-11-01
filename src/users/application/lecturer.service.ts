@@ -35,7 +35,7 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
     }
 
     // len controller moi map sang dto
-    async update(id: string, dto: UpdateLecturerDto): Promise<Lecturer | null> {
+    async updateProfile(id: string, dto: UpdateLecturerDto): Promise<Lecturer | null> {
         const updateData: Partial<Lecturer> = {}
         Object.keys(dto).forEach((key) => {
             const val = (dto as any)[key]

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Body, Req } from '@nestjs/common'
+import { Controller, Get, Param, Patch, Body, Req, Query } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Auth } from '../auth/decorator/auth.decorator'
 import { AuthType } from '../auth/enum/auth-type.enum'
@@ -50,8 +50,7 @@ export class UserController {
         }
     }
     @Get('studnt/:id/saved-theses')
-    async getStudentSavedTheses(@Param('id') id: string) {
-    }
+    async getStudentSavedTheses(@Param('id') id: string) {}
     @Patch('student/:id')
     async updateStudent(@Param('id') id: string, @Body() dto: UpdateStudentDto) {
         return this.studentService.update(id, dto)
@@ -59,11 +58,23 @@ export class UserController {
 
     @Patch('lecturer/:id')
     async updateLecturer(@Param('id') id: string, @Body() dto: UpdateLecturerDto) {
-        return this.lecturerService.update(id, dto)
+        return this.lecturerService.updateProfile(id, dto)
     }
 
     @Patch('admin/:id')
     async updateAdmin(@Param('id') id: string, @Body() dto: UpdateAdminDto) {
         return this.adminService.update(id, dto)
     }
+
+    //  @Get('students/search')
+    // async searchStudents(@Query('query') query: string) {
+    //     if (!query?.trim()) return []
+
+    //     const students = await this.studentService.searchByCodeOrName(query)
+    //     return students.map((s) => ({
+    //         id: s.id,
+    //         studentCode: s.studentCode,
+    //         fullName: s.fullName
+    //     }))
+    // }
 }

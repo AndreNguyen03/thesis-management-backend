@@ -7,13 +7,13 @@ import { PatchTopicDto, ReplyRegistrationDto } from './dtos'
 import { ActiveUserData } from '../auth/interface/active-user-data.interface'
 import { WrongRoleException } from '../common/exceptions'
 import { UpdateTopicDto } from './dtos/topic.dtos'
-@Controller('theses')
+@Controller('topic')
 export class TopicController {
     // create endpoint to add Topic
     constructor(private readonly TopicService: TopicService) {}
     @Get('/get-registered')
     @Auth(AuthType.Bearer)
-    async getRegisteredTheses(@Req() req: { user: ActiveUserData }) {
+    async getRegisteredTopic(@Req() req: { user: ActiveUserData }) {
         return await this.TopicService.getRegisteredTopic(req.user)
     }
 
@@ -31,11 +31,11 @@ export class TopicController {
         return this.TopicService.unarchiveTopic(userId, TopicId, role)
     }
 
-    @Get('saved-theses')
+    @Get('saved-topics')
     @Auth(AuthType.Bearer)
-    async getSavedTheses(@Req() req: { user: ActiveUserData }) {
+    async getSavedTopic(@Req() req: { user: ActiveUserData }) {
         const { sub: userId, role } = req.user
-        return this.TopicService.getSavedTheses(userId, role)
+        return this.TopicService.getSavedTopic(userId, role)
     }
 
     @Post('save')
@@ -46,10 +46,10 @@ export class TopicController {
 
     @Get()
     @Auth(AuthType.Bearer)
-    async getTheses(@Req() req: { user: ActiveUserData }) {
+    async getTopic(@Req() req: { user: ActiveUserData }) {
         const { sub: userId, role } = req.user
 
-        return await this.TopicService.getAllTheses(userId, role)
+        return await this.TopicService.getAllTopic(userId, role)
     }
 
     @Post()

@@ -1,7 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { config } from 'aws-sdk'
 import { LoggingInterceptor } from './common/logger/logging.interceptor'
 import * as cookieParser from 'cookie-parser'
 
@@ -39,15 +38,7 @@ export function appMiddleware(app: INestApplication) {
     SwaggerModule.setup('docs', app, document)
 
     // setup aws sdk used uploading thefiles to aws s3 bucket
-    const configService = app.get(ConfigService)
-    config.update({
-        credentials: {
-            accessKeyId: configService.get('appConfig.awsAccessKeyId')!,
-            secretAccessKey: configService.get('app.awsSecretAccessKey')!
-        },
-        region: configService.get('appConfig.awsRegion')
-    })
-
+    
     // enable cors;
     app.enableCors({
         origin: ['http://localhost:5173'], // hoặc mảng các origin hợp lệ

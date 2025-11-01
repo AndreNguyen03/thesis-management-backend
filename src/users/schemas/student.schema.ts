@@ -40,25 +40,28 @@ export class Student extends BaseEntity {
     role: 'student'
 
     @Prop({ default: '' })
-    avatar: string
+    avatarUrl: string
+
+    @Prop({ default: '' })
+    avatarName: string
 
     @Prop({ default: true })
     isActive: boolean
 
     @Prop({ default: '' })
-    introduction: string
+    bio: string
 
     @Prop({ type: [String], default: [] })
     skills: string[]
 
-    @Prop({ type: [StudentProject], default: [] })
-    projects: StudentProject[]
-
-    @Prop({ type: [String], default: [] })
-    subjects: string[]
-
     @Prop({ type: [String], default: [] })
     interests: string[]
+
+    @Prop({ type: String, default: '' })
+    studentCode: string
+
+    @Prop({ type: String, default: '' })
+    faculty: string
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student)

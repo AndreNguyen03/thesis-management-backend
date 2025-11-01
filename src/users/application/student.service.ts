@@ -8,6 +8,7 @@ import { BaseServiceAbstract } from '../../shared/base/service/base.service.abst
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {
+    
     constructor(@Inject('StudentRepositoryInterface') private readonly studentRepository: StudentRepositoryInterface) {
         super(studentRepository)
     }
@@ -40,5 +41,9 @@ export class StudentService extends BaseServiceAbstract<Student> {
             if (val !== undefined) updateData[key] = val
         })
         return super.update(id, updateData)
+    }
+
+    async searchByCodeOrName(query: string) {
+        throw new Error('Method not implemented.')
     }
 }

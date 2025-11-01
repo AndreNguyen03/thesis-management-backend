@@ -1,5 +1,5 @@
 export * from './base-http.exception'
 export * from './auth-exceptions'
 export * from './user-exceptions'
-export * from './thesis-exeptions'
+export * from './topic-exeptions'
 export * from './registration-exeptions'

@@ -1,5 +1,5 @@
-import { GetThesisResponseDto } from '../getTopic.dto'
+import { GetTopicResponseDto } from '../getTopic.dto'
 
 export class GetArchiveDto {
-    savedTheses: GetThesisResponseDto[]
+    savedTheses: GetTopicResponseDto[]
 }

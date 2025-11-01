@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Types } from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
 
 @Schema({
@@ -13,7 +13,7 @@ export class Major extends BaseEntity {
     @Prop({ required: true, unique: true })
     name: string
 
-    @Prop({ type: Types.ObjectId, ref: 'Department', required: true })
-    departmentId: Types.ObjectId
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true })
+    departmentId: mongoose.Schema.Types.ObjectId
 }
-export const DepartmentsSchema = SchemaFactory.createForClass(Major)
+export const MajorSchema = SchemaFactory.createForClass(Major)

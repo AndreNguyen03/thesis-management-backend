@@ -8,8 +8,8 @@ import { BaseEntity } from '../../shared/base/entity/base.entity'
         updatedAt: 'updated_at'
     }
 })
-@Schema({ collection: 'departments', timestamps: true })
-export class Department extends BaseEntity {
+@Schema({ collection: 'facultys', timestamps: true })
+export class Faculty extends BaseEntity {
     @Prop({ required: true, unique: true })
     name: string
 
@@ -19,4 +19,4 @@ export class Department extends BaseEntity {
     @Prop({ required: true, unique: true })
     url: string
 }
-export const DepartmentsSchema = SchemaFactory.createForClass(Department)
+export const FacultysSchema = SchemaFactory.createForClass(Faculty)

@@ -20,9 +20,10 @@ import { ConfigService } from '@nestjs/config'
 import { LoggerMiddleware } from './common/logger/logger.middleware'
 import { redisConfig } from './config/redis.config'
 import { RedisModule } from './redis/redis.module'
-import { ThesisModule } from './thesis/thesis.module'
+import { TopicModule } from './topic/topic.module'
 import { ChatBotModule } from './chatbot/chatbot.module'
 import { AiModule } from './ai/ai.module';
+import { FieldModule } from './field/field.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -61,11 +62,13 @@ const ENV = process.env.NODE_ENV
         // Redis cache module
         RedisModule,
 
-        ThesisModule,
+        TopicModule,
 
         ChatBotModule,
 
-        AiModule   
+        AiModule,
+
+        FieldModule   
     ],
     controllers: [AppController],
     providers: [

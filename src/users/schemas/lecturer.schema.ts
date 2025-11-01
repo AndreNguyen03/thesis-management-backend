@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
-import { Thesis } from '../../thesis/schemas/topic.schemas'
+import { Topic } from '../../topic/schemas/topic.schemas'
 
 export class Education {
     @Prop({ default: '' })
@@ -137,7 +137,10 @@ export class Lecturer extends BaseEntity {
     isActive: boolean
 
     @Prop({ default: '' })
-    avatar: string
+    avatarUrl: string
+
+    @Prop({ default: '' })
+    avatarName: string
 
     @Prop({ required: true, default: '' })
     position: string
@@ -145,8 +148,8 @@ export class Lecturer extends BaseEntity {
     @Prop({ required: true, default: '' })
     department: string
 
-    @Prop({ required: true, default: '' })
-    faculty: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Faculty', required: true, default: '' })
+    faculty: mongoose.Schema.Types.ObjectId
 
     @Prop({ required: true, default: '' })
     university: string

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose from 'mongoose'
+import mongoose, { Types } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
 
 @Schema({

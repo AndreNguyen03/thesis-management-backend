@@ -10,9 +10,10 @@ import { UpdateTopicDto } from '../dtos/topic.dtos'
 import { Types } from 'mongoose'
 import { Topic } from '../schemas/topic.schemas'
 import { convertDtoIdsToObjectId } from '../utils/utils'
+import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 
 @Injectable()
-export class TopicService {
+export class TopicService extends BaseServiceAbstract<Topic>{
     constructor(
         @Inject('TopicRepositoryInterface')
         private readonly TopicRepository: TopicRepositoryInterface,
@@ -24,16 +25,19 @@ export class TopicService {
         private readonly lecturerRepository: LecturerRepositoryInterface,
         @Inject('ArchiveRepositoryInterface')
         private readonly archiveRepository: ArchiveRepositoryInterface
-    ) {}
+    ) {
+        super(TopicRepository)
+    }
+    
     public async getRegisteredTopic(user: ActiveUserData) {
         await this._validateUser(user.sub, user.role)
         return this.registrationRepository.getTopicRegistrationsByUser(user.sub, user.role)
     }
-    public async getAllTheses(userId: string, role: string) {
+    public async getAllTopic(userId: string, role: string) {
         return this.TopicRepository.getAllTheses(userId, role)
     }
     public async createTopic(topicData: CreateTopicDto) {
-        return this.TopicRepository.create(topicData)
+        return this.create(topicData)
     }
     public async updateTopic(id: string, topicData: UpdateTopicDto) {
         const updateData = convertDtoIdsToObjectId(topicData, [
@@ -64,7 +68,7 @@ export class TopicService {
         return this.registrationRepository.deleteRegistration(TopicId, userId, role)
     }
 
-    public async getSavedTheses(userId: string, role: string): Promise<GetTopicResponseDto[]> {
+    public async getSavedTopic(userId: string, role: string): Promise<GetTopicResponseDto[]> {
         await this._validateUser(userId, role)
 
         return await this.archiveRepository.findSavedThesesByUserId(userId, role)

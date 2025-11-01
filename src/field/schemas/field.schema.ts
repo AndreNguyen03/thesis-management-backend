@@ -7,9 +7,12 @@ import { BaseEntity } from '../../shared/base/entity/base.entity'
         updatedAt: 'updated_at'
     }
 })
-class Field extends BaseEntity {
+export class Field extends BaseEntity {
     @Prop({ required: true, unique: true, trim: true })
     name: string
+
+    @Prop({ required: true , unique: true, trỉm: true})
+    slug: string
 
     @Prop({ default: '', trim: true })
     description?: string

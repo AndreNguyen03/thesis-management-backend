@@ -7,11 +7,21 @@ import {
     ArrayNotEmpty,
     IsMongoId,
     IsDate,
-    IsNumber
+    IsNumber,
 } from 'class-validator'
 import { Types } from 'mongoose'
 import { TopicStatus } from '../enum'
 
+// Liệt kê các loại đề tài hợp lệ
+export enum TopicType {
+    DO_AN = 'Đồ án',
+    KHOA_LUAN = 'Khóa luận',
+    NCKH = 'NCKH',
+}
+
+/**
+ * DTO tạo mới Topic
+ */
 export class CreateTopicDto {
     @IsString()
     @IsNotEmpty()
@@ -21,8 +31,8 @@ export class CreateTopicDto {
     @IsNotEmpty()
     description: string
 
-    @IsEnum(['Đồ án', 'Khóa luận', 'NCKH'])
-    type: 'Đồ án' | 'Khóa luận' | 'NCKH'
+    @IsEnum(TopicType)
+    type: TopicType
 
     @IsMongoId()
     departmentId: string
@@ -31,14 +41,24 @@ export class CreateTopicDto {
     majorId: string
 
     @IsArray()
-    @IsString({ each: true })
+    @IsMongoId({ each: true })
     @ArrayNotEmpty()
-    field: string[]
+    fieldIds: string[]
 
     @IsArray()
     @IsOptional()
     @IsMongoId({ each: true })
     coAdvisorIds?: string[]
+
+    @IsArray()
+    @IsOptional()
+    @IsMongoId({ each: true })
+    studentIds?: string[]
+
+    @IsArray()
+    @IsOptional()
+    @IsMongoId({ each: true })
+    fileIds?: string[]
 
     @IsNumber()
     @IsOptional()
@@ -49,6 +69,9 @@ export class CreateTopicDto {
     deadline?: Date
 }
 
+/**
+ * DTO cập nhật Topic
+ */
 export class UpdateTopicDto {
     @IsString()
     @IsOptional()
@@ -58,9 +81,9 @@ export class UpdateTopicDto {
     @IsOptional()
     description?: string
 
-    @IsEnum(['Đồ án', 'Khóa luận', 'NCKH'])
+    @IsEnum(TopicType)
     @IsOptional()
-    type?: 'Đồ án' | 'Khóa luận' | 'NCKH'
+    type?: TopicType
 
     @IsMongoId()
     @IsOptional()
@@ -71,14 +94,24 @@ export class UpdateTopicDto {
     majorId?: string
 
     @IsArray()
-    @IsString({ each: true })
+    @IsMongoId({ each: true })
     @IsOptional()
-    field?: string[]
+    fieldIds?: string[]
 
     @IsArray()
     @IsMongoId({ each: true })
     @IsOptional()
     coAdvisorIds?: string[]
+
+    @IsArray()
+    @IsMongoId({ each: true })
+    @IsOptional()
+    studentIds?: string[]
+
+    @IsArray()
+    @IsMongoId({ each: true })
+    @IsOptional()
+    fileIds?: string[]
 
     @IsNumber()
     @IsOptional()
@@ -93,16 +126,21 @@ export class UpdateTopicDto {
     status?: TopicStatus
 }
 
+/**
+ * DTO phản hồi cho client
+ */
 export class ResponseTopicDto {
     id: string
     title: string
     description: string
-    type: 'Đồ án' | 'Khóa luận' | 'NCKH'
+    type: TopicType
     registrationIds?: string[]
     departmentId: string
     majorId: string
-    field: string[]
+    fieldIds: string[]
     coAdvisorIds?: string[]
+    studentIds?: string[]
+    fileIds?: string[]
     maxStudents?: number
     deadline?: Date
     status: TopicStatus

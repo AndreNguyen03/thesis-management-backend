@@ -1,30 +1,30 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
-import { GetThesisResponseDto } from '../../dtos'
+import { GetTopicResponseDto } from '../../dtos'
 import { Archive } from '../../schemas/archive.schemas'
 import { ArchiveRepositoryInterface } from '../archive.repository.interface'
 import { Model } from 'mongoose'
 import { getUserModelFromRole } from '../../utils/get-user-model'
 import { Injectable } from '@nestjs/common'
-import { ThesisNotArchivedException } from '../../../common/exceptions'
+import { TopicNotArchivedException } from '../../../common/exceptions'
 import { GetArchiveDto } from '../../dtos/archive/archive.dto'
 import { plainToInstance } from 'class-transformer'
-import { Thesis } from '../../schemas/topic.schemas'
+import { Topic } from '../../schemas/topic.schemas'
 
 @Injectable()
 export class ArchiveRepository extends BaseRepositoryAbstract<Archive> implements ArchiveRepositoryInterface {
     constructor(
         @InjectModel(Archive.name) private readonly archiveRepository: Model<Archive>,
-        @InjectModel(Thesis.name) private readonly thesisModel: Model<Thesis> // Inject Thesis model
+        @InjectModel(Topic.name) private readonly TopicModel: Model<Topic> // Inject Topic model
     ) {
         super(archiveRepository)
     }
-    async findSavedThesesByUserId(userId: string, role: string): Promise<GetThesisResponseDto[]> {
+    async findSavedThesesByUserId(userId: string, role: string): Promise<GetTopicResponseDto[]> {
         const archive = await this.archiveRepository
             .findOne({ userId: userId, userModel: getUserModelFromRole(role) })
             .populate({
                 path: 'savedTheses',
-                model: 'Thesis',
+                model: 'Topic',
                 populate: {
                     path: 'registrationIds',
                     select: 'registrantId registrantModel status',
@@ -34,49 +34,49 @@ export class ArchiveRepository extends BaseRepositoryAbstract<Archive> implement
         if (!archive) {
             return []
         }
-        const theses = await plainToInstance(GetThesisResponseDto, archive.savedTheses, {
+        const theses = await plainToInstance(GetTopicResponseDto, archive.savedTopic, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
-        return theses.map((thesis) => ({
-            ...thesis,
+        return theses.map((Topic) => ({
+            ...Topic,
             isSaved: true
         }))
     }
-    async archiveThesis(userId: string, role: string, thesisId: string): Promise<GetThesisResponseDto> {
+    async archiveTopic(userId: string, role: string, TopicId: string): Promise<GetTopicResponseDto> {
         await this.archiveRepository.findOneAndUpdate(
             { userId: userId, userModel: getUserModelFromRole(role) },
-            { $addToSet: { savedTheses: thesisId } },
+            { $addToSet: { savedTheses: TopicId } },
             { upsert: true }
         )
 
-        return _getThesisAfterAction(thesisId, this.thesisModel, true)
+        return _getTopicAfterAction(TopicId, this.TopicModel, true)
     }
-    async unarchiveThesis(userId: string, thesisId: string, role: string): Promise<GetThesisResponseDto> {
+    async unarchiveTopic(userId: string, TopicId: string, role: string): Promise<GetTopicResponseDto> {
         await this.archiveRepository.findOneAndUpdate(
             { userId: userId, userModel: getUserModelFromRole(role) },
-            { $pull: { savedTheses: thesisId } }
+            { $pull: { savedTheses: TopicId } }
         )
-        return _getThesisAfterAction(thesisId, this.thesisModel, false)
+        return _getTopicAfterAction(TopicId, this.TopicModel, false)
     }
 }
-export const _getThesisAfterAction = async (
-    thesisId: string,
-    thesisModel: Model<Thesis>,
+export const _getTopicAfterAction = async (
+    TopicId: string,
+    TopicModel: Model<Topic>,
     isSaved: boolean
-): Promise<GetThesisResponseDto> => {
-    const thesis = await thesisModel.findOne({ _id: thesisId, deleted_at: null }).populate({
+): Promise<GetTopicResponseDto> => {
+    const Topic = await TopicModel.findOne({ _id: TopicId, deleted_at: null }).populate({
         path: 'registrationIds',
         select: 'registrantId registrantModel status',
         populate: { path: 'registrantId', select: '_id fullName role' }
     })
 
-    const thesisDto = await plainToInstance(GetThesisResponseDto, thesis, {
+    const TopicDto = await plainToInstance(GetTopicResponseDto, Topic, {
         excludeExtraneousValues: true,
         enableImplicitConversion: true
     })
     return {
-        ...thesisDto,
+        ...TopicDto,
         isSaved: isSaved
     }
 }
