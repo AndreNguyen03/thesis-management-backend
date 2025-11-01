@@ -31,9 +31,9 @@ export default Joi.object({
     SMTP_PASSWORD: Joi.string().required(),
 
     //AI Model Configuration
-    ASTRA_DB_NAMESPACE: Joi.string().required(),
-    ASTRA_DB_COLLECTION: Joi.string().required(),
-    ASTRA_DB_API_ENDPOINT: Joi.string().required(),
-    ASTRA_DB_APPLICATION_TOKEN: Joi.string().required(),
+    // ASTRA_DB_NAMESPACE: Joi.string().required(),
+    // ASTRA_DB_COLLECTION: Joi.string().required(),
+    // ASTRA_DB_API_ENDPOINT: Joi.string().required(),
+    VOYAGE_API_KEY: Joi.string().required(),
     GEMINI_API_KEY: Joi.string().required()
 })

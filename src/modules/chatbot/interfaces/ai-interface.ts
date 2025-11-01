@@ -6,10 +6,10 @@ export interface AIModelConfig {
 
 export interface VectorSearchConfig {
     provider: string
-    db_namespace?: string
-    db_collection?: string
-    db_api_endpoint?: string
-    db_application_token?: string
+    db_namespace: string
+    db_collection: string
+    db_api_endpoint: string
+    db_application_token: string
 }
 
 export interface EmbeddingConfig {

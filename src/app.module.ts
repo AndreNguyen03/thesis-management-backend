@@ -29,6 +29,8 @@ import { RequirementsModule } from './modules/requirements/requirements.module'
 import { FieldsModule } from './modules/fields/fields.module'
 import { MajorsModule } from './modules/majors/majors.module'
 import { RegistrationsModule } from './modules/registrations/registrations.module'
+import { KnowledgeSourceModule } from './modules/knowledge-source/knowledge-source.module'
+import voyageConfig from './auth/config/voyage.config'
 
 const ENV = process.env.NODE_ENV
 
@@ -54,11 +56,15 @@ const ENV = process.env.NODE_ENV
                 return mongo
             }
         }),
+
         // Business modules
         UsersModule,
         AuthModule,
         PaginationModule,
         MailModule,
+
+        // Voyage config
+        ConfigModule.forFeature(voyageConfig),
 
         // JWT config
         ConfigModule.forFeature(jwtConfig),
@@ -83,7 +89,9 @@ const ENV = process.env.NODE_ENV
 
         FieldsModule,
 
-        MajorsModule
+        MajorsModule,
+
+        KnowledgeSourceModule
     ],
     controllers: [AppController],
     providers: [

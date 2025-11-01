@@ -4,9 +4,7 @@ import { ChatBotService } from './application/chatbot.service'
 import { ChatRequestDto } from './dtos'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
-import { map } from 'rxjs/operators'
-import { Observable, from } from 'rxjs'
-import { BuildAstraDB } from './dtos/build-astra-db.dto'
+import { BuildKnowledgeDB } from './dtos/build-astra-db.dto'
 @Controller('chatbot')
 export class ChatController {
     constructor(private readonly chatBotService: ChatBotService) {}
@@ -35,14 +33,14 @@ export class ChatController {
         }
     }
 
-    @Post('/create-astra-db')
+    @Post('/build-knowledge-db')
     @Auth(AuthType.Bearer)
-    async buildAstraDB(@Body() buildAstrDB: BuildAstraDB) {
+    async buildKnowledgeDB(@Body() buildKnowledgeDB: BuildKnowledgeDB) {
         try {
-            const result = await this.chatBotService.buildAstraDB(buildAstrDB)
-            return { message: 'AstraDB built successfully', data: result }
+            const result = await this.chatBotService.buildKnowledgeDB(buildKnowledgeDB)
+            return { message: 'Knowledge DB built successfully' }
         } catch (error) {
-            return { message: 'Error building AstraDB', error: error.message }
+            return { message: 'Error building Knowledge DB', error: error.message }
         }
     }
 }

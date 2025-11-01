@@ -1,7 +1,10 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common'
-import { AIIntegrationService } from './ai-integration.service'
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common'
 import { ChatRequestDto } from '../dtos'
-import { BuildAstraDB } from '../dtos/build-astra-db.dto'
+import { BuildKnowledgeDB } from '../dtos/build-astra-db.dto'
+import { RetrievalProvider } from './retrieval.provider'
+import { GetEmbeddingProvider } from './get-embedding.provider'
+import { ChatBotRepositoryInterface } from '../repository/chatbot.repository.interface'
+import { GenerationProvider } from './generation.provider'
 
 @Injectable()
 export class ChatBotService {
@@ -13,7 +16,13 @@ export class ChatBotService {
         If the context doesn't include the information you need, answer based on your existing knowledge and don't mention the source of your information or what the context does or doesn't include.
         Format responses using markdown where applicable and don't return images.
         `
-    constructor(private readonly aiIntegrationService: AIIntegrationService) {}
+    constructor(
+        private readonly retrievalProvider: RetrievalProvider,
+        private readonly generationProvider: GenerationProvider,
+        private readonly getEmbeddingProvider: GetEmbeddingProvider,
+        @Inject('ChatBotRepositoryInterface')
+        private readonly chatBotRepository: ChatBotRepositoryInterface
+    ) {}
 
     async requestChatbot(chatRequest: ChatRequestDto) {
         try {
@@ -30,7 +39,7 @@ export class ChatBotService {
             // Generate embedding
             let vector: number[]
             try {
-                vector = await this.aiIntegrationService.generateEmbedding(latestMessage)
+                vector = await this.getEmbeddingProvider.getEmbedding(latestMessage)
             } catch (err) {
                 console.error('Embedding error:', err)
                 throw new HttpException(
@@ -41,11 +50,14 @@ export class ChatBotService {
                     HttpStatus.INTERNAL_SERVER_ERROR
                 )
             }
-
+            const chatBot = await this.chatBotRepository.getChatBotEnabled()
+            if (!chatBot) {
+                throw new HttpException('No enabled chatbot found', HttpStatus.NOT_FOUND)
+            }
             // Query database for similar docs
             let documents: any[] = []
             try {
-                documents = await this.aiIntegrationService.searchSimilarDocuments(vector)
+                documents = await this.retrievalProvider.searchSimilarDocuments(chatBot.knowledge_sourceIds, vector)
             } catch (err) {
                 console.error('❌ Database query error:', err)
                 throw new HttpException(
@@ -74,7 +86,7 @@ export class ChatBotService {
             // ✅ Stream AI response
             try {
                 console.log('Streaming AI response...')
-                return await this.aiIntegrationService.streamAIResponse(fullSystemPrompt, messages)
+                return await this.generationProvider.streamAIResponse(fullSystemPrompt, messages)
             } catch (err) {
                 console.error('AI streaming error:', err)
                 throw new HttpException(
@@ -94,7 +106,8 @@ export class ChatBotService {
         }
     }
 
-    async buildAstraDB(buildAstraDB: BuildAstraDB) {
-        return await this.aiIntegrationService.buildAstraDB(buildAstraDB)
+    // tạo mới
+    async buildKnowledgeDB(buildKnowledgeDB: BuildKnowledgeDB): Promise<boolean> {
+        return this.retrievalProvider.buildKnowledgeDocuments(buildKnowledgeDB)
     }
 }
