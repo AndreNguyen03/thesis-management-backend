@@ -17,7 +17,7 @@ export class KnowledgeChunk extends BaseEntity {
     @Prop({ required: true })
     text: string
     @Prop({ required: true, type: [Number] })
-    plot_embedding_voyage_3_large: number[] // Đổi tên cho tổng quát
+    plot_embedding_gemini_large: number[] // Đổi tên cho tổng quát
 }
 
 export const KnowledgeChunkSchema = SchemaFactory.createForClass(KnowledgeChunk)

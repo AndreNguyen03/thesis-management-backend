@@ -5,10 +5,15 @@ import { ChatBotRepositoryInterface } from '../chatbot.repository.interface'
 import { Model } from 'mongoose'
 import { ChatbotVersion } from '../../schemas/chatbot_version.schemas'
 import { ChatbotStatus } from '../../enums/chatbot-status.enum'
+import { UpdateChatbotDto } from '../../dtos/update-chatbot.dto'
 
 export class ChatBotRepository extends BaseRepositoryAbstract<ChatbotVersion> implements ChatBotRepositoryInterface {
     constructor(@InjectModel(ChatbotVersion.name) private readonly chatbotModel: Model<ChatbotVersion>) {
         super(chatbotModel)
+    }
+    async updateChatbotVersion(id: string, updateChatbotDto: UpdateChatbotDto): Promise<ChatbotVersion | null> {
+        const updatedChatbot = await this.chatbotModel.findByIdAndUpdate(id, updateChatbotDto, { new: true }).exec()
+        return updatedChatbot
     }
     async getChatBotEnabled(): Promise<ChatbotVersion | null> {
         const chatBot = await this.chatbotModel.findOne({ status: ChatbotStatus.ENABLED }).exec()

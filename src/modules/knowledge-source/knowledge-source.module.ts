@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { CreateKnowledgeSourceProvider } from './application/create-knowledge-source.provider'
 import { UpdateKnowledgeSourceProvider } from './application/update-knowledge-source.provider'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -10,6 +10,9 @@ import { KnowledgeChunk, KnowledgeChunkSchema } from './schemas/knowledge-chunk.
 import { CreateKnowledgeChunksProvider } from './application/create-knowledge-chunks.provider'
 import { KnowledgeChunkRepository } from './repository/impl/knowledge-chunk.repository'
 import { UpdateKnowledgeChunkProvider } from './application/update-knowledge-chunk.provider'
+import { ConfigModule } from '@nestjs/config'
+import { googleAIConfig } from '../../config/googleai.config'
+import { ChatBotModule } from '../chatbot/chatbot.module'
 
 @Module({
     providers: [
@@ -32,7 +35,9 @@ import { UpdateKnowledgeChunkProvider } from './application/update-knowledge-chu
         MongooseModule.forFeature([
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
-        ])
+        ]),
+        ConfigModule.forFeature(googleAIConfig),
+        forwardRef(() => ChatBotModule)
     ],
     exports: [
         CreateKnowledgeSourceProvider,

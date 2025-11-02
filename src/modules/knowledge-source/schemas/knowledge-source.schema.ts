@@ -14,15 +14,15 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 export class KnowledgeSource extends BaseEntity {
     @Prop({ required: true })
     name: string
-    @Prop({ required: true })
+    @Prop({ required: false })
     description: string
     @Prop({ required: true, enum: SourceType })
     source_type: SourceType
     @Prop({ required: true })
     source_location: string
-    @Prop({ required: true, enum: KnowledgeStatus })
+    @Prop({ enum: KnowledgeStatus, default: KnowledgeStatus.DISABLED })
     status: KnowledgeStatus
-    @Prop({ required: true, enum: ProcessingStatus })
+    @Prop({ enum: ProcessingStatus, default: ProcessingStatus.COMPLETED })
     processing_status: ProcessingStatus
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
@@ -31,6 +31,9 @@ export class KnowledgeSource extends BaseEntity {
     last_processed_at: Date
 
     @Prop({ required: false, type: [Number], default: [] })
-    plot_embedding_voyage_3_large: number[]
+    metadata: {
+        text: string
+        plot_embedding_voyage_3_large: number[]
+    }[]
 }
 export const KnowledgeSourceSchema = SchemaFactory.createForClass(KnowledgeSource)

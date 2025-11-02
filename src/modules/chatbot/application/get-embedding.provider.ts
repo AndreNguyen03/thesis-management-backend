@@ -1,23 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigType } from '@nestjs/config'
-import voyageConfig from '../../../auth/config/voyage.config'
-import { VoyageAIClient } from 'voyageai'
+import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai'
+
+import { googleAIConfig } from '../../../config/googleai.config'
+import { EmbeddingConfig } from '../interfaces/ai-interface'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 
 @Injectable()
 export class GetEmbeddingProvider {
-    private client: any
+    private genAI: GoogleGenerativeAI
+
+    private embeddingModel: GenerativeModel
     constructor(
-        @Inject(voyageConfig.KEY)
-        private readonly voyageConfiguration: ConfigType<typeof voyageConfig>
+        @Inject(googleAIConfig.KEY)
+        private readonly googleAIConfiguration: ConfigType<typeof googleAIConfig>
     ) {
-        const apiKey = this.voyageConfiguration.apiKey || process.env.VOYAGE_API_KEY
-        this.client = new VoyageAIClient({ apiKey })
+        const apiKey = this.googleAIConfiguration.apiKey
+        this.genAI = new GoogleGenerativeAI(apiKey)
+        this.embeddingModel = this.genAI.getGenerativeModel({ model: 'text-embedding-004' })
     }
     async getEmbedding(text: string): Promise<number[]> {
-        const results = await this.client.embed({
-            input: text,
-            model: 'voyage-3-large'
-        })
-        return results.data[0].embedding
+        //Implement Google AI embedding
+        const embedding = await this.embeddingModel.embedContent(text)
+        return embedding.embedding.values
     }
 }

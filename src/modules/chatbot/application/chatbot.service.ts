@@ -1,20 +1,25 @@
 import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common'
 import { ChatRequestDto } from '../dtos'
-import { BuildKnowledgeDB } from '../dtos/build-astra-db.dto'
+import { BuildKnowledgeDB } from '../dtos/build-knowledge-db.dto'
 import { RetrievalProvider } from './retrieval.provider'
 import { GetEmbeddingProvider } from './get-embedding.provider'
 import { ChatBotRepositoryInterface } from '../repository/chatbot.repository.interface'
 import { GenerationProvider } from './generation.provider'
+import { ChatbotVersion } from '../schemas/chatbot_version.schemas'
+import { UpdateChatbotDto } from '../dtos/update-chatbot.dto'
+import { CreateChatbotVersionDto } from '../dtos/create-chatbot-version.dto'
 
 @Injectable()
 export class ChatBotService {
     private readonly systemPrompt = `
         You are an AI assistant who knows everything about the principle of register a thesis
          at University of Information Technology - VNUHCM and relevant regulations about thesis,
-        project1, project2 registration. Use the below context to augment what you know about topic registration proccess. 
+        People who request information are students of University of Information Technology - VNUHCM.
+        project1, project2 registration, science research. Use the below context to augment what you know about topic registration. 
         The context will provide you with the most recent page from uit website that is place to publish regulations about thesis registration with students.
         If the context doesn't include the information you need, answer based on your existing knowledge and don't mention the source of your information or what the context does or doesn't include.
         Format responses using markdown where applicable and don't return images.
+
         `
     constructor(
         private readonly retrievalProvider: RetrievalProvider,
@@ -40,6 +45,7 @@ export class ChatBotService {
             let vector: number[]
             try {
                 vector = await this.getEmbeddingProvider.getEmbedding(latestMessage)
+                console.log('embedding lastmessage', vector.length)
             } catch (err) {
                 console.error('Embedding error:', err)
                 throw new HttpException(
@@ -50,14 +56,11 @@ export class ChatBotService {
                     HttpStatus.INTERNAL_SERVER_ERROR
                 )
             }
-            const chatBot = await this.chatBotRepository.getChatBotEnabled()
-            if (!chatBot) {
-                throw new HttpException('No enabled chatbot found', HttpStatus.NOT_FOUND)
-            }
+
             // Query database for similar docs
             let documents: any[] = []
             try {
-                documents = await this.retrievalProvider.searchSimilarDocuments(chatBot.knowledge_sourceIds, vector)
+                documents = await this.retrievalProvider.searchSimilarDocuments(vector)
             } catch (err) {
                 console.error('❌ Database query error:', err)
                 throw new HttpException(
@@ -107,7 +110,18 @@ export class ChatBotService {
     }
 
     // tạo mới
-    async buildKnowledgeDB(buildKnowledgeDB: BuildKnowledgeDB): Promise<boolean> {
-        return this.retrievalProvider.buildKnowledgeDocuments(buildKnowledgeDB)
+    async buildKnowledgeDB(userId: string, buildKnowledgeDB: BuildKnowledgeDB): Promise<boolean> {
+        console.log('Building Knowledge DB with documents:', buildKnowledgeDB.knowledgeDocuments)
+        return this.retrievalProvider.buildKnowledgeDocuments(userId, buildKnowledgeDB)
+    }
+    public async getChatBotEnabledVersion(): Promise<ChatbotVersion | null> {
+        const chatBot = await this.chatBotRepository.getChatBotEnabled()
+        return chatBot
+    }
+    public async updateChatbotVersion(id: string, updateChatbotDto: UpdateChatbotDto): Promise<ChatbotVersion | null> {
+        return this.chatBotRepository.updateChatbotVersion(id, updateChatbotDto)
+    }
+    public async createChatbotVersion(createChatbotDto: CreateChatbotVersionDto): Promise<ChatbotVersion> {
+        return this.chatBotRepository.create(createChatbotDto)
     }
 }

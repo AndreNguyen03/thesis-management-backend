@@ -30,7 +30,7 @@ import { FieldsModule } from './modules/fields/fields.module'
 import { MajorsModule } from './modules/majors/majors.module'
 import { RegistrationsModule } from './modules/registrations/registrations.module'
 import { KnowledgeSourceModule } from './modules/knowledge-source/knowledge-source.module'
-import voyageConfig from './auth/config/voyage.config'
+import { googleAIConfig } from './config/googleai.config'
 
 const ENV = process.env.NODE_ENV
 
@@ -63,9 +63,8 @@ const ENV = process.env.NODE_ENV
         PaginationModule,
         MailModule,
 
-        // Voyage config
-        ConfigModule.forFeature(voyageConfig),
-
+        // GoogleAI config
+        ConfigModule.forFeature(googleAIConfig),
         // JWT config
         ConfigModule.forFeature(jwtConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),

@@ -10,9 +10,16 @@ export class CreateKnowledgeSourceProvider {
         @Inject('IKnowledgeSourceRepository') private readonly knowledgeSourceRepository: IKnowledgeSourceRepository
     ) {}
 
-    public async createKnowledgeSource(createKnowledgeSourceDto: CreateKnowledgeSourceDto): Promise<KnowledgeSource> {
+    public async createKnowledgeSource(
+        userId: string,
+        createKnowledgeSourceDto: CreateKnowledgeSourceDto
+    ): Promise<KnowledgeSource> {
         // Logic to create a knowledge source
-        const knowledgeSource = await this.knowledgeSourceRepository.create(createKnowledgeSourceDto)
+        const knowledgeSource = await this.knowledgeSourceRepository.create({
+            ...createKnowledgeSourceDto,
+            owner: userId
+        })
+        console.log('Created knowledge source:', knowledgeSource._id)
         return knowledgeSource
     }
 }

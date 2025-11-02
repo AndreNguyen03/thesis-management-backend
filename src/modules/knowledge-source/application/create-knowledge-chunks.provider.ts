@@ -7,14 +7,20 @@ import { CreateKnowledgeChunkDto } from '../dto/create-knowledge-chunk.dto'
 export class CreateKnowledgeChunksProvider {
     constructor(
         private readonly createSearchIndexerProvider: CreateSearchIndexerProvider,
-        @Inject("IKnowledgeChunkRepository") private readonly knowledgeChunkRepository: IKnowledgeChunkRepository
+        @Inject('IKnowledgeChunkRepository') private readonly knowledgeChunkRepository: IKnowledgeChunkRepository
     ) {}
     //name indexer default
     private readonly DEFAULT_INDEXER_NAME = 'vector_indexer'
-    public async createKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto) {
+    public async createKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto): Promise<boolean> {
         //Create indexer when create knowledge chunks
         //Check if indexer exists and create if not exists
-        await this.createSearchIndexerProvider.createSearchIndexer(this.DEFAULT_INDEXER_NAME)
-        await this.knowledgeChunkRepository.createManyKnowledgeChunks(createKnowledgeChunkDtos)
+        console.log('chunks provider called', createKnowledgeChunkDtos.source_id)
+        try {
+            await this.createSearchIndexerProvider.createSearchIndexer(this.DEFAULT_INDEXER_NAME)
+            return await this.knowledgeChunkRepository.createKnowledgeChunk(createKnowledgeChunkDtos)
+        } catch (error) {
+            console.error('Error creating knowledge chunks:', error)
+            throw error
+        }
     }
 }
