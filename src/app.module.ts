@@ -31,11 +31,21 @@ import { MajorsModule } from './modules/majors/majors.module'
 import { RegistrationsModule } from './modules/registrations/registrations.module'
 import { KnowledgeSourceModule } from './modules/knowledge-source/knowledge-source.module'
 import { googleAIConfig } from './config/googleai.config'
+import { BullModule } from '@nestjs/bull'
 
 const ENV = process.env.NODE_ENV
 
 @Module({
     imports: [
+        BullModule.forRoot({
+            redis: {
+                host: 'localhost',
+                port: 6379
+            }
+        }),
+        BullModule.registerQueue({
+            name: 'knowledge-processing'
+        }),
         // ConfigModule global
         ConfigModule.forRoot({
             isGlobal: true,

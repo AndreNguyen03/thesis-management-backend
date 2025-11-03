@@ -39,10 +39,10 @@ export class ChatController {
     }
 
     @Post('/build-knowledge-db')
-    @Auth(AuthType.Bearer)
+    @Auth(AuthType.None)
     async buildKnowledgeDB(@Body() buildKnowledgeDB: BuildKnowledgeDB, @Req() req: { user: ActiveUserData }) {
         try {
-            const result = await this.chatBotService.buildKnowledgeDB(req.user.sub, buildKnowledgeDB)
+            await this.chatBotService.buildKnowledgeDB(req.user.sub, buildKnowledgeDB)
             return { message: 'Knowledge DB built successfully' }
         } catch (error) {
             return { message: 'Error building Knowledge DB', error: error.message }

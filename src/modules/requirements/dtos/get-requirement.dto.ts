@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer'
 
-export class GetFieldReponseDto {
+export class GetRequirementReponseDto {
     @Expose()
     _id: string
     @Expose()
@@ -15,7 +15,7 @@ export class GetFieldReponseDto {
     updatedAt: Date
 }
 
-export class GetFieldNameReponseDto {
+export class GetRequirementNameReponseDto {
     @Expose()
     name: string
     @Expose()

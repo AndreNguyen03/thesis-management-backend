@@ -8,6 +8,7 @@ import { GenerationProvider } from './generation.provider'
 import { ChatbotVersion } from '../schemas/chatbot_version.schemas'
 import { UpdateChatbotDto } from '../dtos/update-chatbot.dto'
 import { CreateChatbotVersionDto } from '../dtos/create-chatbot-version.dto'
+import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
 
 @Injectable()
 export class ChatBotService {
@@ -110,7 +111,7 @@ export class ChatBotService {
     }
 
     // tạo mới
-    async buildKnowledgeDB(userId: string, buildKnowledgeDB: BuildKnowledgeDB): Promise<boolean> {
+    async buildKnowledgeDB(userId: string, buildKnowledgeDB: BuildKnowledgeDB): Promise<KnowledgeSource[]> {
         console.log('Building Knowledge DB with documents:', buildKnowledgeDB.knowledgeDocuments)
         return this.retrievalProvider.buildKnowledgeDocuments(userId, buildKnowledgeDB)
     }
