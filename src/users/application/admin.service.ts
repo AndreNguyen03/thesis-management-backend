@@ -33,7 +33,7 @@ export class AdminService extends BaseServiceAbstract<Admin> {
     }
 
     // len controller moi map sang dto
-    async update(id: string, dto: UpdateAdminDto): Promise<Admin | null> {
+    async updateAdmin(id: string, dto: UpdateAdminDto): Promise<Admin | null> {
         const updateData: Partial<Admin> = {}
         Object.keys(dto).forEach((key) => {
             const val = (dto as any)[key]

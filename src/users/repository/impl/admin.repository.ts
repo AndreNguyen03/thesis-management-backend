@@ -8,15 +8,15 @@ import { Admin, AdminDocument } from '../../schemas/admin.schema'
 
 @Injectable()
 export class AdminRepository extends BaseRepositoryAbstract<Admin> implements AdminRepositoryInterface {
-    constructor(@InjectModel(Admin.name) private readonly adminRepository: Model<Admin>) {
-        super(adminRepository)
+    constructor(@InjectModel(Admin.name) private readonly adminModel: Model<Admin>) {
+        super(adminModel)
     }
 
     async findByEmail(email: string): Promise<AdminDocument | null> {
-        return this.adminRepository.findOne({ email, deleted_at: null }).exec()
+        return this.adminModel.findOne({ email, deleted_at: null }).exec()
     }
 
     async updatePassword(id: string, newHash: string): Promise<void> {
-        await this.adminRepository.updateOne({ _id: id, deleted_at: null }, { password_hash: newHash }).exec()
+        await this.adminModel.updateOne({ _id: id, deleted_at: null }, { password_hash: newHash }).exec()
     }
 }

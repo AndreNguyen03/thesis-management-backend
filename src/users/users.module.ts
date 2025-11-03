@@ -14,6 +14,8 @@ import { LecturerRepository } from './repository/impl/lecturer.repository'
 import { StudentRepository } from './repository/impl/student.repository'
 import { UserController } from './user.controller'
 import { UserService } from './application/users.service'
+import { User, UserSchema } from './schemas/users.schema'
+import { UserRepository } from './repository/impl/user.repository'
 
 @Module({
     controllers: [UserController],
@@ -30,12 +32,17 @@ import { UserService } from './application/users.service'
             provide: 'AdminRepositoryInterface',
             useClass: AdminRepository
         },
+         {
+            provide: 'UserRepositoryInterface',
+            useClass: UserRepository
+        },
         StudentService,
         LecturerService,
         AdminService,
         UserService
     ],
     exports: [
+        'UserRepositoryInterface',
         'StudentRepositoryInterface',
         'LecturerRepositoryInterface',
         'AdminRepositoryInterface',
@@ -50,6 +57,7 @@ import { UserService } from './application/users.service'
         MongooseModule.forFeature([
             { name: Student.name, schema: StudentSchema },
             { name: Lecturer.name, schema: LecturerSchema },
+            { name: User.name, schema: UserSchema },
             { name: Admin.name, schema: AdminSchema }
         ]),
         ConfigModule.forFeature(profileConfig)

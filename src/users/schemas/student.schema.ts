@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
 
 @Schema()
@@ -18,8 +18,11 @@ export type StudentDocument = HydratedDocument<Student>
 
 @Schema({ collection: 'students', timestamps: true })
 export class Student extends BaseEntity {
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+    userId: mongoose.Schema.Types.ObjectId
+
     @Prop({ required: true, default: '' })
-    fullName: string
+    studentCode: string
 
     @Prop({ required: true, default: '' })
     class: string
@@ -27,37 +30,13 @@ export class Student extends BaseEntity {
     @Prop({ required: true, default: '' })
     major: string
 
-    @Prop({ required: true, default: '' })
-    email: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Faculty' })
+    facultyId: mongoose.Schema.Types.ObjectId
 
-    @Prop({ default: '' })
-    phone: string
-
-    @Prop({ required: true, default: '' })
-    password_hash: string
-
-    @Prop({ required: true, default: 'student' })
-    role: 'student'
-
-    @Prop({ default: '' })
-    avatar: string
-
-    @Prop({ default: true })
-    isActive: boolean
-
-    @Prop({ default: '' })
-    introduction: string
-
-    @Prop({ type: [String], default: [] })
+    @Prop({ default: [] })
     skills: string[]
 
-    @Prop({ type: [StudentProject], default: [] })
-    projects: StudentProject[]
-
-    @Prop({ type: [String], default: [] })
-    subjects: string[]
-
-    @Prop({ type: [String], default: [] })
+    @Prop({ default: [] })
     interests: string[]
 }
 

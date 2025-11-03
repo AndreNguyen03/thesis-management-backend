@@ -15,6 +15,7 @@ import {
     TokenNotFoundException,
     UserNotFoundException
 } from '../../common/exceptions'
+import { User } from '../../users/schemas/users.schema'
 
 @Injectable()
 export class TokenProvider {
@@ -26,7 +27,7 @@ export class TokenProvider {
         private readonly usersService: UserService
     ) {}
 
-    public async issueTokens(user: Student | Lecturer | Admin, deviceInfo: string, ipAddress: string) {
+    public async issueTokens(user: User, deviceInfo: string, ipAddress: string) {
         const userId = user._id?.toString()
 
         if (!userId) {
@@ -109,7 +110,7 @@ export class TokenProvider {
         )
     }
 
-    public async generateToken(userId: string, user: Student | Lecturer | Admin, deviceId: string) {
+    public async generateToken(userId: string, user: User, deviceId: string) {
         if (!userId) {
             throw new Error('User ID is missing')
         }

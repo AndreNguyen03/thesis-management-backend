@@ -1,4 +1,5 @@
-import { FindAllResponse } from "../../types/common.type"
+
+import { Paginated } from "../../../common/pagination/interface/paginated.interface"
 import { BaseEntity } from "../entity/base.entity"
 import { BaseRepositoryInterface } from "../repository/base.repository.interface"
 import { BaseServiceInterface } from "./base.service.interface"
@@ -10,7 +11,7 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
         return await this.repository.create(create_dto)
     }
 
-    async findAll(filter?: object, options?: object): Promise<FindAllResponse<T>> {
+    async findAll(filter?: object, options?: object): Promise<Paginated<T>> {
         return await this.repository.findAll(filter ?? {}, options ?? {})
     }
     async findOneById(id: string): Promise<T | null> {
