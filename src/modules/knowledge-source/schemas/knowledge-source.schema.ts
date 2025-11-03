@@ -29,11 +29,5 @@ export class KnowledgeSource extends BaseEntity {
     owner: string
     @Prop({ required: false, default: null })
     last_processed_at: Date
-
-    @Prop({ required: false, type: [Number], default: [] })
-    metadata: {
-        text: string
-        plot_embedding_voyage_3_large: number[]
-    }[]
 }
 export const KnowledgeSourceSchema = SchemaFactory.createForClass(KnowledgeSource)

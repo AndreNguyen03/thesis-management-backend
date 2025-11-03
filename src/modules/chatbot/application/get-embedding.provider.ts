@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { ConfigType } from '@nestjs/config'
 import { GenerativeModel, GoogleGenerativeAI } from '@google/generative-ai'
-
 import { googleAIConfig } from '../../../config/googleai.config'
-import { EmbeddingConfig } from '../interfaces/ai-interface'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
+
 
 @Injectable()
 export class GetEmbeddingProvider {

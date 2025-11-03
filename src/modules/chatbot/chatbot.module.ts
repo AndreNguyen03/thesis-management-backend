@@ -1,5 +1,7 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { BullModule } from '@nestjs/bull'
+
 import { ChatController } from './chatbot.controller'
 import { ChatBotService } from './application/chatbot.service'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -12,6 +14,7 @@ import { ChatBotRepository } from './repository/impl/chatbot.repository'
 import { ChatbotVersion, ChatBotVersionSchema } from './schemas/chatbot_version.schemas'
 import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schemas/knowledge-chunk.schema'
 import { googleAIConfig } from '../../config/googleai.config'
+import { KnowledgeProcessingProcessor } from './processors/knowledge-processing.processor'
 
 @Module({
     controllers: [ChatController],
@@ -23,7 +26,8 @@ import { googleAIConfig } from '../../config/googleai.config'
         {
             provide: 'ChatBotRepositoryInterface',
             useClass: ChatBotRepository
-        }
+        },
+        KnowledgeProcessingProcessor
     ],
     imports: [
         ConfigModule.forFeature(googleAIConfig),
@@ -32,7 +36,8 @@ import { googleAIConfig } from '../../config/googleai.config'
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
         ]),
-        forwardRef(() => KnowledgeSourceModule)
+        forwardRef(() => KnowledgeSourceModule),
+        BullModule.registerQueue({ name: 'knowledge-processing' })
     ],
     exports: [ChatBotService]
 })

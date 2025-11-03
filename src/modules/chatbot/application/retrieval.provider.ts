@@ -1,4 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { InjectQueue } from '@nestjs/bull'
+import { Queue } from 'bullmq'
 import { BuildKnowledgeDB } from '../dtos/build-knowledge-db.dto'
 import { CreateKnowledgeSourceProvider } from '../../knowledge-source/application/create-knowledge-source.provider'
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
@@ -8,36 +10,49 @@ import { CreateKnowledgeChunksProvider } from '../../knowledge-source/applicatio
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider'
 import { KnowledgeChunk } from '../../knowledge-source/schemas/knowledge-chunk.schema'
+import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
 
 @Injectable()
 export class RetrievalProvider {
     constructor(
+        private readonly getEmbeddingProvider: GetEmbeddingProvider,
         @Inject()
         private readonly knowledgeChunksProvider: CreateKnowledgeChunksProvider,
         @Inject() private readonly knowledgeSourceProvider: CreateKnowledgeSourceProvider,
         @Inject() private readonly searchSimilarDocumentsProvider: SearchSimilarDocumentsProvider,
-
-        private readonly getEmbeddingProvider: GetEmbeddingProvider
+        @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue
     ) {}
 
-    public async buildKnowledgeDocuments(userId: string, buildKnowledgeDB: BuildKnowledgeDB): Promise<boolean> {
+    public async searchSimilarDocuments(vectorSearch: number[]): Promise<KnowledgeChunk[]> {
+        // Search similar documents in the database
+        return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch)
+    }
+
+    public async buildKnowledgeDocuments(
+        userId: string,
+        buildKnowledgeDB: BuildKnowledgeDB
+    ): Promise<KnowledgeSource[]> {
+        const knowledgeSources: KnowledgeSource[] = []
         for (const doc of buildKnowledgeDB.knowledgeDocuments) {
             //Store knowledge source metadata into database incase of URL type
             if (doc.source_type === SourceType.URL) {
                 // Add knowledge documents to database
                 const storedKnowledgeDoc = await this.knowledgeSourceProvider.createKnowledgeSource(userId, doc)
                 //Bắt đầu xử lý dữ liệu crawl-split-embed-store cho từng doc
+                // Gửi job vào BullMQ
                 await this.loadSampleData(storedKnowledgeDoc._id.toString(), doc.source_location)
+                await this.knowledgeQueue.add('processKnowledge', {
+                    sourceId: storedKnowledgeDoc._id.toString(),
+                    url: doc.source_location
+                })
+                knowledgeSources.push(storedKnowledgeDoc)
             }
         }
-        console.log('Completed building knowledge documents.')
-        return true
+        console.log('Completed building basic knowledge documents.')
+        return knowledgeSources
     }
-    public async searchSimilarDocuments(vectorSearch: number[]): Promise<KnowledgeChunk[]> {
-        // Search similar documents in the database
-        return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch)
-    }
-    private async loadSampleData(sourceId: string, url: string) {
+
+    public async loadSampleData(sourceId: string, url: string) {
         //Declare splitter to split text into chunks
         const splitter = new RecursiveCharacterTextSplitter({
             chunkSize: 1024,
