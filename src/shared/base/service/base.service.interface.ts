@@ -1,4 +1,4 @@
-import { FindAllResponse } from "../../types/common.type"
+import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 
 export interface Write<T> {
     create(item: T | any): Promise<T>
@@ -7,7 +7,7 @@ export interface Write<T> {
 }
 
 export interface Read<T> {
-    findAll(filter?: object, options?: object): Promise<FindAllResponse<T>>
+    findAll(filter?: object, options?: object): Promise<Paginated<T>>
     findOneById(id: string): Promise<T | null>
 }
 

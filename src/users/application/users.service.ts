@@ -1,69 +1,28 @@
-import { Injectable } from '@nestjs/common'
-import { StudentService } from './student.service'
-import { LecturerService } from './lecturer.service'
-import { AdminService } from './admin.service'
-import { Admin } from '../schemas/admin.schema'
-import { Student } from '../schemas/student.schema'
-import { Lecturer } from '../schemas/lecturer.schema'
-import { AdminResponseDto } from '../dtos/admin.dto'
-import { StudentResponseDto } from '../dtos/student.dto'
-import { LecturerResponseDto } from '../dtos/lecturer.dto'
+import { Inject, Injectable } from '@nestjs/common'
+import { UserRepositoryInterface } from '../repository/user.repository.interface'
+import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
+import { User } from '../schemas/users.schema'
 
 @Injectable()
-export class UserService {
+export class UserService extends BaseServiceAbstract<User> {
     constructor(
-        private readonly studentService: StudentService,
-        private readonly lecturerService: LecturerService,
-        private readonly adminService: AdminService
-    ) {}
-
-    toResponseDto(user: Admin | Student | Lecturer): AdminResponseDto | StudentResponseDto | LecturerResponseDto {
-        switch (user.role) {
-            case 'admin':
-                return this.adminService.toResponseDto(user)
-            case 'student':
-                return this.studentService.toResponseDto(user)
-            case 'lecturer':
-                return this.lecturerService.toResponseDto(user)
-        }
+        @Inject('UserRepositoryInterface')
+        private readonly userRepository: UserRepositoryInterface
+    ) {
+        super(userRepository)
     }
 
-    async findById(id: string) {
-        const admin = await this.adminService.getById(id)
-        if (admin) return admin
-
-        const lecturer = await this.lecturerService.getById(id)
-        if (lecturer) return lecturer
-
-        const student = await this.studentService.getById(id)
-        if (student) return student
-
-        return null
+    async findByEmail(email: string): Promise<User | null> {
+        return await this.userRepository.findByEmail(email)
     }
 
-    async findByEmail(email: string) {
-        const admin = await this.adminService.findByEmail(email)
-        if (admin) return admin
-
-        const lecturer = await this.lecturerService.findByEmail(email)
-        if (lecturer) return lecturer
-
-        const student = await this.studentService.findByEmail(email)
-        if (student) return student
-
-        return null
+    async findById(id: string): Promise<User | null> {
+        const user = await this.findOneById(id)
+        return user
     }
 
-    async updatePassword(id: string, newPasswordHash: string) {
-        const admin = await this.adminService.getById(id)
-        if (admin) return this.adminService.updatePassword(id, newPasswordHash)
-
-        const lecturer = await this.lecturerService.getById(id)
-        if (lecturer) return this.lecturerService.updatePassword(id, newPasswordHash)
-
-        const student = await this.studentService.getById(id)
-        if (student) return this.studentService.updatePassword(id, newPasswordHash)
-
-        return null
+    async updatePassword(id: string, newPasswordHash: string): Promise<boolean> {
+        const result = await this.userRepository.updatePassword(id, newPasswordHash)
+        return result
     }
 }

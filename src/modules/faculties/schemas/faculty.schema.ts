@@ -1,11 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
-@Schema({
-    timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
-    }
-})
+@Schema({ collection: 'faculties', timestamps: true })
 export class Faculty extends BaseEntity {
     @Prop({ type: String, required: true })
     name: string

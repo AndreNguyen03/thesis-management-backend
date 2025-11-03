@@ -1,7 +1,4 @@
-import { Prop } from '@nestjs/mongoose'
-import mongoose from 'mongoose'
 import { RegistrationStatus } from '../../enum'
-import { ThesisDto } from '../../../../users/dtos/lecturer.dto'
 import { GetTopicResponseDto } from '../getTopics'
 import { Expose, Type } from 'class-transformer'
 @Expose()

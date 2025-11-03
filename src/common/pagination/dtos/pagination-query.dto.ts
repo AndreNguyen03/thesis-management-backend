@@ -1,11 +1,27 @@
-import { IsOptional, IsPositive } from 'class-validator'
+import { IsOptional, IsPositive, IsString, IsIn } from 'class-validator'
 
 export class PaginationQueryDto {
     @IsOptional()
     @IsPositive()
-    limit: number = 10
+    page: number = 1 
 
     @IsOptional()
     @IsPositive()
-    page: number = 1
+    page_size: number = 10 
+
+    @IsOptional()
+    @IsString()
+    search_by?: string 
+
+    @IsOptional()
+    @IsString()
+    query?: string 
+
+    @IsOptional()
+    @IsString()
+    sort_by?: string 
+
+    @IsOptional()
+    @IsIn(['asc', 'desc'])
+    sort_order?: 'asc' | 'desc' 
 }

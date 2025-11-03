@@ -4,7 +4,6 @@ import { AppService } from './app.service'
 import { UsersModule } from './users/users.module'
 import { AuthModule } from './auth/auth.module'
 import { ConfigModule } from '@nestjs/config'
-import { PaginationModule } from './common/pagination/pagination.module'
 import appConfig from './config/app.config'
 import envValidation from './config/env.validation'
 import jwtConfig from './auth/config/jwt.config'
@@ -70,7 +69,6 @@ const ENV = process.env.NODE_ENV
         // Business modules
         UsersModule,
         AuthModule,
-        PaginationModule,
         MailModule,
 
         // GoogleAI config

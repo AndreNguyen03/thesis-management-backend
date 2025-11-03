@@ -1,16 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
+import { User } from './users.schema'
 
 export type AdminDocument = HydratedDocument<Admin>
 
 @Schema({ collection: 'admins', timestamps: true })
-export class Admin extends BaseEntity {
-    @Prop({ required: true, default: '' }) fullName: string
-    @Prop({ required: true, default: '' }) email: string
-    @Prop({ required: true, default: '' }) password_hash: string
-    @Prop({ default: true }) isActive: boolean
-    @Prop({ default: 'admin' }) role: 'admin'
-}
+export class Admin extends User {}
 
 export const AdminSchema = SchemaFactory.createForClass(Admin)
