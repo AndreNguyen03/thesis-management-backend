@@ -41,11 +41,11 @@ export class RetrievalProvider {
                 //Bắt đầu xử lý dữ liệu crawl-split-embed-store cho từng doc
                 // Gửi job vào BullMQ
                 await this.loadSampleData(storedKnowledgeDoc._id.toString(), doc.source_location)
-                await this.knowledgeQueue.add('processKnowledge', {
-                    sourceId: storedKnowledgeDoc._id.toString(),
-                    url: doc.source_location
-                })
-                knowledgeSources.push(storedKnowledgeDoc)
+                // await this.knowledgeQueue.add('processKnowledge', {
+                //     sourceId: storedKnowledgeDoc._id.toString(),
+                //     url: doc.source_location
+                // })
+                // knowledgeSources.push(storedKnowledgeDoc)
             }
         }
         console.log('Completed building basic knowledge documents.')

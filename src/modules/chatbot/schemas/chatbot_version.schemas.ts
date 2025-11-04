@@ -33,8 +33,8 @@ export class ChatbotVersion extends BaseEntity {
     description: string
     @Prop({ required: true, enum: ChatbotStatus, default: ChatbotStatus.DISABLED })
     status: ChatbotStatus
-    @Prop({ required: false, ref: 'KnowledgeSource', type: [mongoose.Schema.Types.ObjectId], default: [] })
-    knowledge_sourceIds: string[]
+    // @Prop({ required: false, ref: 'KnowledgeSource', type: [mongoose.Schema.Types.ObjectId], default: [] })
+    // knowledge_sourceIds: string[]
     @Prop({ required: false, type: [QuerySuggestion] })
     query_suggestions: QuerySuggestion[]
 }

@@ -9,8 +9,8 @@ export class CreateChatbotVersionDto {
     description: string
     @IsOptional() // lúc tạo hỏi áp dụng luôn chưa
     status: ChatbotStatus = ChatbotStatus.DISABLED
-    @IsNotEmpty()
-    knowledge_sourceIds: string[]
+    // @IsNotEmpty()
+    // knowledge_sourceIds: string[]
     @IsOptional()
     query_suggestions: QuerySuggestionDto[]
 }

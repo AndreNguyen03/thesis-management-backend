@@ -8,8 +8,8 @@ export class UpdateChatbotDto {
     description: string
     @IsOptional()
     status: ChatbotStatus
-    @IsOptional()
-    knowledge_sourceIds: string[]
+    // @IsOptional()
+    // knowledge_sourceIds: string[]
     @IsOptional()
     query_suggestions: QuerySuggestionDto[]
 }
