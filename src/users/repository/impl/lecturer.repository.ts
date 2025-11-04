@@ -38,11 +38,13 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
         // Update lecturer-related fields
         if (dto.facultyId) {
-            lecturer.facultyId = new mongoose.Schema.Types.ObjectId(dto.facultyId)
+            lecturer.facultyId = new Types.ObjectId(dto.facultyId)
         }
         if (dto.title) {
+            console.log(`dto title, lecturer title`, dto.title, lecturer.title)
             lecturer.title = dto.title
         }
+        await lecturer.save()
 
         return { message: 'Updated successfully' }
     }
@@ -64,12 +66,15 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         }
 
         // Update lecturer fields
-        if (dto.facultyId) lecturer.facultyId = new mongoose.Schema.Types.ObjectId(dto.facultyId)
-        if (dto.title) lecturer.title = dto.title
+        if (dto.facultyId) lecturer.facultyId = new Types.ObjectId(dto.facultyId)
+        if (dto.title) {
+            console.log(`dto title, lecturer title`, dto.title, lecturer.title)
+            lecturer.title = dto.title
+        }
         if (dto.areaInterest) lecturer.areaInterest = dto.areaInterest
         if (dto.researchInterests) lecturer.researchInterests = dto.researchInterests
         if (dto.supervisedThesisIds)
-            lecturer.supervisedThesisIds = dto.supervisedThesisIds.map((id) => new mongoose.Schema.Types.ObjectId(id))
+            lecturer.supervisedThesisIds = dto.supervisedThesisIds.map((id) => new Types.ObjectId(id))
         if (dto.publications) lecturer.publications = dto.publications
         await lecturer.save()
         return { message: 'Profile updated successfully' }

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import mongoose, { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument, Types } from 'mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
 import { Topic } from '../../modules/topics/schemas/topic.schemas'
 import { User } from './users.schema'
@@ -33,13 +33,13 @@ export type LecturerDocument = HydratedDocument<Lecturer>
 @Schema({ collection: 'lecturers', timestamps: true })
 export class Lecturer extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-    userId: mongoose.Schema.Types.ObjectId
+    userId: Types.ObjectId
 
     @Prop({ required: true, enum: AcademicTitle, default: AcademicTitle.Master })
     title: AcademicTitle
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' })
-    facultyId: mongoose.Schema.Types.ObjectId
+    facultyId: Types.ObjectId
 
     @Prop({ type: [String], default: [] })
     areaInterest: string[]
@@ -51,7 +51,7 @@ export class Lecturer extends BaseEntity {
     publications: Publication[]
 
     @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Topic', default: [] })
-    supervisedThesisIds: mongoose.Schema.Types.ObjectId[]
+    supervisedThesisIds: Types.ObjectId[]
 }
 
 export const LecturerSchema = SchemaFactory.createForClass(Lecturer)

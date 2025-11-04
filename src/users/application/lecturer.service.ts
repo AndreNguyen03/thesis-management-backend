@@ -36,6 +36,7 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         title: doc.title,
         role: doc.userId.role,
         facultyId: doc.facultyId._id.toString(),
+        facultyName: doc.facultyId.name,
         isActive: doc.userId.isActive,
         areaInterest: doc.areaInterest,
         researchInterests: doc.researchInterests,

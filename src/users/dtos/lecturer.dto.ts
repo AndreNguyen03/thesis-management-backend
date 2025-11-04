@@ -139,6 +139,7 @@ export class ResponseLecturerProfileDto {
     avatarUrl?: string
     title: AcademicTitle
     facultyId: string
+    facultyName: string
     role: string
     isActive: boolean
     areaInterest?: string[]
