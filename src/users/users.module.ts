@@ -16,6 +16,9 @@ import { UserController } from './user.controller'
 import { UserService } from './application/users.service'
 import { User, UserSchema } from './schemas/users.schema'
 import { UserRepository } from './repository/impl/user.repository'
+import { FacultyBoardRepository } from './repository/impl/faculty-board.repository'
+import { FacultyBoard, FacultyBoardSchema } from './schemas/department-board.schema'
+import { FacultyBoardService } from './application/department-board.service'
 
 @Module({
     controllers: [UserController],
@@ -32,14 +35,19 @@ import { UserRepository } from './repository/impl/user.repository'
             provide: 'AdminRepositoryInterface',
             useClass: AdminRepository
         },
-         {
+        {
             provide: 'UserRepositoryInterface',
             useClass: UserRepository
+        },
+        {
+            provide: 'FacultyBoardRepositoryInterface',
+            useClass: FacultyBoardRepository
         },
         StudentService,
         LecturerService,
         AdminService,
-        UserService
+        UserService,
+        FacultyBoardService
     ],
     exports: [
         'UserRepositoryInterface',
@@ -58,7 +66,8 @@ import { UserRepository } from './repository/impl/user.repository'
             { name: Student.name, schema: StudentSchema },
             { name: Lecturer.name, schema: LecturerSchema },
             { name: User.name, schema: UserSchema },
-            { name: Admin.name, schema: AdminSchema }
+            { name: Admin.name, schema: AdminSchema },
+            { name: FacultyBoard.name, schema: FacultyBoardSchema }
         ]),
         ConfigModule.forFeature(profileConfig)
     ] // Add any other modules that UsersService depends on here

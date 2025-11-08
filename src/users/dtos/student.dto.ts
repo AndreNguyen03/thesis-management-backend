@@ -1,27 +1,9 @@
 import { IsArray, IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
+import { CreateUserDto } from './create-user.dto'
 
 // DTO dùng để tạo mới sinh viên
-export class CreateStudentDto {
-    @IsNotEmpty()
-    @IsEmail()
-    email: string
-
-    @IsNotEmpty()
-    @IsString()
-    password: string
-
-    @IsNotEmpty()
-    @IsString()
-    fullName: string
-
-    @IsNotEmpty()
-    @IsBoolean()
-    isActive: boolean
-
-    @IsString()
-    @IsOptional()
-    phone?: string
+export class CreateStudentDto extends CreateUserDto{
 
     @IsNotEmpty()
     @IsString()

@@ -66,7 +66,7 @@ export class AuthService {
             60 * 15 // TTL 2 phút
         )
 
-        await this.mailService.sendReset PasswordMail(user, token)
+        await this.mailService.sendResetPasswordMail(user, token)
 
         return { message: 'Reset password email has been sent' }
     }

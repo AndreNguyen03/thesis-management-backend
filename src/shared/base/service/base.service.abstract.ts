@@ -26,3 +26,4 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
         return await this.repository.softDelete(id)
     }
 }
+    
