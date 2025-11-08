@@ -13,6 +13,10 @@ import { UpdateKnowledgeChunkProvider } from './application/update-knowledge-chu
 import { ConfigModule } from '@nestjs/config'
 import { googleAIConfig } from '../../config/googleai.config'
 import { ChatBotModule } from '../chatbot/chatbot.module'
+import { KnowledgeSourceController } from './knowledge-source.controller'
+import { KnowledgeSourceService } from './application/knowledge-source.service'
+import { PaginationModule } from '../../common/pagination/pagination.module'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 
 @Module({
     providers: [
@@ -29,7 +33,8 @@ import { ChatBotModule } from '../chatbot/chatbot.module'
         SearchSimilarDocumentsProvider,
         CreateSearchIndexerProvider,
         CreateKnowledgeChunksProvider,
-        UpdateKnowledgeChunkProvider
+        UpdateKnowledgeChunkProvider,
+        KnowledgeSourceService
     ],
     imports: [
         MongooseModule.forFeature([
@@ -37,7 +42,9 @@ import { ChatBotModule } from '../chatbot/chatbot.module'
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
         ]),
         ConfigModule.forFeature(googleAIConfig),
-        forwardRef(() => ChatBotModule)
+        forwardRef(() => ChatBotModule),
+        PaginationModule,
+        PaginationAnModule
     ],
     exports: [
         CreateKnowledgeSourceProvider,
@@ -48,6 +55,7 @@ import { ChatBotModule } from '../chatbot/chatbot.module'
         UpdateKnowledgeChunkProvider,
         'IKnowledgeChunkRepository',
         'IKnowledgeSourceRepository'
-    ]
+    ],
+    controllers: [KnowledgeSourceController]
 })
 export class KnowledgeSourceModule {}

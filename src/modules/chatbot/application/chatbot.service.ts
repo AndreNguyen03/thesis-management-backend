@@ -123,6 +123,7 @@ export class ChatBotService {
         return this.chatBotRepository.updateChatbotVersion(id, updateChatbotDto)
     }
     public async createChatbotVersion(createChatbotDto: CreateChatbotVersionDto): Promise<ChatbotVersion> {
+        
         return this.chatBotRepository.create(createChatbotDto)
     }
 }

@@ -1,6 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
-import { ChatBot } from '../../schemas/chatbot.schemas'
 import { ChatBotRepositoryInterface } from '../chatbot.repository.interface'
 import { Model } from 'mongoose'
 import { ChatbotVersion } from '../../schemas/chatbot_version.schemas'

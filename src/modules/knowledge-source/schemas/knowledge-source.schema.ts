@@ -10,23 +10,29 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
         updatedAt: 'updated_at'
     }
 })
-@Schema({ collection: 'knowledge_sources' })
+@Schema({ collection: 'knowledge_sources', timestamps: true })
 export class KnowledgeSource extends BaseEntity {
     @Prop({ required: true })
     name: string
+
     @Prop({ required: false })
     description: string
+
     @Prop({ required: true, enum: SourceType })
     source_type: SourceType
+
     @Prop({ required: true })
     source_location: string
+
     @Prop({ enum: KnowledgeStatus, default: KnowledgeStatus.DISABLED })
     status: KnowledgeStatus
+
     @Prop({ enum: ProcessingStatus, default: ProcessingStatus.COMPLETED })
     processing_status: ProcessingStatus
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     owner: string
+
     @Prop({ required: false, default: null })
     last_processed_at: Date
 }

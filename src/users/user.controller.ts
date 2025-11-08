@@ -113,4 +113,8 @@ export class UserController {
     async deleteStudent(@Param('id') id: string) {
         return this.studentService.removeStudentById(id)
     }
-}
+
+    @Post('/department-board')
+    async createDepartmentBoard(@Body() dto: CreateDepartmentBoardDto) {    
+        return this.adminService.createDepartmentBoard(dto)
+    }

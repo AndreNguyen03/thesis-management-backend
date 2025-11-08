@@ -7,8 +7,8 @@ import { googleAIConfig } from '../../../config/googleai.config'
 @Injectable()
 export class GetEmbeddingProvider {
     private genAI: GoogleGenerativeAI
-
     private embeddingModel: GenerativeModel
+    
     constructor(
         @Inject(googleAIConfig.KEY)
         private readonly googleAIConfiguration: ConfigType<typeof googleAIConfig>

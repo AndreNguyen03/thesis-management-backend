@@ -31,6 +31,9 @@ import { RegistrationsModule } from './modules/registrations/registrations.modul
 import { KnowledgeSourceModule } from './modules/knowledge-source/knowledge-source.module'
 import { googleAIConfig } from './config/googleai.config'
 import { BullModule } from '@nestjs/bull'
+import { PaginationProvider } from './common/pagination/providers/pagination.provider'
+import { PaginationModule } from './common/pagination/pagination.module'
+import { PaginationAnModule } from './common/pagination-an/pagination.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -98,7 +101,10 @@ const ENV = process.env.NODE_ENV
 
         MajorsModule,
 
-        KnowledgeSourceModule
+        KnowledgeSourceModule,
+
+        PaginationModule,
+        PaginationAnModule
     ],
     controllers: [AppController],
     providers: [
@@ -111,7 +117,8 @@ const ENV = process.env.NODE_ENV
             provide: APP_INTERCEPTOR,
             useClass: DataResponseInterceptor
         },
-        AccessTokenGuard
+        AccessTokenGuard,
+        PaginationProvider
     ]
 })
 // export class AppModule {}
