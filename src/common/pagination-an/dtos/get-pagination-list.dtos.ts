@@ -23,4 +23,11 @@ export class LinkDto {
     last?: string
 }
 
-    
+export class GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => MetaDto)
+    meta: MetaDto
+    @Expose()
+    @Type(() => LinkDto)
+    links: LinkDto
+}

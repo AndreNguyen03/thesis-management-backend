@@ -10,7 +10,6 @@ import { UpdateAdminDto } from './dtos/admin.dto'
 import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from './dtos/lecturer.dto'
 import { UserService } from './application/users.service'
 import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
-import { UserRole } from './enums/user-role'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
 import { FacultyBoardService } from './application/department-board.service'
 
@@ -118,6 +117,7 @@ export class UserController {
         return this.studentService.removeStudentById(id)
     }
 
+    // faculty board endpoint
     @Post('faculty-boards')
     async createFacultyBoard(@Body() dto: CreateFacultyBoardDto) {
         return this.facultyBoardService.createDepartmentTransaction(dto)

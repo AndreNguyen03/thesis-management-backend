@@ -2,15 +2,18 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../schemas/topic.schemas'
-import { CreateTopicDto, GetTopicDetailResponseDto, GetTopicResponseDto } from '../../dtos'
+import { CreateTopicDto, GetTopicDetailResponseDto, GetTopicResponseDto, RequestGetTopicsInPeriodDto, RequestGetTopicsInPhaseDto } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
 import mongoose, { Model, mongo } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
+import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
+import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
         @InjectModel(Topic.name)
-        private readonly topicRepository: Model<Topic>
+        private readonly topicRepository: Model<Topic>,
+        private readonly paginationProvider: PaginationProvider
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
@@ -226,7 +229,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
         return await this.topicRepository.aggregate(pipeline)
     }
-    private getTopicInfoPipelineAbstract(userId: string) {
+    private getTopicInfoPipelineAbstract(userId?: string) {
         let pipeline: any[] = []
         let save_embedded_pl: any[] = []
         // lấy các bài viết đã lưu liên quan tới cặp {userId,topicId(for each)}
@@ -314,24 +317,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     as: 'students'
                 }
             },
-            {
-                $addFields: {
-                    isRegistered: {
-                        $or: [
-                            {
-                                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$studentRefs.studentId', []] }]
-                            },
-                            {
-                                $in: [
-                                    new mongoose.Types.ObjectId(userId),
-                                    { $ifNull: ['$lecturerRefs.lecturerId', []] }
-                                ]
-                            }
-                        ]
-                    },
-                    isSaved: { $gt: [{ $size: '$savedInfo' }, 0] }
-                }
-            },
             //join fields qua ref_fields_topics
             {
                 $lookup: {
@@ -411,6 +396,39 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         )
+        if (userId) {
+            pipeline.push({
+                $addFields: {
+                    isRegistered: {
+                        $or: [
+                            {
+                                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$studentRefs.studentId', []] }]
+                            },
+                            {
+                                $in: [
+                                    new mongoose.Types.ObjectId(userId),
+                                    { $ifNull: ['$lecturerRefs.lecturerId', []] }
+                                ]
+                            }
+                        ]
+                    },
+                    isSaved: { $gt: [{ $size: '$savedInfo' }, 0] }
+                }
+            })
+        }
         return pipeline
+    }
+    async getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId) } })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
+    }
+
+      async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({ $match: { currentPhaseId: new mongoose.Types.ObjectId(phaseId) } })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
     }
 }

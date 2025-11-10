@@ -2,6 +2,7 @@ import { IsArray, IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString }
 import { AcademicTitle } from '../enums/academic-title'
 import { Publication } from '../schemas/lecturer.schema'
 import { PartialType } from '@nestjs/mapped-types'
+import { Expose } from 'class-transformer'
 
 export class CreateLecturerDto {
     @IsNotEmpty()
@@ -147,4 +148,14 @@ export class ResponseLecturerProfileDto {
     supervisedThesisIds?: string[]
     createdAt?: Date
     updatedAt?: Date
+}
+
+@Expose()
+export class ReponseMiniLecturerDto {
+    _id: string
+    fullName: string
+    email: string
+    phone: string
+    avatarUrl: string
+    title: AcademicTitle
 }

@@ -9,7 +9,7 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
-    PatchTopicDto
+    PatchTopicDto,
 } from './dtos'
 import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
@@ -99,4 +99,6 @@ export class TopicController {
     async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
     }
+
+   
 }

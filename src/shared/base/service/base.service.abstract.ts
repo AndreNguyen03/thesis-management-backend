@@ -1,4 +1,5 @@
 
+import { BadRequestException } from "@nestjs/common"
 import { Paginated } from "../../../common/pagination/interface/paginated.interface"
 import { BaseEntity } from "../entity/base.entity"
 import { BaseRepositoryInterface } from "../repository/base.repository.interface"
@@ -23,6 +24,10 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
     }
 
     async remove(id: string) {
+        const existingModel = await this.repository.findOneById(id)
+        if (!existingModel) {
+            throw new BadRequestException(`Đối tượng cần xóa không tồn tại`)
+        }
         return await this.repository.softDelete(id)
     }
 }

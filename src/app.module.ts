@@ -34,6 +34,7 @@ import { BullModule } from '@nestjs/bull'
 import { PaginationProvider } from './common/pagination/providers/pagination.provider'
 import { PaginationModule } from './common/pagination/pagination.module'
 import { PaginationAnModule } from './common/pagination-an/pagination.module'
+import { PeriodsModule } from './modules/periods/periods.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -104,7 +105,8 @@ const ENV = process.env.NODE_ENV
         KnowledgeSourceModule,
 
         PaginationModule,
-        PaginationAnModule
+        PaginationAnModule,
+        PeriodsModule
     ],
     controllers: [AppController],
     providers: [

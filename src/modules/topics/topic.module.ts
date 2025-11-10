@@ -16,6 +16,9 @@ import { RefFieldsTopicsModule } from '../ref_fields_topics/ref_fields_topics.mo
 import { RefRequirementTopics } from '../ref_requirements_topics/schemas/ref_requirement_topics.schemas'
 import { RefRequirementsTopicsModule } from '../ref_requirements_topics/ref_requirements_topics.module'
 import { LecturerRegTopicService } from '../registrations/application/lecturer-reg-topic.service'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { GetTopicProvider } from './providers/get-topic.provider'
+import { ChangeTopicStatusProvider } from './providers/change-topic-status.provider'
 @Module({
     controllers: [TopicController],
     providers: [
@@ -28,9 +31,13 @@ import { LecturerRegTopicService } from '../registrations/application/lecturer-r
         {
             provide: 'UserSavedTopicRepositoryInterface',
             useClass: UserSavedTopicsRepository
-        }
+        },
+
+        GetTopicProvider,
+
+        ChangeTopicStatusProvider
     ],
-    exports: [TopicService],
+    exports: [TopicService, GetTopicProvider, ChangeTopicStatusProvider],
     imports: [
         forwardRef(() => TopicModule),
         MongooseModule.forFeature([
@@ -43,7 +50,8 @@ import { LecturerRegTopicService } from '../registrations/application/lecturer-r
         RegistrationsModule,
         RefFieldsTopicsModule,
         RefRequirementsTopicsModule,
-        RegistrationsModule
+        RegistrationsModule,
+        PaginationAnModule
     ]
 })
 export class TopicModule {}

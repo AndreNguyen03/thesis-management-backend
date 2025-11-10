@@ -1,7 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types'
 import { Expose, Type } from 'class-transformer'
 import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { LinkDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetPaginatedObjectDto, LinkDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { extend } from 'joi'
 
 export class CreateFacultyDto {
     @IsNotEmpty()
@@ -29,6 +30,8 @@ export class UpdateFacultyDto extends PartialType(CreateFacultyDto) {}
 
 export class GetFacultyDto {
     @Expose()
+    _id: string
+    @Expose()
     name: string
     @Expose()
     email: string
@@ -36,14 +39,8 @@ export class GetFacultyDto {
     urlDirection: string
 }
 
-export class GetPaginatedFacultyDto {
+export class GetPaginatedFacultyDto extends GetPaginatedObjectDto{
     @Expose()
     @Type(() => GetFacultyDto)
     data: GetFacultyDto[]
-    @Expose()
-    @Type(() => MetaDto)
-    meta: MetaDto
-    @Expose()
-    @Type(() => LinkDto)
-    links: LinkDto
 }

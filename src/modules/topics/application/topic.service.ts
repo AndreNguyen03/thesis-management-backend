@@ -1,18 +1,10 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { StudentRepositoryInterface } from '../../../users/repository/student.repository.interface'
-import {
-    CreateErrorException,
-    LecturerNotFoundException,
-    StudentNotFoundException,
-    WrongRoleException
-} from '../../../common/exceptions'
-import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
+import { CreateErrorException } from '../../../common/exceptions'
 import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
-import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto } from '../dtos'
-import { plainToInstance } from 'class-transformer'
-import { CreateSaveTopicDto } from '../dtos/save/create-save-topic.dtos'
+import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto, RequestGetTopicsInPeriodDto } from '../dtos'
 import { RefFieldsTopicsService } from '../../ref_fields_topics/application/ref_fields_topics.service'
 import { RefRequirementsTopicsService } from '../../ref_requirements_topics/application/ref_requirements_topics.service'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
@@ -38,8 +30,8 @@ export class TopicService {
     public async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.getAllTopics(userId)
     }
-    public async getTopicById(topicId: string, userId: string,role:string): Promise<GetTopicResponseDto> {
-        const topic = await this.topicRepository.getTopicById(topicId, userId,role)
+    public async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicResponseDto> {
+        const topic = await this.topicRepository.getTopicById(topicId, userId, role)
         if (!topic) {
             throw new NotFoundException('Đề tài không tồn tại.')
         }
@@ -119,7 +111,7 @@ export class TopicService {
     public async getRegisteredTopics(userId: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findRegisteredTopicsByUserId(userId)
     }
-    public async getCanceledRegisteredTopics(userId: string,userRole:string): Promise<GetTopicResponseDto[]> {
-        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId,userRole)
+    public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
     }
 }

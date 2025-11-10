@@ -23,7 +23,8 @@ export class KnowledgeSourceController {
     async updateKnowledgeSources(@Body() body: UpdateKnowledgeSourceDto, @Param('id') klid: string) {
         const result = await this.knowledgeSourceService.updateKnowledgeSources(klid, body)
         return plainToInstance(GetKnowledgeSourceDto, result, {
-            excludeExtraneousValues: true
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
         })
     }
 }
