@@ -95,6 +95,8 @@ export class TopicController {
 
     @Post('/save-topic/:topicId')
     @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER,UserRole.STUDENT)
+    @UseGuards(RolesGuard)
     async saveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.assignSaveTopic(req.user.sub, topicId)
     }
@@ -186,8 +188,12 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async scoringBoardGradeTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string,@Body() body : RequestGradeTopicDto) {
-        await this.topicService.topicScoring(topicId,req.user.sub,body)
+    async scoringBoardGradeTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Body() body: RequestGradeTopicDto
+    ) {
+        await this.topicService.scoringBoardScoreTopic(topicId, req.user.sub, body)
         return { message: 'Đã chấm điểm đề tài' }
     }
 

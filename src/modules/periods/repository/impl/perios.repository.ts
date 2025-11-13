@@ -1,13 +1,13 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
-import { Period } from '../../schemas/period.schemas'
+import { Period, PeriodPhase } from '../../schemas/period.schemas'
 import { IPeriodRepository } from '../periods.repository.interface'
 import mongoose, { Model } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { GetCurrentPhaseResponseDto } from '../../dtos/period-phase.dtos'
-import { BadRequestException } from '@nestjs/common'
-import { plainToClass, plainToInstance } from 'class-transformer'
+import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
+import { plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
@@ -16,6 +16,20 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         private readonly paginationProvider: PaginationProvider
     ) {
         super(periodModel)
+    }
+    async createPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean> {
+        try {
+            const res = await this.periodModel.findOneAndUpdate(
+                { _id: new mongoose.Types.ObjectId(periodId), isDeleted: false },
+                {
+                    $push: { phases: newPhase },
+                    $set: { currentPhase: newPhase.phase }
+                }
+            )
+            return res !== null
+        } catch (error) {
+            throw new RequestTimeoutException()
+        }
     }
     async getCurrentPhase(periodId: string): Promise<GetCurrentPhaseResponseDto> {
         const res = await this.periodModel
@@ -30,6 +44,33 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         return plainToInstance(GetCurrentPhaseResponseDto, res)
     }
     async getAllPeriods(query: RequestGetPeriodsDto): Promise<Paginated<Period>> {
-        return this.paginationProvider.paginateQuery<Period>(query, this.periodModel)
+        const { startDate, endDate } = query
+        let pipelineSub: any[] = []
+        if (startDate) {
+            pipelineSub.push({ $match: { createdAt: { $gte: new Date(startDate) } } })
+        }
+        if (endDate) {
+            pipelineSub.push({ $match: { updatedAt: { $lte: new Date(endDate) } } })
+        }
+        return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
+    }
+    async deletePeriod(periodId: string): Promise<boolean> {
+        const result = await this.periodModel.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },
+            { $project: { phasesCount: { $size: '$phases' } } }
+        ])
+
+        if (result.length === 0) {
+            throw new BadRequestException('Kỳ không tồn tại hoặc đã bị xóa')
+        }
+        if (result[0].phasesCount > 0) {
+            throw new BadRequestException('Kỳ này đang có giai đoạn có hiệu lực, không thể xóa')
+        }
+
+        const res = await this.periodModel.updateOne(
+            { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
+            { deleted_at: new Date() }
+        )
+        return res.modifiedCount > 0
     }
 }

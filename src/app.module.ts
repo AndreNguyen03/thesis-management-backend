@@ -36,6 +36,7 @@ import { PaginationModule } from './common/pagination/pagination.module'
 import { PaginationAnModule } from './common/pagination-an/pagination.module'
 import { PeriodsModule } from './modules/periods/periods.module'
 import { GetTopicStatusProvider } from './modules/topics/providers/get-status-topic.provider'
+import { UpdateTopicsBatchProvider } from './modules/topics/providers/update-topics-batch.provider'
 
 const ENV = process.env.NODE_ENV
 
@@ -122,7 +123,8 @@ const ENV = process.env.NODE_ENV
         },
         AccessTokenGuard,
         PaginationProvider,
-        GetTopicStatusProvider
+        GetTopicStatusProvider,
+        UpdateTopicsBatchProvider
     ]
 })
 // export class AppModule {}

@@ -1,25 +1,27 @@
-import { IsNotEmpty, IsString } from 'class-validator'
-import { TopicStatus } from '../enum/topic-status.enum'
-import { IsOptional, IsNumber, IsDate, IsArray, IsEnum } from 'class-validator'
+import { PartialType } from '@nestjs/mapped-types'
+import { CreateTopicDto } from './create-topic.dto'
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 import { TopicType } from '../enum/topic-type.enum'
+import { TopicStatus } from '../enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
-import { Grade, PhaseHistory } from '../schemas/topic.schemas'
-export class CreateTopicDto {
-    @IsNotEmpty()
+
+export class PatchTopicDto {
+    @IsOptional()
     @IsString()
     title: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     description: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsEnum(TopicType)
     type: TopicType
 
-    @IsNotEmpty()
+    @IsOptional()
     majorId: string
 
+    @IsOptional()
     @IsNumber()
     maxStudents: number
 
@@ -27,18 +29,18 @@ export class CreateTopicDto {
     @IsOptional()
     createBy: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsEnum(TopicStatus)
     currentStatus: TopicStatus = TopicStatus.Draft // checkbox - nộp luôn hay chưa
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsEnum(PeriodPhaseName)
     currentPhase: string
 
-    @IsNotEmpty()
+    @IsOptional()
     periodId: string
 
-    //temp fields
+    @IsOptional()
     @IsArray()
     fieldIds: string[]
 
@@ -53,10 +55,4 @@ export class CreateTopicDto {
     @IsArray()
     @IsOptional()
     lecturerIds?: string[] | []
-
-    @IsOptional()
-    phaseHistories: PhaseHistory[]
-
-    @IsOptional()
-    grade: Grade[]
 }

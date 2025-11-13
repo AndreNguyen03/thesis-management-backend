@@ -18,7 +18,12 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
     async findOneById(id: string): Promise<T | null> {
         return await this.repository.findOneById(id)
     }
-
+    async findOneByCondition(condition?: object, projection?: string): Promise<T | null> {
+        return await this.repository.findOneByCondition(condition, projection)
+    }
+    async findByCondition(condition?: object, projection?: string): Promise<T[] | null> {
+        return await this.repository.findByCondition(condition, projection)
+    }
     async update(id: string, update_dto: Partial<T>) {
         return await this.repository.update(id, update_dto)
     }

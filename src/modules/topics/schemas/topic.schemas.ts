@@ -16,10 +16,10 @@ export class PhaseHistory extends BaseEntity {
     phaseName: string
     @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
     status: string
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-    actorId: string
-    // @Prop()
-    // notes: string
+    @Prop({ type: String, required: true })
+    actor: string
+    @Prop({ type: String, required: false })
+    notes: string
 }
 
 @Schema({ timestamps: true })

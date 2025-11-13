@@ -25,7 +25,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         const newPhaseHistory = new PhaseHistory()
         newPhaseHistory.phaseName = existingTopic.currentPhase
         newPhaseHistory.status = newStatus
-        newPhaseHistory.actorId = actorId
+        newPhaseHistory.actor = actorId
         if (existingTopic.phaseHistories == null || Array.isArray(existingTopic.phaseHistories)) {
             existingTopic.phaseHistories = []
         }

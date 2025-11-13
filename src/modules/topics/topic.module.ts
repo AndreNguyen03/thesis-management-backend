@@ -18,6 +18,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
 import { GetTopicProvider } from './providers/get-topic.provider'
 import { GetTopicStatusProvider } from './providers/get-status-topic.provider'
 import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-status-and-add-phase-history.provider'
+import { UpdateTopicsBatchProvider } from './providers/update-topics-batch.provider'
 
 @Module({
     controllers: [TopicController],
@@ -37,9 +38,18 @@ import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-sta
 
         GetTopicStatusProvider,
 
-        TranferStatusAndAddPhaseHistoryProvider
+        TranferStatusAndAddPhaseHistoryProvider,
+
+        UpdateTopicsBatchProvider
     ],
-    exports: [TopicService, GetTopicProvider, GetTopicStatusProvider, 'TopicRepositoryInterface',TranferStatusAndAddPhaseHistoryProvider],
+    exports: [
+        TopicService,
+        GetTopicProvider,
+        GetTopicStatusProvider,
+        'TopicRepositoryInterface',
+        TranferStatusAndAddPhaseHistoryProvider,
+        UpdateTopicsBatchProvider
+    ],
     imports: [
         forwardRef(() => TopicModule),
         MongooseModule.forFeature([

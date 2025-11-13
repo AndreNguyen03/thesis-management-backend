@@ -1,5 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
-import { TopicStatus } from '../enum'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class ValidateStatusProvider {
@@ -22,5 +21,4 @@ export class ValidateStatusProvider {
         }
         return validTransitions[currentStatus]?.includes(newStatus) ?? false
     }
-   
 }

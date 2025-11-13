@@ -26,6 +26,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
+   
     async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
         const newDetailGrade = {
             score: body.score,
@@ -38,9 +39,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         if (!existingTopic) {
             throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
         }
-        const amountGradedByActor = existingTopic.grade.detailGrades.length
+        const amountGradedByActor = existingTopic.grade?.detailGrades?.length
         if (amountGradedByActor === 3) {
             throw new BadRequestException('Đã đủ số lượng điểm chi tiết, không thể thêm nữa.')
+        }
+        if (existingTopic.grade.detailGrades.some((grade) => grade.actorId === actorId)) {
+            throw new BadRequestException('Người dùng đã chấm điểm cho đề tài này rồi.')
         }
         try {
             const result = await this.topicRepository.findOneAndUpdate(
@@ -64,6 +68,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 { new: true }
             )
             if (result) {
+                console.log(result.grade)
                 console.log('Thêm điểm và cập nhật điểm trung bình thành công!')
                 const count = result.grade.detailGrades.length
                 return count
@@ -79,7 +84,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         if (!topic) throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
         return topic.currentStatus
     }
-
     async findCanceledRegisteredTopicsByUserId(userId: string, role: string): Promise<GetTopicResponseDto[]> {
         let pipeline: any[] = []
         let student_reg_embedded_pl: any[] = []

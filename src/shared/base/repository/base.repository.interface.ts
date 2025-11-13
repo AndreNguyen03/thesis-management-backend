@@ -6,7 +6,7 @@ export interface BaseRepositoryInterface<T> {
     create(dto: T | any): Promise<T>
 
     findOneById(id: string, projection?: string): Promise<T | null>
-
+    checkExistsById(id: string): Promise<boolean>
     findOneByCondition(condition?: object, projection?: string): Promise<T | null>
 
     findAll(condition: object, options?: object): Promise<Paginated<T>>
@@ -16,7 +16,7 @@ export interface BaseRepositoryInterface<T> {
     softDelete(id: string): Promise<boolean>
 
     permanentlyDelete(id: string): Promise<boolean>
-
+    findByCondition(condition?: object, projection?: string): Promise<T[] | null>
     paginate(
         condition: object,
         paginationQuery: PaginationQueryDto,

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { PeriodsService } from './application/periods.service'
 import { CreatePeriodDto, GetPeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
 import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
@@ -10,33 +10,48 @@ import {
     CreatePhaseSubmitTopicDto,
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
-} from './dtos/period-phases'
+} from './dtos/period-phases.dtos'
 import { RequestGetTopicsInPeriodDto, RequestGetTopicsInPhaseDto } from '../topics/dtos'
+import { UserRole } from '../../auth/enum/user-role.enum'
+import { Roles } from '../../auth/decorator/roles.decorator'
+import { RolesGuard } from '../../auth/guards/roles/roles.guard'
+import { Auth } from '../../auth/decorator/auth.decorator'
+import { AuthType } from '../../auth/enum/auth-type.enum'
+import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 
 @Controller('periods')
 export class PeriodsController {
     constructor(private readonly periodsService: PeriodsService) {}
-    
+
     // Tạo kì/ đợt đăng ký mới
     @Post()
-    async createNewPeriod(@Body() createPeriodDto: CreatePeriodDto) {
-        await this.periodsService.createNewPeriod(createPeriodDto)
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async createNewPeriod(@Req() req: { user: ActiveUserData }, @Body() createPeriodDto: CreatePeriodDto) {
+        await this.periodsService.createNewPeriod(req.user.sub, createPeriodDto)
         return { message: 'Kỳ mới đã được tạo thành công' }
     }
 
     // Lấy tất cả các kỳ
     @Get('/get-all')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async getAllPeriods(@Query() query: RequestGetPeriodsDto) {
         return this.periodsService.getAllPeriods(query)
     }
 
     @Delete('delete-period/:id')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async deletePeriod(@Param('id') id: string) {
         await this.periodsService.deletePeriod(id)
         return { message: 'Xóa kỳ thành công' }
     }
     // Thay đổi thoong tin kỳ
     @Patch('adjust-period/:periodId')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async adjustPeriod(@Param('periodId') periodId: string, @Body() adjustPeriodDto: UpdatePeriodDto) {
         await this.periodsService.adjustPeriod(periodId, adjustPeriodDto)
         return { message: 'Điều chỉnh kỳ thành công' }
@@ -44,13 +59,17 @@ export class PeriodsController {
 
     // Set kỳ đã kết thúc
     @Patch('period-completed/:periodId')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async setPeriodEnded(@Param('periodId') periodId: string) {
         await this.periodsService.setPeriodCompleted(periodId)
         return { message: 'Đã đặt kỳ là kết thúc' }
     }
 
     //Lấy thông tin của kì
-    @Get('get-period/:periodId')
+    @Get('/detail-period/:periodId')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
         const res = await this.periodsService.getPeriodInfo(periodId)
         return plainToInstance(GetPeriodPhaseDto, res, {
@@ -59,39 +78,56 @@ export class PeriodsController {
         })
     }
 
-    @Patch(':periodId/create-submit-topic-phase')
+    @Patch('/:periodId/create-submit-topic-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async createSubmitTopicPhase(
+        @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
-        @Body() createPhaseSubmitTopicDto: CreatePhaseSubmitTopicDto
+        @Body() createPhaseSubmitTopicDto: CreatePhaseSubmitTopicDto,
+        @Query('force') force: boolean
     ) {
-        await this.periodsService.createPhaseSubmitTopic(periodId, createPhaseSubmitTopicDto)
+        await this.periodsService.createPhaseSubmitTopic(req.user.sub, periodId, createPhaseSubmitTopicDto, force)
         return { message: 'Tạo giai đoạn "nộp đề tài" thành công' }
     }
 
     @Patch(':periodId/create-execution-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async createExecutionPhase(
+        @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
-        @Body() createExecutionPhaseDto: CreateExecutionPhaseDto
+        @Body() createExecutionPhaseDto: CreateExecutionPhaseDto,
+        @Query('force') force: boolean
     ) {
-        await this.periodsService.createPhaseExecution(periodId, createExecutionPhaseDto)
-        return { message: 'Tạo giai đoạn "nộp đề tài" thành công' }
+        return await this.periodsService.createPhaseExecution(req.user.sub, periodId, createExecutionPhaseDto, force)
     }
 
     @Patch(':periodId/create-open-reg-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async createOpenRegPhase(
+        @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
-        @Body() createOpenRegPhaseDto: CreateOpenRegPhaseDto
+        @Body() createOpenRegPhaseDto: CreateOpenRegPhaseDto,
+        @Query('force') force: boolean
     ) {
-        await this.periodsService.createPhaseOpenReg(periodId, createOpenRegPhaseDto)
-        return { message: 'Tạo giai đoạn "mở đăng ký" thành công' }
+        return await this.periodsService.createPhaseOpenReg(req.user.sub, periodId, createOpenRegPhaseDto, force)
     }
 
     @Patch(':periodId/create-completion-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
     async createCompletionPhase(
+        @Req() req: { user: ActiveUserData },   
         @Param('periodId') periodId: string,
         @Body() createCompletionPhaseDto: CreateCompletionPhaseDto
     ) {
-        await this.periodsService.createPhaseCompletion(periodId, createCompletionPhaseDto)
+        await this.periodsService.createPhaseCompletion(req.user.sub, periodId, createCompletionPhaseDto)
         return { message: 'Tạo giai đoạn "hoàn thành" thành công' }
     }
 
@@ -117,7 +153,6 @@ export class PeriodsController {
         const topics = await this.periodsService.getTopicsInPhase(phaseId, query)
         return topics
     }
-
 
     // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
     @Patch('/:periodId/status/tranfer-phase')
@@ -153,5 +188,13 @@ export class PeriodsController {
     async getStatisticsCompletionPhase(@Param('periodId') periodId: string) {
         const statistics = await this.periodsService.getStatisticsCompletionPhase(periodId)
         return statistics
+    }
+    //Ban chủ nhiệm xác nhận chuyển pha - tức kết thúc pha trước và bắt đầu pha mới
+    @Patch('/:periodId/faculty-board/status/tranfer-phase')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async departmentBoardConfirmTranferPhase(@Param('periodId') periodId: string, @Query('force') force: boolean) {
+        await this.periodsService.advancePhase(periodId, force)
+        return { message: 'Ban chủ nhiệm đã xác nhận chuyển pha thành công' }
     }
 }

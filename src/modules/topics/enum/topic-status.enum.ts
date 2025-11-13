@@ -10,7 +10,7 @@ export enum TopicStatus {
     PendingRegistration = 'pending_registration', //SV //
     Registered = 'registered', //SV
     Full = 'full', //SV
-    Cancelled = 'cancelled', //SV
+    Cancelled = 'cancelled', //BCN // hệ thống
 
     // Pha 3 - Thực hiện đề tài
     InProgress = 'in_progress', //SV
@@ -24,6 +24,6 @@ export enum TopicStatus {
     Reviewed = 'reviewed', //BCN
     Archived = 'archived', //System
     RejectedFinal = 'rejected_final' // Hội đồng bảo vệ
-}
+}   
 
 

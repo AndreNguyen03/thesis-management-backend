@@ -9,7 +9,7 @@ import { RefFieldsTopicsService } from '../../ref_fields_topics/application/ref_
 import { RefRequirementsTopicsService } from '../../ref_requirements_topics/application/ref_requirements_topics.service'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
-import { extend } from 'joi'
+import { extend, string } from 'joi'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { PhaseHistory, Topic } from '../schemas/topic.schemas'
 import { TopicStatus } from '../enum'
@@ -55,12 +55,13 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
 
         //create phase history
-        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData)
+        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
         } catch (error) {
+            console.error('Lỗi khi tạo đề tài:', error)
             throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
 
@@ -191,7 +192,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    public async topicScoring(topicId: string, actorId: string, body: RequestGradeTopicDto) {
+    public async scoringBoardScoreTopic(topicId: string, actorId: string, body: RequestGradeTopicDto) {
         //đủ 3 người cùng chấm mới đổi trạng thái sang graded
         const amountGradingPeople = await this.topicRepository.addTopicGrade(topicId, actorId, body)
         if (amountGradingPeople === 3)
@@ -222,11 +223,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    private createPhaseHistory(actorId: string, topicData: CreateTopicDto) {
+    private createPhaseHistory(actorId: string, currentPhase: string, currentStatus: string) {
         const newPhaseHistory = new PhaseHistory()
-        newPhaseHistory.phaseName = topicData.currentPhase
-        newPhaseHistory.status = topicData.currentStatus
-        newPhaseHistory.actorId = actorId
+        newPhaseHistory.phaseName = currentPhase
+        newPhaseHistory.status = currentStatus
+        newPhaseHistory.actor = actorId
         return newPhaseHistory
     }
 }

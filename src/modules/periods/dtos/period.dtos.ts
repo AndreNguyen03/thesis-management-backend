@@ -10,10 +10,10 @@ import {
     ValidateNested
 } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { CreatePhaseSubmitTopicDto } from './period-phases'
+import { CreatePhaseSubmitTopicDto } from './period-phases.dtos'
 import { PeriodStatus } from '../enums/periods.enum'
-import { Type } from 'class-transformer'
-import { Period, PeriodPhases } from '../schemas/period.schemas'
+import { Expose, Type } from 'class-transformer'
+import { Period, PeriodPhase, } from '../schemas/period.schemas'
 import { PartialType } from '@nestjs/swagger'
 import mongoose from 'mongoose'
 import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
@@ -39,8 +39,14 @@ export class UpdatePeriodDto {
 }
 
 export class GetPeriodDto {
+    @Expose()
     name: string
+    @Expose()
+    @Type(() => GetFacultyDto)
     faculty: GetFacultyDto
-    phases: PeriodPhases[]
+    @Expose()
+    @Type(() => PeriodPhase)
+    phases: PeriodPhase[]
+    @Expose()
     status: string
 }
