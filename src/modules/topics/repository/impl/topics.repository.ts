@@ -2,12 +2,20 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../schemas/topic.schemas'
-import { CreateTopicDto, GetTopicDetailResponseDto, GetTopicResponseDto, RequestGetTopicsInPeriodDto, RequestGetTopicsInPhaseDto } from '../../dtos'
+import {
+    CreateTopicDto,
+    GetTopicDetailResponseDto,
+    GetTopicResponseDto,
+    RequestGetTopicsInPeriodDto,
+    RequestGetTopicsInPhaseDto
+} from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
 import mongoose, { Model, mongo } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
+import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
+import { RequestGradeTopicDto } from '../../dtos/request-grade-topic.dtos'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -18,6 +26,60 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
+    async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
+        const newDetailGrade = {
+            score: body.score,
+            note: body.note,
+            actorId: actorId
+        }
+        const existingTopic = await this.topicRepository
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .lean()
+        if (!existingTopic) {
+            throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
+        }
+        const amountGradedByActor = existingTopic.grade.detailGrades.length
+        if (amountGradedByActor === 3) {
+            throw new BadRequestException('Đã đủ số lượng điểm chi tiết, không thể thêm nữa.')
+        }
+        try {
+            const result = await this.topicRepository.findOneAndUpdate(
+                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+                [
+                    {
+                        $set: {
+                            'grade.detailGrades': {
+                                $concatArrays: [{ $ifNull: ['$grade.detailGrades', []] }, [newDetailGrade]]
+                            }
+                        }
+                    },
+                    {
+                        $set: {
+                            'grade.averageScore': {
+                                $avg: '$grade.detailGrades.score'
+                            }
+                        }
+                    }
+                ],
+                { new: true }
+            )
+            if (result) {
+                console.log('Thêm điểm và cập nhật điểm trung bình thành công!')
+                const count = result.grade.detailGrades.length
+                return count
+            }
+
+            return amountGradedByActor
+        } catch (error) {
+            throw new RequestTimeoutException('Lỗi khi thêm điểm cho đề tài')
+        }
+    }
+    async getCurrentStatusTopic(topicId: string): Promise<string> {
+        const topic = await this.topicRepository.findById(topicId).lean()
+        if (!topic) throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
+        return topic.currentStatus
+    }
+
     async findCanceledRegisteredTopicsByUserId(userId: string, role: string): Promise<GetTopicResponseDto[]> {
         let pipeline: any[] = []
         let student_reg_embedded_pl: any[] = []
@@ -204,14 +266,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         const topic = await this.topicRepository.aggregate(pipeline)
         return topic[0]
     }
-    async createTopic(topicData: CreateTopicDto): Promise<GetTopicResponseDto> {
-        const createdTopic = (
-            await (await this.topicRepository.create(topicData)).populate('majorId', 'name')
-        ).populate('createBy', 'fullName')
-        return plainToInstance(GetTopicResponseDto, createdTopic, {
+    async createTopic(topicData: CreateTopicDto): Promise<string> {
+        const res = await this.topicRepository.create(topicData)
+        const newTopic = plainToInstance(GetTopicResponseDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+        return newTopic._id
     }
     async findByTitle(title: string): Promise<Topic | null> {
         return this.topicRepository.findOne({ title, deleted_at: null }).lean()
@@ -424,8 +485,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId) } })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
     }
-
-      async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
+    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push({ $match: { currentPhaseId: new mongoose.Types.ObjectId(phaseId) } })

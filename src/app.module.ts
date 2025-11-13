@@ -34,7 +34,8 @@ import { BullModule } from '@nestjs/bull'
 import { PaginationProvider } from './common/pagination/providers/pagination.provider'
 import { PaginationModule } from './common/pagination/pagination.module'
 import { PaginationAnModule } from './common/pagination-an/pagination.module'
-import { PeriodsModule } from './modules/periods/periods.module';
+import { PeriodsModule } from './modules/periods/periods.module'
+import { GetTopicStatusProvider } from './modules/topics/providers/get-status-topic.provider'
 
 const ENV = process.env.NODE_ENV
 
@@ -120,7 +121,8 @@ const ENV = process.env.NODE_ENV
             useClass: DataResponseInterceptor
         },
         AccessTokenGuard,
-        PaginationProvider
+        PaginationProvider,
+        GetTopicStatusProvider
     ]
 })
 // export class AppModule {}

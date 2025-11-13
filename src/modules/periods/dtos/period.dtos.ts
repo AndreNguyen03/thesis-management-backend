@@ -1,4 +1,14 @@
-import { IsArray, IsDate, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator'
+import {
+    IsArray,
+    IsDate,
+    IsEmpty,
+    IsEnum,
+    IsNotEmpty,
+    IsOptional,
+    IsPositive,
+    IsString,
+    ValidateNested
+} from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { CreatePhaseSubmitTopicDto } from './period-phases'
 import { PeriodStatus } from '../enums/periods.enum'
@@ -15,16 +25,20 @@ export class CreatePeriodDto {
     facultyId: string
     @IsNotEmpty()
     @IsEnum(PeriodStatus)
-    status: PeriodStatus
+    status: PeriodStatus = PeriodStatus.OnGoing
     @IsOptional()
     @IsArray()
     @ValidateNested()
     phaseSubmitTopic: CreatePhaseSubmitTopicDto
 }
 
-export class UpdatePeriodDto extends PartialType(Period) {}
+export class UpdatePeriodDto {
+    @IsNotEmpty()
+    @IsString()
+    name: string
+}
 
-export class GetPeriodDto { 
+export class GetPeriodDto {
     name: string
     faculty: GetFacultyDto
     phases: PeriodPhases[]

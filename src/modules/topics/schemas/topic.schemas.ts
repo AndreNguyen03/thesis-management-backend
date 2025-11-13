@@ -7,22 +7,37 @@ import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 
 @Schema({
     timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
+        createdAt: 'created_at'
     }
 })
-@Schema()
+@Schema({ timestamps: true })
 export class PhaseHistory extends BaseEntity {
     @Prop({ type: String, enum: PeriodPhaseName, required: true })
     phaseName: string
-    @Prop({ type: String, enum: TopicStatus })
+    @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
     status: string
-    @Prop({ type: Date, required: true })
-    timestamp: Date
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
     actorId: string
-    @Prop()
-    notes: string
+    // @Prop()
+    // notes: string
+}
+
+@Schema({ timestamps: true })
+export class DetailGrade extends BaseEntity {
+    @Prop({ type: Number, required: true })
+    score: number
+    @Prop({ type: String, required: false })
+    note: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+    actorId: string
+}
+
+@Schema()
+export class Grade extends BaseEntity {
+    @Prop({ type: Number })
+    averageScore: number
+    @Prop({ type: [DetailGrade], default: [] })
+    detailGrades: DetailGrade[]
 }
 
 @Schema({ collection: 'topics', timestamps: true })
@@ -48,19 +63,21 @@ export class Topic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
     createBy: string
 
-    @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
-    currentStatus: TopicStatus
+    @Prop({ type: String, enum: TopicStatus, required: false, default: TopicStatus.Draft })
+    currentStatus: string
 
     @Prop({ type: String, enum: PeriodPhaseName, required: true })
     currentPhase: string
 
     @Prop({ type: [PhaseHistory], default: [] })
     phaseHistories: PhaseHistory[]
-    
+
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Period' })
     periodId: string
 
-    @Prop({ type: Boolean, default: false })
-    allowManualApproval: boolean
+    @Prop({ type: Grade, default: [] })
+    grade: Grade
+    // @Prop({ type: Boolean, default: false })
+    // allowManualApproval: boolean
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)

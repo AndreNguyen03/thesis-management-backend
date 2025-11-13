@@ -16,6 +16,7 @@ import { RequestGetTopicsInPeriodDto, RequestGetTopicsInPhaseDto } from '../topi
 @Controller('periods')
 export class PeriodsController {
     constructor(private readonly periodsService: PeriodsService) {}
+    
     // Tạo kì/ đợt đăng ký mới
     @Post()
     async createNewPeriod(@Body() createPeriodDto: CreatePeriodDto) {
@@ -117,22 +118,9 @@ export class PeriodsController {
         return topics
     }
 
-    // Thay đổi trạng thái của từng đề tài trong kỳ cụ thể
-    //Ví dụ pha 1: chấp nhận/từ chối đề tài
-    //Ví dụ pha2: blabla
-    @Patch('/:periodId/change-status-topic/:topicId')
-    async changeStatusTopicInPeriod(
-        @Param('periodId') periodId: string,
-        @Param('topicId') topicId: string,
-        @Query() newStatus: string
-    ) {
-        // Logic để thay đổi trạng thái đề tài
-        await this.periodsService.changeStatusTopicInPeriod(periodId, topicId, newStatus)
-        return { message: 'Đã thay đổi trạng thái đề tài thành công' }
-    }
 
     // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
-    @Patch('/:periodId/change-status-topic/')
+    @Patch('/:periodId/status/tranfer-phase')
     async changeStatusAllTopicsInPeriod(
         @Param('periodId') periodId: string,
         @Param('topicId') topicId: string,
@@ -141,5 +129,29 @@ export class PeriodsController {
         // Logic để thay đổi trạng thái đề tài
         await this.periodsService.changeStatusAllTopicsInPeriod(periodId, body.newStatus, body.newPhaseId)
         return { message: 'Đã thay đổi trạng thái đề tài thành công' }
+    }
+    //Lấy thống kế ở pha 1 - pha nộp đề tàii
+    @Get('/:periodId/statistics/submit-topic-phase')
+    async getStatisticsSubmitTopicPhase(@Param('periodId') periodId: string) {
+        const statistics = await this.periodsService.getStatisticsSubmitTopicPhase(periodId)
+        return statistics
+    }
+    //Lấy thống kế ở pha 2 - pha đăng ký đề tài
+    @Get('/:periodId/statistics/open-registration-phase')
+    async getStatisticsOpenRegistrationPhase(@Param('periodId') periodId: string) {
+        const statistics = await this.periodsService.getStatisticsOpenRegistrationPhase(periodId)
+        return statistics
+    }
+    //Lấy thống kế ở pha 3 - pha thực hiện đề tài
+    @Get('/:periodId/statistics/execution-phase')
+    async getStatisticsExecutionPhase(@Param('periodId') periodId: string) {
+        const statistics = await this.periodsService.getStatisticsExecutionPhase(periodId)
+        return statistics
+    }
+    //Lấy thống kế ở pha 4 - pha hoàn thành đề tài
+    @Get('/:periodId/statistics/completion-phase')
+    async getStatisticsCompletionPhase(@Param('periodId') periodId: string) {
+        const statistics = await this.periodsService.getStatisticsCompletionPhase(periodId)
+        return statistics
     }
 }

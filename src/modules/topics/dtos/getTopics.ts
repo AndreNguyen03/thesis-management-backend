@@ -34,8 +34,10 @@ export class GetTopicResponseDto {
     updatedAt: Date
 
     @Expose()
-    status: string
-    //temp fields
+    currentStatus: string
+
+    @Expose()
+    currentPhase: string
 
     @Expose()
     fieldNames: string[]
@@ -105,7 +107,7 @@ export class GetTopicsInPeriodDto {
 
     @Expose()
     currentStatus: string
-    
+
     @Expose()
     currentPhase: string
     @Expose()

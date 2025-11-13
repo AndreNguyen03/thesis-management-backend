@@ -2,6 +2,8 @@ import { IsNotEmpty, IsString } from 'class-validator'
 import { TopicStatus } from '../enum/topic-status.enum'
 import { IsOptional, IsNumber, IsDate, IsArray, IsEnum } from 'class-validator'
 import { TopicType } from '../enum/topic-type.enum'
+import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { PhaseHistory } from '../schemas/topic.schemas'
 export class CreateTopicDto {
     @IsNotEmpty()
     @IsString()
@@ -24,24 +26,21 @@ export class CreateTopicDto {
     @IsString()
     @IsOptional()
     createBy: string
-    @IsOptional()
-    deadline?: Date
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsEnum(TopicStatus)
-    status?: TopicStatus = TopicStatus.OPEN
+    currentStatus: TopicStatus = TopicStatus.Draft // checkbox - nộp luôn hay chưa
 
-    // @IsOptional()
-    // @IsNumber()
-    // rating?: number | 0 // 
+    @IsNotEmpty()
+    @IsEnum(PeriodPhaseName)
+    currentPhase: string
 
-    // @IsOptional()
-    // @IsNumber()
-    // views?: number | 0
+    @IsNotEmpty()
+    periodId: string
 
     //temp fields
     @IsArray()
-    fieldIds: string[] 
+    fieldIds: string[]
 
     @IsArray()
     @IsOptional()
@@ -49,9 +48,12 @@ export class CreateTopicDto {
 
     @IsArray()
     @IsOptional()
-    studentIds?: string[] | []  
+    studentIds?: string[] | []
 
     @IsArray()
     @IsOptional()
     lecturerIds?: string[] | []
+
+    @IsOptional()
+    phaseHistories: PhaseHistory[]
 }

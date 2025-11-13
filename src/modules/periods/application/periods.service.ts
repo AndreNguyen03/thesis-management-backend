@@ -18,13 +18,17 @@ import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
 import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
+import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
+import { GetPhaseProvider } from '../providers/get-phase.provider'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
     constructor(
         @Inject('IPeriodRepository') private readonly iPeriodRepository: IPeriodRepository,
-        @Inject('CreatePhaseProvider') private readonly createPhaseProvider: CreatePhaseProvider,
-        private readonly getTopicProvider: GetTopicProvider
+        private readonly createPhaseProvider: CreatePhaseProvider,
+        private readonly getTopicProvider: GetTopicProvider,
+        private readonly getTopicStatusProvider: GetTopicStatusProvider,
+        private readonly getPhaseProvider: GetPhaseProvider
     ) {
         super(iPeriodRepository)
     }
@@ -110,6 +114,10 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }
-    async changeStatusTopicInPeriod(periodId: string, topicId: string, newStatus: string) {}
     async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
+    // statistics
+    async getStatisticsSubmitTopicPhase(periodId: string) {}
+    async getStatisticsOpenRegistrationPhase(periodId: string) {}
+    async getStatisticsExecutionPhase(periodId: string) {}
+    async getStatisticsCompletionPhase(periodId: string) {}
 }
