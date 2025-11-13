@@ -76,7 +76,9 @@ export class UserController {
     // lecturer endpoint
     @Patch('lecturers/:id')
     async updateLecturerAdmin(@Param('id') id: string, @Body() dto: UpdateLecturerTableDto) {
+        console.log('dto :::', dto)
         const updated = await this.lecturerService.updateLecturerAdmin(id, dto)
+        console.log('updated ::', updated)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
 
