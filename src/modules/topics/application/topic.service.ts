@@ -1,25 +1,24 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { StudentRepositoryInterface } from '../../../users/repository/student.repository.interface'
-import {
-    CreateErrorException,
-    LecturerNotFoundException,
-    StudentNotFoundException,
-    WrongRoleException
-} from '../../../common/exceptions'
-import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
+import { CreateErrorException, TopicNotFoundException } from '../../../common/exceptions'
 import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
-import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto } from '../dtos'
-import { plainToInstance } from 'class-transformer'
-import { CreateSaveTopicDto } from '../dtos/save/create-save-topic.dtos'
+import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto, RequestGetTopicsInPeriodDto } from '../dtos'
 import { RefFieldsTopicsService } from '../../ref_fields_topics/application/ref_fields_topics.service'
 import { RefRequirementsTopicsService } from '../../ref_requirements_topics/application/ref_requirements_topics.service'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
+import { extend } from 'joi'
+import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
+import { PhaseHistory, Topic } from '../schemas/topic.schemas'
+import { TopicStatus } from '../enum'
+import mongoose from 'mongoose'
+import { TranferStatusAndAddPhaseHistoryProvider } from '../providers/tranfer-status-and-add-phase-history.provider'
+import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 
 @Injectable()
-export class TopicService {
+export class TopicService extends BaseServiceAbstract<Topic> {
     constructor(
         @Inject('TopicRepositoryInterface')
         private readonly topicRepository: TopicRepositoryInterface,
@@ -32,36 +31,46 @@ export class TopicService {
         private readonly refFieldsTopicsService: RefFieldsTopicsService,
         private readonly refRequirementsTopicsService: RefRequirementsTopicsService,
         private readonly lecturerRegTopicService: LecturerRegTopicService,
-        private readonly studentRegTopicService: StudentRegTopicService
-    ) {}
+        private readonly studentRegTopicService: StudentRegTopicService,
+        private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider
+    ) {
+        super(topicRepository)
+    }
 
     public async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.getAllTopics(userId)
     }
-    public async getTopicById(topicId: string, userId: string,role:string): Promise<GetTopicResponseDto> {
-        const topic = await this.topicRepository.getTopicById(topicId, userId,role)
+    public async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicResponseDto> {
+        const topic = await this.topicRepository.getTopicById(topicId, userId, role)
         if (!topic) {
             throw new NotFoundException('Đề tài không tồn tại.')
         }
         return topic
     }
-    public async createTopic(lecturerId: string, topicData: CreateTopicDto): Promise<GetTopicResponseDto> {
+    public async createTopic(lecturerId: string, topicData: CreateTopicDto): Promise<string> {
         const { fieldIds, requirementIds, studentIds, lecturerIds, ...newTopic } = topicData
         const existingTopicName = await this.topicRepository.findByTitle(newTopic.title)
         if (existingTopicName) {
-            throw new BadRequestException('Đã tồn tại đề tài với tên này.')
+            throw new BadRequestException('Tên đề tài đã tồn tại.')
         }
-        let createdTopic = await this.topicRepository.createTopic(topicData)
-        if (!createdTopic) {
-            throw new CreateErrorException('đề tài')
+
+        //create phase history
+        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData)
+        topicData.phaseHistories = [newPhaseHistory]
+        let topicId
+        try {
+            topicId = await this.topicRepository.createTopic(topicData)
+        } catch (error) {
+            throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
+
         //create ref fields topics
-        const fieldNames = await this.refFieldsTopicsService.createWithFieldIds(createdTopic._id.toString(), fieldIds)
+        const fieldNames = await this.refFieldsTopicsService.createWithFieldIds(topicId, fieldIds)
         //create ref requirements topics
         let requirementNames: string[] = []
         if (requirementIds && requirementIds.length > 0) {
             requirementNames = await this.refRequirementsTopicsService.createRefRequirementsTopic(
-                createdTopic._id,
+                topicId,
                 requirementIds
             )
         }
@@ -72,26 +81,12 @@ export class TopicService {
         } else {
             lecturerInCharge = [lecturerId]
         }
-        let lecturerNames = await this.lecturerRegTopicService.createRegistrationWithLecturers(
-            lecturerInCharge,
-            createdTopic._id.toString()
-        )
+        await this.lecturerRegTopicService.createRegistrationWithLecturers(lecturerInCharge, topicId)
         //create ref students topics - to be continue
-        let studentNames: string[] = []
         if (studentIds && studentIds.length > 0) {
-            studentNames = await this.studentRegTopicService.createRegistrationWithStudents(
-                studentIds,
-                createdTopic._id.toString()
-            )
+            await this.studentRegTopicService.createRegistrationWithStudents(studentIds, topicId)
         }
-        //filter output
-        return {
-            ...createdTopic,
-            fieldNames: fieldNames,
-            requirementNames: requirementNames,
-            lecturerNames,
-            studentNames
-        }
+        return topicId
     }
     public async updateTopic(id: string, topicData: PatchTopicDto) {
         return this.topicRepository.update(id, topicData)
@@ -119,7 +114,119 @@ export class TopicService {
     public async getRegisteredTopics(userId: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findRegisteredTopicsByUserId(userId)
     }
-    public async getCanceledRegisteredTopics(userId: string,userRole:string): Promise<GetTopicResponseDto[]> {
-        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId,userRole)
+    public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
+        return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
+    }
+    public async submitTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Submitted,
+            actorId
+        )
+    }
+    public async approveTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Approved,
+            actorId
+        )
+    }
+    public async rejectTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Rejected,
+            actorId
+        )
+    }
+
+    public async markUnderReviewing(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.UnderReview,
+            actorId
+        )
+    }
+    public async setTopicInProgressing(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.InProgress,
+            actorId
+        )
+    }
+    public async markReviewed(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Reviewed,
+            actorId
+        )
+    }
+
+    public async markStudentCompletedProcessing(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.SubmittedForReview,
+            actorId
+        )
+    }
+
+    public async markDelayedTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Delayed,
+            actorId
+        )
+    }
+
+    public async markPausedTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Paused,
+            actorId
+        )
+    }
+    public async setAwaitingEvaluation(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.AwaitingEvaluation,
+            actorId
+        )
+    }
+    public async topicScoring(topicId: string, actorId: string, body: RequestGradeTopicDto) {
+        //đủ 3 người cùng chấm mới đổi trạng thái sang graded
+        const amountGradingPeople = await this.topicRepository.addTopicGrade(topicId, actorId, body)
+        if (amountGradingPeople === 3)
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                topicId,
+                TopicStatus.Graded,
+                actorId
+            )
+    }
+    public async archiveTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Archived,
+            actorId
+        )
+    }
+    public async scoringBoardRejectTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.RejectedFinal,
+            actorId
+        )
+    }
+    public async facultyBoardReviewGradedTopic(topicId: string, actorId: string) {
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.Reviewed,
+            actorId
+        )
+    }
+    private createPhaseHistory(actorId: string, topicData: CreateTopicDto) {
+        const newPhaseHistory = new PhaseHistory()
+        newPhaseHistory.phaseName = topicData.currentPhase
+        newPhaseHistory.status = topicData.currentStatus
+        newPhaseHistory.actorId = actorId
+        return newPhaseHistory
     }
 }

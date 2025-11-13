@@ -2,13 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { ClientSession, Model, Types } from 'mongoose'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
-import { Admin, AdminDocument } from '../../schemas/admin.schema'
 import { User } from '../../schemas/users.schema'
 import { UserRepositoryInterface } from '../user.repository.interface'
-import { CreateLecturerDto } from '../../dtos/lecturer.dto'
 import { HashingProvider } from '../../../auth/providers/hashing.provider'
 import { UserRole } from '../../enums/user-role'
-import { CreateStudentDto } from '../../dtos/student.dto'
+import { CreateUserDto } from '../../dtos/create-user.dto'
 
 @Injectable()
 export class UserRepository extends BaseRepositoryAbstract<User> implements UserRepositoryInterface {
@@ -28,27 +26,14 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
         return result.modifiedCount > 0
     }
 
-    async createLecturerUser(dto: CreateLecturerDto, options?: { session?: ClientSession }): Promise<User> {
+    async createUser(dto: CreateUserDto, role: UserRole, options?: { session?: ClientSession }): Promise<User> {
         const passwordHash = await this.hashingProvider.hashPassword(dto.password)
         const user = new this.userModel({
             email: dto.email,
             password_hash: passwordHash,
             fullName: dto.fullName,
             phone: dto.phone,
-            role: UserRole.LECTURER,
-            isActive: dto.isActive
-        })
-        return user.save({ session: options?.session })
-    }
-
-    async createStudentUser(dto: CreateStudentDto, options?: { session?: ClientSession }): Promise<User> {
-        const passwordHash = await this.hashingProvider.hashPassword(dto.password)
-        const user = new this.userModel({
-            email: dto.email,
-            password_hash: passwordHash,
-            fullName: dto.fullName,
-            phone: dto.phone,
-            role: UserRole.STUDENT,
+            role: role,
             isActive: dto.isActive
         })
         return user.save({ session: options?.session })

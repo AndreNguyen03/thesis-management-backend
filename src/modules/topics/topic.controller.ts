@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Post, Patch, Param, Delete, Query, Req, HttpStatus } from '@nestjs/common'
+import { Controller, Get, Body, Post, Patch, Param, Delete, Query, Req, HttpStatus, UseGuards } from '@nestjs/common'
 
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
@@ -13,6 +13,11 @@ import {
 } from './dtos'
 import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
+import { TopicStatus } from './enum'
+import { Roles } from '../../auth/decorator/roles.decorator'
+import { RolesGuard } from '../../auth/guards/roles/roles.guard'
+import { UserRole } from '../../auth/enum/user-role.enum'
+import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
 
 @Controller('topics')
 export class TopicController {
@@ -72,8 +77,8 @@ export class TopicController {
             throw new BaseHttpException('Only lecturers can create topics', 'Authen', HttpStatus.FORBIDDEN)
         }
         topic.createBy = req.user.sub
-        const newTopic = await this.topicService.createTopic(req.user.sub, topic)
-        return newTopic
+        const topicId = await this.topicService.createTopic(req.user.sub, topic)
+        return { topicId, message: 'Tạo đề tài thành công' }
     }
 
     @Patch(':topicId')
@@ -98,5 +103,118 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
+    }
+    @Patch('/:topicId/lecturer/submit-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async submitTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.submitTopic(topicId, req.user.sub)
+        return { message: 'Nộp đề tài thành công' }
+    }
+
+    @Patch('/:topicId/facuty-board/approve-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyBoardApproveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.approveTopic(topicId, req.user.sub)
+        return { message: 'Nộp đề tài thành công' }
+    }
+
+    @Patch('/:topicId/facuty-board/reject-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyBoardRejectTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.rejectTopic(topicId, req.user.sub)
+        return { message: 'Đề tài đã được đánh dấu là không hợp lệ và gửi thông báo về cho giảng viên' }
+    }
+    @Patch('/:topicId/under-review')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async markUnderReviewingTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.markUnderReviewing(topicId, req.user.sub)
+        return { message: 'Đề tài đã được đánh dấu là đang được xem xét' }
+    }
+
+    @Patch('/:topicId/set-in-progressing')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    async setTopicInProgressing(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.setTopicInProgressing(topicId, req.user.sub)
+        return { message: 'Đề tài đã ở trạng thái đang tiếp tục thực hiện' }
+    }
+
+    @Patch('/:topicId/mark-deplayed-topic')
+    @Auth(AuthType.Bearer)
+    async markDelayedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.markDelayedTopic(topicId, req.user.sub)
+        return { message: 'Đề tài bị đánh dấu là trễ hạn' }
+    }
+
+    @Patch('/:topicId/mark-paused-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.DEPARTMENT_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async markPausedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.markPausedTopic(topicId, req.user.sub)
+        return { message: 'Đề tài đã được đánh dấu là tạm dừng' }
+    }
+
+    @Patch('/:topicId/sumit-topic/completed-processing')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async markCompletedProcessing(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.markStudentCompletedProcessing(topicId, req.user.sub)
+        return { message: 'Sinh viên đã xác nhận hoàn thành đề tài' }
+    }
+    //Giảng viên cho phép đề tài ra hội đồng chấm điểm
+    @Patch('/:topicId/set-awaiting-evaluation')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async setAwaitingEvaluation(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.setAwaitingEvaluation(topicId, req.user.sub)
+        return { message: 'Đã đặt trạng thái chờ đánh giá' }
+    }
+
+    //Hội đồng chấm điểm đề tài
+    @Patch('/:topicId/scoring-board/grade-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async scoringBoardGradeTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string,@Body() body : RequestGradeTopicDto) {
+        await this.topicService.topicScoring(topicId,req.user.sub,body)
+        return { message: 'Đã chấm điểm đề tài' }
+    }
+
+    //hội đồng chấm điểm từ chối đề tài
+    @Patch('/:topicId/scoring-board/reject-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async scoringBoardRejectTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.scoringBoardRejectTopic(topicId, req.user.sub)
+        return { message: 'Đã từ chối đề tài' }
+    }
+
+    //BCN khoa xem điểm đề tài
+    @Patch('/:topicId/review-graded-topic')
+    @Roles(UserRole.DEPARTMENT_BOARD)
+    @UseGuards(RolesGuard)
+    @Auth(AuthType.Bearer)
+    async markReviewedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.facultyBoardReviewGradedTopic(topicId, req.user.sub)
+        return { message: 'Đã đánh dấu là đã xem đề tài' }
+    }
+
+    //BCN khoa quyết định đưa đề tài vào thư viện số
+    @Patch('/:topicId/archive-topic')
+    async archiveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        await this.topicService.archiveTopic(topicId, req.user.sub)
+        return { message: 'Đã lưu trữ đề tài' }
     }
 }

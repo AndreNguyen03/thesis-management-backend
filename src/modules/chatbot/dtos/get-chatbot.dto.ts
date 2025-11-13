@@ -10,9 +10,9 @@ export class GetChatbotDto {
     description: string
     @Expose()
     status: ChatbotStatus
-    @Expose()
-    @Type(() => String)
-    knowledge_sourceIds: string[]
+    // @Expose()
+    // @Type(() => String)
+    // knowledge_sourceIds: string[]
     @Expose()
     @Type(() => GetQuerySuggestionDto)
     query_suggestions: GetQuerySuggestionDto[]

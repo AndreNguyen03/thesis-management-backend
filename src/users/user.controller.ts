@@ -10,6 +10,8 @@ import { UpdateAdminDto } from './dtos/admin.dto'
 import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from './dtos/lecturer.dto'
 import { UserService } from './application/users.service'
 import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
+import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
+import { FacultyBoardService } from './application/department-board.service'
 
 @Controller('users')
 @ApiTags('Users')
@@ -19,7 +21,8 @@ export class UserController {
         private readonly studentService: StudentService,
         private readonly lecturerService: LecturerService,
         private readonly adminService: AdminService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly facultyBoardService: FacultyBoardService
     ) {}
 
     @Get(':role/:id')
@@ -114,5 +117,11 @@ export class UserController {
     @Delete('students/:id')
     async deleteStudent(@Param('id') id: string) {
         return this.studentService.removeStudentById(id)
+    }
+
+    // faculty board endpoint
+    @Post('faculty-boards')
+    async createFacultyBoard(@Body() dto: CreateFacultyBoardDto) {
+        return this.facultyBoardService.createDepartmentTransaction(dto)
     }
 }

@@ -6,10 +6,16 @@ import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
 import { Paginated } from '../../common/pagination/interface/paginated.interface'
-import { CreateLecturerDto, ResponseLecturerProfileDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from '../dtos/lecturer.dto'
+import {
+    CreateLecturerDto,
+    ResponseLecturerProfileDto,
+    UpdateLecturerProfileDto,
+    UpdateLecturerTableDto
+} from '../dtos/lecturer.dto'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection, HydratedDocument } from 'mongoose'
+import { UserRole } from '../enums/user-role'
 
 @Injectable()
 export class LecturerService extends BaseServiceAbstract<Lecturer> {
@@ -65,7 +71,7 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             const existed = await this.userRepository.findByEmail(createLecturerDto.email)
             if (existed) throw new BadRequestException('Email đã tồn tại')
 
-            const user = await this.userRepository.createLecturerUser(createLecturerDto, { session })
+            const user = await this.userRepository.createUser(createLecturerDto, UserRole.LECTURER, { session })
             const lecturer = await this.lecturerRepository.createLecturer(user._id.toString(), createLecturerDto, {
                 session
             })

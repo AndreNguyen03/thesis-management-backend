@@ -14,6 +14,8 @@ import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-quer
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection } from 'mongoose'
+import { CreateUserDto } from '../dtos/create-user.dto'
+import { UserRole } from '../enums/user-role'
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {
@@ -44,7 +46,7 @@ export class StudentService extends BaseServiceAbstract<Student> {
             interests: doc.interests || [],
             studentCode: doc.studentCode,
             class: doc.class,
-            major: doc.major,
+            major: doc.major
         }
     }
 
@@ -68,8 +70,8 @@ export class StudentService extends BaseServiceAbstract<Student> {
         try {
             const existed = await this.userRepository.findByEmail(createStudentDto.email)
             if (existed) throw new BadRequestException('Email đã tồn tại')
-
-            const user = await this.userRepository.createStudentUser(createStudentDto, { session })
+            const newUser = plainToInstance(CreateUserDto, createStudentDto)
+            const user = await this.userRepository.createUser(newUser, UserRole.STUDENT, { session })
             const student = await this.studentRepository.createStudent(user._id.toString(), createStudentDto, {
                 session
             })

@@ -39,7 +39,7 @@ export class ChatController {
     }
 
     @Post('/build-knowledge-db')
-    @Auth(AuthType.None)
+    @Auth(AuthType.Bearer)
     async buildKnowledgeDB(@Body() buildKnowledgeDB: BuildKnowledgeDB, @Req() req: { user: ActiveUserData }) {
         try {
             await this.chatBotService.buildKnowledgeDB(req.user.sub, buildKnowledgeDB)

@@ -74,7 +74,7 @@ export class StudentRegTopicRepository
         const topic = await this.topicModel.findOne({ _id: registration.topicId, deleted_at: null }).exec()
         if (topic) {
             if (!(await this.checkFullSlot(topic.maxStudents, topicId))) {
-                topic.status = TopicStatus.OPEN
+                topic.currentStatus = TopicStatus.PendingRegistration
             }
             await topic.save()
         } else {
@@ -146,7 +146,7 @@ export class StudentRegTopicRepository
         })
         if (registeredCount === topic.maxStudents - 1) {
             //update topic to full registered
-            topic.status = TopicStatus.FULL
+            topic.currentStatus = TopicStatus.Full
             await topic.save()
         }
         return res

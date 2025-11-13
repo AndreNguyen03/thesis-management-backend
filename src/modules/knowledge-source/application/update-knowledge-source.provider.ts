@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { IKnowledgeSourceRepository } from '../repository/knowledge-source.interface'
-import { CreateKnowledgeSourceDto } from '../dto/create-knowledge-source.dto'
 import { UpdateKnowledgeSourceDto } from '../dto/update-knowledge-source.dto'
 
 @Injectable()

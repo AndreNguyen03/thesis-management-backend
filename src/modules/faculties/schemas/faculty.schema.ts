@@ -4,9 +4,9 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 export class Faculty extends BaseEntity {
     @Prop({ type: String, required: true })
     name: string
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: false })
     email: string
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: false })
     urlDirection: string
 }
 

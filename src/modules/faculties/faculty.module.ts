@@ -4,6 +4,7 @@ import { FacultyController } from './faculty.controller'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Faculty, FacultySchema } from './schemas/faculty.schema'
 import { FacultyRepository } from './repository/impl/faculty.repository'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 
 @Module({
     providers: [
@@ -15,6 +16,6 @@ import { FacultyRepository } from './repository/impl/faculty.repository'
     ],
     controllers: [FacultyController],
     exports: [FacultyService],
-    imports: [MongooseModule.forFeature([{ name: Faculty.name, schema: FacultySchema }])]
+    imports: [MongooseModule.forFeature([{ name: Faculty.name, schema: FacultySchema }]), PaginationAnModule]
 })
 export class FacultyModule {}

@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { CreateTopicDto } from './createThesis.dto'
+import { CreateTopicDto } from './create-topic.dto'
 
 export class PatchTopicDto extends PartialType(CreateTopicDto) {}

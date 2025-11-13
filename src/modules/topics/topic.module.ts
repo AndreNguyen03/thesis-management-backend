@@ -13,9 +13,12 @@ import {
 import { UserSavedTopics, UserSavedTopicsSchema } from './schemas/user_saved_topics.schemas'
 import { RegistrationsModule } from '../registrations/registrations.module'
 import { RefFieldsTopicsModule } from '../ref_fields_topics/ref_fields_topics.module'
-import { RefRequirementTopics } from '../ref_requirements_topics/schemas/ref_requirement_topics.schemas'
 import { RefRequirementsTopicsModule } from '../ref_requirements_topics/ref_requirements_topics.module'
-import { LecturerRegTopicService } from '../registrations/application/lecturer-reg-topic.service'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { GetTopicProvider } from './providers/get-topic.provider'
+import { GetTopicStatusProvider } from './providers/get-status-topic.provider'
+import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-status-and-add-phase-history.provider'
+
 @Module({
     controllers: [TopicController],
     providers: [
@@ -28,9 +31,15 @@ import { LecturerRegTopicService } from '../registrations/application/lecturer-r
         {
             provide: 'UserSavedTopicRepositoryInterface',
             useClass: UserSavedTopicsRepository
-        }
+        },
+
+        GetTopicProvider,
+
+        GetTopicStatusProvider,
+
+        TranferStatusAndAddPhaseHistoryProvider
     ],
-    exports: [TopicService],
+    exports: [TopicService, GetTopicProvider, GetTopicStatusProvider, 'TopicRepositoryInterface',TranferStatusAndAddPhaseHistoryProvider],
     imports: [
         forwardRef(() => TopicModule),
         MongooseModule.forFeature([
@@ -43,7 +52,8 @@ import { LecturerRegTopicService } from '../registrations/application/lecturer-r
         RegistrationsModule,
         RefFieldsTopicsModule,
         RefRequirementsTopicsModule,
-        RegistrationsModule
+        RegistrationsModule,
+        PaginationAnModule
     ]
 })
 export class TopicModule {}
