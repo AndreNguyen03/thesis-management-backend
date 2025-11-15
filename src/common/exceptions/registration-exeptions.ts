@@ -1,9 +1,9 @@
 import { HttpStatus } from '@nestjs/common'
 import { BaseHttpException } from './base-http.exception'
 
-export class YouAlreadyRegisteredForThisThesisException extends BaseHttpException {
+export class LecturerAlreadyRegisteredForThisThesisException extends BaseHttpException {
     constructor() {
-        super('Bạn đã đăng ký đề tài này rồi', 'YOU_ALREADY_REGISTERED_FOR_THIS_THESIS', HttpStatus.BAD_REQUEST)
+        super('Giảng viên đã đăng ký đề tài này rồi', 'LECTURER_ALREADY_REGISTERED_FOR_THIS_THESIS', HttpStatus.BAD_REQUEST)
     }
 }
 

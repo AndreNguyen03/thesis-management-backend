@@ -3,7 +3,7 @@ import { KnowledgeStatus } from '../enums/knowledge-status.enum'
 import { ProcessingStatus } from '../enums/processing-status.enum'
 import { Expose, Transform, Type } from 'class-transformer'
 import { GetUserDetailsResponse } from 'aws-sdk/clients/codecatalyst'
-import { LinkDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 export class OwnerDto {
     @Expose()
@@ -39,14 +39,9 @@ export class GetKnowledgeSourceDto {
     updatedAt: Date
 }
 
-export class GetPaginatedKnowledgeSourcesDto {
+export class GetPaginatedKnowledgeSourcesDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetKnowledgeSourceDto)
     data: GetKnowledgeSourceDto[]
-    @Expose()
-    @Type(() => MetaDto)
-    meta: MetaDto
-    @Expose()
-    @Type(() => LinkDto)
-    links: LinkDto
+
 }

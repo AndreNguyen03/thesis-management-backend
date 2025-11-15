@@ -1,6 +1,7 @@
 export enum PeriodPhaseName {
-  SUBMIT_TOPIC = 'submit_topic',
-  OPEN_REGISTRATION = 'open_registration',
-  EXECUTION = 'execution',
-  COMPLETION = 'completion'
-}   
+    EMPTY = 'empty',
+    SUBMIT_TOPIC = 'submit_topic',
+    OPEN_REGISTRATION = 'open_registration',
+    EXECUTION = 'execution',
+    COMPLETION = 'completion'
+}

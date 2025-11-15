@@ -11,6 +11,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         @Inject('TopicRepositoryInterface')
         private readonly topicRepository: TopicRepositoryInterface
     ) {}
+    //chuyển trạng thái đề tài (thủ công ) với các hành độgn như từ chối, chấp nhận, tạm dừng,...
     async transferStatusAndAddPhaseHistory(topicId: string, newStatus: string, actorId: string) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
@@ -25,7 +26,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         const newPhaseHistory = new PhaseHistory()
         newPhaseHistory.phaseName = existingTopic.currentPhase
         newPhaseHistory.status = newStatus
-        newPhaseHistory.actorId = actorId
+        newPhaseHistory.actor = actorId
         if (existingTopic.phaseHistories == null || Array.isArray(existingTopic.phaseHistories)) {
             existingTopic.phaseHistories = []
         }

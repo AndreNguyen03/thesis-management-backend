@@ -5,17 +5,16 @@ import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
 import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto, RequestGetTopicsInPeriodDto } from '../dtos'
-import { RefFieldsTopicsService } from '../../ref_fields_topics/application/ref_fields_topics.service'
-import { RefRequirementsTopicsService } from '../../ref_requirements_topics/application/ref_requirements_topics.service'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
-import { extend } from 'joi'
+import { extend, string } from 'joi'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { PhaseHistory, Topic } from '../schemas/topic.schemas'
 import { TopicStatus } from '../enum'
 import mongoose from 'mongoose'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../providers/tranfer-status-and-add-phase-history.provider'
 import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -28,8 +27,6 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly lecturerRepository: LecturerRepositoryInterface,
         @Inject('UserSavedTopicRepositoryInterface')
         private readonly userSavedTopicRepository: UserSavedTopicRepositoryInterface,
-        private readonly refFieldsTopicsService: RefFieldsTopicsService,
-        private readonly refRequirementsTopicsService: RefRequirementsTopicsService,
         private readonly lecturerRegTopicService: LecturerRegTopicService,
         private readonly studentRegTopicService: StudentRegTopicService,
         private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider
@@ -37,7 +34,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         super(topicRepository)
     }
 
-    public async getAllTopics(userId: string): Promise<GetTopicResponseDto[]> {
+    public async getAllTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.getAllTopics(userId)
     }
     public async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicResponseDto> {
@@ -48,58 +45,50 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return topic
     }
     public async createTopic(lecturerId: string, topicData: CreateTopicDto): Promise<string> {
-        const { fieldIds, requirementIds, studentIds, lecturerIds, ...newTopic } = topicData
-        const existingTopicName = await this.topicRepository.findByTitle(newTopic.title)
+        const { studentIds, lecturerIds, ...newTopic } = topicData
+        const existingTopicName = await this.topicRepository.findByTitle(
+            newTopic.titleVN,
+            newTopic.titleEng,
+            topicData.periodId
+        )
         if (existingTopicName) {
             throw new BadRequestException('Tên đề tài đã tồn tại.')
         }
-
         //create phase history
-        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData)
+        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
         } catch (error) {
+            console.error('Lỗi khi tạo đề tài:', error)
             throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
-
-        //create ref fields topics
-        const fieldNames = await this.refFieldsTopicsService.createWithFieldIds(topicId, fieldIds)
-        //create ref requirements topics
-        let requirementNames: string[] = []
-        if (requirementIds && requirementIds.length > 0) {
-            requirementNames = await this.refRequirementsTopicsService.createRefRequirementsTopic(
-                topicId,
-                requirementIds
-            )
-        }
-        //create ref lecturers topics - to be continue
-        let lecturerInCharge: string[] = []
-        if (lecturerIds && lecturerIds.length > 0) {
-            lecturerInCharge = [...lecturerIds, lecturerId]
-        } else {
-            lecturerInCharge = [lecturerId]
-        }
-        await this.lecturerRegTopicService.createRegistrationWithLecturers(lecturerInCharge, topicId)
+        if (lecturerIds && lecturerIds.length > 0)
+            await this.lecturerRegTopicService.createRegistrationWithLecturers([lecturerId], topicId)
         //create ref students topics - to be continue
         if (studentIds && studentIds.length > 0) {
             await this.studentRegTopicService.createRegistrationWithStudents(studentIds, topicId)
         }
         return topicId
     }
-    public async updateTopic(id: string, topicData: PatchTopicDto) {
+
+    public async updateTopic(id: string, topicData: PatchTopicDto, periodId: string) {
+        const existingTopicName = await this.topicRepository.findByTitle(
+            topicData.titleVN,
+            topicData.titleEng,
+            periodId
+        )
+        if (existingTopicName) {
+            throw new BadRequestException('Tên đề tài đã tồn tại.')
+        }
         return this.topicRepository.update(id, topicData)
     }
-    public async deleteThesis(id: string) {
-        let deleteTopic = this.topicRepository.softDelete(id)
-        if (!deleteTopic) {
-            throw new BadRequestException('Đề tài không tồn tại hoặc đã bị xóa.')
-        }
-        return 'Xóa đề tài thành công'
+    public async deleteTopic(id: string,ownerId:string) {
+        return this.topicRepository.deleteTopic(id,ownerId)
     }
 
-    public async getSavedTopics(userId: string): Promise<GetTopicResponseDto[]> {
+    public async getSavedTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.findSavedTopicsByUserId(userId)
     }
 
@@ -191,7 +180,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    public async topicScoring(topicId: string, actorId: string, body: RequestGradeTopicDto) {
+    public async scoringBoardScoreTopic(topicId: string, actorId: string, body: RequestGradeTopicDto) {
         //đủ 3 người cùng chấm mới đổi trạng thái sang graded
         const amountGradingPeople = await this.topicRepository.addTopicGrade(topicId, actorId, body)
         if (amountGradingPeople === 3)
@@ -222,11 +211,32 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    private createPhaseHistory(actorId: string, topicData: CreateTopicDto) {
+    private createPhaseHistory(actorId: string, currentPhase: string, currentStatus: string) {
         const newPhaseHistory = new PhaseHistory()
-        newPhaseHistory.phaseName = topicData.currentPhase
-        newPhaseHistory.status = topicData.currentStatus
-        newPhaseHistory.actorId = actorId
+        newPhaseHistory.phaseName = currentPhase
+        newPhaseHistory.status = currentStatus
+        newPhaseHistory.actor = actorId
         return newPhaseHistory
+    }
+    public async addFieldToTopicQuick(topicId: string, fieldId: string, userId: string) {
+        const res = await this.topicRepository.addFieldToTopicQuick(topicId, fieldId, userId)
+        if (!res) {
+            throw new BadRequestException('Không tìm thấy đề tài')
+        }
+    }
+    public async removeFieldFromTopicQuick(topicId: string, fieldId: string, userId: string) {
+        const res = await this.topicRepository.removeFieldFromTopicQuick(topicId, fieldId, userId)
+        if (!res) {
+            throw new BadRequestException('Không tìm thấy đề tài')
+        }
+    }
+    public async addRequirementToTopicQuick(topicId: string, requirementId: string, userId: string) {
+        return this.topicRepository.addRequirementToTopicQuick(topicId, requirementId, userId)
+    }
+    public async removeRequirementFromTopicQuick(topicId: string, requirementId: string, userId: string) {
+        const res = await this.topicRepository.removeRequirementFromTopicQuick(topicId, requirementId, userId)
+        if (!res) {
+            throw new BadRequestException('Không tìm thấy đề tài')
+        }
     }
 }

@@ -1,17 +1,24 @@
 import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { ReponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { Expose, Type } from 'class-transformer'
 
-@Expose()
 export class GetPeriodPhaseDto {
+    @Expose()
     _id: string
+    @Expose()
     phase: string
+    @Expose()
     startTime: Date
+    @Expose()
     endTime: Date
+    @Expose()
     minTopicsPerLecturer: number
-    @Type(() => ReponseMiniLecturerDto)
-    requiredLecturers: ReponseMiniLecturerDto[]
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    @Expose()
+    requiredLecturers: ResponseMiniLecturerDto[]
+    @Expose()
     allowManualApproval: boolean
 }
 
@@ -25,14 +32,14 @@ export class CreatePhase {
 }
 
 export class CreatePhaseSubmitTopicDto extends CreatePhase {
-    phase: string = PeriodPhaseName.SUBMIT_TOPIC
+    private readonly phase: string = PeriodPhaseName.SUBMIT_TOPIC
     @IsPositive()
     minTopicsPerLecturer: number
     @IsNotEmpty()
     @IsString({ each: true })
     requiredLecturerIds: string[]
     @IsNotEmpty()
-    allowManualApproval: boolean
+    allowManualApproval: boolean = false
 }
 
 export class CreateOpenRegPhaseDto extends CreatePhase {
@@ -44,7 +51,6 @@ export class CreateExecutionPhaseDto extends CreatePhase {
 export class CreateCompletionPhaseDto extends CreatePhase {
     private readonly phase: string = PeriodPhaseName.COMPLETION
 }
-
 export class UpdatePeriodPhaseDto {
     @IsOptional()
     @IsDate()

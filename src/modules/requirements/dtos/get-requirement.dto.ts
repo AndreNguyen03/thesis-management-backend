@@ -17,6 +17,8 @@ export class GetRequirementReponseDto {
 
 export class GetRequirementNameReponseDto {
     @Expose()
+    _id: string
+    @Expose()
     name: string
     @Expose()
     slug: string

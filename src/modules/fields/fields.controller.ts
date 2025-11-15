@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { FieldsService } from './application/fields.service'
 import { Auth } from '../../auth/decorator/auth.decorator'
@@ -29,4 +29,5 @@ export class FieldsController {
             enableImplicitConversion: true
         })
     }
+
 }

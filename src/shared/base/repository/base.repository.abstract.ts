@@ -3,6 +3,7 @@ import { BaseEntity } from '../entity/base.entity'
 import { BaseRepositoryInterface } from './base.repository.interface'
 import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
+import { Req, RequestTimeoutException } from '@nestjs/common'
 
 export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements BaseRepositoryInterface<T> {
     constructor(private readonly model: Model<T>) {
@@ -19,17 +20,40 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
     }
 
     async findOneById(id: string): Promise<T | null> {
-        const item = await this.model.findOne({ _id: id })
-        if (!item) return null
-        return item.deleted_at ? null : item
+        try {
+            const item = await this.model.findOne({ _id: id, deleted_at: null }).exec()
+            if (!item) return null
+            return item.deleted_at ? null : item
+        } catch (error) {
+            throw new RequestTimeoutException()
+        }
+    }
+
+    async checkExistsById(id: string): Promise<boolean> {
+        try {
+            const item = await this.model.findOne({ _id: id }).exec()
+            if (!item) return false
+            return item.deleted_at ? false : true
+        } catch (error) {
+            throw new RequestTimeoutException()
+        }
     }
 
     async findOneByCondition(condition = {}): Promise<T | null> {
         return await this.model
             .findOne({
-                ...condition,
-                deleted_at: null
+                ...condition
             })
+            .exec()
+    }
+    async findByCondition(condition = {}, projection?: string): Promise<T[] | null> {
+        return await this.model
+            .find(
+                {
+                    ...condition
+                },
+                projection
+            )
             .exec()
     }
 

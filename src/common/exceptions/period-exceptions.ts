@@ -3,7 +3,7 @@ import { BaseHttpException } from './base-http.exception'
 
 export class PeriodNotFoundException extends BaseHttpException {
     constructor() {
-        super('Không tìm thấy kỳ/đợt này hoặc đã bị xóa ', 'PERIOD_NOT_FOUND', HttpStatus.NOT_FOUND)
+        super('Không tìm thấy đợt hoặc đã bị xóa', 'PERIOD_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
 }
 

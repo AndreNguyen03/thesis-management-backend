@@ -1,4 +1,3 @@
-import { RegistrationStatus } from '../../enum'
 import { GetTopicResponseDto } from '../getTopics'
 import { Expose, Type } from 'class-transformer'
 @Expose()
@@ -8,8 +7,6 @@ export class GetRegistrationDto {
     @Expose()
     @Type(() => GetTopicResponseDto)
     topic: GetTopicResponseDto
-    @Expose()
-    status: RegistrationStatus
     @Expose()
     createdAt: Date
     @Expose()

@@ -12,7 +12,7 @@ export enum TopicPhase2Status {
     PendingRegistration = 'pending_registration', // SV
     Registered = 'registered', // SV
     Full = 'full', // SV
-    Cancelled = 'cancelled' // SV
+    Cancelled = 'cancelled' // SV // khi kết thúc pha
 }
 
 // Phase 3 - Thực hiện đề tài
@@ -28,6 +28,6 @@ export enum TopicPhase3Status {
 export enum TopicPhase4Status {
     Graded = 'graded', // GV/Hội đồng bảo vệ
     Reviewed = 'reviewed', // BCN
-    Archived = 'archived', // System
+    Archived = 'archived', // BCN
     RejectedFinal = 'rejected_final' // Hội đồng bảo vệ
 }

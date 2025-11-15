@@ -5,18 +5,19 @@ import { PeriodPhaseName } from '../enums/period-phases.enum'
 import mongoose from 'mongoose'
 
 @Schema({ timestamps: true })
-export class PeriodPhases extends BaseEntity {
+export class PeriodPhase extends BaseEntity {
     @Prop({ required: true, enum: PeriodPhaseName })
     phase: PeriodPhaseName
     @Prop({ required: true })
     startTime: Date
     @Prop({ required: true })
     endTime: Date
-    @Prop({ default: 0, type: Number })
+    //Option fields for Submit Topic phase
+    @Prop({ default: 0, type: Number, required: false })
     minTopicsPerLecturer: number
-    @Prop({ required: true, type: [mongoose.Schema.Types.ObjectId], ref: 'lecturers' })
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'lecturers' })
     requiredLecturerIds: string[]
-    @Prop({ default: false })
+    @Prop({ default: false, required: false })
     allowManualApproval: boolean
 }
 
@@ -26,10 +27,10 @@ export class Period extends BaseEntity {
     name: string
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'faculties' })
     facultyId: mongoose.Schema.Types.ObjectId
-    @Prop({ enum: PeriodPhaseName, type: String })
-    currentPhase: PeriodPhaseName
-    @Prop({ type: [PeriodPhases], default: [] })
-    phases: PeriodPhases[]
+    @Prop({ enum: PeriodPhaseName, type: String, default: PeriodPhaseName.EMPTY })
+    currentPhase: string
+    @Prop({ type: [PeriodPhase], default: [] })
+    phases: PeriodPhase[]
     @Prop({ enum: PeriodStatus, default: PeriodStatus.OnGoing })
     status: PeriodStatus
 }

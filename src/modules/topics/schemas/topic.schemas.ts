@@ -16,10 +16,10 @@ export class PhaseHistory extends BaseEntity {
     phaseName: string
     @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
     status: string
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-    actorId: string
-    // @Prop()
-    // notes: string
+    @Prop({ type: String, required: true })
+    actor: string
+    @Prop({ type: String, required: false })
+    notes: string
 }
 
 @Schema({ timestamps: true })
@@ -43,7 +43,10 @@ export class Grade extends BaseEntity {
 @Schema({ collection: 'topics', timestamps: true })
 export class Topic extends BaseEntity {
     @Prop({ required: true, unique: true })
-    title: string
+    titleVN: string
+
+    @Prop({ type: String, required: true, unique: true })
+    titleEng: string
 
     @Prop({ required: true })
     description: string
@@ -52,7 +55,7 @@ export class Topic extends BaseEntity {
     type: TopicType
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Major', required: true })
-    majorId: string
+    major: string
 
     @Prop({ default: 1 })
     maxStudents: number
@@ -60,7 +63,7 @@ export class Topic extends BaseEntity {
     @Prop({ type: [String], default: [] })
     referenceDocs: string[]
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true })
     createBy: string
 
     @Prop({ type: String, enum: TopicStatus, required: false, default: TopicStatus.Draft })
@@ -72,12 +75,18 @@ export class Topic extends BaseEntity {
     @Prop({ type: [PhaseHistory], default: [] })
     phaseHistories: PhaseHistory[]
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Period' })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'periods' })
     periodId: string
 
     @Prop({ type: Grade, default: [] })
     grade: Grade
+
     // @Prop({ type: Boolean, default: false })
     // allowManualApproval: boolean
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'requirements', default: [], index: true })
+    requirementIds: string[]
+
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'fields', default: [], index: true })
+    fieldIds: string[]
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)
