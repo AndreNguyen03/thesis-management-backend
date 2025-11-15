@@ -6,17 +6,18 @@ import { TopicStatus } from '../enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 
 export class PatchTopicDto {
+
     @IsOptional()
     @IsString()
-    title: string
+    titleVN: string
+
+    @IsOptional()
+    @IsString()
+    titleEng: string
 
     @IsOptional()
     @IsString()
     description: string
-
-    @IsOptional()
-    @IsEnum(TopicType)
-    type: TopicType
 
     @IsOptional()
     majorId: string
@@ -25,20 +26,13 @@ export class PatchTopicDto {
     @IsNumber()
     maxStudents: number
 
-    @IsString()
-    @IsOptional()
-    createBy: string
-
     @IsOptional()
     @IsEnum(TopicStatus)
-    currentStatus: TopicStatus = TopicStatus.Draft // checkbox - nộp luôn hay chưa
+    currentStatus: TopicStatus
 
     @IsOptional()
     @IsEnum(PeriodPhaseName)
     currentPhase: string
-
-    @IsOptional()
-    periodId: string
 
     @IsOptional()
     @IsArray()

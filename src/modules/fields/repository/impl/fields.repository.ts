@@ -11,7 +11,6 @@ export class FieldsRepository extends BaseRepositoryAbstract<Field> implements I
         super(fieldModel)
     }
     async createField(createFieldDto: CreateFieldDto): Promise<Field> {
-    
         const existingField = await this.fieldModel.findOne({ slug: createFieldDto.slug, deleted_at: null })
         if (existingField) {
             throw new BadRequestException('Lĩnh vực đã tồn tại')

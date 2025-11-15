@@ -1,9 +1,12 @@
-import { Expose, Transform, Type } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
 import { GetRegistrationInTopicDto } from '../../registrations/dtos/get-registration-in-topic.dtos'
 import { IntersectionType } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
-import { extend } from 'joi'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetFieldNameReponseDto } from '../../fields/dtos/get-fields.dto'
+import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requirement.dto'
+import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
+import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 
 export class GetTopicResponseDto {
     @Expose()
@@ -20,6 +23,9 @@ export class GetTopicResponseDto {
 
     @Expose()
     major: string
+
+    @Expose()
+    periodId: string
 
     @Expose()
     maxStudents: number
@@ -40,16 +46,20 @@ export class GetTopicResponseDto {
     currentPhase: string
 
     @Expose()
-    fieldNames: string[]
+    @Type(() => GetFieldNameReponseDto)
+    fields: GetFieldNameReponseDto[]
 
     @Expose()
-    requirementNames: string[]
+    @Type(() => GetRequirementNameReponseDto)
+    requirements: GetRequirementNameReponseDto[]
 
     @Expose()
-    studentNames: string[]
+    @Type(() => ResponseMiniStudentDto)
+    students: ResponseMiniStudentDto[]
 
     @Expose()
-    lecturerNames: string[]
+    @Type(() => ResponseMiniLecturerDto)
+    lecturers: ResponseMiniLecturerDto[]
 
     @Expose()
     isRegistered: boolean
@@ -57,7 +67,11 @@ export class GetTopicResponseDto {
     @Expose()
     isSaved: boolean
 }
-
+export class GetPaginatedTopicsDto extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetTopicResponseDto)
+    data: GetTopicResponseDto[]
+}
 export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
     @Expose()
     lastestCanceledRegisteredAt?: Date

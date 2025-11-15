@@ -7,6 +7,7 @@ import { TopicService } from './application/topic.service'
 import {
     CreateTopicDto,
     GetCancelRegisteredTopicResponseDto,
+    GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
     PatchTopicDto
@@ -27,7 +28,7 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getTopicList(@Req() req: { user: ActiveUserData }) {
         const topics = await this.topicService.getAllTopics(req.user.sub)
-        return plainToInstance(GetTopicResponseDto, topics, {
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -36,7 +37,7 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getSavedTopics(@Req() req: { user: ActiveUserData }) {
         const savedTopics = await this.topicService.getSavedTopics(req.user.sub)
-        return plainToInstance(GetTopicResponseDto, savedTopics, {
+        return plainToInstance(GetPaginatedTopicsDto, savedTopics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -55,6 +56,7 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getCanceledRegisteredTopics(@Req() req: { user: ActiveUserData }) {
         const topics = await this.topicService.getCanceledRegisteredTopics(req.user.sub, req.user.role)
+        return topics
         return plainToInstance(GetCancelRegisteredTopicResponseDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -72,30 +74,88 @@ export class TopicController {
     }
     @Post()
     @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
     async createTopic(@Req() req: { user: ActiveUserData }, @Body() topic: CreateTopicDto) {
-        if (req.user.role !== 'lecturer') {
-            throw new BaseHttpException('Only lecturers can create topics', 'Authen', HttpStatus.FORBIDDEN)
-        }
         topic.createBy = req.user.sub
         const topicId = await this.topicService.createTopic(req.user.sub, topic)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
+    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Patch(':topicId/ref-fields-topic/:fieldId')
+    async addFieldToTopicQuick(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Param('fieldId') fieldId: string
+    ) {
+        await this.topicService.addFieldToTopicQuick(topicId, fieldId, req.user.sub)
+        return { message: 'Thêm lĩnh vực cho đề tài thành công' }
+    }
 
-    @Patch(':topicId')
+    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Delete(':topicId/ref-fields-topic/:fieldId')
+    async removeFieldFromTopicQuick(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Param('fieldId') fieldId: string
+    ) {
+        await this.topicService.removeFieldFromTopicQuick(topicId, fieldId, req.user.sub)
+        return { message: 'Xóa lĩnh vực cho đề tài thành công' }
+    }
+
+    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Patch(':topicId/ref-requirements-topic/:requirementId')
+    async addRequirementToTopicQuick(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Param('requirementId') requirementId: string
+    ) {
+        await this.topicService.addRequirementToTopicQuick(topicId, requirementId, req.user.sub)
+        return { message: 'Thêm yêu cầu cho đề tài thành công' }
+    }
+
+    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Delete(':topicId/ref-fields-topic/:fieldId')
+    async removeRequirementFromTopicQuick(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Param('requirementId') requirementId: string
+    ) {
+        await this.topicService.removeRequirementFromTopicQuick(topicId, requirementId, req.user.sub)
+        return { message: 'Xóa yêu cầu cho đề tài thành công' }
+    }
+
+    @Patch(':topicId/:periodId')
     @Auth(AuthType.None)
-    async updateTopic(@Param('topicId') id: string, @Body() topic: PatchTopicDto) {
-        return await this.topicService.updateTopic(id, topic)
+    async updateTopic(@Param('topicId') id: string, @Param('periodId') periodId: string, @Body() topic: PatchTopicDto) {
+        const result = await this.topicService.updateTopic(id, topic, periodId)
+        return { topicId: result?._id, message: 'Cập nhật đề tài thành công' }
     }
 
     @Delete('/delete/:topicId')
-    @Auth(AuthType.None)
-    async deleteTopic(@Param('topicId') id: string) {
-        return await this.topicService.deleteThesis(id)
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async deleteTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') id: string) {
+        const res = await this.topicService.deleteTopic(id, req.user.sub)
+        return res ? { message: 'Xóa đề tài thành công' } : { message: 'Xóa đề tài thất bại' }
     }
 
     @Post('/save-topic/:topicId')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER,UserRole.STUDENT)
+    @Roles(UserRole.LECTURER, UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async saveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.assignSaveTopic(req.user.sub, topicId)

@@ -12,13 +12,12 @@ import {
 } from '../registrations/schemas/ref_lecturers_topics.schemas'
 import { UserSavedTopics, UserSavedTopicsSchema } from './schemas/user_saved_topics.schemas'
 import { RegistrationsModule } from '../registrations/registrations.module'
-import { RefFieldsTopicsModule } from '../ref_fields_topics/ref_fields_topics.module'
-import { RefRequirementsTopicsModule } from '../ref_requirements_topics/ref_requirements_topics.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { GetTopicProvider } from './providers/get-topic.provider'
 import { GetTopicStatusProvider } from './providers/get-status-topic.provider'
 import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-status-and-add-phase-history.provider'
-import { UpdateTopicsBatchProvider } from './providers/update-topics-batch.provider'
+import { UpdateTopicsPhaseBatchProvider } from './providers/update-topics-batch.provider'
+import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.provider'
 
 @Module({
     controllers: [TopicController],
@@ -40,7 +39,9 @@ import { UpdateTopicsBatchProvider } from './providers/update-topics-batch.provi
 
         TranferStatusAndAddPhaseHistoryProvider,
 
-        UpdateTopicsBatchProvider
+        UpdateTopicsPhaseBatchProvider,
+
+        GetStatisticsTopicsProvider
     ],
     exports: [
         TopicService,
@@ -48,7 +49,8 @@ import { UpdateTopicsBatchProvider } from './providers/update-topics-batch.provi
         GetTopicStatusProvider,
         'TopicRepositoryInterface',
         TranferStatusAndAddPhaseHistoryProvider,
-        UpdateTopicsBatchProvider
+        UpdateTopicsPhaseBatchProvider,
+        GetStatisticsTopicsProvider
     ],
     imports: [
         forwardRef(() => TopicModule),
@@ -59,9 +61,6 @@ import { UpdateTopicsBatchProvider } from './providers/update-topics-batch.provi
             { name: UserSavedTopics.name, schema: UserSavedTopicsSchema }
         ]),
         forwardRef(() => UsersModule),
-        RegistrationsModule,
-        RefFieldsTopicsModule,
-        RefRequirementsTopicsModule,
         RegistrationsModule,
         PaginationAnModule
     ]

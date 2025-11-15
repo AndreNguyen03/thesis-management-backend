@@ -11,6 +11,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         @Inject('TopicRepositoryInterface')
         private readonly topicRepository: TopicRepositoryInterface
     ) {}
+    //chuyển trạng thái đề tài (thủ công ) với các hành độgn như từ chối, chấp nhận, tạm dừng,...
     async transferStatusAndAddPhaseHistory(topicId: string, newStatus: string, actorId: string) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),

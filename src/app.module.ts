@@ -22,8 +22,6 @@ import { RedisModule } from './redis/redis.module'
 import { TopicModule } from './modules/topics/topic.module'
 import { ChatBotModule } from './modules/chatbot/chatbot.module'
 import { FacultyModule } from './modules/faculties/faculty.module'
-import { RefRequirementsTopicsModule } from './modules/ref_requirements_topics/ref_requirements_topics.module'
-import { RefFieldsTopicsModule } from './modules/ref_fields_topics/ref_fields_topics.module'
 import { RequirementsModule } from './modules/requirements/requirements.module'
 import { FieldsModule } from './modules/fields/fields.module'
 import { MajorsModule } from './modules/majors/majors.module'
@@ -36,7 +34,6 @@ import { PaginationModule } from './common/pagination/pagination.module'
 import { PaginationAnModule } from './common/pagination-an/pagination.module'
 import { PeriodsModule } from './modules/periods/periods.module'
 import { GetTopicStatusProvider } from './modules/topics/providers/get-status-topic.provider'
-import { UpdateTopicsBatchProvider } from './modules/topics/providers/update-topics-batch.provider'
 
 const ENV = process.env.NODE_ENV
 
@@ -94,10 +91,6 @@ const ENV = process.env.NODE_ENV
 
         FacultyModule,
 
-        RefRequirementsTopicsModule,
-
-        RefFieldsTopicsModule,
-
         RequirementsModule,
 
         FieldsModule,
@@ -124,7 +117,6 @@ const ENV = process.env.NODE_ENV
         AccessTokenGuard,
         PaginationProvider,
         GetTopicStatusProvider,
-        UpdateTopicsBatchProvider
     ]
 })
 // export class AppModule {}

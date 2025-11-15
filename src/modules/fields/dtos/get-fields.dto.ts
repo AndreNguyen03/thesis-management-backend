@@ -17,6 +17,8 @@ export class GetFieldReponseDto {
 
 export class GetFieldNameReponseDto {
     @Expose()
+    _id: string
+    @Expose()
     name: string
     @Expose()
     slug: string

@@ -1,10 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import mongoose, { Model } from 'mongoose'
-import { UserRole } from '../../../../auth/enum/user-role.enum'
-import { RegistrationStatus, TopicStatus } from '../../../topics/enum'
-import { Student } from '../../../../users/schemas/student.schema'
-import { NotFoundException } from '@nestjs/common'
+import { TopicStatus } from '../../../topics/enum'
 import {
     StudentAlreadyRegisteredException,
     StudentJustRegisterOnlyOneTopicEachType,
@@ -16,7 +13,6 @@ import {
 } from '../../../../common/exceptions/registration-exeptions'
 import { GetRegistrationDto } from '../../../topics/dtos/registration/get-registration.dto'
 import { plainToInstance } from 'class-transformer'
-import { getUserModelFromRole } from '../../../topics/utils/get-user-model'
 import { StudentRegTopicRepositoryInterface } from '../student-reg-topic.repository.interface'
 import { StudentRegisterTopic } from '../../schemas/ref_students_topics.schemas'
 import { Topic } from '../../../topics/schemas/topic.schemas'
@@ -50,14 +46,13 @@ export class StudentRegTopicRepository
             studentIds.map((studentId) => ({
                 topicId: new mongoose.Types.ObjectId(topicId),
                 studentId: new mongoose.Types.ObjectId(studentId),
-                status: RegistrationStatus.SUCCESS
             }))
         )
         const populated = await this.studentRegTopicModel.populate(createdStudentRegs, {
             path: 'studentId',
             select: 'name'
         })
-        return populated.map((d) => (d.studentId as any)?.name).filter(Boolean) as string[]
+        return ["khùng"]
     }
 
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
@@ -95,7 +90,7 @@ export class StudentRegTopicRepository
 
         const existingRegistration = await this.studentRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
-            studentId: new mongoose.Types.ObjectId(studentId),
+            userId: new mongoose.Types.ObjectId(studentId),
             deleted_at: null
         })
         if (existingRegistration) {
@@ -141,8 +136,7 @@ export class StudentRegTopicRepository
 
         const res = await this.studentRegTopicModel.create({
             topicId: topicId,
-            studentId: studentId,
-            status: RegistrationStatus.SUCCESS
+            userId: studentId,
         })
         if (registeredCount === topic.maxStudents - 1) {
             //update topic to full registered

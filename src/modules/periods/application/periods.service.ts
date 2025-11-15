@@ -20,6 +20,13 @@ import { Paginated } from '../../../common/pagination/interface/paginated.interf
 import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
 import { GetPhaseProvider } from '../providers/get-phase.provider'
+import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
+import {
+    GetTopicStatisticInOpenRegPhaseDto,
+    GetTopicStatisticInSubmitPhaseDto
+} from '../../topics/dtos/get-statistics-topics.dtos'
+import { Topic } from '../../topics/schemas/topic.schemas'
+import { PeriodPhaseName } from '../enums/period-phases.enum'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -28,7 +35,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly createPhaseProvider: CreatePhaseProvider,
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
-        private readonly getPhaseProvider: GetPhaseProvider
+        private readonly getPhaseProvider: GetPhaseProvider,
+        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider
     ) {
         super(iPeriodRepository)
     }
@@ -135,11 +143,80 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
 
     async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
     // statistics
-    async getStatisticsSubmitTopicPhase(periodId: string) {}
-    async getStatisticsOpenRegistrationPhase(periodId: string) {}
-    async getStatisticsExecutionPhase(periodId: string) {}
-    async getStatisticsCompletionPhase(periodId: string) {}
-
-    //Tiến triển phase
-    async advancePhase(periodId: string, force: boolean = false) {}
+    async boardGetStatisticsSubmitTopicPhase(periodId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
+            periodId,
+            PeriodPhaseName.SUBMIT_TOPIC
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async boardGetStatisticsOpenRegistrationPhase(periodId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
+            periodId,
+            PeriodPhaseName.OPEN_REGISTRATION
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async boardGetStatisticsExecutionPhase(periodId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
+            periodId,
+            PeriodPhaseName.EXECUTION
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async boardGetStatisticsCompletionPhase(periodId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
+            periodId,
+            PeriodPhaseName.COMPLETION
+        )
+        //lấy thống kế các thông tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async lecturerGetStatisticsSubmitTopicPhase(periodId: string, lecturerId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.lecturerGetTopicsStatistic(
+            periodId,
+            lecturerId,
+            PeriodPhaseName.SUBMIT_TOPIC
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async lecturerGetStatisticsOpenRegistrationPhase(periodId: string, lecturerId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.lecturerGetTopicsStatistic(
+            periodId,
+            lecturerId,
+            PeriodPhaseName.OPEN_REGISTRATION
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async lecturerGetStatisticsExecutionPhase(periodId: string, lecturerId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.lecturerGetTopicsStatistic(
+            periodId,
+            lecturerId,
+            PeriodPhaseName.EXECUTION
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
+    async lecturerGetStatisticsCompletionPhase(periodId: string, lecturerId: string) {
+        //lấy thống kê liên quan tới đề tài
+        const topicFigures = await this.getStatisticsTopicsProvider.lecturerGetTopicsStatistic(
+            periodId,
+            lecturerId,
+            PeriodPhaseName.COMPLETION
+        )
+        //lấy thống kê các thong tin liên quan khác (nếu có)
+        return topicFigures
+    }
 }

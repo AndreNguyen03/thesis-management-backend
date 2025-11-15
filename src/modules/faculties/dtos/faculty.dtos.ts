@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types'
 import { Expose, Type } from 'class-transformer'
 import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { GetPaginatedObjectDto, LinkDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { extend } from 'joi'
 
 export class CreateFacultyDto {

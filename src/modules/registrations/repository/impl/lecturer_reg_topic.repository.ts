@@ -1,18 +1,18 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import mongoose, { Model } from 'mongoose'
-import { RegistrationStatus } from '../../../topics/enum'
 import { TopicNotFoundException } from '../../../../common/exceptions/thesis-exeptions'
 import {
     FullLecturerSlotException,
     RegistrationNotFoundException,
-    YouAlreadyRegisteredForThisThesisException
+    LecturerAlreadyRegisteredForThisThesisException
 } from '../../../../common/exceptions/registration-exeptions'
 import { GetRegistrationDto } from '../../../topics/dtos/registration/get-registration.dto'
 import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../../topics/schemas/topic.schemas'
 import { LecturerRegisterTopic } from '../../schemas/ref_lecturers_topics.schemas'
 import { LecturerRegTopicRepositoryInterface } from '../lecturer-reg-topic.reposittory.interface'
+import { RequestTimeoutException } from '@nestjs/common'
 
 export class LecturerRegTopicRepository
     extends BaseRepositoryAbstract<LecturerRegisterTopic>
@@ -36,8 +36,7 @@ export class LecturerRegTopicRepository
         const createdLecturerRegs = await this.lecturerRegTopicModel.insertMany(
             lecturerIds.map((lecturerId) => ({
                 topicId: new mongoose.Types.ObjectId(topicId),
-                lecturerId: new mongoose.Types.ObjectId(lecturerId),
-                status: RegistrationStatus.SUCCESS
+                lecturerId: new mongoose.Types.ObjectId(lecturerId)
             }))
         )
         const populated = await this.lecturerRegTopicModel.populate(createdLecturerRegs, {
@@ -45,8 +44,8 @@ export class LecturerRegTopicRepository
             select: 'fullName'
         })
 
-        const names = populated.map((d) => (d.lecturerId as any)?.fullName).filter(Boolean) as string[]
-        return names
+        // const names = populated.map((d) => (d.lecturerId as any)?.fullName).filter(Boolean) as string[]
+        return ['names']
     }
 
     async createSingleRegistration(topicId: string, lecturerId: string): Promise<any> {
@@ -61,22 +60,23 @@ export class LecturerRegTopicRepository
         }
         const existingRegistration = await this.lecturerRegTopicModel.findOne({
             topicId: topicId,
-            lecturerId: lecturerId,
+            userId: lecturerId,
             deleted_at: null
         })
 
         if (existingRegistration) {
-            throw new YouAlreadyRegisteredForThisThesisException()
+            throw new LecturerAlreadyRegisteredForThisThesisException()
         }
-
-        const res = await this.lecturerRegTopicModel.create({
-            topicId: new mongoose.Types.ObjectId(topicId),
-            lecturerId: new mongoose.Types.ObjectId(lecturerId),
-            status: RegistrationStatus.SUCCESS
-        })
-        const populated = await res.populate('topicId')
+        try {
+            const res = await this.lecturerRegTopicModel.create({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                userId: new mongoose.Types.ObjectId(lecturerId)
+            })
+        } catch (error) {
+            throw new RequestTimeoutException()
+        }
     }
-    async cancelRegistration(topicId: string, lecturerId: string): Promise<{message: string}> {
+    async cancelRegistration(topicId: string, lecturerId: string): Promise<{ message: string }> {
         const registration = await this.lecturerRegTopicModel.findOne({
             topicId: topicId,
             lecturerId: lecturerId,

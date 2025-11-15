@@ -1,10 +1,10 @@
 import { IsArray, IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
 import { CreateUserDto } from './create-user.dto'
+import { Expose } from 'class-transformer'
 
 // DTO dùng để tạo mới sinh viên
-export class CreateStudentDto extends CreateUserDto{
-
+export class CreateStudentDto extends CreateUserDto {
     @IsNotEmpty()
     @IsString()
     facultyId: string
@@ -36,6 +36,23 @@ export class ResponseStudentTableDto {
     role: string
     isActive: boolean
     createdAt?: Date
+}
+
+export class ResponseMiniStudentDto {
+    @Expose()
+    id: string
+    @Expose()
+    studentCode: string
+    @Expose()
+    fullName: string
+    @Expose()
+    email: string
+    @Expose()
+    phone: string
+    @Expose()
+    avatarUrl?: string 
+    @Expose()
+    avatarName?: string
 }
 
 // DTO cập nhật profile sinh viên (dùng cho self-update)
@@ -134,7 +151,7 @@ export class ResponseStudentProfileDto {
     avatarUrl?: string
     facultyId: string
     facultyName: string
-    role:string
+    role: string
     isActive: boolean
     skills?: string[]
     interests?: string[]

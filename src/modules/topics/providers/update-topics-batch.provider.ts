@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import { TopicRepositoryInterface } from '../repository'
 import { TopicStatus } from '../enum'
 import { register } from 'module'
@@ -6,8 +6,8 @@ import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PhaseHistory } from '../schemas/topic.schemas'
 
 @Injectable()
-export class UpdateTopicsBatchProvider {
-    constructor(private readonly topicRepository: TopicRepositoryInterface) {}
+export class UpdateTopicsPhaseBatchProvider {
+    constructor(@Inject('TopicRepositoryInterface') private readonly topicRepository: TopicRepositoryInterface) {}
 
     async updateTopicsBatchToExecutionPhase(
         periodId: string,

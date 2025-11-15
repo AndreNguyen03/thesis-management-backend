@@ -8,7 +8,7 @@ import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
-import { UpdateTopicsBatchProvider } from '../../topics/providers/update-topics-batch.provider'
+import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -16,7 +16,7 @@ export class CreatePhaseProvider {
         @Inject('IPeriodRepository') private readonly iPeriodRepository: IPeriodRepository,
         private readonly validatePeriodPhaseProvider: ValidatePeriodPhaseProvider,
         private readonly topicService: TopicService,
-        private readonly updateTopicsBatchProvider: UpdateTopicsBatchProvider
+        private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider
     ) {}
     //draft -> submit-topic
     async createPhaseSubmitTopic(

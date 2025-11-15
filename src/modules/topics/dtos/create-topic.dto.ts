@@ -7,7 +7,11 @@ import { Grade, PhaseHistory } from '../schemas/topic.schemas'
 export class CreateTopicDto {
     @IsNotEmpty()
     @IsString()
-    title: string
+    titleVN: string
+
+    @IsNotEmpty()
+    @IsString()
+    titleEng: string
 
     @IsNotEmpty()
     @IsString()
@@ -40,19 +44,20 @@ export class CreateTopicDto {
 
     //temp fields
     @IsArray()
+    @IsNotEmpty()
     fieldIds: string[]
 
     @IsArray()
-    @IsOptional()
-    requirementIds?: string[] | []
+    @IsNotEmpty()
+    requirementIds?: string[]
 
     @IsArray()
     @IsOptional()
-    studentIds?: string[] | []
+    studentIds?: string[]
 
     @IsArray()
     @IsOptional()
-    lecturerIds?: string[] | []
+    lecturerIds?: string[]
 
     @IsOptional()
     phaseHistories: PhaseHistory[]

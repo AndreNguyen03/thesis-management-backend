@@ -11,21 +11,11 @@ export class LecturerRegTopicService {
     ) {}
 
     public async createSingleRegistration(lecturerId: string, topicId: string) {
-        const isFull = await this.lecturerRegTopicRepository.checkFullSlot(topicId)
-        if (isFull) {
-            throw new FullLecturerSlotException()
-        }
         const res = await this.lecturerRegTopicRepository.createSingleRegistration(topicId, lecturerId)
-        if (!res) {
-            throw new CreateErrorException('topic')
-        }
         return res
     }
     public async createRegistrationWithLecturers(lecturerIds: string[], topicId: string) {
-        const isFull = await this.lecturerRegTopicRepository.checkFullSlot(topicId)
-        if (isFull) {
-            throw new FullLecturerSlotException()
-        }
+      
         const res = await this.lecturerRegTopicRepository.createRegistrationWithLecturers(topicId, lecturerIds)
         if (!res) {
             throw new CreateErrorException('topic')

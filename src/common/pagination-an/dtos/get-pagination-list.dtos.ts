@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer'
 
-export class MetaDto {
+class MetaDto {
     @Expose()
     itemsPerPage: number
     @Expose()
@@ -10,7 +10,7 @@ export class MetaDto {
     @Expose()
     totalPages: number
 }
-export class LinkDto {
+class LinkDto {
     @Expose()
     first?: string
     @Expose()
