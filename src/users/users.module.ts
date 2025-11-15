@@ -19,6 +19,7 @@ import { UserRepository } from './repository/impl/user.repository'
 import { FacultyBoardRepository } from './repository/impl/faculty-board.repository'
 import { FacultyBoard, FacultyBoardSchema } from './schemas/department-board.schema'
 import { FacultyBoardService } from './application/department-board.service'
+import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
 
 @Module({
     controllers: [UserController],
@@ -69,7 +70,8 @@ import { FacultyBoardService } from './application/department-board.service'
             { name: Admin.name, schema: AdminSchema },
             { name: FacultyBoard.name, schema: FacultyBoardSchema }
         ]),
-        ConfigModule.forFeature(profileConfig)
+        ConfigModule.forFeature(profileConfig),
+        UploadFilesModule
     ] // Add any other modules that UsersService depends on here
 })
 export class UsersModule {}

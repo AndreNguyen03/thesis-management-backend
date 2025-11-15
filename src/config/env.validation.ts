@@ -34,5 +34,14 @@ export default Joi.object({
     // ASTRA_DB_NAMESPACE: Joi.string().required(),
     // ASTRA_DB_COLLECTION: Joi.string().required(),
     // ASTRA_DB_API_ENDPOINT: Joi.string().required(),
-    GEMINI_API_KEY: Joi.string().required()
+    GEMINI_API_KEY: Joi.string().required(),
+
+    // MinIO
+    MINIO_ENDPOINT: Joi.string().required(),
+    MINIO_PORT: Joi.number().port().required(),
+    MINIO_ACCESS_KEY: Joi.string().required(),
+    MINIO_SECRET_KEY: Joi.string().required(),
+    MINIO_USE_SSL: Joi.boolean().required(),
+    MINIO_BUCKET_NAME: Joi.string().required(),
+    MINIO_DOWNLOAD_URL_BASE: Joi.string().required()
 })

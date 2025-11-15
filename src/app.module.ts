@@ -34,6 +34,9 @@ import { PaginationModule } from './common/pagination/pagination.module'
 import { PaginationAnModule } from './common/pagination-an/pagination.module'
 import { PeriodsModule } from './modules/periods/periods.module'
 import { GetTopicStatusProvider } from './modules/topics/providers/get-status-topic.provider'
+import { UploadFilesModule } from './modules/upload-files/upload-files.module'
+import { NestMinioModule } from 'nestjs-minio'
+import { minioConfig } from './config/minio.config'
 
 const ENV = process.env.NODE_ENV
 
@@ -79,7 +82,8 @@ const ENV = process.env.NODE_ENV
         // JWT config
         ConfigModule.forFeature(jwtConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
-
+        // MinIO config
+        NestMinioModule.registerAsync(minioConfig.asProvider()),
         // Redis cache module
         RedisModule,
 
@@ -101,7 +105,8 @@ const ENV = process.env.NODE_ENV
 
         PaginationModule,
         PaginationAnModule,
-        PeriodsModule
+        PeriodsModule,
+        UploadFilesModule
     ],
     controllers: [AppController],
     providers: [
@@ -116,7 +121,7 @@ const ENV = process.env.NODE_ENV
         },
         AccessTokenGuard,
         PaginationProvider,
-        GetTopicStatusProvider,
+        GetTopicStatusProvider
     ]
 })
 // export class AppModule {}

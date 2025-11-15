@@ -1,4 +1,18 @@
-import { Controller, Get, Param, Patch, Body, Req, Post, Query, Delete, Put } from '@nestjs/common'
+import {
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Body,
+    Req,
+    Post,
+    Query,
+    Delete,
+    Put,
+    UseInterceptors,
+    UploadedFile,
+    UseGuards
+} from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { Auth } from '../auth/decorator/auth.decorator'
 import { AuthType } from '../auth/enum/auth-type.enum'
@@ -12,6 +26,10 @@ import { UserService } from './application/users.service'
 import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
 import { FacultyBoardService } from './application/department-board.service'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { Roles } from '../auth/decorator/roles.decorator'
+import { UserRole } from './enums/user-role'
+import { ActiveUserData } from '../auth/interface/active-user-data.interface'
 
 @Controller('users')
 @ApiTags('Users')
@@ -123,5 +141,13 @@ export class UserController {
     @Post('faculty-boards')
     async createFacultyBoard(@Body() dto: CreateFacultyBoardDto) {
         return this.facultyBoardService.createDepartmentTransaction(dto)
+    }
+
+    @Post('upload-avatar')
+    @UseInterceptors(FileInterceptor('file'))
+    @Auth(AuthType.Bearer)
+    async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: { user: ActiveUserData }) {
+        const avatarUrl = await this.userService.uploadAvatar(req.user.sub, file)
+        return { message: 'File uploaded successfully', avatarUrl }
     }
 }
