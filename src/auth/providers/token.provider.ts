@@ -4,9 +4,6 @@ import jwtConfig from '../config/jwt.config'
 import { ConfigType } from '@nestjs/config'
 import { ActiveUserData } from '../interface/active-user-data.interface'
 import { UserTokensService } from '../../tokens/application/tokens.service'
-import { Admin } from '../../users/schemas/admin.schema'
-import { Lecturer } from '../../users/schemas/lecturer.schema'
-import { Student } from '../../users/schemas/student.schema'
 import { UserService } from '../../users/application/users.service'
 import {
     RefreshTokenExpiredException,
@@ -16,6 +13,7 @@ import {
     UserNotFoundException
 } from '../../common/exceptions'
 import { User } from '../../users/schemas/users.schema'
+import { GetFacultyByUserIdProvider } from '../../users/provider/get-facutly-by-userId.provider'
 
 @Injectable()
 export class TokenProvider {
@@ -24,7 +22,8 @@ export class TokenProvider {
         @Inject(jwtConfig.KEY)
         private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
         private readonly userTokensService: UserTokensService,
-        private readonly usersService: UserService
+        private readonly usersService: UserService,
+        private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider
     ) {}
 
     public async issueTokens(user: User, deviceInfo: string, ipAddress: string) {
@@ -114,21 +113,24 @@ export class TokenProvider {
         if (!userId) {
             throw new Error('User ID is missing')
         }
+        let facultyId = ''
+        if (user.role === 'department-board') {
+            // Truy vấn FacultyBoard để lấy facultyId
+            facultyId = await this.getFacultyByUserIdProvider.getFacultyByUserId(userId)
+        }
 
+        const payload: Partial<ActiveUserData> = {
+            email: user.email,
+            deviceId: deviceId,
+            role: user.role,
+            facultyId
+        }
         const [accessToken, refreshToken] = await Promise.all([
             // gen access token
-            this.signToken<Partial<ActiveUserData>>(userId, this.jwtConfiguration.accessTokenTTL, {
-                email: user.email,
-                deviceId: deviceId,
-                role: user.role
-            }),
+            this.signToken<Partial<ActiveUserData>>(userId, this.jwtConfiguration.accessTokenTTL, payload),
 
             // gen refresh token
-            this.signToken<Partial<ActiveUserData>>(userId, this.jwtConfiguration.refreshTokenTTL, {
-                email: user.email,
-                deviceId: deviceId,
-                role: user.role
-            })
+            this.signToken<Partial<ActiveUserData>>(userId, this.jwtConfiguration.refreshTokenTTL, payload)
         ])
 
         return { accessToken, refreshToken }

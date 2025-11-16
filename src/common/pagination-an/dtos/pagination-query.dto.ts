@@ -1,15 +1,46 @@
-import { IsOptional, IsPositive } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator'
 
-import { Type } from 'class-transformer';
+import { Type } from 'class-transformer'
 
 export class PaginationQueryDto {
-  @IsOptional()
-  @IsPositive()
-  // Number of entries to return
-  limit?: number = 10;
+    @IsNotEmpty()
+    @IsPositive()
+    // Number of entries to return
+    limit?: number = 10
 
-  @IsOptional()
-  @IsPositive()
-  // Number of entries to skip from start
-  page?: number = 1;
+    @IsNotEmpty()
+    @IsPositive()
+    // Number of entries to skip from start
+    page?: number = 1
+
+    @IsNotEmpty()
+    @IsString()
+    //Tìm kiếm với trường nào
+    search_by?: string = 'name'
+
+    @IsOptional()
+    @IsString()
+    //Nội dung
+    query?: string
+
+    @IsNotEmpty()
+    @IsString()
+    //sắp xếp theo trường nào
+    //topicTopics cũng đc
+    sortBy?: string = 'startTime'
+
+    @IsNotEmpty()
+    @IsString()
+    @IsEnum(['asc', 'desc'])
+    //trình tự sắp xếp
+    sort_order?: string = 'desc'
+
+    //Tìm kiếm xem createAt nằm trong khoảng nào
+    @IsOptional()
+    @IsDateString()
+    startDate?: string
+
+    @IsOptional()
+    @IsDateString()
+    endDate?: string
 }

@@ -40,15 +40,19 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     ) {
         super(iPeriodRepository)
     }
-    async createNewPeriod(actorId: string, createPeriodDto: CreatePeriodDto) {
+    async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto) {
         const { phaseSubmitTopic, ...nest } = createPeriodDto
-        const newPeriod = await this.create(nest)
+        const periodData = {
+            ...nest,
+            facultyId: facultyId
+        }
+        const newPeriod = await this.create(periodData)
         if (phaseSubmitTopic) {
             await this.createPhaseSubmitTopic(actorId, newPeriod._id.toString(), phaseSubmitTopic)
         }
     }
-    async getAllPeriods(query: RequestGetPeriodsDto) {
-        return this.iPeriodRepository.getAllPeriods(query)
+    async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto) {
+        return this.iPeriodRepository.getAllPeriods(facultyId, query)
     }
 
     async deletePeriod(id: string) {

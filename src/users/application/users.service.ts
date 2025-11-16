@@ -37,4 +37,5 @@ export class UserService extends BaseServiceAbstract<User> {
         await this.update(userId, { avatarName, avatarUrl })
         return avatarUrl
     }
+
 }
