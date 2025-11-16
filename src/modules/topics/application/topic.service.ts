@@ -1,20 +1,18 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { StudentRepositoryInterface } from '../../../users/repository/student.repository.interface'
-import { CreateErrorException, TopicNotFoundException } from '../../../common/exceptions'
 import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
-import { UserRole } from '../../../auth/enum/user-role.enum'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
 import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto, RequestGetTopicsInPeriodDto } from '../dtos'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
-import { extend, string } from 'joi'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { PhaseHistory, Topic } from '../schemas/topic.schemas'
 import { TopicStatus } from '../enum'
-import mongoose from 'mongoose'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../providers/tranfer-status-and-add-phase-history.provider'
 import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
+import { DeleteFileProvider } from '../../upload-files/providers/delete-file.provider'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -29,7 +27,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly userSavedTopicRepository: UserSavedTopicRepositoryInterface,
         private readonly lecturerRegTopicService: LecturerRegTopicService,
         private readonly studentRegTopicService: StudentRegTopicService,
-        private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider
+        private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider,
+        private readonly uploadManyFilesProvider: UploadManyFilesProvider,
+        private readonly deleteFileProvider: DeleteFileProvider
     ) {
         super(topicRepository)
     }
@@ -84,8 +84,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
         return this.topicRepository.update(id, topicData)
     }
-    public async deleteTopic(id: string,ownerId:string) {
-        return this.topicRepository.deleteTopic(id,ownerId)
+    public async deleteTopic(id: string, ownerId: string) {
+        return this.topicRepository.deleteTopic(id, ownerId)
     }
 
     public async getSavedTopics(userId: string): Promise<Paginated<Topic>> {
@@ -238,5 +238,34 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         if (!res) {
             throw new BadRequestException('Không tìm thấy đề tài')
         }
+    }
+    //service tải file lên đề tài
+    public async uploadManyFiles(topicId: string, files: Express.Multer.File[]) {
+        if (files.length > 20) {
+            throw new BadRequestException('Số lượng file tải lên một lần vượt quá giới hạn cho phép (20 file)')
+        }
+        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(files)
+        return this.topicRepository.uploadManyFilesToTopic(topicId, idFiles)
+    }
+    public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {
+        let neededDeleteFileIds: string[] = []
+        if (fileIds && fileIds.length > 0) {
+            const topic = await this.findOneByCondition({ _id: topicId, deleted_at: null })
+            if (!topic) {
+                throw new NotFoundException('Đề tài không tồn tại.')
+            }
+            neededDeleteFileIds = fileIds && fileIds.length > 0 ? fileIds : topic.fileIds
+        }
+
+        await this.deleteFileProvider.deleteMany(neededDeleteFileIds)
+        const res: boolean = await this.topicRepository.deleteManyFilesFromTopic(topicId, fileIds)
+        if (res) return neededDeleteFileIds.length
+        return 0
+    }
+    public async deleteFile(topicId: string, fileId: string): Promise<number> {
+        await this.deleteFileProvider.deleteOne(fileId)
+        const res: boolean = await this.topicRepository.deleteFileFromTopic(topicId, fileId)
+        if (res) return 1
+        return 0
     }
 }
