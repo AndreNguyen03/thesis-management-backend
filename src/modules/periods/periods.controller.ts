@@ -43,6 +43,7 @@ export class PeriodsController {
         @Query() query: RequestGetPeriodsDto
     ): Promise<GetPaginatedPeriodDto> {
         const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
+        console.log('res getall period', res)
         return plainToInstance(GetPaginatedPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

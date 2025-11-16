@@ -68,7 +68,7 @@ export class UserController {
             case 'admin':
                 user = await this.adminService.getById(id)
                 return user ? this.adminService.toResponseDto(user) : null
-            case 'department-board':
+            case 'faculty-board':
                 user = await this.facultyBoardService.getById(id)
                 return user ? this.facultyBoardService.toResponseFacultyBoardProfile(user) : null
             default:

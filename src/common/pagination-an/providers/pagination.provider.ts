@@ -19,7 +19,7 @@ export class PaginationProvider {
         repository: Model<T>,
         pipelineSub?: any[]
     ): Promise<Paginated<T>> {
-        const { limit, page, search_by, query, sortBy, sort_order, startDate, endDate } = paginationQuery
+        const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate } = paginationQuery
         let queryLimit = limit ?? 10
         let queryPage = page ?? 1
 
@@ -58,7 +58,7 @@ export class PaginationProvider {
 
         //sắp xếp bởi
         pipelineMain.push({
-            $sort: { [sortBy!]: sort_order === 'asc' ? 1 : -1 }
+            $sort: { [sort_by!]: sort_order === 'asc' ? 1 : -1 }
         })
 
         // --------------------------------------------
@@ -101,7 +101,8 @@ export class PaginationProvider {
                 current: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${queryPage}`,
                 next: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${nextPage}`,
                 previous: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${previousPage}`
-            }
+            },
+            totalRecords: totalItems
         }
 
         return finalResponse
