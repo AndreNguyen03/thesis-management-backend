@@ -15,7 +15,7 @@ export class File extends BaseEntity {
     fileNameBase: string
     @Prop({ required: true })
     //sử dụng cho việc tải và xóa file trên minio
-    filePath: string
+    fileName: string
     @Prop({ required: true, type: String })
     mimeType: string
     @Prop({ required: true, type: String, enum: UploadFileTypes })

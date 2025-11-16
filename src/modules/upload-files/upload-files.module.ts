@@ -9,6 +9,7 @@ import { File, FilesSchema } from './schemas/upload-files.schemas'
 import { UploadAvatarProvider } from './providers/upload-avatar.provider'
 import { UploadManyFilesProvider } from './providers/upload-many-files.provider'
 import { DeleteFileProvider } from './providers/delete-file.provider'
+import { DownLoadFileProvider } from './providers/download-file.provider'
 
 @Module({
     providers: [
@@ -21,10 +22,11 @@ import { DeleteFileProvider } from './providers/delete-file.provider'
         },
         UploadAvatarProvider,
         UploadManyFilesProvider,
-        DeleteFileProvider
+        DeleteFileProvider,
+        DownLoadFileProvider
     ],
     controllers: [UploadFilesController],
-    exports: [UploadAvatarProvider, UploadManyFilesProvider, DeleteFileProvider],
+    exports: [UploadAvatarProvider, UploadManyFilesProvider, DeleteFileProvider, DownLoadFileProvider],
     imports: [MongooseModule.forFeature([{ name: File.name, schema: FilesSchema }])]
 })
 export class UploadFilesModule {}

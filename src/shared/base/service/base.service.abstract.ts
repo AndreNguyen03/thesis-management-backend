@@ -1,9 +1,8 @@
-
-import { BadRequestException } from "@nestjs/common"
-import { Paginated } from "../../../common/pagination/interface/paginated.interface"
-import { BaseEntity } from "../entity/base.entity"
-import { BaseRepositoryInterface } from "../repository/base.repository.interface"
-import { BaseServiceInterface } from "./base.service.interface"
+import { BadRequestException } from '@nestjs/common'
+import { Paginated } from '../../../common/pagination/interface/paginated.interface'
+import { BaseEntity } from '../entity/base.entity'
+import { BaseRepositoryInterface } from '../repository/base.repository.interface'
+import { BaseServiceInterface } from './base.service.interface'
 
 export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseServiceInterface<T> {
     constructor(private readonly repository: BaseRepositoryInterface<T>) {}
@@ -27,6 +26,9 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
     async update(id: string, update_dto: Partial<T>) {
         return await this.repository.update(id, update_dto)
     }
+    async findOneAndUpdate(condition: object, update_dto: Partial<T>): Promise<T | null> {
+        return await this.repository.findOneAndUpdate(condition, update_dto)
+    }
 
     async remove(id: string) {
         const existingModel = await this.repository.findOneById(id)
@@ -36,4 +38,3 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
         return await this.repository.softDelete(id)
     }
 }
-    

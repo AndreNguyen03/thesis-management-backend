@@ -14,7 +14,7 @@ export interface BaseRepositoryInterface<T> {
     update(id: string, dto: Partial<T>): Promise<T | null>
 
     softDelete(id: string): Promise<boolean>
-
+    findOneAndUpdate(condition: object, dto: Partial<T>): Promise<T | null>
     permanentlyDelete(id: string): Promise<boolean>
     findByCondition(condition?: object, projection?: string): Promise<T[] | null>
     paginate(

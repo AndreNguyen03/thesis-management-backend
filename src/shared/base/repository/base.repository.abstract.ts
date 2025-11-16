@@ -9,6 +9,9 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
     constructor(private readonly model: Model<T>) {
         this.model = model
     }
+    async findOneAndUpdate(condition: object, dto: Partial<T>): Promise<T | null> {
+       return  await this.model.findOneAndUpdate({ ...condition, deleted_at: null }, dto, { new: true })
+    }
 
     async create(dto: T | any): Promise<T> {
         const created_data = await this.model.create(dto)
