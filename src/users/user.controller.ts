@@ -25,7 +25,7 @@ import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } f
 import { UserService } from './application/users.service'
 import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
-import { FacultyBoardService } from './application/department-board.service'
+import { FacultyBoardService } from './application/faculty-board.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Roles } from '../auth/decorator/roles.decorator'
 import { UserRole } from './enums/user-role'
@@ -68,6 +68,9 @@ export class UserController {
             case 'admin':
                 user = await this.adminService.getById(id)
                 return user ? this.adminService.toResponseDto(user) : null
+            case 'department-board':
+                user = await this.facultyBoardService.getById(id)
+                return user ? this.facultyBoardService.toResponseFacultyBoardProfile(user) : null
             default:
                 throw new Error('Invalid role')
         }

@@ -114,7 +114,7 @@ export class TokenProvider {
             throw new Error('User ID is missing')
         }
         let facultyId = ''
-        if (user.role === 'department-board') {
+        if (user.role === 'faculty-board') {
             // Truy vấn FacultyBoard để lấy facultyId
             facultyId = await this.getFacultyByUserIdProvider.getFacultyByUserId(userId)
         }

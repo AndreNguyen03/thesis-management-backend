@@ -18,6 +18,8 @@ export class UserService extends BaseServiceAbstract<User> {
         this.minioDownloadUrlBase = this.configService.get<string>('MINIO_DOWNLOAD_URL_BASE')!
     }
 
+    
+
     async findByEmail(email: string): Promise<User | null> {
         return await this.userRepository.findByEmail(email)
     }
@@ -37,5 +39,7 @@ export class UserService extends BaseServiceAbstract<User> {
         await this.update(userId, { avatarName, avatarUrl })
         return avatarUrl
     }
+
+
 
 }

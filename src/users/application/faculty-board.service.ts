@@ -5,9 +5,10 @@ import { InjectConnection, InjectModel } from '@nestjs/mongoose'
 import { Connection } from 'mongoose'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { UserRole } from '../enums/user-role'
-import { FacultyBoard } from '../schemas/department-board.schema'
+import { FacultyBoard } from '../schemas/faculty-board.schema'
 import { FacultyBoardRepositoryInterface } from '../repository/faculty-board.repository.interface'
-import { CreateFacultyBoardDto } from '../dtos/faculty-board.dto'
+import { CreateFacultyBoardDto, ResponseFacultyBoardProfileDto } from '../dtos/faculty-board.dto'
+import { plainToInstance } from 'class-transformer'
 
 @Injectable()
 export class FacultyBoardService extends BaseServiceAbstract<FacultyBoard> {
@@ -48,4 +49,23 @@ export class FacultyBoardService extends BaseServiceAbstract<FacultyBoard> {
         }
     }
     // Implement department board related methods here
+
+    toResponseFacultyBoardProfile(doc: FacultyBoard & { userId: any; facultyId: any }): ResponseFacultyBoardProfileDto {
+        return {
+            userId: doc.userId._id.toString(),
+            fullName: doc.userId.fullName,
+            email: doc.userId.email,
+            phone: doc.userId.phone,
+            avatarUrl: doc.userId.avatarUrl,
+            role: doc.userId.role,
+            facultyId: doc.facultyId._id.toString(),
+            facultyName: doc.facultyId.name,
+            isActive: doc.userId.isActive
+        }
+    }
+
+    async getById(id: string): Promise<FacultyBoard | null> {
+        const facultyBoard = await this.facultyBoardRepository.getById(id)
+        return facultyBoard
+    }
 }
