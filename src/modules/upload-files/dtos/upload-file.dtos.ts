@@ -4,4 +4,5 @@ export class UploadFileDto {
     mimeType: string
     fileType: string    
     size: number
+    actorId: string
 }

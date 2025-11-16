@@ -8,9 +8,9 @@ import mongoose from 'mongoose'
 export class PeriodPhase extends BaseEntity {
     @Prop({ required: true, enum: PeriodPhaseName })
     phase: PeriodPhaseName
-    @Prop({ required: true })
+    @Prop({ required: true, type: Date })
     startTime: Date
-    @Prop({ required: true })
+    @Prop({ required: true, type: Date })
     endTime: Date
     //Option fields for Submit Topic phase
     @Prop({ default: 0, type: Number, required: false })
@@ -33,5 +33,11 @@ export class Period extends BaseEntity {
     phases: PeriodPhase[]
     @Prop({ enum: PeriodStatus, default: PeriodStatus.OnGoing })
     status: PeriodStatus
+    @Prop({ required: true, type: Number })
+    totalTopics: number
+    @Prop({ required: true, type: Date })
+    startTime: Date
+    @Prop({ required: true, type: Date })
+    endTime: Date
 }
 export const PeriodSchema = SchemaFactory.createForClass(Period)

@@ -28,8 +28,8 @@ import {
 } from '../../dtos/get-statistics-topics.dtos'
 import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
 import { TopicStatus } from '../../enum'
-import { PaginationQueryDto } from '../../../../common/pagination/dtos/pagination-query.dto'
 import { TopicNotFoundException } from '../../../../common/exceptions'
+import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(

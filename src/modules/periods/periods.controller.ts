@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { PeriodsService } from './application/periods.service'
-import { CreatePeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
+import { CreatePeriodDto, GetPaginatedPeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
 import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
 import { plainToInstance } from 'class-transformer'
 import {
@@ -18,6 +18,7 @@ import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
+import { Period } from './schemas/period.schemas'
 
 @Controller('periods')
 export class PeriodsController {
@@ -29,7 +30,7 @@ export class PeriodsController {
     @Roles(UserRole.DEPARTMENT_BOARD)
     @UseGuards(RolesGuard)
     async createNewPeriod(@Req() req: { user: ActiveUserData }, @Body() createPeriodDto: CreatePeriodDto) {
-        await this.periodsService.createNewPeriod(req.user.sub, createPeriodDto)
+        await this.periodsService.createNewPeriod(req.user.sub, req.user.facultyId!, createPeriodDto)
         return { message: 'Kỳ mới đã được tạo thành công' }
     }
 
@@ -37,8 +38,15 @@ export class PeriodsController {
     @Get('/get-all')
     @Roles(UserRole.DEPARTMENT_BOARD)
     @UseGuards(RolesGuard)
-    async getAllPeriods(@Query() query: RequestGetPeriodsDto) {
-        return this.periodsService.getAllPeriods(query)
+    async getAllPeriods(
+        @Req() req: { user: ActiveUserData },
+        @Query() query: RequestGetPeriodsDto
+    ): Promise<GetPaginatedPeriodDto> {
+        const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
+        return plainToInstance(GetPaginatedPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     @Delete('delete-period/:id')
@@ -244,10 +252,7 @@ export class PeriodsController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async getStatisticsCompletionPhase(
-        @Req() req: { user: ActiveUserData },
-        @Param('periodId') periodId: string
-    ) {
+    async getStatisticsCompletionPhase(@Req() req: { user: ActiveUserData }, @Param('periodId') periodId: string) {
         const statistics = await this.periodsService.lecturerGetStatisticsCompletionPhase(periodId, req.user.sub)
         return statistics
     }

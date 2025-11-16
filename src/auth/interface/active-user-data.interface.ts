@@ -10,4 +10,6 @@ export interface ActiveUserData {
 
     // role
     role: 'student' | 'lecturer' | 'admin' | 'department-board'
+
+    facultyId?: string
 }

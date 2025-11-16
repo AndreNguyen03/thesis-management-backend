@@ -5,7 +5,7 @@ import { RequestGetPeriodsDto } from '../dtos/request-get-all.dto'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
 
 export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
-    getAllPeriods(query: RequestGetPeriodsDto): Promise<Paginated<Period>>
+    getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>>
     getCurrentPhase(periodId: string): Promise<GetCurrentPhaseResponseDto>
     deletePeriod(periodId: string): Promise<boolean>
     createPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean>

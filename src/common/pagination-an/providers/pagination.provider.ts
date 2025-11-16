@@ -19,8 +19,9 @@ export class PaginationProvider {
         repository: Model<T>,
         pipelineSub?: any[]
     ): Promise<Paginated<T>> {
-        let queryLimit = paginationQuery.limit ?? 10
-        let queryPage = paginationQuery.page ?? 1
+        const { limit, page, search_by, query, sortBy, sort_order, startDate, endDate } = paginationQuery
+        let queryLimit = limit ?? 10
+        let queryPage = page ?? 1
 
         //basecase
         let pipelineMain: any[] = []
@@ -36,10 +37,36 @@ export class PaginationProvider {
             ]
         )
 
+        //tìm kiếm trong khoảng thời gian với createdAt
+        if (startDate) {
+            pipelineMain.push({ $match: { createdAt: { $gte: new Date(startDate) } } })
+        }
+        if (endDate) {
+            pipelineMain.push({ $match: { updatedAt: { $lte: new Date(endDate) } } })
+        }
+
+        //tìm kiếm với searchby và query
+        if (search_by && query) {
+            const searchField = search_by
+            const searchValue = query
+            pipelineMain.unshift({
+                $match: {
+                    [searchField]: { $regex: searchValue, $options: 'i' }
+                }
+            })
+        }
+
+        //sắp xếp bởi
+        pipelineMain.push({
+            $sort: { [sortBy!]: sort_order === 'asc' ? 1 : -1 }
+        })
+
+        // --------------------------------------------
+        //add sub pipeline nếu có từ bên ngoài truyền vào
         if (pipelineSub && pipelineSub.length > 0) {
             pipelineMain = [...pipelineSub, ...pipelineMain]
         }
-        
+
         let results: T[]
         try {
             results = await repository.aggregate(pipelineMain).exec()

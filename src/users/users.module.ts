@@ -20,6 +20,7 @@ import { FacultyBoardRepository } from './repository/impl/faculty-board.reposito
 import { FacultyBoard, FacultyBoardSchema } from './schemas/department-board.schema'
 import { FacultyBoardService } from './application/department-board.service'
 import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
+import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.provider'
 
 @Module({
     controllers: [UserController],
@@ -48,7 +49,8 @@ import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
         LecturerService,
         AdminService,
         UserService,
-        FacultyBoardService
+        FacultyBoardService,
+        GetFacultyByUserIdProvider
     ],
     exports: [
         'UserRepositoryInterface',
@@ -59,7 +61,8 @@ import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
         LecturerService,
         AdminService,
         UserService,
-        MongooseModule
+        MongooseModule,
+        GetFacultyByUserIdProvider
     ],
     imports: [
         forwardRef(() => AuthModule),

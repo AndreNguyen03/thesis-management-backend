@@ -18,6 +18,7 @@ import { GetTopicStatusProvider } from './providers/get-status-topic.provider'
 import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-status-and-add-phase-history.provider'
 import { UpdateTopicsPhaseBatchProvider } from './providers/update-topics-batch.provider'
 import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.provider'
+import { UploadFilesModule } from '../upload-files/upload-files.module'
 
 @Module({
     controllers: [TopicController],
@@ -62,7 +63,8 @@ import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.p
         ]),
         forwardRef(() => UsersModule),
         RegistrationsModule,
-        PaginationAnModule
+        PaginationAnModule,
+        UploadFilesModule
     ]
 })
 export class TopicModule {}

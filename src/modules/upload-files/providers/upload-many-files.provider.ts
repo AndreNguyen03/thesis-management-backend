@@ -10,7 +10,7 @@ export class UploadManyFilesProvider {
         private readonly manageMinioProvider: ManageMinioProvider,
         private readonly manageFileInDatabaseProvider: ManageFileInDatabaseProvider
     ) {}
-    private async uploadFiles(file: Express.Multer.File): Promise<string> {
+    private async uploadFiles(userId: string, file: Express.Multer.File): Promise<string> {
         const allowedTypes = [
             'application/pdf', //pdf
             'application/msword', //doc
@@ -39,12 +39,13 @@ export class UploadManyFilesProvider {
             fileName: fileName,
             mimeType: file.mimetype,
             fileType: 'avatar',
-            size: file.size
+            size: file.size,
+            actorId: userId
         }
         const newTopic = await this.manageFileInDatabaseProvider.storeFileData(fileData)
         return newTopic._id.toString()
     }
-    async uploadManyFiles(files: Express.Multer.File[]) {
+    async uploadManyFiles(userId: string, files: Express.Multer.File[]) {
         //kiểm tra dung lượng của tất cả các file được upload
         const totalSize = files.reduce((acc, file) => acc + file.size, 0)
         if (totalSize > 2 * 1024 * 1024 * 1024) {
@@ -52,7 +53,7 @@ export class UploadManyFilesProvider {
         }
         let ids: string[] = []
         for (const file of files) {
-            const id = await this.uploadFiles(file)
+            const id = await this.uploadFiles(userId, file)
             ids.push(id)
         }
         return ids

@@ -9,7 +9,7 @@ export class UploadAvatarProvider {
         private readonly manageMinioProvider: ManageMinioProvider,
         private readonly manageFileInDatabaseProvider: ManageFileInDatabaseProvider
     ) {}
-    async uploadAvatar(file: Express.Multer.File): Promise<string> {
+    async uploadAvatar(userId: string, file: Express.Multer.File): Promise<string> {
         const allowedTypes = ['image/jpeg', 'image/png']
         if (!allowedTypes.includes(file.mimetype)) {
             throw new BadRequestException('Chỉ cho phép upload file ảnh .jpeg và .png)')
@@ -25,7 +25,8 @@ export class UploadAvatarProvider {
             fileName: fileName,
             mimeType: file.mimetype,
             fileType: 'avatar',
-            size: file.size
+            size: file.size,
+            actorId: userId
         }
         await this.manageFileInDatabaseProvider.storeFileData(fileData)
         //avatar name

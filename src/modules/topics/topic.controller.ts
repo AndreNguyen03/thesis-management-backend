@@ -307,8 +307,15 @@ export class TopicController {
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
     @UseInterceptors(FilesInterceptor('files'))
-    async lecturerUploadFile(@UploadedFiles() files: Express.Multer.File[], @Param('topicId') topicId: string) {
-        const resultFiles = await this.topicService.uploadManyFiles(topicId, files)
+    async lecturerUploadFile(
+        @UploadedFiles() files: Express.Multer.File[],
+        @Param('topicId') topicId: string,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        if (!files) {
+            throw new BadRequestException('Vui lòng chọn file để tải lên')
+        }
+        const resultFiles = await this.topicService.uploadManyFiles(req.user.sub, topicId, files)
         return { message: `Số file đã tải lên bây giờ có ${resultFiles}` }
     }
 

@@ -32,9 +32,10 @@ export class UserService extends BaseServiceAbstract<User> {
         return result
     }
     async uploadAvatar(userId: string, file: Express.Multer.File): Promise<string> {
-        const avatarName = await this.uploadAvatarProvider.uploadAvatar(file)
+        const avatarName = await this.uploadAvatarProvider.uploadAvatar(userId,file)
         const avatarUrl = `${this.minioDownloadUrlBase}/${avatarName}`
         await this.update(userId, { avatarName, avatarUrl })
         return avatarUrl
     }
+
 }
