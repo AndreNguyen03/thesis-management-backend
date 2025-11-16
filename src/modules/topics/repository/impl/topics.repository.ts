@@ -29,6 +29,7 @@ import {
 import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
 import { TopicStatus } from '../../enum'
 import { PaginationQueryDto } from '../../../../common/pagination/dtos/pagination-query.dto'
+import { TopicNotFoundException } from '../../../../common/exceptions'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -1142,5 +1143,49 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.topicRepository
             .findByIdAndUpdate(topicId, { createBy: userId, $pull: { requirementIds: requirementId } }, { new: true })
             .lean()
+    }
+    async uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number> {
+        try {
+            const res = await this.topicRepository
+                .findByIdAndUpdate(
+                    topicId,
+                    {
+                        $push: { fileIds: { $each: fileIds } }
+                    },
+                    { new: true }
+                )
+                .lean()
+            return res?.fileIds.length || 0
+        } catch (error) {
+            throw new BadRequestException('Lỗi tải file lên đề tài')
+        }
+    }
+    async deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean> {
+        try {
+            const res = await this.topicRepository.updateMany(
+                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+                fileIds
+                    ? {
+                          $pull: { fileIds: { $in: fileIds } }
+                      }
+                    : { $set: { fileIds: [] } }
+            )
+            return res.modifiedCount > 0
+        } catch (error) {
+            throw new BadRequestException('Lỗi xóa file khỏi đề tài')
+        }
+    }
+    async deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean> {
+        try {
+            const res = await this.topicRepository.updateMany(
+                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+                {
+                    $pull: { fileIds: fileId }
+                }
+            )
+            return res.modifiedCount > 0
+        } catch (error) {
+            throw new BadRequestException('Lỗi xóa file khỏi đề tài')
+        }
     }
 }

@@ -1,4 +1,19 @@
-import { Controller, Get, Body, Post, Patch, Param, Delete, Query, Req, HttpStatus, UseGuards } from '@nestjs/common'
+import {
+    Controller,
+    Get,
+    Body,
+    Post,
+    Patch,
+    Param,
+    Delete,
+    Query,
+    Req,
+    HttpStatus,
+    UseGuards,
+    UseInterceptors,
+    UploadedFiles,
+    BadRequestException
+} from '@nestjs/common'
 
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
@@ -19,6 +34,7 @@ import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
+import { FilesInterceptor } from '@nestjs/platform-express'
 
 @Controller('topics')
 export class TopicController {
@@ -282,5 +298,40 @@ export class TopicController {
     async archiveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.archiveTopic(topicId, req.user.sub)
         return { message: 'Đã lưu trữ đề tài' }
+    }
+
+    //Tải file hướng dẫn lên topic
+    //Chỉ có giảng viên thuộc đề tài mới được phép tải
+    @Post('/:topicId/lecturer/upload-files')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @UseInterceptors(FilesInterceptor('files'))
+    async lecturerUploadFile(@UploadedFiles() files: Express.Multer.File[], @Param('topicId') topicId: string) {
+        const resultFiles = await this.topicService.uploadManyFiles(topicId, files)
+        return { message: `Số file đã tải lên bây giờ có ${resultFiles}` }
+    }
+
+    //Xóa nhiều file khỏi topic
+    //Xóa hết file (thuộc topic): không cần truyền fileids
+    //Chỉ có giảng viên thuộc đề tài mới được phép xóa
+    @Delete('/:topicId/lecturer/delete-files')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async lecturerDeleteFiles(@Param('topicId') topicId: string, @Body() fileIds?: string[]) {
+        const resultFiles = await this.topicService.deleteManyFile(topicId, fileIds)
+        return { message: `Đã xóa thành công ${resultFiles} file` }
+    }
+
+    //Xóa từng file khỏi topic
+    //Chỉ có giảng viên thuộc đề tài mới được phép xóa
+    @Delete('/:topicId/lecturer/delete-file')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async lecturerDeleteFile(@Param('topicId') topicId: string, @Query('fileId') fileId: string) {
+        const resultFiles = await this.topicService.deleteFile(topicId, fileId)
+        return { message: `Đã xóa thành công ${resultFiles} file` }
     }
 }

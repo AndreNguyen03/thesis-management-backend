@@ -1,5 +1,8 @@
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
-import { UploadFileDto } from '../dtos/UploadFile.dtos'
+import { UploadFileDto } from '../dtos/upload-file.dtos'
 import { File } from '../schemas/upload-files.schemas'
 
-export interface IFileRepository extends BaseRepositoryInterface<File> {}
+export interface IFileRepository extends BaseRepositoryInterface<File> {
+    deleteMany(fileIds: string[]): Promise<string[]>
+    deleteOne(fileId: string): Promise<string>
+}

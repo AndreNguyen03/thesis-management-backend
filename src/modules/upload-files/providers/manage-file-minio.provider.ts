@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 import * as path from 'path'
 
 @Injectable()
-export class UploadMinioProvider {
+export class ManageMinioProvider {
     private bucketName: string
     constructor(
         @InjectMinio() private readonly minioClient: Client,
@@ -38,5 +38,21 @@ export class UploadMinioProvider {
         let timeStamp = new Date().getTime().toString().trim()
         // Return new fileName
         return `${name}-${timeStamp}-${uuidv4()}${extension}`
+    }
+    async deleteMinioFile(fileName: string): Promise<void> {
+        try {
+            await this.minioClient.removeObject(this.bucketName, fileName)
+        } catch (error) {
+            console.log('Error deleting file from MinIO:', error)
+            throw new BadRequestException('Lỗi khi xóa file khỏi hệ thống')
+        }
+    }
+    async deleteMinioFiles(fileNames: string[]): Promise<void> {
+        try {
+            await this.minioClient.removeObjects(this.bucketName, fileNames)
+        } catch (error) {
+            console.log('Error deleting files from MinIO:', error)
+            throw new BadRequestException(`Lỗi khi xóa ${fileNames.length} file khỏi hệ thống`)
+        }
     }
 }

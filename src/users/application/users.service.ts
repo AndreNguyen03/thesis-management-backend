@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 import { User } from '../schemas/users.schema'
-import { UploadMinioProvider } from '../../modules/upload-files/providers/upload-minio.provider'
 import { ConfigService } from '@nestjs/config'
+import { UploadAvatarProvider } from '../../modules/upload-files/providers/upload-avatar.provider'
 
 @Injectable()
 export class UserService extends BaseServiceAbstract<User> {
@@ -11,7 +11,7 @@ export class UserService extends BaseServiceAbstract<User> {
     constructor(
         @Inject('UserRepositoryInterface')
         private readonly userRepository: UserRepositoryInterface,
-        private readonly uploadMinioProvider: UploadMinioProvider,
+        private readonly uploadAvatarProvider: UploadAvatarProvider,
         @Inject(ConfigService) private readonly configService: ConfigService
     ) {
         super(userRepository)
@@ -32,7 +32,7 @@ export class UserService extends BaseServiceAbstract<User> {
         return result
     }
     async uploadAvatar(userId: string, file: Express.Multer.File): Promise<string> {
-        const avatarName = await this.uploadMinioProvider.uploadFileToMinio(file)
+        const avatarName = await this.uploadAvatarProvider.uploadAvatar(file)
         const avatarUrl = `${this.minioDownloadUrlBase}/${avatarName}`
         await this.update(userId, { avatarName, avatarUrl })
         return avatarUrl

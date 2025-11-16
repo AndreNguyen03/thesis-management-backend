@@ -1,3 +1,5 @@
 export enum UploadFileTypes {
-    IMAGE = 'image'
+    AVATAR = 'avatar',
+    DOCUMENT = 'document',
+    AI_KNOWLEDGE = 'ai-knowledge'
 }

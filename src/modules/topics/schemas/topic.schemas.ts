@@ -86,7 +86,7 @@ export class Topic extends BaseEntity {
     @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'requirements', default: [], index: true })
     requirementIds: string[]
 
-    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'fields', default: [], index: true })
-    fieldIds: string[]
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'files', default: [], index: true })
+    fileIds: string[]
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)

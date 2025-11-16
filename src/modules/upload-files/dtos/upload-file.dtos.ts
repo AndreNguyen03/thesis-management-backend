@@ -1,6 +1,7 @@
 export class UploadFileDto {
     fileNameBase: string
     fileName: string
-    type: string
+    mimeType: string
+    fileType: string    
     size: number
 }
