@@ -1,4 +1,4 @@
 export enum PeriodStatus {
-    OnGoing = 'OnGoing',
-    Completed = 'Completed'
+    OnGoing = 'ongoing',
+    Completed = 'completed'
 }
