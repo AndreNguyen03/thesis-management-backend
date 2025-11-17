@@ -5,4 +5,5 @@ import { FacultyBoard } from '../schemas/faculty-board.schema'
 
 export interface FacultyBoardRepositoryInterface extends BaseRepositoryInterface<FacultyBoard> {
     createFacultyBoard(userId: string, dto: CreateFacultyBoardDto, options?: { session?: any }): Promise<FacultyBoard>
+    getById(id: string)
 }

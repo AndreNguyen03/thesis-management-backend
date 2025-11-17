@@ -7,3 +7,16 @@ export class CreateFacultyBoardDto extends CreateUserDto {
     @IsString()
     facultyId: string
 }
+export class ResponseFacultyBoardProfileDto {
+    userId: string
+    fullName: string
+    email: string
+    phone: string
+    avatarUrl: string
+    role: string
+    facultyId: string
+    facultyName: string
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+}

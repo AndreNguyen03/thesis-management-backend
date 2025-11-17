@@ -24,4 +24,10 @@ export class FacultyBoardRepository
         })
         return facultyBoard.save({ session: options?.session })
     }
+    async getById(id: string) {
+        return this.facultyBoardModel
+            .findOne({ userId: new mongoose.Types.ObjectId(id), deleted_at: null })
+            .populate('userId')
+            .populate('facultyId')
+    }
 }
