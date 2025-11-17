@@ -1,4 +1,4 @@
-export enum KnowledgeStatus {
+export enum     KnowledgeStatus {
     ENABLED = 'ENABLED',
     DISABLED = 'DISABLED'
 }

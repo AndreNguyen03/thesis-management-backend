@@ -1,3 +1,4 @@
+import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { ChatbotStatus } from '../enums/chatbot-status.enum'
 import { Expose, Type } from 'class-transformer'
 
@@ -19,7 +20,11 @@ export class GetChatbotDto {
     @Expose()
     updatedAt: Date
 }
-
+export class GetPaginatedChatbotDto extends GetPaginatedObjectDto{
+    @Expose()
+    @Type(() => GetChatbotDto)
+    data: GetChatbotDto[]
+}
 export class GetQuerySuggestionDto {
     @Expose()
     _id: string

@@ -6,9 +6,11 @@ import { GetEmbeddingProvider } from './get-embedding.provider'
 import { ChatBotRepositoryInterface } from '../repository/chatbot.repository.interface'
 import { GenerationProvider } from './generation.provider'
 import { ChatbotVersion } from '../schemas/chatbot_version.schemas'
-import { UpdateChatbotDto } from '../dtos/update-chatbot.dto'
+import { QuerySuggestionDto, UpdateChatbotDto } from '../dtos/update-chatbot.dto'
 import { CreateChatbotVersionDto } from '../dtos/create-chatbot-version.dto'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 
 @Injectable()
 export class ChatBotService {
@@ -119,11 +121,27 @@ export class ChatBotService {
         const chatBot = await this.chatBotRepository.getChatBotEnabled()
         return chatBot
     }
+    public async getAllChatbotVersions(paginationQuery: PaginationQueryDto): Promise<Paginated<ChatbotVersion>> {
+        const chatbotVersions = await this.chatBotRepository.getAllChatbotVersions(paginationQuery)
+        return chatbotVersions
+    }
     public async updateChatbotVersion(id: string, updateChatbotDto: UpdateChatbotDto): Promise<ChatbotVersion | null> {
         return this.chatBotRepository.updateChatbotVersion(id, updateChatbotDto)
     }
     public async createChatbotVersion(createChatbotDto: CreateChatbotVersionDto): Promise<ChatbotVersion> {
-        
         return this.chatBotRepository.create(createChatbotDto)
+    }
+    public async addSuggestionsToChatbot(versionId: string, addedQuestion: QuerySuggestionDto): Promise<number | null> {
+        return this.chatBotRepository.addSuggestionsToChatbotVersion(versionId, addedQuestion)
+    }
+    public async removeSuggestionsFromChatbot(versionId: string, suggestionIds: string[]): Promise<number | null> {
+        return this.chatBotRepository.removeSuggestionsFromChatbotVersion(versionId, suggestionIds)
+    }
+
+    public async unenableSuggestionsFromChatbot(versionId: string, suggestionIds: string[]): Promise<number | null> {
+        return this.chatBotRepository.unenableSuggestionsFromChatbotVersion(versionId, suggestionIds)
+    }
+    public async deleteChatbotVersion(id: string) {
+        return this.chatBotRepository.softDelete(id)
     }
 }

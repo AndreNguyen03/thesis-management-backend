@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from 'class-validator'
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { ChatbotStatus } from '../enums/chatbot-status.enum'
 
 export class UpdateChatbotDto {
@@ -8,11 +8,11 @@ export class UpdateChatbotDto {
     description: string
     @IsOptional()
     status: ChatbotStatus
-    @IsOptional()
-    query_suggestions: QuerySuggestionDto[]
 }
 
 export class QuerySuggestionDto {
     @IsNotEmpty()
-    content: string
+    @IsArray()
+    @IsString({ each: true })
+    contents: string[]
 }

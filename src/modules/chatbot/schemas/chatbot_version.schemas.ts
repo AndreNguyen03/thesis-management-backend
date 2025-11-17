@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { ChatbotStatus } from '../enums/chatbot-status.enum'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
+import { extend } from 'joi'
 @Schema({
     timestamps: {
         createdAt: 'created_at',
@@ -9,15 +10,11 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
     }
 })
 @Schema({ _id: false })
-export class QuerySuggestion {
-    @Prop({ required: false })
-    id: string // ID của Chatbot
-
-    @Prop({ required: true })
+export class QuerySuggestion extends BaseEntity {
+    @Prop({ required: true, type: String })
     content: string
-
-    @Prop({ default: null })
-    deleted_at: Date
+    @Prop({ required: true, type: Boolean, default: true })
+    enabled: boolean
 }
 @Schema({
     timestamps: {
