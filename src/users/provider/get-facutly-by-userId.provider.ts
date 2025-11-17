@@ -1,6 +1,6 @@
 import { BadRequestException, Inject } from '@nestjs/common'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
-import { FacultyBoard } from '../schemas/department-board.schema'
+import { FacultyBoard } from '../schemas/faculty-board.schema'
 import { FacultyBoardRepositoryInterface } from '../repository/faculty-board.repository.interface'
 import mongoose, { mongo } from 'mongoose'
 
@@ -17,6 +17,7 @@ export class GetFacultyByUserIdProvider extends BaseServiceAbstract<FacultyBoard
             userId: new mongoose.Types.ObjectId(userId),
             deleted_at: null
         })
+        console.log(facultyBoard)
         if (!facultyBoard) {
             throw new BadRequestException('Không tìm thấy thông tin ban khoa cho người dùng này')
         }

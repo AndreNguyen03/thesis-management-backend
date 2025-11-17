@@ -18,9 +18,14 @@ export class GetChatbotDto {
     @Type(() => GetQuerySuggestionDto)
     query_suggestions: GetQuerySuggestionDto[]
     @Expose()
+    @Type(() => GetQuerySuggestionDto)
+    query_unenable_suggestions: GetQuerySuggestionDto[]
+    @Expose()
+    createdAt: Date
+    @Expose()
     updatedAt: Date
 }
-export class GetPaginatedChatbotDto extends GetPaginatedObjectDto{
+export class GetPaginatedChatbotDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetChatbotDto)
     data: GetChatbotDto[]
@@ -28,7 +33,8 @@ export class GetPaginatedChatbotDto extends GetPaginatedObjectDto{
 export class GetQuerySuggestionDto {
     @Expose()
     _id: string
-
     @Expose()
     content: string
+    @Expose()
+    enabled: boolean
 }

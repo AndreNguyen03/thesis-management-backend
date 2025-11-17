@@ -39,8 +39,8 @@ export class RetrievalProvider {
                 // Add knowledge documents to database
                 const storedKnowledgeDoc = await this.knowledgeSourceProvider.createKnowledgeSource(userId, doc)
                 //Bắt đầu xử lý dữ liệu crawl-split-embed-store cho từng doc
-                // Gửi job vào BullMQ
                 await this.loadSampleData(storedKnowledgeDoc._id.toString(), doc.source_location)
+                // Gửi job vào BullMQ
                 // await this.knowledgeQueue.add('processKnowledge', {
                 //     sourceId: storedKnowledgeDoc._id.toString(),
                 //     url: doc.source_location

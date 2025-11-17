@@ -8,12 +8,11 @@ import { BuildKnowledgeDB } from './dtos/build-knowledge-db.dto'
 import { QuerySuggestionDto, UpdateChatbotDto } from './dtos/update-chatbot.dto'
 import { plainToClass, plainToInstance } from 'class-transformer'
 import { CreateChatbotVersionDto } from './dtos/create-chatbot-version.dto'
-import { GetChatbotDto, GetPaginatedChatbotDto } from './dtos/get-chatbot.dto'
+import { GetChatbotDto } from './dtos/get-chatbot.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
-import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 @Controller('chatbots')
 export class ChatController {
     constructor(private readonly chatBotService: ChatBotService) {}
@@ -80,19 +79,19 @@ export class ChatController {
         }
     }
 
-    @Get('/chatbot-version/get-all')
-    @Auth(AuthType.Bearer)
-    async getAllChatBotVersion(@Query() query: PaginationQueryDto) {
-        try {
-            const chatbotversion = await this.chatBotService.getAllChatbotVersions(query)
-            return plainToClass(GetPaginatedChatbotDto, chatbotversion, {
-                excludeExtraneousValues: true,
-                enableImplicitConversion: true
-            })
-        } catch (error) {
-            return { message: 'Error getting Chatbot version', error: error.message }
-        }
-    }
+    // @Get('/chatbot-version/get-all')
+    // @Auth(AuthType.Bearer)
+    // async getAllChatBotVersion(@Query() query: PaginationQueryDto) {
+    //     try {
+    //         const chatbotversion = await this.chatBotService.getAllChatbotVersions(query)
+    //         return plainToClass(GetPaginatedChatbotDto, chatbotversion, {
+    //             excludeExtraneousValues: true,
+    //             enableImplicitConversion: true
+    //         })
+    //     } catch (error) {
+    //         return { message: 'Error getting Chatbot version', error: error.message }
+    //     }
+    // }
 
     @Delete('/chatbot-version/:id')
     @Auth(AuthType.Bearer)
@@ -131,6 +130,23 @@ export class ChatController {
     @UseGuards(RolesGuard)
     async unenableSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
         const numberModified = await this.chatBotService.unenableSuggestionsFromChatbot(versionId, suggestionIds)
+        return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
+    }
+
+    @Patch('/chatbot-version/:versionId/suggestion-questions/:suggestionId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async updateSuggestion(
+        @Param('versionId') versionId: string,
+        @Param('suggestionId') suggestionId: string,
+        @Body('newContent') newContent: string
+    ) {
+        const numberModified = await this.chatBotService.updateSuggestionFromChatbot(
+            versionId,
+            suggestionId,
+            newContent
+        )
         return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
     }
 

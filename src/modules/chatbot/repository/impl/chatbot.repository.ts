@@ -8,6 +8,7 @@ import { QuerySuggestionDto, UpdateChatbotDto } from '../../dtos/update-chatbot.
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
+import { GetChatbotDto } from '../../dtos/get-chatbot.dto'
 
 export class ChatBotRepository extends BaseRepositoryAbstract<ChatbotVersion> implements ChatBotRepositoryInterface {
     constructor(
@@ -21,9 +22,29 @@ export class ChatBotRepository extends BaseRepositoryAbstract<ChatbotVersion> im
         const updatedChatbot = await this.chatbotModel.findByIdAndUpdate(id, updateChatbotDto, { new: true }).exec()
         return updatedChatbot
     }
-    async getChatBotEnabled(): Promise<ChatbotVersion | null> {
-        const chatBot = await this.chatbotModel.findOne({ status: ChatbotStatus.ENABLED, deleted_at: null, query_suggestions: { enabled: true } }).exec()
-        return chatBot ? chatBot.toObject() : null
+    async getChatBotEnabled(): Promise<GetChatbotDto | null> {
+        // const chatBot = await this.chatbotModel.findOne({ status: ChatbotStatus.ENABLED, deleted_at: null }).exec()
+        // return chatBot ? chatBot.toObject() : null
+        const res = await this.chatbotModel.aggregate([
+            {
+                $facet: {
+                    data: [{ $match: { status: ChatbotStatus.ENABLED, deleted_at: null } }],
+                    query_suggestions: [
+                        { $unwind: '$query_suggestions' },
+                        { $match: { 'query_suggestions.enabled': true } }
+                    ],
+                    query_unenable_suggestions: [
+                        { $unwind: '$query_suggestions' },
+                        { $match: { 'query_suggestions.enabled': false } }
+                    ]
+                }
+            }
+        ])
+        return {
+            ...res[0].data[0],
+            query_suggestions: res[0].query_suggestions.map((item) => item.query_suggestions),
+            query_unenable_suggestions: res[0].query_unenable_suggestions.map((item) => item.query_suggestions)
+        }
     }
     async getAllChatbotVersions(paginationQuery: PaginationQueryDto): Promise<Paginated<ChatbotVersion>> {
         return await this.paginationProvider.paginateQuery<ChatbotVersion>(paginationQuery, this.chatbotModel)
@@ -57,6 +78,19 @@ export class ChatBotRepository extends BaseRepositoryAbstract<ChatbotVersion> im
             { _id: versionId, deleted_at: null },
             { $set: { 'query_suggestions.$[elem].enabled': false } },
             { arrayFilters: [{ 'elem._id': { $in: suggestionIds } }] }
+        )
+        return result.modifiedCount
+    }
+    async updateSuggestionFromChatbotVersion(
+        versionId: string,
+        suggestionId: string,
+        newContent: string
+    ): Promise<number | null> 
+    {
+        const result = await this.chatbotModel.updateOne(
+            { _id: versionId, deleted_at: null },
+            { $set: { 'query_suggestions.$[elem].content': newContent } },
+            { arrayFilters: [{ 'elem._id': suggestionId }] }
         )
         return result.modifiedCount
     }

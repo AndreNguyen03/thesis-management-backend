@@ -22,7 +22,7 @@ export class QuerySuggestion extends BaseEntity {
         updatedAt: 'updated_at'
     }
 })
-@Schema({ collection: 'chatbot_versions' })
+@Schema({ collection: 'chatbot_versions', timestamps: true })
 export class ChatbotVersion extends BaseEntity {
     @Prop({ required: true })
     name: string
