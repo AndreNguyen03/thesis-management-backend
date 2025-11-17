@@ -23,7 +23,7 @@ export class RegistrationsController {
     // assign giảng viên khác vào đề tài
     @Post('/assign-lecturer/:lecturerId/in/:topicId')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER, UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async lecRegisterTopic(
         @Req() req: { user: ActiveUserData },

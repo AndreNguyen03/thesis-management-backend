@@ -1,4 +1,4 @@
 export enum SourceType {
     URL = 'URL',
-    FILED = 'FILE'
+    FILE = 'FILE'
 }

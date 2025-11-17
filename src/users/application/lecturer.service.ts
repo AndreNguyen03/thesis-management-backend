@@ -33,23 +33,23 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
     }
 
     toResponseLecturerProfile(doc: Lecturer & { userId: any; facultyId: any }): ResponseLecturerProfileDto {
-    return {
-        userId: doc.userId._id.toString(),
-        fullName: doc.userId.fullName,
-        email: doc.userId.email,
-        phone: doc.userId.phone,
-        avatarUrl: doc.userId.avatarUrl,
-        title: doc.title,
-        role: doc.userId.role,
-        facultyId: doc.facultyId._id.toString(),
-        facultyName: doc.facultyId.name,
-        isActive: doc.userId.isActive,
-        areaInterest: doc.areaInterest,
-        researchInterests: doc.researchInterests,
-        publications: doc.publications,
-        supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString()),
-    };
-}
+        return {
+            userId: doc.userId._id.toString(),
+            fullName: doc.userId.fullName,
+            email: doc.userId.email,
+            phone: doc.userId.phone,
+            avatarUrl: doc.userId.avatarUrl,
+            title: doc.title,
+            role: doc.userId.role,
+            facultyId: doc.facultyId._id.toString(),
+            facultyName: doc.facultyId.name,
+            isActive: doc.userId.isActive,
+            areaInterest: doc.areaInterest,
+            researchInterests: doc.researchInterests,
+            publications: doc.publications,
+            supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
+        }
+    }
     async updatePassword(id: string, newPasswordHash: string): Promise<void> {
         await this.lecturerRepository.updatePassword(id, newPasswordHash)
     }

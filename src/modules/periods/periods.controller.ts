@@ -27,7 +27,7 @@ export class PeriodsController {
     // Tạo kì/ đợt đăng ký mới
     @Post()
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createNewPeriod(@Req() req: { user: ActiveUserData }, @Body() createPeriodDto: CreatePeriodDto) {
         await this.periodsService.createNewPeriod(req.user.sub, req.user.facultyId!, createPeriodDto)
@@ -36,7 +36,7 @@ export class PeriodsController {
 
     // Lấy tất cả các kỳ
     @Get('/get-all')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getAllPeriods(
         @Req() req: { user: ActiveUserData },
@@ -50,7 +50,7 @@ export class PeriodsController {
     }
 
     @Delete('delete-period/:id')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async deletePeriod(@Param('id') id: string) {
         await this.periodsService.deletePeriod(id)
@@ -58,7 +58,7 @@ export class PeriodsController {
     }
     // Thay đổi thoong tin kỳ
     @Patch('adjust-period/:periodId')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async adjustPeriod(@Param('periodId') periodId: string, @Body() adjustPeriodDto: UpdatePeriodDto) {
         await this.periodsService.adjustPeriod(periodId, adjustPeriodDto)
@@ -67,7 +67,7 @@ export class PeriodsController {
 
     // Set kỳ đã kết thúc
     @Patch('period-completed/:periodId')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async setPeriodEnded(@Param('periodId') periodId: string) {
         await this.periodsService.setPeriodCompleted(periodId)
@@ -76,7 +76,7 @@ export class PeriodsController {
 
     //Lấy thông tin của kì
     @Get('/detail-period/:periodId')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
         const res = await this.periodsService.getPeriodInfo(periodId)
@@ -88,7 +88,7 @@ export class PeriodsController {
 
     @Patch('/:periodId/create-submit-topic-phase')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createSubmitTopicPhase(
         @Req() req: { user: ActiveUserData },
@@ -102,7 +102,7 @@ export class PeriodsController {
 
     @Patch(':periodId/create-execution-phase')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createExecutionPhase(
         @Req() req: { user: ActiveUserData },
@@ -115,7 +115,7 @@ export class PeriodsController {
 
     @Patch(':periodId/create-open-reg-phase')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createOpenRegPhase(
         @Req() req: { user: ActiveUserData },
@@ -128,7 +128,7 @@ export class PeriodsController {
 
     @Patch(':periodId/create-completion-phase')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createCompletionPhase(
         @Req() req: { user: ActiveUserData },
@@ -177,7 +177,7 @@ export class PeriodsController {
     //Lấy thống kế ở pha 1 - pha nộp đề tàii
     @Get('/:periodId/faculty-board/submit-topic-phase/statistics')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getStatisticsSubmitTopicPhase(@Param('periodId') periodId: string) {
         const statistics = await this.periodsService.boardGetStatisticsSubmitTopicPhase(periodId)
@@ -186,7 +186,7 @@ export class PeriodsController {
     //Lấy thống kế ở pha 2 - pha đăng ký đề tài
     @Get('/:periodId/faculty-board/open-registration-phase/statistics')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getStatisticsOpenRegistrationPhase(@Param('periodId') periodId: string) {
         const statistics = await this.periodsService.boardGetStatisticsOpenRegistrationPhase(periodId)
@@ -195,7 +195,7 @@ export class PeriodsController {
     //Lấy thống kế ở pha 3 - pha thực hiện đề tài
     @Get('/:periodId/faculty-board/execution-phase/statistics')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getStatisticsExecutionPhase(@Param('periodId') periodId: string) {
         const statistics = await this.periodsService.boardGetStatisticsExecutionPhase(periodId)
@@ -204,7 +204,7 @@ export class PeriodsController {
     //Lấy thống kế ở pha 4 - pha hoàn thành đề tài
     @Get('/:periodId/faculty-board/completion-phase/statistics')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async lecturerGetStatisticsCompletionPhase(@Param('periodId') periodId: string) {
         const statistics = await this.periodsService.boardGetStatisticsCompletionPhase(periodId)

@@ -27,7 +27,7 @@ export class PaginationQueryDto {
     @IsString()
     //sắp xếp theo trường nào
     //topicTopics cũng đc
-    sortBy?: string = 'startTime'
+    sort_by?: string = 'startTime'
 
     @IsNotEmpty()
     @IsString()

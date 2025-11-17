@@ -1,16 +1,19 @@
-import { Controller, Post, Body, Res, Sse, MessageEvent, HttpCode, HttpStatus, Get, Param, Req } from '@nestjs/common'
+import { Controller, Post, Body, Res, Get, Param, Req, Patch, UseGuards, Delete, Query } from '@nestjs/common'
 import { Response } from 'express'
 import { ChatBotService } from './application/chatbot.service'
 import { ChatRequestDto } from './dtos'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { BuildKnowledgeDB } from './dtos/build-knowledge-db.dto'
-import { UpdateChatbotDto } from './dtos/update-chatbot.dto'
+import { QuerySuggestionDto, UpdateChatbotDto } from './dtos/update-chatbot.dto'
 import { plainToClass, plainToInstance } from 'class-transformer'
 import { CreateChatbotVersionDto } from './dtos/create-chatbot-version.dto'
 import { GetChatbotDto } from './dtos/get-chatbot.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
-@Controller('chatbot')
+import { Roles } from '../../auth/decorator/roles.decorator'
+import { UserRole } from '../../auth/enum/user-role.enum'
+import { RolesGuard } from '../../auth/guards/roles/roles.guard'
+@Controller('chatbots')
 export class ChatController {
     constructor(private readonly chatBotService: ChatBotService) {}
 
@@ -49,32 +52,6 @@ export class ChatController {
         }
     }
 
-    @Get('/get-chatbot-version')
-    @Auth(AuthType.None)
-    async getChatbotVersion() {
-        try {
-            const chatbotversion = await this.chatBotService.getChatBotEnabledVersion()
-            return plainToClass(GetChatbotDto, chatbotversion, {
-                excludeExtraneousValues: true,
-                enableImplicitConversion: true
-            })
-        } catch (error) {
-            return { message: 'Error getting Chatbot version', error: error.message }
-        }
-    }
-    @Get('/update-chatbot-version/:id')
-    @Auth(AuthType.None)
-    async updateChatbotVersion(@Body() body: UpdateChatbotDto, @Param('id') id: string) {
-        try {
-            const updatedChatbot = await this.chatBotService.updateChatbotVersion(id, body)
-            return plainToInstance(UpdateChatbotDto, updatedChatbot, {
-                excludeExtraneousValues: true,
-                enableImplicitConversion: true
-            })
-        } catch (error) {
-            return { message: 'Error getting Chatbot version', error: error.message }
-        }
-    }
     @Post('/')
     @Auth(AuthType.None)
     async createChatbotVersion(@Body() body: CreateChatbotVersionDto) {
@@ -87,5 +64,98 @@ export class ChatController {
         } catch (error) {
             return { message: 'Error getting Chatbot version', error: error.message }
         }
+    }
+    @Get('/chatbot-version/enabled')
+    @Auth(AuthType.Bearer)
+    async getChatbotVersion() {
+        try {
+            const chatbotversion = await this.chatBotService.getChatBotEnabledVersion()
+            return plainToClass(GetChatbotDto, chatbotversion, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            })
+        } catch (error) {
+            return { message: 'Error getting Chatbot version', error: error.message }
+        }
+    }
+
+    // @Get('/chatbot-version/get-all')
+    // @Auth(AuthType.Bearer)
+    // async getAllChatBotVersion(@Query() query: PaginationQueryDto) {
+    //     try {
+    //         const chatbotversion = await this.chatBotService.getAllChatbotVersions(query)
+    //         return plainToClass(GetPaginatedChatbotDto, chatbotversion, {
+    //             excludeExtraneousValues: true,
+    //             enableImplicitConversion: true
+    //         })
+    //     } catch (error) {
+    //         return { message: 'Error getting Chatbot version', error: error.message }
+    //     }
+    // }
+
+    @Delete('/chatbot-version/:id')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async deleteChatbotVersion(@Param('id') id: string) {
+        const deleted = await this.chatBotService.deleteChatbotVersion(id)
+        return deleted ? { message: 'Xóa phiên bản chatbot thành công' } : { message: 'Xóa phiên bản chatbot thất bại' }
+    }
+    @Patch('/update-chatbot-version/:id')
+    @Auth(AuthType.None)
+    async updateChatbotVersion(@Body() body: UpdateChatbotDto, @Param('id') id: string) {
+        try {
+            const updatedChatbot = await this.chatBotService.updateChatbotVersion(id, body)
+            return plainToInstance(GetChatbotDto, updatedChatbot, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            })
+        } catch (error) {
+            return { message: 'Error getting Chatbot version', error: error.message }
+        }
+    }
+
+    @Post('/chatbot-version/:versionId/add-suggestion-questions')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async addSuggestions(@Body() body: QuerySuggestionDto, @Param('versionId') versionId: string) {
+        const numberModified = await this.chatBotService.addSuggestionsToChatbot(versionId, body)
+        return { message: 'Đã thêm các đề nghị cho câu hỏi tới chatbot', numberModified }
+    }
+
+    @Patch('/chatbot-version/:versionId/unenable-suggestion-questions')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async unenableSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
+        const numberModified = await this.chatBotService.unenableSuggestionsFromChatbot(versionId, suggestionIds)
+        return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
+    }
+
+    @Patch('/chatbot-version/:versionId/suggestion-questions/:suggestionId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async updateSuggestion(
+        @Param('versionId') versionId: string,
+        @Param('suggestionId') suggestionId: string,
+        @Body('newContent') newContent: string
+    ) {
+        const numberModified = await this.chatBotService.updateSuggestionFromChatbot(
+            versionId,
+            suggestionId,
+            newContent
+        )
+        return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
+    }
+
+    @Delete('/chatbot-version/:versionId/remove-suggestion-questions')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async removeSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
+        const numberModified = await this.chatBotService.removeSuggestionsFromChatbot(versionId, suggestionIds)
+        return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
     }
 }

@@ -193,7 +193,7 @@ export class TopicController {
 
     @Patch('/:topicId/facuty-board/approve-topic')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async facultyBoardApproveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.approveTopic(topicId, req.user.sub)
@@ -202,14 +202,14 @@ export class TopicController {
 
     @Patch('/:topicId/facuty-board/reject-topic')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async facultyBoardRejectTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.rejectTopic(topicId, req.user.sub)
         return { message: 'Đề tài đã được đánh dấu là không hợp lệ và gửi thông báo về cho giảng viên' }
     }
     @Patch('/:topicId/under-review')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async markUnderReviewingTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.markUnderReviewing(topicId, req.user.sub)
@@ -218,7 +218,7 @@ export class TopicController {
 
     @Patch('/:topicId/set-in-progressing')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async setTopicInProgressing(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.setTopicInProgressing(topicId, req.user.sub)
@@ -234,7 +234,7 @@ export class TopicController {
 
     @Patch('/:topicId/mark-paused-topic')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.DEPARTMENT_BOARD, UserRole.LECTURER)
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
     @UseGuards(RolesGuard)
     async markPausedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.markPausedTopic(topicId, req.user.sub)
@@ -285,7 +285,7 @@ export class TopicController {
 
     //BCN khoa xem điểm đề tài
     @Patch('/:topicId/review-graded-topic')
-    @Roles(UserRole.DEPARTMENT_BOARD)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     @Auth(AuthType.Bearer)
     async markReviewedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {

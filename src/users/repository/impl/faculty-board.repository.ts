@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 import mongoose, { Model } from 'mongoose'
-import { FacultyBoard } from '../../schemas/department-board.schema'
+import { FacultyBoard } from '../../schemas/faculty-board.schema'
 import { FacultyBoardRepositoryInterface } from '../faculty-board.repository.interface'
 import { CreateFacultyBoardDto } from '../../dtos/faculty-board.dto'
 import { InjectModel } from '@nestjs/mongoose'
@@ -23,5 +23,11 @@ export class FacultyBoardRepository
             facultyId: new mongoose.Types.ObjectId(dto.facultyId)
         })
         return facultyBoard.save({ session: options?.session })
+    }
+    async getById(id: string) {
+        return this.facultyBoardModel
+            .findOne({ userId: new mongoose.Types.ObjectId(id), deleted_at: null })
+            .populate('userId')
+            .populate('facultyId')
     }
 }
