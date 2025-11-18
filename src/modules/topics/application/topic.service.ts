@@ -240,11 +240,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
     }
     //service tải file lên đề tài
-    public async uploadManyFiles(topicId: string, files: Express.Multer.File[]) {
+    public async uploadManyFiles(userId: string, topicId: string, files: Express.Multer.File[]) {
         if (files.length > 20) {
             throw new BadRequestException('Số lượng file tải lên một lần vượt quá giới hạn cho phép (20 file)')
         }
-        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(files)
+        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(userId, files)
         return this.topicRepository.uploadManyFilesToTopic(topicId, idFiles)
     }
     public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {

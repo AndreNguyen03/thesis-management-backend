@@ -14,6 +14,7 @@ import {
 } from '../../common/exceptions'
 import { User } from '../../users/schemas/users.schema'
 import { GetFacultyByUserIdProvider } from '../../users/provider/get-facutly-by-userId.provider'
+import { UserRole } from '../enum/user-role.enum'
 
 @Injectable()
 export class TokenProvider {
@@ -110,11 +111,12 @@ export class TokenProvider {
     }
 
     public async generateToken(userId: string, user: User, deviceId: string) {
+        console.log(userId)
         if (!userId) {
             throw new Error('User ID is missing')
         }
         let facultyId = ''
-        if (user.role === 'faculty-board') {
+        if (user.role === UserRole.FACULTY_BOARD) {
             // Truy vấn FacultyBoard để lấy facultyId
             facultyId = await this.getFacultyByUserIdProvider.getFacultyByUserId(userId)
         }

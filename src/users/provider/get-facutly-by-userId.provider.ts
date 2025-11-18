@@ -17,6 +17,7 @@ export class GetFacultyByUserIdProvider extends BaseServiceAbstract<FacultyBoard
             userId: new mongoose.Types.ObjectId(userId),
             deleted_at: null
         })
+        console.log(facultyBoard)
         if (!facultyBoard) {
             throw new BadRequestException('Không tìm thấy thông tin ban khoa cho người dùng này')
         }

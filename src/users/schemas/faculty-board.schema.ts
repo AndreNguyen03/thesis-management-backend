@@ -1,12 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { BaseEntity } from '../../shared/base/entity/base.entity'
 import mongoose, { HydratedDocument } from 'mongoose'
-import { User } from './users.schema'
 
-
-export type FacultyBoardDocument = HydratedDocument<FacultyBoard>
-
-@Schema({ collection: 'faculty-boards', timestamps: true, _id: false })
+@Schema({
+    collection: 'faculty_boards',
+    timestamps: {
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
+    }
+})
 export class FacultyBoard extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
     userId: mongoose.Schema.Types.ObjectId

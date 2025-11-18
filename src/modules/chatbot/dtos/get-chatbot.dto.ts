@@ -1,3 +1,4 @@
+import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { ChatbotStatus } from '../enums/chatbot-status.enum'
 import { Expose, Type } from 'class-transformer'
 
@@ -17,13 +18,23 @@ export class GetChatbotDto {
     @Type(() => GetQuerySuggestionDto)
     query_suggestions: GetQuerySuggestionDto[]
     @Expose()
+    @Type(() => GetQuerySuggestionDto)
+    query_unenable_suggestions: GetQuerySuggestionDto[]
+    @Expose()
+    createdAt: Date
+    @Expose()
     updatedAt: Date
 }
-
+export class GetPaginatedChatbotDto extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetChatbotDto)
+    data: GetChatbotDto[]
+}
 export class GetQuerySuggestionDto {
     @Expose()
     _id: string
-
     @Expose()
     content: string
+    @Expose()
+    enabled: boolean
 }

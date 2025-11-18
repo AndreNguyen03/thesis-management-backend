@@ -41,7 +41,7 @@ export class FacultyBoardRepository
 
     async getById(id: string) {
         const facultyBoard = await this.facultyBoardModel
-            .findOne({ userId: new Types.ObjectId(id) })
+            .findOne({ userId: new Types.ObjectId(id), deleted_at: null  })
             .populate('userId')
             .populate('facultyId')
             .exec()

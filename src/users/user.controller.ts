@@ -51,6 +51,7 @@ export class UserController {
     @Get('profile')
     async getMyProfile(@Req() req) {
         const { sub: id, role } = req.user
+        console.log('role :::', role)
         return this.getUserByRoleAndId(role, id)
     }
 
@@ -68,7 +69,7 @@ export class UserController {
             case 'admin':
                 user = await this.adminService.getById(id)
                 return user ? this.adminService.toResponseDto(user) : null
-            case 'faculty-board':
+            case 'faculty_board':
                 user = await this.facultyBoardService.getById(id)
                 return user ? this.facultyBoardService.toResponseFacultyBoardProfile(user) : null
             default:

@@ -6,21 +6,22 @@ import { GetEmbeddingProvider } from './get-embedding.provider'
 import { ChatBotRepositoryInterface } from '../repository/chatbot.repository.interface'
 import { GenerationProvider } from './generation.provider'
 import { ChatbotVersion } from '../schemas/chatbot_version.schemas'
-import { UpdateChatbotDto } from '../dtos/update-chatbot.dto'
+import { QuerySuggestionDto, UpdateChatbotDto } from '../dtos/update-chatbot.dto'
 import { CreateChatbotVersionDto } from '../dtos/create-chatbot-version.dto'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { GetChatbotDto } from '../dtos/get-chatbot.dto'
 
 @Injectable()
 export class ChatBotService {
     private readonly systemPrompt = `
         You are an AI assistant who knows everything about the principle of register a thesis
-         at University of Information Technology - VNUHCM and relevant regulations about thesis,
-        People who request information are students of University of Information Technology - VNUHCM.
-        project1, project2 registration, science research. Use the below context to augment what you know about topic registration. 
+        at University of Information Technology - VNUHCM and relevant regulations about thesis, science research registration processing.
+        Requesting information people are students of University of Information Technology - VNUHCM. Use the below context to augment what you know about topic registration. 
         The context will provide you with the most recent page from uit website that is place to publish regulations about thesis registration with students.
         If the context doesn't include the information you need, answer based on your existing knowledge and don't mention the source of your information or what the context does or doesn't include.
         Format responses using markdown where applicable and don't return images.
-
         `
     constructor(
         private readonly retrievalProvider: RetrievalProvider,
@@ -115,15 +116,38 @@ export class ChatBotService {
         console.log('Building Knowledge DB with documents:', buildKnowledgeDB.knowledgeDocuments)
         return this.retrievalProvider.buildKnowledgeDocuments(userId, buildKnowledgeDB)
     }
-    public async getChatBotEnabledVersion(): Promise<ChatbotVersion | null> {
+    public async getChatBotEnabledVersion(): Promise<GetChatbotDto | null> {
         const chatBot = await this.chatBotRepository.getChatBotEnabled()
         return chatBot
+    }
+    public async getAllChatbotVersions(paginationQuery: PaginationQueryDto): Promise<Paginated<ChatbotVersion>> {
+        const chatbotVersions = await this.chatBotRepository.getAllChatbotVersions(paginationQuery)
+        return chatbotVersions
     }
     public async updateChatbotVersion(id: string, updateChatbotDto: UpdateChatbotDto): Promise<ChatbotVersion | null> {
         return this.chatBotRepository.updateChatbotVersion(id, updateChatbotDto)
     }
     public async createChatbotVersion(createChatbotDto: CreateChatbotVersionDto): Promise<ChatbotVersion> {
-        
         return this.chatBotRepository.create(createChatbotDto)
+    }
+    public async addSuggestionsToChatbot(versionId: string, addedQuestion: QuerySuggestionDto): Promise<number | null> {
+        return this.chatBotRepository.addSuggestionsToChatbotVersion(versionId, addedQuestion)
+    }
+    public async removeSuggestionsFromChatbot(versionId: string, suggestionIds: string[]): Promise<number | null> {
+        return this.chatBotRepository.removeSuggestionsFromChatbotVersion(versionId, suggestionIds)
+    }
+
+    public async unenableSuggestionsFromChatbot(versionId: string, suggestionIds: string[]): Promise<number | null> {
+        return this.chatBotRepository.unenableSuggestionsFromChatbotVersion(versionId, suggestionIds)
+    }
+    public async updateSuggestionFromChatbot(
+        versionId: string,
+        suggestionId: string,
+        newContent: string
+    ): Promise<number | null> {
+        return this.chatBotRepository.updateSuggestionFromChatbotVersion(versionId, suggestionId, newContent)
+    }
+    public async deleteChatbotVersion(id: string) {
+        return this.chatBotRepository.softDelete(id)
     }
 }

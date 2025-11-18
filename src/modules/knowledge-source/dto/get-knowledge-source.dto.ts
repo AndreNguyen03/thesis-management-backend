@@ -1,8 +1,7 @@
-import { SourceType } from 'aws-sdk/clients/codebuild'
 import { KnowledgeStatus } from '../enums/knowledge-status.enum'
 import { ProcessingStatus } from '../enums/processing-status.enum'
 import { Expose, Transform, Type } from 'class-transformer'
-import { GetUserDetailsResponse } from 'aws-sdk/clients/codecatalyst'
+import { SourceType } from '../enums/source_type.enum'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 export class OwnerDto {
@@ -43,5 +42,4 @@ export class GetPaginatedKnowledgeSourcesDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetKnowledgeSourceDto)
     data: GetKnowledgeSourceDto[]
-
 }

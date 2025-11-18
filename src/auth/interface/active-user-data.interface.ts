@@ -9,7 +9,7 @@ export interface ActiveUserData {
     deviceId: string
 
     // role
-    role: 'student' | 'lecturer' | 'admin' | 'faculty-board'
+    role: 'student' | 'lecturer' | 'admin' | 'faculty_board'
 
     facultyId?: string
 }

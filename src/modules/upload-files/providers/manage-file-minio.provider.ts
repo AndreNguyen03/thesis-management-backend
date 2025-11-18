@@ -4,6 +4,9 @@ import { Client } from 'minio'
 import { InjectMinio } from 'nestjs-minio'
 import { v4 as uuidv4 } from 'uuid'
 import * as path from 'path'
+import * as archiver from 'archiver'
+import type { Response } from 'express'
+import { DownloadFileDto } from '../dtos/download-file.dtos'
 
 @Injectable()
 export class ManageMinioProvider {
@@ -53,6 +56,31 @@ export class ManageMinioProvider {
         } catch (error) {
             console.log('Error deleting files from MinIO:', error)
             throw new BadRequestException(`Lỗi khi xóa ${fileNames.length} file khỏi hệ thống`)
+        }
+    }
+
+    // createZipStream
+    async createZipStream( body: DownloadFileDto, res: Response,topicName: string = 'files',): Promise<void> {
+        const { fileNames } = body
+        const archive = archiver('zip', { zlib: { level: 9 } })
+        const zipFileName = `${topicName}-${new Date().getTime()}.zip`
+        res.setHeader('Content-Type', 'application/zip')
+        res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`)
+        archive.pipe(res)
+
+        try {
+            //Thêm tuần tự các file vào archive
+            for (const fileName of fileNames) {
+                const fileStream = await this.minioClient.getObject(this.bucketName, fileName)
+                archive.append(fileStream, { name: path.basename(fileName) })
+            }
+        } catch (error) {
+            console.log('Error fetching files from MinIO for zipping:', error)
+            if (error.code === 'NoSuchKey') {
+                res.status(400).json({ message: 'Một hoặc nhiều file không tồn tại trong hệ thống' })
+            }
+        } finally {
+            await archive.finalize()
         }
     }
 }

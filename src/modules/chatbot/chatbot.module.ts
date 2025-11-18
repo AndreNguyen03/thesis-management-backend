@@ -15,6 +15,7 @@ import { ChatbotVersion, ChatBotVersionSchema } from './schemas/chatbot_version.
 import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schemas/knowledge-chunk.schema'
 import { googleAIConfig } from '../../config/googleai.config'
 import { KnowledgeProcessingProcessor } from './processors/knowledge-processing.processor'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 
 @Module({
     controllers: [ChatController],
@@ -37,7 +38,8 @@ import { KnowledgeProcessingProcessor } from './processors/knowledge-processing.
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
-        BullModule.registerQueue({ name: 'knowledge-processing' })
+        BullModule.registerQueue({ name: 'knowledge-processing' }),
+        PaginationAnModule
     ],
     exports: [ChatBotService]
 })
