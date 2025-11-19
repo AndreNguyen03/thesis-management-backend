@@ -27,14 +27,13 @@ import {
     GetTopicResponseDto,
     PatchTopicDto
 } from './dtos'
-import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
-import { TopicStatus } from './enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
 import { FilesInterceptor } from '@nestjs/platform-express'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 
 @Controller('topics')
 export class TopicController {
@@ -111,7 +110,18 @@ export class TopicController {
         return { message: 'Thêm lĩnh vực cho đề tài thành công' }
     }
 
-    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Get('/lecturer/get-draft-topics')
+    async getDraftTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const res = await this.topicService.getDraftTopics(req.user.sub, query)
+        return plainToInstance(GetPaginatedTopicsDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
@@ -125,7 +135,6 @@ export class TopicController {
         return { message: 'Xóa lĩnh vực cho đề tài thành công' }
     }
 
-    @Patch()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
@@ -139,7 +148,6 @@ export class TopicController {
         return { message: 'Thêm yêu cầu cho đề tài thành công' }
     }
 
-    @Patch()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)

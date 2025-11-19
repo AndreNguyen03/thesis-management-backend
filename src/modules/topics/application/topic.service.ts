@@ -13,6 +13,7 @@ import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
 import { DeleteFileProvider } from '../../upload-files/providers/delete-file.provider'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -91,7 +92,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getSavedTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.findSavedTopicsByUserId(userId)
     }
-
+    public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
+        return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
+    }
     public async assignSaveTopic(userId: string, topicId: string) {
         return await this.userSavedTopicRepository.assignSaveTopic(userId, topicId)
     }

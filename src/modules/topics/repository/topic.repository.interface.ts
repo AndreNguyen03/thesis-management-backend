@@ -1,3 +1,4 @@
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import {
@@ -69,4 +70,6 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
+    findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    getSubmittedTopicsNumber(lecturerId: string): Promise<number>
 }

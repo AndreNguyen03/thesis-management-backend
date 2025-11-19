@@ -116,9 +116,9 @@ export class TokenProvider {
             throw new Error('User ID is missing')
         }
         let facultyId = ''
-        if (user.role === UserRole.FACULTY_BOARD) {
+        if (user.role !== UserRole.ADMIN) {
             // Truy vấn FacultyBoard để lấy facultyId
-            facultyId = await this.getFacultyByUserIdProvider.getFacultyByUserId(userId)
+            facultyId = await this.getFacultyByUserIdProvider.getFacultyIdByUserId(userId, user.role)
         }
 
         const payload: Partial<ActiveUserData> = {

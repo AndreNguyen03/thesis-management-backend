@@ -12,7 +12,7 @@ import {
     ValidateNested
 } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { CreatePhaseSubmitTopicDto } from './period-phases.dtos'
+import { CreatePhaseSubmitTopicDto, GetPeriodPhaseDto } from './period-phases.dtos'
 import { PeriodStatus } from '../enums/periods.enum'
 import { Expose, Type } from 'class-transformer'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
@@ -54,9 +54,9 @@ export class GetPeriodDto {
     _id: string
     @Expose()
     name: string
-    // @Expose()
-    // @Type(() => GetFacultyDto)
-    // faculty: GetFacultyDto
+    @Expose()
+    @Type(() => GetFacultyDto)
+    faculty: GetFacultyDto
     // @Expose()
     // @Type(() => PeriodPhase)
     // phases: PeriodPhase[]
@@ -67,10 +67,10 @@ export class GetPeriodDto {
     startTime: Date
     @Expose()
     endTime: Date
+    // @Expose()
+    // totalTopics: number
     @Expose()
-    totalTopics: number
-    @Expose()
-    currentPhase: PeriodPhase
+    currentPhaseDetail: GetPeriodPhaseDto | null
 }
 
 export class GetPaginatedPeriodDto extends GetPaginatedObjectDto {

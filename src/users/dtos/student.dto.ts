@@ -40,7 +40,7 @@ export class ResponseStudentTableDto {
 
 export class ResponseMiniStudentDto {
     @Expose()
-    id: string
+    _id: string
     @Expose()
     studentCode: string
     @Expose()

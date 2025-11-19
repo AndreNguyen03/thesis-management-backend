@@ -169,9 +169,20 @@ export class ResponseMiniLecturerDto {
     avatarUrl: string
     @Expose()
     avatarName: string
-    @Expose()
-    title: AcademicTitle
+    // @Expose()
+    // title: AcademicTitle
     @Expose()
     @Type(() => MiniLecturerInforDto)
     lecturerInfo: MiniLecturerInforDto
+}
+
+export class ResponseMiniActorDto {
+    @Expose()
+    _id: string
+    @Expose()
+    fullName: string
+    @Expose()
+    avatarUrl: string
+    @Expose()
+    avatarName: string
 }

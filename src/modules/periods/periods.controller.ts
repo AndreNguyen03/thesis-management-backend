@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { PeriodsService } from './application/periods.service'
-import { CreatePeriodDto, GetPaginatedPeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
+import { CreatePeriodDto, GetPaginatedPeriodDto, GetPeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
 import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
 import { plainToInstance } from 'class-transformer'
 import {
@@ -255,5 +255,30 @@ export class PeriodsController {
     async getStatisticsCompletionPhase(@Req() req: { user: ActiveUserData }, @Param('periodId') periodId: string) {
         const statistics = await this.periodsService.lecturerGetStatisticsCompletionPhase(periodId, req.user.sub)
         return statistics
+    }
+
+    @Get('/me/submission-status')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getSubmissionStatus(@Req() req: { user: ActiveUserData }) {
+        console.log('facultyId in controller:', req.user)
+        const status = await this.periodsService.getSubmissionStatus(req.user.sub, req.user.facultyId!)
+        return status
+    }
+    
+
+    //Lấy thông tin của kỳ hiện tại
+    @Get('/current-period/info')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async getCurrentPeriodInfo(@Req() req: { user: ActiveUserData }) {
+        const res = await this.periodsService.getCurrentPeriodInfo(req.user.facultyId!)
+       // return res
+        return plainToInstance(GetPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 }

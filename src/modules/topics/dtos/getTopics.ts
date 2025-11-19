@@ -31,7 +31,8 @@ export class GetTopicResponseDto {
     maxStudents: number
 
     @Expose()
-    createBy: string
+    @Type(() => ResponseMiniLecturerDto)
+    createByInfo: ResponseMiniLecturerDto
 
     @Expose()
     createdAt: Date

@@ -10,4 +10,5 @@ export class GetTopicStatusProvider {
     async getCurrentStatusTopic(topicId: string): Promise<string> {
         return this.topicRepositoryInterface.getCurrentStatusTopic(topicId)
     }
+    
 }

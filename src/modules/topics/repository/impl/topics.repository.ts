@@ -491,6 +491,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     foreignField: '_id',
                     as: 'requirements'
                 }
+            },
+            //join user
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createBy',
+                    foreignField: '_id',
+                    as: 'createByInfo'
+                }
             }
         )
         if (userId) {
@@ -518,6 +527,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 type: 1,
                 status: 1,
                 createBy: 1,
+                createByInfo: 1,
                 deadline: 1,
                 maxStudents: 1,
                 createdAt: 1,
@@ -1187,5 +1197,23 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         } catch (error) {
             throw new BadRequestException('Lỗi xóa file khỏi đề tài')
         }
+    }
+    async findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                createBy: new mongoose.Types.ObjectId(lecturerId),
+                currentStatus: TopicStatus.Draft
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+    async getSubmittedTopicsNumber(lecturerId: string): Promise<number> {
+        return await this.topicRepository.countDocuments({
+            createBy: new mongoose.Types.ObjectId(lecturerId),
+            currentStatus: TopicStatus.Submitted,
+            deleted_at: null
+        })
     }
 }

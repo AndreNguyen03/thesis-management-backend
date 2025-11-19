@@ -16,17 +16,13 @@ import {
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
-import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
 import { GetPhaseProvider } from '../providers/get-phase.provider'
 import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
-import {
-    GetTopicStatisticInOpenRegPhaseDto,
-    GetTopicStatisticInSubmitPhaseDto
-} from '../../topics/dtos/get-statistics-topics.dtos'
-import { Topic } from '../../topics/schemas/topic.schemas'
+
 import { PeriodPhaseName } from '../enums/period-phases.enum'
+import { GetCustomRequestDto } from '../dtos/custom-request.dtos'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -222,5 +218,26 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         )
         //lấy thống kê các thong tin liên quan khác (nếu có)
         return topicFigures
+    }
+    async getSubmissionStatus(lecturerId: string, facultyId: string): Promise<GetCustomRequestDto> {
+        const res = await this.iPeriodRepository.getSubmissionStatus(lecturerId, facultyId)
+        let submittedCount = 0
+        if (res.isEligible) {
+            submittedCount = await this.getTopicProvider.getLecturerSubmittedTopicNum(lecturerId)
+            return {
+                ...res,
+                requirements: {
+                    minTopics: res.minTopics,
+                    submittedTopics: submittedCount
+                }
+            }
+        }
+        return {
+            ...res
+        }
+    }
+
+    async getCurrentPeriodInfo(facultyId: string): Promise<Period | null> {
+        return this.iPeriodRepository.getCurrentPeriodInfo(facultyId)
     }
 }
