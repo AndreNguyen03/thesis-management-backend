@@ -28,8 +28,8 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getAllTopics(userId: string): Promise<Paginated<Topic>>
     deleteTopic(topicId: string, ownerId: string): Promise<boolean>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
-    findSavedTopicsByUserId(userId: string): Promise<Paginated<Topic>>
-    findRegisteredTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]>
+    findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findCanceledRegisteredTopicsByUserId(
         userId: string,
         userRole: string
@@ -72,4 +72,5 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
+    getTopicsOfPeriod(userId: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
 }

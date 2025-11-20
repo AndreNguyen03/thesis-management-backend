@@ -55,7 +55,7 @@ export class Topic extends BaseEntity {
     type: TopicType
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Major', required: true })
-    major: string
+    majorId: string
 
     @Prop({ default: 1 })
     maxStudents: number
@@ -78,7 +78,7 @@ export class Topic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'periods' })
     periodId: string
 
-    @Prop({ type: Grade, default: [] })
+    @Prop({ type: Grade, default: [], required: false })
     grade: Grade
 
     // @Prop({ type: Boolean, default: false })

@@ -7,22 +7,27 @@ import { GetFieldNameReponseDto } from '../../fields/dtos/get-fields.dto'
 import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requirement.dto'
 import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 
 export class GetTopicResponseDto {
     @Expose()
     _id: string
 
     @Expose()
-    title: string
+    titleVN: string
 
     @Expose()
-    description: string
+    titleEng: string
 
     @Expose()
     type: string
 
     @Expose()
-    major: string
+    description: string
+
+    @Expose()
+    @Type(() => GetMajorMiniDto)
+    major: GetMajorMiniDto
 
     @Expose()
     periodId: string

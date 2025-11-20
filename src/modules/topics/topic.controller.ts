@@ -48,10 +48,26 @@ export class TopicController {
             enableImplicitConversion: true
         })
     }
+
+    @Get('/period-topics/:periodId')
+    @Auth(AuthType.Bearer)
+    async getTopicsOfPeriod(
+        @Req() req: { user: ActiveUserData },
+        @Param('periodId') periodId: string,
+        @Query() query: PaginationQueryDto
+    ) {
+        const topics = await this.topicService.getTopicsOfPeriod(req.user.sub, periodId, query)
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     @Get('/saved-topics')
     @Auth(AuthType.Bearer)
-    async getSavedTopics(@Req() req: { user: ActiveUserData }) {
-        const savedTopics = await this.topicService.getSavedTopics(req.user.sub)
+    async getSavedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const savedTopics = await this.topicService.getSavedTopics(req.user.sub, query)
+        console.log('savedTopics', savedTopics)
         return plainToInstance(GetPaginatedTopicsDto, savedTopics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -59,9 +75,9 @@ export class TopicController {
     }
     @Get('/registered-topics')
     @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
-        const topics = await this.topicService.getRegisteredTopics(req.user.sub)
-        return plainToInstance(GetTopicResponseDto, topics, {
+    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -71,7 +87,6 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getCanceledRegisteredTopics(@Req() req: { user: ActiveUserData }) {
         const topics = await this.topicService.getCanceledRegisteredTopics(req.user.sub, req.user.role)
-        return topics
         return plainToInstance(GetCancelRegisteredTopicResponseDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

@@ -5,7 +5,7 @@ import { PaginationQueryDto } from '../dtos/pagination-query.dto'
 import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
 import * as url from 'url'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 
 @Injectable()
 export class PaginationProvider {
@@ -19,7 +19,8 @@ export class PaginationProvider {
         repository: Model<T>,
         pipelineSub?: any[]
     ): Promise<Paginated<T>> {
-        const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate } = paginationQuery
+        const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate, filter, filter_by } =
+            paginationQuery
         let queryLimit = limit ?? 10
         let queryPage = page ?? 1
 
@@ -44,12 +45,12 @@ export class PaginationProvider {
         if (endDate) {
             pipelineMain.push({ $match: { updatedAt: { $lte: new Date(endDate) } } })
         }
-
+        console.log('paginationQuery', search_by, query)
         //tìm kiếm với searchby và query
         if (search_by && query) {
             const searchField = search_by
             const searchValue = query
-            pipelineMain.unshift({
+            pipelineMain.push({
                 $match: {
                     [searchField]: { $regex: searchValue, $options: 'i' }
                 }
@@ -60,6 +61,14 @@ export class PaginationProvider {
         pipelineMain.push({
             $sort: { [sort_by!]: sort_order === 'asc' ? 1 : -1 }
         })
+        //lọc bởi trường filter_by và với giá trị {filter}
+        if (filter_by && filter) {
+            pipelineMain.push({
+                $match: {
+                    [filter_by]: new mongoose.Types.ObjectId(filter)
+                }
+            })
+        }
 
         // --------------------------------------------
         //add sub pipeline nếu có từ bên ngoài truyền vào
@@ -82,7 +91,7 @@ export class PaginationProvider {
         const newUrl = new URL(this.request.url, baseURL)
 
         // Calculate page numbers
-        const totalItems = await repository.find({ deleted_at: null }).countDocuments()
+        const totalItems = results.length
         const totalPages = Math.ceil(totalItems / queryLimit)
         const nextPage = queryPage === totalPages ? queryPage : queryPage + 1
         const previousPage = queryPage === 1 ? queryPage : queryPage - 1
@@ -96,11 +105,11 @@ export class PaginationProvider {
                 totalPages: Math.ceil(totalItems / queryLimit)
             },
             links: {
-                first: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=1`,
-                last: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${totalPages}`,
-                current: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${queryPage}`,
-                next: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${nextPage}`,
-                previous: `${newUrl.origin}${newUrl.pathname}?limit=${queryLimit}&page=${previousPage}`
+                first: 1,
+                last: totalPages,
+                current: queryPage,
+                next: nextPage,
+                previous: previousPage
             }
         }
 

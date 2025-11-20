@@ -38,6 +38,13 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getAllTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.getAllTopics(userId)
     }
+    public async getTopicsOfPeriod(
+        userId: string,
+        periodId: string,
+        query: PaginationQueryDto
+    ): Promise<Paginated<Topic>> {
+        return await this.topicRepository.getTopicsOfPeriod(userId, periodId, query)
+    }
     public async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicResponseDto> {
         const topic = await this.topicRepository.getTopicById(topicId, userId, role)
         if (!topic) {
@@ -89,8 +96,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return this.topicRepository.deleteTopic(id, ownerId)
     }
 
-    public async getSavedTopics(userId: string): Promise<Paginated<Topic>> {
-        return await this.topicRepository.findSavedTopicsByUserId(userId)
+    public async getSavedTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        const res = await this.topicRepository.findSavedTopicsByUserId(userId, query)
+        return res
     }
     public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
         return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
@@ -103,8 +111,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return await this.userSavedTopicRepository.unassignSaveTopic(userId, topicId)
     }
 
-    public async getRegisteredTopics(userId: string): Promise<GetTopicResponseDto[]> {
-        return await this.topicRepository.findRegisteredTopicsByUserId(userId)
+    public async getRegisteredTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        return await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
     }
     public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
