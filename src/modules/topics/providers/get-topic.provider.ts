@@ -18,4 +18,7 @@ export class GetTopicProvider {
     getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         return this.topicRepositoryInterface.getTopicsInPhase(phaseId, query)
     }
+    getLecturerSubmittedTopicNum(lecturerId: string): Promise<number> {
+        return this.topicRepositoryInterface.getSubmittedTopicsNumber(lecturerId)
+    }
 }

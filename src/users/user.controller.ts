@@ -65,6 +65,7 @@ export class UserController {
                 return user
             case 'lecturer':
                 user = await this.lecturerService.getById(id)
+                console.log('user lecturer :::', user)
                 return user ? this.lecturerService.toResponseLecturerProfile(user) : null
             case 'admin':
                 user = await this.adminService.getById(id)

@@ -20,6 +20,9 @@ export class GetPeriodPhaseDto {
     requiredLecturers: ResponseMiniLecturerDto[]
     @Expose()
     allowManualApproval: boolean
+    // external fields
+    @Expose()
+    status: string
 }
 
 export class CreatePhase {

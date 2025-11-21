@@ -13,21 +13,33 @@ export class PaginationQueryDto {
     // Number of entries to skip from start
     page?: number = 1
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     //Tìm kiếm với trường nào
-    search_by?: string = 'name'
+    search_by?: string
 
     @IsOptional()
     @IsString()
     //Nội dung
     query?: string
 
-    @IsNotEmpty()
+    @IsOptional()
+    @IsString()
+    //Lọc với theo trường nào đó
+    //Nội dung
+    filter_by?: string
+
+    @IsOptional()
+    @IsString()
+    //Lọc với giá trị của trường "filert_by"
+    //Nội dung
+    filter?: string
+
+    @IsOptional()
     @IsString()
     //sắp xếp theo trường nào
     //topicTopics cũng đc
-    sort_by?: string = 'startTime'
+    sort_by?: string = 'createdAt'
 
     @IsNotEmpty()
     @IsString()

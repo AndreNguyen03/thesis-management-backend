@@ -25,7 +25,7 @@ export class PeriodPhase extends BaseEntity {
 export class Period extends BaseEntity {
     @Prop({ required: true })
     name: string
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'faculties' })
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' })
     facultyId: mongoose.Schema.Types.ObjectId
     @Prop({ enum: PeriodPhaseName, type: String, default: PeriodPhaseName.EMPTY })
     currentPhase: string
@@ -33,8 +33,8 @@ export class Period extends BaseEntity {
     phases: PeriodPhase[]
     @Prop({ enum: PeriodStatus, default: PeriodStatus.OnGoing })
     status: PeriodStatus
-    @Prop({ required: true, type: Number })
-    totalTopics: number
+    // @Prop({ required: true, type: Number })
+    // totalTopics: number
     @Prop({ required: true, type: Date })
     startTime: Date
     @Prop({ required: true, type: Date })

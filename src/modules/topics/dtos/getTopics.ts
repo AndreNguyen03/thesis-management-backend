@@ -1,5 +1,4 @@
 import { Expose, Type } from 'class-transformer'
-import { GetRegistrationInTopicDto } from '../../registrations/dtos/get-registration-in-topic.dtos'
 import { IntersectionType } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
@@ -7,22 +6,27 @@ import { GetFieldNameReponseDto } from '../../fields/dtos/get-fields.dto'
 import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requirement.dto'
 import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 
 export class GetTopicResponseDto {
     @Expose()
     _id: string
 
     @Expose()
-    title: string
+    titleVN: string
 
     @Expose()
-    description: string
+    titleEng: string
 
     @Expose()
     type: string
 
     @Expose()
-    major: string
+    description: string
+
+    @Expose()
+    @Type(() => GetMajorMiniDto)
+    major: GetMajorMiniDto
 
     @Expose()
     periodId: string
@@ -31,7 +35,8 @@ export class GetTopicResponseDto {
     maxStudents: number
 
     @Expose()
-    createBy: string
+    @Type(() => ResponseMiniLecturerDto)
+    createByInfo: ResponseMiniLecturerDto
 
     @Expose()
     createdAt: Date
@@ -77,11 +82,7 @@ export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
     lastestCanceledRegisteredAt?: Date
 }
 
-export class GetTopicDetailResponseDto extends GetTopicResponseDto {
-    @Expose()
-    @Type(() => GetRegistrationInTopicDto)
-    allUserRegistrations: GetRegistrationInTopicDto[]
-}
+export class GetTopicDetailResponseDto extends GetTopicResponseDto {}
 
 export class RequestGetTopicsInPeriodBaseDto {}
 export class RequestGetTopicsInPeriodDto extends IntersectionType(

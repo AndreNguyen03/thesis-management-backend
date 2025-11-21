@@ -6,6 +6,7 @@ import {
     CreateTopicDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
 } from '../../dtos'
@@ -39,6 +40,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+    async updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null> {
+        return await this.topicRepository.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(id), deleted_at: null },
+            { $set: topicData },
+            { new: true }
+        )
     }
 
     async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
@@ -333,12 +341,20 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(pagination, this.topicRepository, pipeline)
         // return await this.topicRepository.aggregate(pipeline)
     }
-    async findRegisteredTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]> {
+
+    async getTopicsOfPeriod(userId: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        let pipelineSub: any[] = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract(userId))
+        pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+
+    async findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
         pipeline.push({ $match: { deleted_at: null, isRegistered: true } })
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
-        return await this.topicRepository.aggregate(pipeline)
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipeline)
     }
     private getTopicInfoPipelineAbstract(userId?: string) {
         let pipeline: any[] = []
@@ -401,6 +417,43 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     foreignField: '_id',
                     as: 'stuUserInfo'
                 }
+            },
+            // Join student qua user
+            {
+                $lookup: {
+                    from: 'students',
+                    localField: 'studentRef.userId',
+                    foreignField: 'userId',
+                    as: 'studentInfos'
+                }
+            },
+            //Chủ yếu lấy studentcode của student
+            {
+                $addFields: {
+                    students: {
+                        $map: {
+                            input: '$stuUserInfo',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    '$$userInfo',
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$studentInfos',
+                                                    as: 'stuInfo',
+                                                    cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
             }
         )
         //lấy thông tin giảng viên liên quan đến đề tài
@@ -443,18 +496,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $mergeObjects: [
                                     '$$userInfo',
                                     {
-                                        lecturerInfo: {
-                                            $arrayElemAt: [
-                                                {
-                                                    $filter: {
-                                                        input: '$lectInfos',
-                                                        as: 'lecInfo',
-                                                        cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        }
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
                                     }
                                 ]
                             }
@@ -491,6 +542,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     foreignField: '_id',
                     as: 'requirements'
                 }
+            },
+            //join user
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createBy',
+                    foreignField: '_id',
+                    as: 'createByInfo'
+                }
             }
         )
         if (userId) {
@@ -513,11 +573,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //add project vô nè
         pipeline.push({
             $project: {
-                title: 1,
+                titleEng: 1,
+                titleVN: 1,
                 description: 1,
                 type: 1,
                 status: 1,
                 createBy: 1,
+                createByInfo: { $arrayElemAt: ['$createByInfo', 0] },
                 deadline: 1,
                 maxStudents: 1,
                 createdAt: 1,
@@ -529,9 +591,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 isSaved: 1,
                 major: { $arrayElemAt: ['$major', 0] },
                 lecturers: 1,
-                students: '$stuUserInfo',
+                students: 1,
                 fields: `$fields`,
-                requirements: `$requirements`
+                requirements: `$requirements`,
+                fieldIds: 1,
+                requirementIds: 1
             }
         })
 
@@ -1187,5 +1251,23 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         } catch (error) {
             throw new BadRequestException('Lỗi xóa file khỏi đề tài')
         }
+    }
+    async findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                createBy: new mongoose.Types.ObjectId(lecturerId),
+                currentStatus: TopicStatus.Draft
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+    async getSubmittedTopicsNumber(lecturerId: string): Promise<number> {
+        return await this.topicRepository.countDocuments({
+            createBy: new mongoose.Types.ObjectId(lecturerId),
+            currentStatus: TopicStatus.Submitted,
+            deleted_at: null
+        })
     }
 }

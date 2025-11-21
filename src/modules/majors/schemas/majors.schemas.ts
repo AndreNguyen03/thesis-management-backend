@@ -9,7 +9,7 @@ import mongoose from 'mongoose'
 })
 @Schema({ collection: 'majors', timestamps: true })
 export class Major extends BaseEntity {
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: true, unique: true })
     name: string
 
     @Prop({ type: mongoose.Schema.Types.String, ref: 'Faculty', required: true })

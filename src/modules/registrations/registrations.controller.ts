@@ -11,6 +11,13 @@ import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { U } from '@faker-js/faker/dist/airline-CLphikKp'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
+import { StudentRegisterTopic } from './schemas/ref_students_topics.schemas'
+import { Paginated } from '../../common/pagination-an/interfaces/paginated.interface'
+import { plainToInstance } from 'class-transformer'
+import {
+    GetPaginatedStudentRegistrationsHistory,
+} from './dtos/get-history-registration.dto'
 
 @Controller('registrations')
 export class RegistrationsController {
@@ -54,5 +61,20 @@ export class RegistrationsController {
         } else {
             throw new Error('Invalid user role')
         }
+    }
+
+    @Get('/student/history-registrations')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async getStudentHistoryRegistrations(
+        @Req() req: { user: ActiveUserData },
+        @Query() query: PaginationQueryDto
+    ): Promise<GetPaginatedStudentRegistrationsHistory> {
+        const res = await this.studentRegTopicService.getStudentHistoryRegistrations(req.user.sub, query)
+        return plainToInstance(GetPaginatedStudentRegistrationsHistory, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 }

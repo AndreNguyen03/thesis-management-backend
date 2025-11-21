@@ -8,7 +8,6 @@ import {
     Delete,
     Query,
     Req,
-    HttpStatus,
     UseGuards,
     UseInterceptors,
     UploadedFiles,
@@ -27,14 +26,13 @@ import {
     GetTopicResponseDto,
     PatchTopicDto
 } from './dtos'
-import { BaseHttpException } from '../../common/exceptions'
 import { plainToInstance } from 'class-transformer'
-import { TopicStatus } from './enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
 import { FilesInterceptor } from '@nestjs/platform-express'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 
 @Controller('topics')
 export class TopicController {
@@ -49,10 +47,26 @@ export class TopicController {
             enableImplicitConversion: true
         })
     }
+
+    @Get('/period-topics/:periodId')
+    @Auth(AuthType.Bearer)
+    async getTopicsOfPeriod(
+        @Req() req: { user: ActiveUserData },
+        @Param('periodId') periodId: string,
+        @Query() query: PaginationQueryDto
+    ) {
+        const topics = await this.topicService.getTopicsOfPeriod(req.user.sub, periodId, query)
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     @Get('/saved-topics')
     @Auth(AuthType.Bearer)
-    async getSavedTopics(@Req() req: { user: ActiveUserData }) {
-        const savedTopics = await this.topicService.getSavedTopics(req.user.sub)
+    async getSavedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const savedTopics = await this.topicService.getSavedTopics(req.user.sub, query)
+        console.log('savedTopics', savedTopics)
         return plainToInstance(GetPaginatedTopicsDto, savedTopics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -60,9 +74,9 @@ export class TopicController {
     }
     @Get('/registered-topics')
     @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }) {
-        const topics = await this.topicService.getRegisteredTopics(req.user.sub)
-        return plainToInstance(GetTopicResponseDto, topics, {
+    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -72,7 +86,6 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getCanceledRegisteredTopics(@Req() req: { user: ActiveUserData }) {
         const topics = await this.topicService.getCanceledRegisteredTopics(req.user.sub, req.user.role)
-        return topics
         return plainToInstance(GetCancelRegisteredTopicResponseDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -111,7 +124,18 @@ export class TopicController {
         return { message: 'Thêm lĩnh vực cho đề tài thành công' }
     }
 
-    @Patch()
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @Get('/lecturer/get-draft-topics')
+    async getDraftTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const res = await this.topicService.getDraftTopics(req.user.sub, query)
+        return plainToInstance(GetPaginatedTopicsDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
@@ -125,7 +149,6 @@ export class TopicController {
         return { message: 'Xóa lĩnh vực cho đề tài thành công' }
     }
 
-    @Patch()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
@@ -139,7 +162,6 @@ export class TopicController {
         return { message: 'Thêm yêu cầu cho đề tài thành công' }
     }
 
-    @Patch()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)

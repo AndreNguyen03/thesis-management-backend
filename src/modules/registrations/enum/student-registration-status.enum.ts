@@ -1,4 +1,4 @@
-export enum RegistrationStatus {
+export enum StudentRegistrationStatus {
     PENDING = 'pending',
     APPROVED = 'approved',
     REJECTED = 'rejected',

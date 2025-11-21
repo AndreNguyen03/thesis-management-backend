@@ -27,7 +27,6 @@ export class GetPaginatedObjectDto {
     @Expose()
     @Type(() => MetaDto)
     meta: MetaDto
-    @Expose()
-    @Type(() => LinkDto)
-    links: LinkDto
+    // @Type(() => LinkDto)
+    // links: LinkDto
 }

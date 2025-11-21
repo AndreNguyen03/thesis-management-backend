@@ -1,3 +1,4 @@
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import {
@@ -5,6 +6,7 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
 } from '../dtos'
@@ -26,9 +28,10 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null>
     getAllTopics(userId: string): Promise<Paginated<Topic>>
     deleteTopic(topicId: string, ownerId: string): Promise<boolean>
+    updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
-    findSavedTopicsByUserId(userId: string): Promise<Paginated<Topic>>
-    findRegisteredTopicsByUserId(userId: string): Promise<GetTopicResponseDto[]>
+    findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findCanceledRegisteredTopicsByUserId(
         userId: string,
         userRole: string
@@ -69,4 +72,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
+    findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    getSubmittedTopicsNumber(lecturerId: string): Promise<number>
+    getTopicsOfPeriod(userId: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
 }
