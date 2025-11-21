@@ -6,6 +6,7 @@ import {
     CreateTopicDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
 } from '../../dtos'
@@ -39,6 +40,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+    async updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null> {
+        return await this.topicRepository.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(id), deleted_at: null },
+            { $set: topicData },
+            { new: true }
+        )
     }
 
     async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
@@ -341,7 +349,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
-    async findRegisteredTopicsByUserId(userId: string,query: PaginationQueryDto): Promise<Paginated<Topic>> {
+    async findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
         pipeline.push({ $match: { deleted_at: null, isRegistered: true } })
@@ -430,18 +438,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $mergeObjects: [
                                     '$$userInfo',
                                     {
-                                        studentInfo: {
-                                            $arrayElemAt: [
-                                                {
-                                                    $filter: {
-                                                        input: '$studentInfos',
-                                                        as: 'stuInfo',
-                                                        cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        }
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$studentInfos',
+                                                    as: 'stuInfo',
+                                                    cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
                                     }
                                 ]
                             }
@@ -490,18 +496,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $mergeObjects: [
                                     '$$userInfo',
                                     {
-                                        lecturerInfo: {
-                                            $arrayElemAt: [
-                                                {
-                                                    $filter: {
-                                                        input: '$lectInfos',
-                                                        as: 'lecInfo',
-                                                        cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        }
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
                                     }
                                 ]
                             }
@@ -591,7 +595,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 fields: `$fields`,
                 requirements: `$requirements`,
                 fieldIds: 1,
-                requirementIds: 1,
+                requirementIds: 1
             }
         })
 

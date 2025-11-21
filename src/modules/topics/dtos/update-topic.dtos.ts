@@ -20,7 +20,7 @@ export class PatchTopicDto {
     description: string
 
     @IsOptional()
-    majorId: string
+    major: string
 
     @IsOptional()
     @IsNumber()
@@ -36,17 +36,17 @@ export class PatchTopicDto {
 
     @IsOptional()
     @IsArray()
-    fieldIds: string[]
+    fields: string[]
 
     @IsArray()
     @IsOptional()
-    requirementIds?: string[] | []
+    requirements?: string[] | []
 
-    @IsArray()
-    @IsOptional()
-    studentIds?: string[] | []
+    // @IsArray()
+    // @IsOptional()
+    // studentIds?: string[] | []
 
-    @IsArray()
-    @IsOptional()
-    lecturerIds?: string[] | []
+    // @IsArray()
+    // @IsOptional()
+    // lecturerIds?: string[] | []
 }

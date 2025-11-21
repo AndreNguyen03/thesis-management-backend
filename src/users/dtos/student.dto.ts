@@ -37,12 +37,7 @@ export class ResponseStudentTableDto {
     isActive: boolean
     createdAt?: Date
 }
-class ResponseStudentBasicDto {
-    @Expose()
-    studentCode: string
-    @Expose()
-    major: string
-}
+
 export class ResponseMiniStudentDto {
     @Expose()
     _id: string
@@ -57,9 +52,10 @@ export class ResponseMiniStudentDto {
     avatarUrl?: string
     @Expose()
     avatarName?: string
-
     @Expose()
-    studentInfo: ResponseStudentBasicDto
+    studentCode: string
+    @Expose()
+    major: string
 }
 
 // DTO cập nhật profile sinh viên (dùng cho self-update)

@@ -1,10 +1,12 @@
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import { GetRegistrationDto } from '../../topics/dtos/registration/get-registration.dto'
-import { LecturerRegisterTopic } from '../schemas/ref_lecturers_topics.schemas'
 import { StudentRegisterTopic } from '../schemas/ref_students_topics.schemas'
 
 export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterface<StudentRegisterTopic> {
-    createSingleRegistration(topicId: string, studentId: string): Promise<any>
-    createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<string[]>
-    cancelRegistration(topicId: string, studentId: string): Promise<{message: string}>
+    createSingleRegistration(studentId: string, topicId: string)
+    createRegistrationWithStudents(topicId: string, studentIds: string[])
+    cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }>
+    getStudentRegistrationsHistory(studentId: string, query: PaginationQueryDto): Promise<Paginated<StudentRegisterTopic>>
 }

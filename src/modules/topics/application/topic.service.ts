@@ -90,7 +90,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         if (existingTopicName) {
             throw new BadRequestException('Tên đề tài đã tồn tại.')
         }
-        return this.topicRepository.update(id, topicData)
+        return this.topicRepository.updateTopic(id, topicData)
     }
     public async deleteTopic(id: string, ownerId: string) {
         return this.topicRepository.deleteTopic(id, ownerId)

@@ -1,5 +1,4 @@
 import { Expose, Type } from 'class-transformer'
-import { GetRegistrationInTopicDto } from '../../registrations/dtos/get-registration-in-topic.dtos'
 import { IntersectionType } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
@@ -83,11 +82,7 @@ export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
     lastestCanceledRegisteredAt?: Date
 }
 
-export class GetTopicDetailResponseDto extends GetTopicResponseDto {
-    @Expose()
-    @Type(() => GetRegistrationInTopicDto)
-    allUserRegistrations: GetRegistrationInTopicDto[]
-}
+export class GetTopicDetailResponseDto extends GetTopicResponseDto {}
 
 export class RequestGetTopicsInPeriodBaseDto {}
 export class RequestGetTopicsInPeriodDto extends IntersectionType(

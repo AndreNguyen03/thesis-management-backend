@@ -151,11 +151,6 @@ export class ResponseLecturerProfileDto {
     updatedAt?: Date
 }
 
-export class MiniLecturerInforDto {
-    @Expose()
-    title: string
-}
-
 export class ResponseMiniLecturerDto {
     @Expose()
     _id: string
@@ -172,8 +167,7 @@ export class ResponseMiniLecturerDto {
     // @Expose()
     // title: AcademicTitle
     @Expose()
-    @Type(() => MiniLecturerInforDto)
-    lecturerInfo: MiniLecturerInforDto
+    title: string
 }
 
 export class ResponseMiniActorDto {

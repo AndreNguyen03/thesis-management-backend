@@ -6,6 +6,7 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
 } from '../dtos'
@@ -27,6 +28,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null>
     getAllTopics(userId: string): Promise<Paginated<Topic>>
     deleteTopic(topicId: string, ownerId: string): Promise<boolean>
+    updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
     findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>

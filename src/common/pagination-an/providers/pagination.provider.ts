@@ -26,17 +26,8 @@ export class PaginationProvider {
 
         //basecase
         let pipelineMain: any[] = []
-        pipelineMain.push(
-            ...[
-                { $match: { deleted_at: null } },
-                {
-                    $skip: (queryPage - 1) * queryLimit
-                },
-                {
-                    $limit: queryLimit
-                }
-            ]
-        )
+
+        // --------------------------------------------
 
         //tìm kiếm trong khoảng thời gian với createdAt
         if (startDate) {
@@ -48,13 +39,25 @@ export class PaginationProvider {
         console.log('paginationQuery', search_by, query)
         //tìm kiếm với searchby và query
         if (search_by && query) {
+            const fields = search_by.split(',').map((f) => f.trim())
+            if (Array.isArray(fields) && fields.length > 0) {
+                pipelineMain.push({
+                    $match: {
+                        $or: fields.map((field) => ({
+                            [field]: { $regex: query, $options: 'i' }
+                        }))
+                    }
+                })
+            } else 
+            {
+                pipelineMain.push({
+                    $match: {
+                        [search_by]: { $regex: query, $options: 'i' }
+                    }
+                })
+            }
             const searchField = search_by
             const searchValue = query
-            pipelineMain.push({
-                $match: {
-                    [searchField]: { $regex: searchValue, $options: 'i' }
-                }
-            })
         }
 
         //sắp xếp bởi
@@ -70,29 +73,39 @@ export class PaginationProvider {
             })
         }
 
-        // --------------------------------------------
+        //facet
+        pipelineMain.push({
+            $facet: {
+                data: [
+                    { $match: { deleted_at: null } },
+                    {
+                        $skip: (queryPage - 1) * queryLimit
+                    },
+                    {
+                        $limit: queryLimit
+                    }
+                ],
+                totalCount: [{ $count: 'count' }]
+            }
+        })
         //add sub pipeline nếu có từ bên ngoài truyền vào
         if (pipelineSub && pipelineSub.length > 0) {
             pipelineMain = [...pipelineSub, ...pipelineMain]
         }
-
-        let results: T[]
+        let aggregationResult: T[]
         try {
-            results = await repository.aggregate(pipelineMain).exec()
+            aggregationResult = await repository.aggregate(pipelineMain).exec()
         } catch (error) {
             console.error('Aggregation error:', error)
             throw error
         }
 
-        /**
-         * Create the request URLs
-         */
-        const baseURL = this.request.protocol + '://' + this.request.headers.host + '/'
-        const newUrl = new URL(this.request.url, baseURL)
-
+        //handle response
+        const results = aggregationResult[0].data as T[]
+        const totalItems = aggregationResult[0].totalCount[0]?.count || 0
         // Calculate page numbers
-        const totalItems = results.length
-        const totalPages = Math.ceil(totalItems / queryLimit)
+        const totalPages = Math.ceil(totalItems / queryLimit) || 1
+
         const nextPage = queryPage === totalPages ? queryPage : queryPage + 1
         const previousPage = queryPage === 1 ? queryPage : queryPage - 1
 
