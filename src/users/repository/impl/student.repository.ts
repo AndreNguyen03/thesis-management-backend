@@ -5,17 +5,19 @@ import * as bcrypt from 'bcrypt'
 import { StudentRepositoryInterface } from '../student.repository.interface'
 import { Student, StudentDocument } from '../../schemas/student.schema'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
-import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
-import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { CreateStudentDto, UpdateStudentProfileDto, UpdateStudentTableDto } from '../../dtos/student.dto'
 import { User } from '../../schemas/users.schema'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 
 @Injectable()
 export class StudentRepository extends BaseRepositoryAbstract<Student> implements StudentRepositoryInterface {
     constructor(
         @InjectModel(Student.name) private readonly studentModel: Model<Student>,
         @InjectModel(User.name)
-        private readonly userModel: Model<User>
+        private readonly userModel: Model<User>,
+        private readonly paginationProvider: PaginationProvider
     ) {
         super(studentModel)
     }
@@ -100,85 +102,38 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         return { message: 'Profile updated successfully' }
     }
 
-    async getStudents(query: PaginationQueryDto): Promise<Paginated<any>> {
-        const { page, page_size, search_by, query: q, sort_by, sort_order } = query
-
-        const pipeline: any[] = [
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'userId',
-                    foreignField: '_id',
-                    as: 'user'
-                }
-            },
+    async getStudents(query: PaginationQueryDto): Promise<Paginated<Student>> {
+        // --- Build sub pipeline riêng ---
+        const studentPipeline: any[] = [
+            // Join user
+            { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'user' } },
             { $unwind: '$user' },
+
+            // Join faculty
+            { $lookup: { from: 'faculties', localField: 'facultyId', foreignField: '_id', as: 'faculty' } },
+            { $unwind: '$faculty' },
+
+            // Project dữ liệu cần thiết
             {
-                $lookup: {
-                    from: 'faculties',
-                    localField: 'facultyId',
-                    foreignField: '_id',
-                    as: 'faculty'
+                $project: {
+                    id: '$user._id',
+                    fullName: '$user.fullName',
+                    email: '$user.email',
+                    phone: '$user.phone',
+                    studentCode: 1,
+                    class: 1,
+                    major: 1,
+                    facultyId: '$faculty._id',
+                    facultyName: '$faculty.name',
+                    role: '$user.role',
+                    isActive: '$user.isActive',
+                    createdAt: 1
                 }
-            },
-            { $unwind: '$faculty' }
+            }
         ]
 
-        // search (chỉ cho phép search theo các field định trước)
-        if (search_by && q) {
-            const searchFieldMap: Record<string, string> = {
-                fullName: 'user.fullName',
-                email: 'user.email',
-                phone: 'user.phone',
-                studentCode: 'studentCode',
-                class: 'class',
-                major: 'major'
-            }
-
-            const searchField = searchFieldMap[search_by]
-            if (searchField) {
-                pipeline.push({
-                    $match: {
-                        [searchField]: { $regex: q, $options: 'i' }
-                    }
-                })
-            }
-        }
-
-        // sort
-        pipeline.push({
-            $sort: { [sort_by || 'createdAt']: sort_order === 'asc' ? 1 : -1 }
-        })
-
-        // pagination
-        const skip = (page - 1) * page_size
-        pipeline.push({ $skip: skip }, { $limit: page_size })
-
-        // flat data
-        pipeline.push({
-            $project: {
-                id: '$user._id',
-                fullName: '$user.fullName',
-                email: '$user.email',
-                phone: '$user.phone',
-                studentCode: 1,
-                class: 1,
-                major: 1,
-                facultyId: '$faculty._id',
-                facultyName: '$faculty.name',
-                role: '$user.role',
-                isActive: '$user.isActive',
-                createdAt: 1
-            }
-        })
-
-        // chạy song song aggregate & count
-        const [data, total] = await Promise.all([
-            this.studentModel.aggregate(pipeline),
-            this.studentModel.countDocuments()
-        ])
-
-        return { datas: data, totalRecords: total }
+        // --- Gọi paginateQuery, truyền pipelineSub ---
+        return this.paginationProvider.paginateQuery<Student>(query, this.studentModel, studentPipeline)
     }
 
     async removeByUserId(userId: string): Promise<{ deletedCount?: number }> {

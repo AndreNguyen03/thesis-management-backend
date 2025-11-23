@@ -1,6 +1,6 @@
 export enum AcademicTitle {
     Master = 'Thạc sĩ',
     Doctor = 'Tiến sĩ',
-    AssociateProfessor = 'Phó Giáo sư',
+    AssociateProfessor = 'Phó giáo sư',
     Professor = 'Giáo sư'
 }

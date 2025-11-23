@@ -8,4 +8,5 @@ export interface FacultyRepositoryInterface extends BaseRepositoryInterface<Facu
     createFaculty(createFacultyDto: CreateFacultyDto): Promise<Faculty>
     getAllFaculties(query: RequestGetFacultyDto): Promise<Paginated<Faculty>>
     createManyFaculties(createFacultyDto: CreateFacultyDto[]): Promise<number>
+    findFacultyIdByName(name:string): Promise<string>
 }

@@ -43,12 +43,14 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         }
         return plainToInstance(GetCurrentPhaseResponseDto, res)
     }
+    
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>> {
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
         pipelineSub.unshift({ $match: { facultyId: new mongoose.Types.ObjectId(facultyId), deleted_at: null } })
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
+
     async deletePeriod(periodId: string): Promise<boolean> {
         const result = await this.periodModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },

@@ -16,7 +16,14 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
     ) {
         super(userModel)
     }
-   
+    async findAllEmails(): Promise<string[]> {
+        return await this.userModel
+            .find()
+            .select('email -_id')
+            .lean()
+            .exec()
+            .then((users) => users.map((user) => user.email))
+    }
 
     async findByEmail(email: string): Promise<User | null> {
         return this.userModel.findOne({ email, deleted_at: null }).exec()

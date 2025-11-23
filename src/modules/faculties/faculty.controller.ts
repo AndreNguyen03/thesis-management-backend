@@ -3,8 +3,6 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { FacultyService } from './application/faculty.service'
-import { Faculty } from './schemas/faculty.schema'
-import { Paginated } from '../../common/pagination/interface/paginated.interface'
 import { CreateFacultyDto, CreateFacultyListDto, GetFacultyDto, GetPaginatedFacultyDto } from './dtos/faculty.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'

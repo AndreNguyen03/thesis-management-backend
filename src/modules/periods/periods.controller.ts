@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { PeriodsService } from './application/periods.service'
-import { CreatePeriodDto, GetPaginatedPeriodDto, UpdatePeriodDto } from './dtos/period.dtos'
+import { CreatePeriodDto, GetPaginatedPeriodDto, GetPeriodDetailDto, UpdatePeriodDto } from './dtos/period.dtos'
 import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
 import { plainToInstance } from 'class-transformer'
 import {
@@ -79,11 +79,18 @@ export class PeriodsController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
+        console.log(periodId)
         const res = await this.periodsService.getPeriodInfo(periodId)
-        return plainToInstance(GetPeriodPhaseDto, res, {
+        console.log('Raw period info:', res)
+
+        const data = plainToInstance(GetPeriodDetailDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+
+        console.log('Transformed DTO:', data)
+
+        return data
     }
 
     @Patch('/:periodId/create-submit-topic-phase')

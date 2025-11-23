@@ -21,15 +21,20 @@ import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
 import { CreateStudentDto, UpdateStudentTableDto } from './dtos/student.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
-import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from './dtos/lecturer.dto'
+import {
+    CreateBatchLecturerDto,
+    CreateLecturerDto,
+    UpdateLecturerProfileDto,
+    UpdateLecturerTableDto
+} from './dtos/lecturer.dto'
 import { UserService } from './application/users.service'
-import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
 import { FacultyBoardService } from './application/faculty-board.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Roles } from '../auth/decorator/roles.decorator'
 import { UserRole } from './enums/user-role'
 import { ActiveUserData } from '../auth/interface/active-user-data.interface'
+import { PaginationQueryDto } from '../common/pagination-an/dtos/pagination-query.dto'
 
 @Controller('users')
 @ApiTags('Users')
@@ -51,7 +56,6 @@ export class UserController {
     @Get('profile')
     async getMyProfile(@Req() req) {
         const { sub: id, role } = req.user
-        console.log('role :::', role)
         return this.getUserByRoleAndId(role, id)
     }
 
@@ -109,9 +113,21 @@ export class UserController {
         return this.lecturerService.createLecturerTransaction(createLecturerDto)
     }
 
+    @Post('lecturers/batch')
+    async createBatchLecturer(@Body() dtos: CreateBatchLecturerDto[]) {
+        return this.lecturerService.createManyLecturer(dtos)
+    }
+
     @Get('lecturers')
     async getLecturer(@Query() query: PaginationQueryDto) {
-        return await this.lecturerService.getAllLecturers(query)
+        const lecturers = await this.lecturerService.getAllLecturers(query)
+        console.log(lecturers)
+        return lecturers
+    }
+
+    @Get('lecturers/faculty/:facultyId')
+    async getLecturersByFaculty(@Param('facultyId') facultyId: string) {
+        return await this.lecturerService.getLecturersByFaculty(facultyId)
     }
 
     @Delete('lecturers/:id')

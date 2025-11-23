@@ -34,6 +34,24 @@ export class CreateLecturerDto {
     facultyId: string
 }
 
+export class CreateBatchLecturerDto {
+    @IsNotEmpty()
+    @IsString()
+    fullName: string
+
+    @IsNotEmpty()
+    @IsEnum(AcademicTitle)
+    title: AcademicTitle
+
+    @IsNotEmpty()
+    @IsString()
+    facultyName: string
+
+    @IsString()
+    @IsOptional()
+    phone?: string
+}
+
 export class ResponseLecturerTableDto {
     id: string
     fullName: string

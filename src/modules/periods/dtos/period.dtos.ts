@@ -12,9 +12,9 @@ import {
     ValidateNested
 } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { CreatePhaseSubmitTopicDto } from './period-phases.dtos'
+import { CreatePhaseSubmitTopicDto, GetPeriodPhaseDto } from './period-phases.dtos'
 import { PeriodStatus } from '../enums/periods.enum'
-import { Expose, Type } from 'class-transformer'
+import { Expose, Transform, Type } from 'class-transformer'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
 import { PartialType } from '@nestjs/swagger'
 import mongoose from 'mongoose'
@@ -71,6 +71,44 @@ export class GetPeriodDto {
     totalTopics: number
     @Expose()
     currentPhase: PeriodPhase
+}
+
+export class GetPeriodDetailDto {
+    @Expose()
+    @Transform(({ obj }) => obj._id.toString())
+    id: string
+
+    @Expose()
+    name: string
+
+    @Expose()
+    status: string
+
+    @Expose()
+    startTime: Date
+
+    @Expose()
+    endTime: Date
+
+    @Expose()
+    totalTopics: number
+
+    @Expose()
+    currentPhase: string
+
+    @Expose()
+    @Transform(({ obj }) => obj.facultyId?.toString())
+    facultyId: string
+
+    @Expose()
+    createdAt: Date
+
+    @Expose()
+    updatedAt: Date
+
+    @Expose()
+    @Type(() => GetPeriodPhaseDto)
+    phases: GetPeriodPhaseDto[]
 }
 
 export class GetPaginatedPeriodDto extends GetPaginatedObjectDto {

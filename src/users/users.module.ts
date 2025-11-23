@@ -21,6 +21,10 @@ import { FacultyBoard, FacultyBoardSchema } from './schemas/faculty-board.schema
 import { FacultyBoardService } from './application/faculty-board.service'
 import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
 import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.provider'
+import { FacultyModule } from '../modules/faculties/faculty.module'
+import { HashingProvider } from '../auth/providers/hashing.provider'
+import { Faculty, FacultySchema } from '../modules/faculties/schemas/faculty.schema'
+import { PaginationAnModule } from '../common/pagination-an/pagination.module'
 
 @Module({
     controllers: [UserController],
@@ -50,7 +54,7 @@ import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.pro
         AdminService,
         UserService,
         FacultyBoardService,
-        GetFacultyByUserIdProvider
+        GetFacultyByUserIdProvider,
     ],
     exports: [
         'UserRepositoryInterface',
@@ -71,10 +75,13 @@ import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.pro
             { name: Lecturer.name, schema: LecturerSchema },
             { name: User.name, schema: UserSchema },
             { name: Admin.name, schema: AdminSchema },
-            { name: FacultyBoard.name, schema: FacultyBoardSchema }
+            { name: FacultyBoard.name, schema: FacultyBoardSchema },
+            { name: Faculty.name, schema: FacultySchema }
         ]),
         ConfigModule.forFeature(profileConfig),
-        UploadFilesModule
+        UploadFilesModule,
+        FacultyModule,
+        PaginationAnModule
     ] // Add any other modules that UsersService depends on here
 })
 export class UsersModule {}

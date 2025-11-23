@@ -15,6 +15,13 @@ export class FacultyRepository extends BaseRepositoryAbstract<Faculty> implement
     ) {
         super(facultyRepository)
     }
+    async findFacultyIdByName(name: string): Promise<string> {
+        const faculty = await this.facultyRepository.findOne({ name }).select('_id').lean()
+        if (!faculty) {
+            throw new Error(`Không tìm thấy khoa: ${name}`)
+        }
+        return faculty._id.toString()
+    }
     createFaculty(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
         throw new Error('Method not implemented.')
     }

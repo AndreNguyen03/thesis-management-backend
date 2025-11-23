@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common'
-import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { BaseEntity } from '../entity/base.entity'
 import { BaseRepositoryInterface } from '../repository/base.repository.interface'
 import { BaseServiceInterface } from './base.service.interface'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 
 export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseServiceInterface<T> {
     constructor(private readonly repository: BaseRepositoryInterface<T>) {}
@@ -11,9 +11,6 @@ export abstract class BaseServiceAbstract<T extends BaseEntity> implements BaseS
         return await this.repository.create(create_dto)
     }
 
-    async findAll(filter?: object, options?: object): Promise<Paginated<T>> {
-        return await this.repository.findAll(filter ?? {}, options ?? {})
-    }
     async findOneById(id: string): Promise<T | null> {
         return await this.repository.findOneById(id)
     }

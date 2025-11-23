@@ -2,10 +2,8 @@ import { Inject, Injectable } from '@nestjs/common'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { Faculty } from '../schemas/faculty.schema'
 import { FacultyRepositoryInterface } from '../repository/faculty.repository.interface'
-import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
 import { RequestGetFacultyDto } from '../dtos/request-get-faculty.dtos'
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
-import { InjectModel } from '@nestjs/mongoose'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { CreateFacultyDto } from '../dtos/faculty.dtos'
 
@@ -16,6 +14,10 @@ export class FacultyService extends BaseServiceAbstract<Faculty> {
         private readonly paginationProvider: PaginationProvider
     ) {
         super(facultyRepository)
+    }
+
+    async findFacultyIdByName(name: string): Promise<string> {
+        return this.facultyRepository.findFacultyIdByName(name)
     }
 
     async createFaculty(createDto: Partial<Faculty>): Promise<Faculty> {

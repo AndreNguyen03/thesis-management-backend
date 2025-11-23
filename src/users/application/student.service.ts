@@ -10,12 +10,12 @@ import { Student, StudentDocument } from '../schemas/student.schema'
 import { StudentRepositoryInterface } from '../repository/student.repository.interface'
 import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
-import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection } from 'mongoose'
 import { CreateUserDto } from '../dtos/create-user.dto'
 import { UserRole } from '../enums/user-role'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {
@@ -89,6 +89,7 @@ export class StudentService extends BaseServiceAbstract<Student> {
     // Lấy tất cả students với phân trang
     async getAllStudents(paginationQuery: PaginationQueryDto) {
         const students = await this.studentRepository.getStudents(paginationQuery)
+        console.log('students ::', students)
         return students
     }
 

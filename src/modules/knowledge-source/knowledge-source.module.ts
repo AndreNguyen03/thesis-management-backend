@@ -15,7 +15,6 @@ import { googleAIConfig } from '../../config/googleai.config'
 import { ChatBotModule } from '../chatbot/chatbot.module'
 import { KnowledgeSourceController } from './knowledge-source.controller'
 import { KnowledgeSourceService } from './application/knowledge-source.service'
-import { PaginationModule } from '../../common/pagination/pagination.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 
 @Module({
@@ -43,7 +42,6 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         ]),
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => ChatBotModule),
-        PaginationModule,
         PaginationAnModule
     ],
     exports: [

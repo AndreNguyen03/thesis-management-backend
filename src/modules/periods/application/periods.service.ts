@@ -16,7 +16,6 @@ import {
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
-import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
 import { GetPhaseProvider } from '../providers/get-phase.provider'

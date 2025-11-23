@@ -4,9 +4,8 @@ import { Lecturer, LecturerDocument } from '../schemas/lecturer.schema'
 import { LecturerRepositoryInterface } from '../repository/lecturer.repository.interface'
 import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
-import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
-import { Paginated } from '../../common/pagination/interface/paginated.interface'
 import {
+    CreateBatchLecturerDto,
     CreateLecturerDto,
     ResponseLecturerProfileDto,
     UpdateLecturerProfileDto,
@@ -16,6 +15,7 @@ import { UserRepositoryInterface } from '../repository/user.repository.interface
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection, HydratedDocument } from 'mongoose'
 import { UserRole } from '../enums/user-role'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class LecturerService extends BaseServiceAbstract<Lecturer> {
@@ -64,6 +64,11 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         return lecturer
     }
 
+    async createManyLecturer(dtos: CreateBatchLecturerDto[]) {
+        const result = await this.lecturerRepository.createMany(dtos)
+        return result
+    }
+
     async createLecturerTransaction(createLecturerDto: CreateLecturerDto) {
         const session = await this.connection.startSession()
         session.startTransaction()
@@ -91,7 +96,13 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         const lecturers = await this.lecturerRepository.getLecturers(paginationQuery)
         return lecturers
     }
-
+    
+    // get lecturers by faculty id
+    async getLecturersByFaculty(facultyId: string) {
+        const lecturers = await this.lecturerRepository.getLecturersByFaculty(facultyId)
+        return lecturers
+    }
+    
     async updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto) {
         const session = await this.connection.startSession()
         session.startTransaction()

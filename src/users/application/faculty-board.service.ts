@@ -1,6 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
-import { Paginated } from '../../common/pagination/interface/paginated.interface'
 import { InjectConnection, InjectModel } from '@nestjs/mongoose'
 import { Connection } from 'mongoose'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
