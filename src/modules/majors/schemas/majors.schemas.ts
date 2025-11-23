@@ -1,6 +1,7 @@
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
+import { Faculty } from '../../faculties/schemas/faculty.schema'
 @Schema({
     timestamps: {
         createdAt: 'created_at',
@@ -12,7 +13,7 @@ export class Major extends BaseEntity {
     @Prop({ type: String, required: true, unique: true })
     name: string
 
-    @Prop({ type: mongoose.Schema.Types.String, ref: 'Faculty', required: true })
+    @Prop({ type: mongoose.Schema.Types.String, ref: Faculty.name, required: true })
     facultyId: string
 }
 

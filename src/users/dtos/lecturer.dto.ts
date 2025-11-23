@@ -3,6 +3,7 @@ import { AcademicTitle } from '../enums/academic-title'
 import { Publication } from '../schemas/lecturer.schema'
 import { PartialType } from '@nestjs/mapped-types'
 import { Expose, Type } from 'class-transformer'
+import { GetPaginatedObjectDto } from '../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 export class CreateLecturerDto {
     @IsNotEmpty()
@@ -169,7 +170,11 @@ export class ResponseMiniLecturerDto {
     @Expose()
     title: string
 }
-
+export class PaginatedMiniLecturer extends GetPaginatedObjectDto{
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    data: ResponseMiniLecturerDto[]
+}
 export class ResponseMiniActorDto {
     @Expose()
     _id: string

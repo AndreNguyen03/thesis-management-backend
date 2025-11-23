@@ -3,10 +3,12 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { PeriodStatus } from '../enums/periods.enum'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import mongoose from 'mongoose'
+import { Lecturer } from '../../../users/schemas/lecturer.schema'
+import { Faculty } from '../../faculties/schemas/faculty.schema'
 
 @Schema({ timestamps: true })
 export class PeriodPhase extends BaseEntity {
-    @Prop({ required: true, enum: PeriodPhaseName })
+    @Prop({ required: true, type: String, enum: PeriodPhaseName })
     phase: PeriodPhaseName
     @Prop({ required: true, type: Date })
     startTime: Date
@@ -15,7 +17,7 @@ export class PeriodPhase extends BaseEntity {
     //Option fields for Submit Topic phase
     @Prop({ default: 0, type: Number, required: false })
     minTopicsPerLecturer: number
-    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: 'lecturers' })
+    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: Lecturer.name })
     requiredLecturerIds: string[]
     @Prop({ default: false, required: false })
     allowManualApproval: boolean
@@ -25,7 +27,7 @@ export class PeriodPhase extends BaseEntity {
 export class Period extends BaseEntity {
     @Prop({ required: true })
     name: string
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'Faculty' })
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Faculty.name })
     facultyId: mongoose.Schema.Types.ObjectId
     @Prop({ enum: PeriodPhaseName, type: String, default: PeriodPhaseName.EMPTY })
     currentPhase: string

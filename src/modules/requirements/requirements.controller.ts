@@ -1,18 +1,19 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common'
+import { Body, Controller, Get, Inject, Post, Query, Req } from '@nestjs/common'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { plainToInstance } from 'class-transformer'
 import { IRequirementsRepository } from './repository/requirements.repository.interface'
-import { GetRequirementNameReponseDto } from './dtos/get-requirement.dto'
+import { GetRequirementNameReponseDto, PaginatedRequirements } from './dtos/get-requirement.dto'
 import { CreateRequirementDto } from './dtos/create-requirement.dto'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 @Controller('requirements')
 export class RequirementsController {
     constructor(@Inject('IRequirementsRepository') private readonly requirementsRepository: IRequirementsRepository) {}
-    @Get()
+    @Get('/get-all/combobox')
     @Auth(AuthType.None)
-    async getAllRequirements() {
-        const requirementData = await this.requirementsRepository.getAllRequirements()
-        return plainToInstance(GetRequirementNameReponseDto, requirementData, {
+    async getAllRequirements(@Query() query: PaginationQueryDto) {
+        const requirementData = await this.requirementsRepository.getAllRequirements(query)
+        return plainToInstance(PaginatedRequirements, requirementData, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })

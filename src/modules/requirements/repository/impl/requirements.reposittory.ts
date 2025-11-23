@@ -6,9 +6,15 @@ import { Model } from 'mongoose'
 import { CreateFieldDto } from '../../../fields/dtos/create-field.dto'
 import { CreateRequirementDto } from '../../dtos/create-requirement.dto'
 import { BadRequestException } from '@nestjs/common'
+import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
+import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 
 export class RequirementsRepository extends BaseRepositoryAbstract<Requirement> implements IRequirementsRepository {
-    constructor(@InjectModel(Requirement.name) private readonly requirementModel: Model<Requirement>) {
+    constructor(
+        @InjectModel(Requirement.name) private readonly requirementModel: Model<Requirement>,
+        private readonly paginationProvider: PaginationProvider
+    ) {
         super(requirementModel)
     }
     async createManyRequirement(createRequirementDto: CreateRequirementDto[]): Promise<Requirement[]> {
@@ -27,15 +33,7 @@ export class RequirementsRepository extends BaseRepositoryAbstract<Requirement> 
         return createdRequirement.save()
     }
 
-    async getAllRequirements(): Promise<Requirement[]> {
-        return this.requirementModel.aggregate([
-            {
-                $match: {
-                    deleted_at: null
-                }
-            },
-            { $project: { name: 1, slug: 1 } }
-        ])
+    async getAllRequirements(query: PaginationQueryDto): Promise<Paginated<Requirement>> {
+       return await this.paginationProvider.paginateQuery<Requirement>(query, this.requirementModel)
     }
-    s
 }

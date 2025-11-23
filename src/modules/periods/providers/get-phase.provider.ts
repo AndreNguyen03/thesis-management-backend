@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
-import { GetCurrentPhaseResponseDto } from '../dtos/period-phase.dtos'
+import { GetCurrentPhaseResponseDto } from '../dtos/period-phases.dtos'
 
 @Injectable()
 export class GetPhaseProvider {

@@ -13,6 +13,8 @@ import { Topic } from '../../../topics/schemas/topic.schemas'
 import { LecturerRegisterTopic } from '../../schemas/ref_lecturers_topics.schemas'
 import { LecturerRegTopicRepositoryInterface } from '../lecturer-reg-topic.reposittory.interface'
 import { RequestTimeoutException } from '@nestjs/common'
+import { bool } from 'aws-sdk/clients/signer'
+import { LecturerRoleEnum } from '../../enum/lecturer-role.enum'
 
 export class LecturerRegTopicRepository
     extends BaseRepositoryAbstract<LecturerRegisterTopic>
@@ -27,25 +29,29 @@ export class LecturerRegTopicRepository
         super(lecturerRegTopicModel)
     }
 
-    async createRegistrationWithLecturers(topicId: string, lecturerIds: string[]): Promise<string[]> {
+    async createRegistrationWithLecturers(userId: string, lecturerIds: string[], topicId: string): Promise<boolean> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
         }
-        const createdLecturerRegs = await this.lecturerRegTopicModel.insertMany(
-            lecturerIds.map((lecturerId) => ({
-                topicId: new mongoose.Types.ObjectId(topicId),
-                lecturerId: new mongoose.Types.ObjectId(lecturerId)
-            }))
-        )
-        const populated = await this.lecturerRegTopicModel.populate(createdLecturerRegs, {
-            path: 'lecturerId',
-            select: 'fullName'
+        //tạo người hướng dẫn chính
+        let res = await this.lecturerRegTopicModel.create({
+            topicId: new mongoose.Types.ObjectId(topicId),
+            userId: new mongoose.Types.ObjectId(userId),
+            role: LecturerRoleEnum.MAIN_SUPERVISOR
         })
 
+        //tạo người đồng hướng dẫn
+        let res2 = await this.lecturerRegTopicModel.insertMany(
+            lecturerIds.map((lecturerId) => ({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                userId: new mongoose.Types.ObjectId(lecturerId)
+            }))
+        )
+
         // const names = populated.map((d) => (d.lecturerId as any)?.fullName).filter(Boolean) as string[]
-        return ['names']
+        return res || res2.length > 0 ? true : false
     }
 
     async createSingleRegistration(topicId: string, lecturerId: string): Promise<any> {

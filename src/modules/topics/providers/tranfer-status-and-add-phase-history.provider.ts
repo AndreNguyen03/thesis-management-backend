@@ -4,6 +4,8 @@ import { TopicRepositoryInterface } from '../repository'
 import mongoose from 'mongoose'
 import { TopicNotFoundException } from '../../../common/exceptions'
 import { TopicStatus } from '../enum'
+import { Period, PeriodPhase } from '../../periods/schemas/period.schemas'
+import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 
 @Injectable()
 export class TranferStatusAndAddPhaseHistoryProvider {
@@ -12,7 +14,8 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         private readonly topicRepository: TopicRepositoryInterface
     ) {}
     //chuyển trạng thái đề tài (thủ công ) với các hành độgn như từ chối, chấp nhận, tạm dừng,...
-    async transferStatusAndAddPhaseHistory(topicId: string, newStatus: string, actorId: string) {
+    //truyền period khi chueyenr pha từ draft sang submitted
+    async transferStatusAndAddPhaseHistory(topicId: string, newStatus: string, actorId: string, periodId?: string) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
             deleted_at: null
@@ -24,16 +27,19 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         const res = this.throwExceptionIfActionIsPracticed(existingTopic.currentStatus, newStatus)
         if (!res) return
         const newPhaseHistory = new PhaseHistory()
-        newPhaseHistory.phaseName = existingTopic.currentPhase
-        newPhaseHistory.status = newStatus
+        ;((newPhaseHistory.phaseName = periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase),
+            (newPhaseHistory.status = newStatus))
         newPhaseHistory.actor = actorId
         if (existingTopic.phaseHistories == null || Array.isArray(existingTopic.phaseHistories)) {
             existingTopic.phaseHistories = []
         }
+
         existingTopic.phaseHistories.push(newPhaseHistory)
         await this.topicRepository.update(topicId, {
             phaseHistories: existingTopic.phaseHistories,
-            currentStatus: newStatus
+            currentStatus: newStatus,
+            currentPhase: periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase,
+            periodId: periodId ? periodId : existingTopic.periodId
         })
     }
     private throwExceptionIfActionIsPracticed(currentStatus: string, newStatus: string) {

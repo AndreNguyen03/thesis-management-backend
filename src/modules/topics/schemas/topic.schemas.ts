@@ -23,7 +23,7 @@ export class PhaseHistory extends BaseEntity {
     phaseName: string
     @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
     status: string
-    @Prop({ type: String, required: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     actor: string
     @Prop({ type: String, required: false })
     notes: string
@@ -49,10 +49,10 @@ export class Grade extends BaseEntity {
 
 @Schema({ collection: 'topics', timestamps: true })
 export class Topic extends BaseEntity {
-    @Prop({ required: true, unique: true })
+    @Prop({ type: String, required: true })
     titleVN: string
 
-    @Prop({ type: String, required: true, unique: true })
+    @Prop({ type: String, required: true })
     titleEng: string
 
     @Prop({ required: true })
@@ -61,7 +61,7 @@ export class Topic extends BaseEntity {
     @Prop({ required: true, enum: TopicType })
     type: TopicType
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Major.name, required: true })
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: Major.name, required: true })
     majorId: Major
 
     @Prop({ default: 1 })
@@ -82,8 +82,8 @@ export class Topic extends BaseEntity {
     @Prop({ type: [PhaseHistory], default: [] })
     phaseHistories: PhaseHistory[]
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: Period.name })
-    periodId: Period
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: false, ref: Period.name })
+    periodId: Period | string
 
     @Prop({ type: Grade, default: [], required: false })
     grade: Grade

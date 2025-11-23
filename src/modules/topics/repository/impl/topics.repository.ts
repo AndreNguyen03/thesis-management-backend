@@ -320,13 +320,14 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         )
         return result ? true : false
     }
-    async findByTitle(titleVN: string, titleEng: string, periodId?: string): Promise<Topic | null> {
+    async findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null> {
+        console.log('titleVN, titleEng, periodId', titleVN, titleEng, periodId)
         return this.topicRepository
             .findOne({
                 $expr: {
                     $or: [{ $eq: ['$titleVN', titleVN] }, { $eq: ['$titleEng', titleEng] }]
                 },
-                periodId: periodId,
+                periodId: new mongoose.Types.ObjectId(periodId),
                 deleted_at: null
             })
             .lean()
@@ -521,7 +522,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     from: 'majors',
                     localField: 'majorId',
                     foreignField: '_id',
-                    as: 'major'
+                    as: 'majorsInfo'
                 }
             },
 
@@ -579,7 +580,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 type: 1,
                 status: 1,
                 createBy: 1,
-                createByInfo: { $arrayElemAt: ['$createByInfo', 0] },
+                createByInfo: '$createByInfo',
                 deadline: 1,
                 maxStudents: 1,
                 createdAt: 1,
@@ -588,8 +589,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 currentStatus: 1,
                 currentPhase: 1,
                 isRegistered: 1,
+                phaseHistories: 1,
                 isSaved: 1,
-                major: { $arrayElemAt: ['$major', 0] },
+                major: '$majorsInfo',
                 lecturers: 1,
                 students: 1,
                 fields: `$fields`,
@@ -1259,6 +1261,78 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             $match: {
                 createBy: new mongoose.Types.ObjectId(lecturerId),
                 currentStatus: TopicStatus.Draft
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+    async findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                createBy: new mongoose.Types.ObjectId(lecturerId),
+                currentStatus: { $ne: TopicStatus.Draft }
+            }
+        })
+        pipelineSub.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'periods',
+                        localField: 'periodId',
+                        foreignField: '_id',
+                        as: 'periodInfo'
+                    }
+                },
+                {
+                    $unwind: { path: '$periodInfo' }
+                }
+            ]
+        )
+        pipelineSub.push({
+            $addFields: {
+                submittedPhaseHistory: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: '$phaseHistories',
+                                as: 'ph',
+                                cond: { $eq: ['$$ph.status', 'submitted'] }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        })
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                type: 1,
+                status: 1,
+                createBy: 1,
+                createByInfo: '$createByInfo',
+                deadline: 1,
+                maxStudents: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                currentStatus: 1,
+                currentPhase: 1,
+                isRegistered: 1,
+                isSaved: 1,
+                major: '$majorsInfo',
+                lecturers: 1,
+                students: 1,
+                fields: `$fields`,
+                requirements: `$requirements`,
+                fieldIds: 1,
+                requirementIds: 1,
+                period: '$periodsInfo',
+                submittedAt: '$submittedPhaseHistory.createdAt',
+                periodInfo: 1
             }
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)

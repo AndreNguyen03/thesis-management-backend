@@ -7,7 +7,83 @@ import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requir
 import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
+import { GetMiniPeriodDto, GetPeriodDto } from '../../periods/dtos/period.dtos'
+export class GetPhaseHistoryDto {
+    @Expose()
+    phaseName: string
+    @Expose()
+    status: string
+    @Expose()
+    actor: string
+    @Expose()
+    notes: string
+}
+export class AbstractTopic {
+    @Expose()
+    _id: string
 
+    @Expose()
+    titleVN: string
+
+    @Expose()
+    titleEng: string
+
+    @Expose()
+    description: string
+
+    @Expose()
+    type: string
+
+    @Expose()
+    major: GetMajorMiniDto
+
+    @Expose()
+    @Type(() => GetFieldNameReponseDto)
+    fields: GetFieldNameReponseDto[]
+
+    @Expose()
+    @Type(() => GetRequirementNameReponseDto)
+    requirements: GetRequirementNameReponseDto[]
+
+    @Expose()
+    @Type(() => ResponseMiniStudentDto)
+    students: ResponseMiniStudentDto[]
+
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    lecturers: ResponseMiniLecturerDto[]
+
+    @Expose()
+    createdAt: Date
+
+    @Expose()
+    updatedAt: Date
+
+    @Expose()
+    maxStudents: number
+
+    @Expose()
+    currentStatus: string
+
+    @Expose()
+    currentPhase: string
+}
+export class GetSubmittedTopic extends AbstractTopic {
+    @Expose()
+    submittedAt: Date
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    createByInfo: ResponseMiniLecturerDto
+    @Expose()
+    @Type(() => GetMiniPeriodDto)
+    periodInfo: GetMiniPeriodDto
+}
+
+export class PaginatedSubmittedTopics extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetSubmittedTopic)
+    data: GetSubmittedTopic[]
+}
 export class GetTopicResponseDto {
     @Expose()
     _id: string
@@ -72,6 +148,7 @@ export class GetTopicResponseDto {
     @Expose()
     isSaved: boolean
 }
+export class GetSubmmitedTopic extends GetTopicResponseDto {}
 export class GetPaginatedTopicsDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetTopicResponseDto)

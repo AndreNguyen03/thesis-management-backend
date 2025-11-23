@@ -1,7 +1,8 @@
 import { IsArray, IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
 import { CreateUserDto } from './create-user.dto'
-import { Expose } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
+import { GetPaginatedObjectDto } from '../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 // DTO dùng để tạo mới sinh viên
 export class CreateStudentDto extends CreateUserDto {
@@ -163,4 +164,26 @@ export class ResponseStudentProfileDto {
     major: string
     createdAt?: Date
     updatedAt?: Date
+}
+
+export class ResponseMiniStudent {
+    @Expose()
+    _id: string
+    @Expose()
+    fullName: string
+    @Expose()
+    email: string
+    @Expose()
+    phone?: string
+    @Expose()
+    studentCode: string
+    @Expose()
+    major: string
+    @Expose()
+    avatarUrl?: string
+}
+export class PaginatedMiniStudent extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => ResponseMiniStudent)
+    data: ResponseMiniStudent[]
 }

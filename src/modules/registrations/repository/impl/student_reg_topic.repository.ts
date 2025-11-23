@@ -54,7 +54,7 @@ export class StudentRegTopicRepository
         })
         return registeredCount === maxStudents
     }
-    async createRegistrationWithStudents(topicId: string, studentIds: string[]) {
+    async createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<boolean> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
         if (!topic) {
@@ -64,9 +64,10 @@ export class StudentRegTopicRepository
             studentIds.map((studentId) => ({
                 topicId: new mongoose.Types.ObjectId(topicId),
                 userId: new mongoose.Types.ObjectId(studentId),
-                status: StudentRegistrationStatus.PENDING
+                status: StudentRegistrationStatus.APPROVED
             }))
         )
+        return createdStudentRegs.length > 0 ? true : false
     }
 
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
@@ -304,6 +305,7 @@ export class StudentRegTopicRepository
         pipelineMain.push({
             $project: {
                 _id: 1,
+                topicId: '$topicInfo._id',
                 periodId: '$periodInfo._id',
                 periodName: '$periodInfo.name',
                 titleVN: '$topicInfo.titleVN',

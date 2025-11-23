@@ -75,7 +75,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     }
 
     async getPeriodInfo(periodId: string) {
-        const period = await this.findOneById(periodId)
+        const period = await this.iPeriodRepository.getDetailPeriod(periodId)
         return period
     }
 

@@ -3,7 +3,9 @@ import { BaseRepositoryInterface } from '../../shared/base/repository/base.repos
 import { CreateStudentDto, UpdateStudentProfileDto, UpdateStudentTableDto } from '../dtos/student.dto'
 import { Student, StudentDocument } from '../schemas/student.schema'
 import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as Pagination_An } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../common/pagination/interface/paginated.interface'
+import { Paginated as Paginated_An } from '../../common/pagination-an/interfaces/paginated.interface'
 
 export interface StudentRepositoryInterface extends BaseRepositoryInterface<Student> {
     findByEmail(email: string): Promise<StudentDocument | null>
@@ -19,4 +21,5 @@ export interface StudentRepositoryInterface extends BaseRepositoryInterface<Stud
 
     removeByUserId(userId: string): Promise<{ deletedCount?: number }>
     getById(id: string)
+    getAllStudentsAn(paginationQuery: Pagination_An): Promise<Paginated_An<Student>>
 }

@@ -11,11 +11,13 @@ import { StudentRepositoryInterface } from '../repository/student.repository.int
 import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as Pagination_An } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection } from 'mongoose'
 import { CreateUserDto } from '../dtos/create-user.dto'
 import { UserRole } from '../enums/user-role'
+import { Paginated as Paginated_An } from '../../common/pagination-an/interfaces/paginated.interface'
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {
@@ -133,5 +135,9 @@ export class StudentService extends BaseServiceAbstract<Student> {
         return studentDelete !== undefined && userDelete !== undefined
             ? { success: true, message: 'Xóa sinh viên thành công' }
             : { success: false, message: 'Xóa sinh viên thất bại' }
+    }
+    async getAllStudents_An(paginationQuery: Pagination_An): Promise<Paginated_An<Student>> {
+        const students = await this.studentRepository.getAllStudentsAn(paginationQuery)
+        return students
     }
 }

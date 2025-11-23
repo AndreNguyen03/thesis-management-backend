@@ -39,7 +39,7 @@ export class CreateTopicDto {
     @IsEnum(PeriodPhaseName)
     currentPhase: string
 
-    @IsNotEmpty()
+    @IsOptional()
     periodId: string
 
     //temp fields

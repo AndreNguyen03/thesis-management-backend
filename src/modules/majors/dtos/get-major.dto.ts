@@ -1,4 +1,5 @@
-import { Expose } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
+import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 export class GetMajorMiniDto {
     @Expose()
@@ -7,4 +8,16 @@ export class GetMajorMiniDto {
     name: string
     @Expose()
     facultyId: string
+}
+export class GetMiniMiniMajorDto {
+    @Expose()
+    _id: string
+    @Expose()
+    name: string
+}
+
+export class PaginatedMajorsDto extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetMiniMiniMajorDto)
+    data: GetMiniMiniMajorDto[]
 }

@@ -14,9 +14,8 @@ export class LecturerRegTopicService {
         const res = await this.lecturerRegTopicRepository.createSingleRegistration(topicId, lecturerId)
         return res
     }
-    public async createRegistrationWithLecturers(lecturerIds: string[], topicId: string) {
-      
-        const res = await this.lecturerRegTopicRepository.createRegistrationWithLecturers(topicId, lecturerIds)
+    public async createRegistrationWithLecturers(userId: String, lecturerIds: string[], topicId: string) {
+        const res = await this.lecturerRegTopicRepository.createRegistrationWithLecturers(userId, lecturerIds, topicId)
         if (!res) {
             throw new CreateErrorException('topic')
         }
@@ -29,5 +28,4 @@ export class LecturerRegTopicService {
             throw new DeleteErrorException('registration')
         }
     }
- 
 }

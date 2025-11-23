@@ -1,10 +1,10 @@
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString, Min } from 'class-validator'
 
 import { Type } from 'class-transformer'
 
 export class PaginationQueryDto {
     @IsNotEmpty()
-    @IsPositive()
+    @Min(0)
     // Number of entries to return
     limit?: number = 10
 

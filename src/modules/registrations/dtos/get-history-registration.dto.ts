@@ -6,6 +6,8 @@ class GetStudentRegistrationsHistoryDto {
     @Expose()
     _id: string
     @Expose()
+    topicId: string
+    @Expose()
     titleVN: string
     @Expose()
     titleEng: string

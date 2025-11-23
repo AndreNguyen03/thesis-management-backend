@@ -52,19 +52,20 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
         return topic
     }
-    public async createTopic(lecturerId: string, topicData: CreateTopicDto): Promise<string> {
-        const { studentIds, lecturerIds, ...newTopic } = topicData
-        const existingTopicName = await this.topicRepository.findByTitle(
-            newTopic.titleVN,
-            newTopic.titleEng,
-            topicData.periodId
-        )
-        if (existingTopicName) {
-            throw new BadRequestException('Tên đề tài đã tồn tại.')
-        }
+    public async createTopic(userId: string, topicData: CreateTopicDto): Promise<string> {
+        const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
+        // const existingTopicName = await this.topicRepository.findByTitle(
+        //     newTopic.titleVN,
+        //     newTopic.titleEng,
+        //     topicData.periodId
+        // )
+        // if (existingTopicName) {
+        //     throw new BadRequestException('Tên đề tài đã tồn tại.')
+        // }
         //create phase history
-        const newPhaseHistory = this.createPhaseHistory(lecturerId, topicData.currentPhase, topicData.currentStatus)
+        const newPhaseHistory = this.createPhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
+
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
@@ -73,7 +74,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
         if (lecturerIds && lecturerIds.length > 0)
-            await this.lecturerRegTopicService.createRegistrationWithLecturers([lecturerId], topicId)
+            await this.lecturerRegTopicService.createRegistrationWithLecturers(userId, lecturerIds, topicId)
         //create ref students topics - to be continue
         if (studentIds && studentIds.length > 0) {
             await this.studentRegTopicService.createRegistrationWithStudents(studentIds, topicId)
@@ -103,6 +104,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
         return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
     }
+    public async getSubmittedTopics(lecturerId: string, query: PaginationQueryDto) {
+        return await this.topicRepository.findSubmittedTopicsByLecturerId(lecturerId, query)
+    }
     public async assignSaveTopic(userId: string, topicId: string) {
         return await this.userSavedTopicRepository.assignSaveTopic(userId, topicId)
     }
@@ -117,11 +121,12 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
     }
-    public async submitTopic(topicId: string, actorId: string) {
+    public async submitTopic(topicId: string, actorId: string, periodId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Submitted,
-            actorId
+            actorId,
+            periodId
         )
     }
     public async approveTopic(topicId: string, actorId: string) {
@@ -131,7 +136,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    public async rejectTopic(topicId: string, actorId: string) {
+    public async rejectTopic(topicId: string,    actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Rejected,
@@ -279,4 +284,5 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         if (res) return 1
         return 0
     }
+    public async getMetaOptionsForCreate(userId: string) {}
 }
