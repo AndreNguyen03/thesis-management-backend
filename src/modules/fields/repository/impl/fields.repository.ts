@@ -5,9 +5,15 @@ import { IFieldsRepository } from '../fields.repository.interface'
 import { Model } from 'mongoose'
 import { CreateFieldDto } from '../../dtos/create-field.dto'
 import { BadRequestException } from '@nestjs/common'
+import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
+import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 
 export class FieldsRepository extends BaseRepositoryAbstract<Field> implements IFieldsRepository {
-    constructor(@InjectModel(Field.name) private readonly fieldModel: Model<Field>) {
+    constructor(
+        @InjectModel(Field.name) private readonly fieldModel: Model<Field>,
+        private readonly paginationProvider: PaginationProvider
+    ) {
         super(fieldModel)
     }
     async createField(createFieldDto: CreateFieldDto): Promise<Field> {
@@ -19,14 +25,8 @@ export class FieldsRepository extends BaseRepositoryAbstract<Field> implements I
         return createdField.save()
     }
 
-    async getAllFields(): Promise<Field[]> {
-        return this.fieldModel.aggregate([
-            {
-                $match: {
-                    deleted_at: null
-                }
-            },
-            { $project: { name: 1, slug: 1 } }
-        ])
+    async getAllFields(query: PaginationQueryDto): Promise<Paginated<Field>> {
+        const result = await this.paginationProvider.paginateQuery<Field>(query, this.fieldModel)
+        return result
     }
 }

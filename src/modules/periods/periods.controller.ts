@@ -80,7 +80,7 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
         const res = await this.periodsService.getPeriodInfo(periodId)
-        return plainToInstance(GetPeriodPhaseDto, res, {
+        return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })

@@ -6,9 +6,13 @@ import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.rep
 import { Lecturer, LecturerDocument } from '../../schemas/lecturer.schema'
 import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from '../../dtos/lecturer.dto'
 import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as PaginationAn } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { Paginated as Paginated_An } from '../../../common/pagination-an/interfaces/paginated.interface'
+
 import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { User } from '../../schemas/users.schema'
 import { Faculty } from '../../../modules/faculties/schemas/faculty.schema'
+import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 
 @Injectable()
 export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> implements LecturerRepositoryInterface {
@@ -16,7 +20,8 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         @InjectModel(Lecturer.name)
         private readonly lecturerModel: Model<Lecturer>,
         @InjectModel(User.name)
-        private readonly userModel: Model<User>
+        private readonly userModel: Model<User>,
+        private readonly paginationProvider: PaginationProvider
     ) {
         super(lecturerModel)
     }
@@ -190,5 +195,40 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
             .populate('facultyId')
             .exec()
         return lecturer
+    }
+    async getAllLecturersAn(paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>> {
+        const pipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'facultyId',
+                    foreignField: '_id',
+                    as: 'faculty'
+                }
+            },
+            { $unwind: '$faculty' }
+        ]
+        pipeline.push({
+            $project: {
+                _id: '$user._id',
+                fullName: '$user.fullName',
+                email: '$user.email',
+                phone: '$user.phone',
+                role: '$user.role',
+                title: 1,
+                avatarUrl: '$user.avatarUrl'
+            }
+        })
+
+        return this.paginationProvider.paginateQuery<Lecturer>(paginationQuery, this.lecturerModel, pipeline)
     }
 }

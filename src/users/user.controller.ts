@@ -19,17 +19,25 @@ import { AuthType } from '../auth/enum/auth-type.enum'
 import { StudentService } from './application/student.service'
 import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
-import { CreateStudentDto, UpdateStudentTableDto } from './dtos/student.dto'
+import { CreateStudentDto, PaginatedMiniStudent, UpdateStudentTableDto } from './dtos/student.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
-import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from './dtos/lecturer.dto'
+import {
+    CreateLecturerDto,
+    PaginatedMiniLecturer,
+    ResponseMiniLecturerDto,
+    UpdateLecturerProfileDto,
+    UpdateLecturerTableDto
+} from './dtos/lecturer.dto'
 import { UserService } from './application/users.service'
 import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as PaginationAn } from '../common/pagination-an/dtos/pagination-query.dto'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
 import { FacultyBoardService } from './application/faculty-board.service'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { Roles } from '../auth/decorator/roles.decorator'
 import { UserRole } from './enums/user-role'
 import { ActiveUserData } from '../auth/interface/active-user-data.interface'
+import { plainToInstance } from 'class-transformer'
 
 @Controller('users')
 @ApiTags('Users')
@@ -77,7 +85,7 @@ export class UserController {
                 throw new Error('Invalid role')
         }
     }
-    @Get('studnt/:id/saved-theses')
+    @Get('student/:id/saved-theses')
     async getStudentSavedTheses(@Param('id') id: string) {}
 
     // @Patch('student/:id')
@@ -115,6 +123,15 @@ export class UserController {
         return await this.lecturerService.getAllLecturers(query)
     }
 
+    @Get('lec/get-all-lecturers/combobox')
+    async getAllLecturers_An(@Query() query: PaginationAn) {
+        const res = await this.lecturerService.getAllLecturers_An(query)
+        return plainToInstance(PaginatedMiniLecturer, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     @Delete('lecturers/:id')
     async deleteLecturer(@Param('id') id: string) {
         return this.lecturerService.removeLecturerById(id)
@@ -135,6 +152,15 @@ export class UserController {
     @Get('students')
     async getStudents(@Query() query: PaginationQueryDto) {
         return await this.studentService.getAllStudents(query)
+    }
+
+    @Get('/lec/get-all-students/combobox')
+    async getAllStudents_An(@Query() query: PaginationAn) {
+        const res = await this.studentService.getAllStudents_An(query)
+        return plainToInstance(PaginatedMiniStudent, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     @Delete('students/:id')

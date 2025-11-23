@@ -25,6 +25,7 @@ export class PaginationProvider {
         let queryPage = page ?? 1
 
         //basecase
+
         let pipelineMain: any[] = []
 
         // --------------------------------------------
@@ -36,7 +37,6 @@ export class PaginationProvider {
         if (endDate) {
             pipelineMain.push({ $match: { updatedAt: { $lte: new Date(endDate) } } })
         }
-        console.log('paginationQuery', search_by, query)
         //tìm kiếm với searchby và query
         if (search_by && query) {
             const fields = search_by.split(',').map((f) => f.trim())
@@ -48,16 +48,13 @@ export class PaginationProvider {
                         }))
                     }
                 })
-            } else 
-            {
+            } else {
                 pipelineMain.push({
                     $match: {
                         [search_by]: { $regex: query, $options: 'i' }
                     }
                 })
             }
-            const searchField = search_by
-            const searchValue = query
         }
 
         //sắp xếp bởi
@@ -81,9 +78,7 @@ export class PaginationProvider {
                     {
                         $skip: (queryPage - 1) * queryLimit
                     },
-                    {
-                        $limit: queryLimit
-                    }
+                    ...(queryLimit > 0 ? [{ $limit: queryLimit }] : [])
                 ],
                 totalCount: [{ $count: 'count' }]
             }
@@ -104,7 +99,7 @@ export class PaginationProvider {
         const results = aggregationResult[0].data as T[]
         const totalItems = aggregationResult[0].totalCount[0]?.count || 0
         // Calculate page numbers
-        const totalPages = Math.ceil(totalItems / queryLimit) || 1
+        const totalPages = queryLimit > 0 ? Math.ceil(totalItems / queryLimit) : 1
 
         const nextPage = queryPage === totalPages ? queryPage : queryPage + 1
         const previousPage = queryPage === 1 ? queryPage : queryPage - 1
@@ -115,15 +110,15 @@ export class PaginationProvider {
                 itemsPerPage: queryLimit,
                 totalItems: totalItems,
                 currentPage: queryPage,
-                totalPages: Math.ceil(totalItems / queryLimit)
+                totalPages: totalPages
             },
-            links: {
-                first: 1,
-                last: totalPages,
-                current: queryPage,
-                next: nextPage,
-                previous: previousPage
-            }
+            // links: {
+            //     first: 1,
+            //     last: totalPages,
+            //     current: queryPage,
+            //     next: nextPage,
+            //     previous: previousPage
+            // }
         }
 
         return finalResponse

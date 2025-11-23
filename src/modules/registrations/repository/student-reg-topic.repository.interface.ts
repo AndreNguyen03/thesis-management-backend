@@ -6,7 +6,10 @@ import { StudentRegisterTopic } from '../schemas/ref_students_topics.schemas'
 
 export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterface<StudentRegisterTopic> {
     createSingleRegistration(studentId: string, topicId: string)
-    createRegistrationWithStudents(topicId: string, studentIds: string[])
+    createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<boolean>
     cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }>
-    getStudentRegistrationsHistory(studentId: string, query: PaginationQueryDto): Promise<Paginated<StudentRegisterTopic>>
+    getStudentRegistrationsHistory(
+        studentId: string,
+        query: PaginationQueryDto
+    ): Promise<Paginated<StudentRegisterTopic>>
 }

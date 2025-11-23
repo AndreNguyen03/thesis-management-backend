@@ -7,6 +7,11 @@ export enum PeriodPhaseName {
     EXECUTION = 'execution',
     COMPLETION = 'completion'
 }
+export enum PeriodPhaseStatus {
+    UPCOMING = 'not_started',
+    ONGOING = 'ongoing',
+    COMPLETED = 'completed'
+}
 export const ValidateContinuePhase = (currentPhase: string) => {
     const validateClass = {
         empty: [PeriodPhaseName.SUBMIT_TOPIC],

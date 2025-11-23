@@ -6,16 +6,20 @@ import { StudentRepositoryInterface } from '../student.repository.interface'
 import { Student, StudentDocument } from '../../schemas/student.schema'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as Pagination_An } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination/interface/paginated.interface'
+import { Paginated  as Paginated_An } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { CreateStudentDto, UpdateStudentProfileDto, UpdateStudentTableDto } from '../../dtos/student.dto'
 import { User } from '../../schemas/users.schema'
+import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 
 @Injectable()
 export class StudentRepository extends BaseRepositoryAbstract<Student> implements StudentRepositoryInterface {
     constructor(
         @InjectModel(Student.name) private readonly studentModel: Model<Student>,
         @InjectModel(User.name)
-        private readonly userModel: Model<User>
+        private readonly userModel: Model<User>,
+        private readonly paginationProvider: PaginationProvider
     ) {
         super(studentModel)
     }
@@ -185,5 +189,40 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         const objectId = new Types.ObjectId(userId)
         const result = await this.studentModel.deleteOne({ userId: objectId })
         return { deletedCount: result.deletedCount }
+    }
+    async getAllStudentsAn(paginationQuery: Pagination_An): Promise<Paginated_An<Student>> {
+        const pipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: '$user' },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'facultyId',
+                    foreignField: '_id',
+                    as: 'faculty'
+                }
+            },
+            { $unwind: '$faculty' }
+        ]
+        pipeline.push({
+            $project: {
+                id: '$user._id',
+                fullName: '$user.fullName',
+                email: '$user.email',
+                phone: '$user.phone',
+                studentCode: 1,
+                class: 1,
+                major: 1,
+                avatarUrl: '$user.avatarUrl'
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Student>(paginationQuery, this.studentModel, pipeline)
     }
 }

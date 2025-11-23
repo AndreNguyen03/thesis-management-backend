@@ -3,9 +3,11 @@ import { BaseServiceAbstract } from '../../../shared/base/service/base.service.a
 import { Major } from '../schemas/majors.schemas'
 import { IMajorRepository } from '../repository/majors.repository.interface'
 import { CreateMajorDto } from '../dtos/create-major.dto'
+import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 @Injectable()
 export class MajorsService extends BaseServiceAbstract<Major> {
-    constructor(@Inject('IMajorRepository') majorRepositoryInterface: IMajorRepository) {
+    constructor(@Inject('IMajorRepository') private readonly majorRepositoryInterface: IMajorRepository) {
         super(majorRepositoryInterface)
     }
     async createMajor(createMajorDto: CreateMajorDto): Promise<Major> {
@@ -18,5 +20,8 @@ export class MajorsService extends BaseServiceAbstract<Major> {
             throw new BadRequestException(`Chuyên ngành với tên "${createMajorDto.name}" đã tồn tại`)
         }
         return this.create(createMajorDto)
+    }
+    async getMajorsOfFacultyOwner(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>> {
+        return await this.majorRepositoryInterface.getMajorsOfFacultyOwner(facultyId, query)
     }
 }

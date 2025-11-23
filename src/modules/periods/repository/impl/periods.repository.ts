@@ -5,13 +5,12 @@ import { IPeriodRepository } from '../periods.repository.interface'
 import mongoose, { Model } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
-import { GetCurrentPhaseResponseDto } from '../../dtos/period-phase.dtos'
 import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
-import { GetPeriodDto } from '../../dtos/period.dtos'
+import { GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -20,17 +19,22 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     ) {
         super(periodModel)
     }
+
     async createPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean> {
         try {
             const res = await this.periodModel.findOneAndUpdate(
-                { _id: new mongoose.Types.ObjectId(periodId), isDeleted: false },
+                { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
                 {
                     $push: { phases: newPhase },
                     $set: { currentPhase: newPhase.phase }
                 }
             )
-            return res !== null
+            if (!res) {
+                throw new BadRequestException('Không tìm thấy kỳ để thêm giai đoạn')
+            }
+            return true
         } catch (error) {
+            console.log('Error in createPhaseInPeriod:', error)
             throw new RequestTimeoutException()
         }
     }
@@ -182,5 +186,54 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                   }
                 : null
         }
+    }
+
+    private async AbstractGetPeriodInfo(periodId: string) {
+        let pipelineMain: any[] = []
+        //lookup với bảng faculty
+        pipelineMain.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'faculties',
+                        localField: 'facultyId',
+                        foreignField: '_id',
+                        as: 'faculty'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$faculty'
+                    }
+                }
+            ]
+        )
+        // kết bảng bảng với phases thể lấy thông tin giai đoạn
+        pipelineMain.push({ $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
+        return pipelineMain
+    }
+    async getDetailPeriod(periodId: string) {
+        let pipelineMain: any[] = []
+        pipelineMain.push(...(await this.AbstractGetPeriodInfo(periodId)))
+
+        const result = await this.periodModel.aggregate(pipelineMain)
+        if (!result || result.length === 0) return null
+
+        const period = result[0]
+        const now = new Date()
+
+        period.phases = (period.phases || []).map((phase: any) => {
+            let status = 'not_started'
+            if (now < new Date(phase.startTime)) {
+                status = 'not_started'
+            } else if (now >= new Date(phase.startTime) && now <= new Date(phase.endTime)) {
+                status = 'ongoing'
+            } else if (now > new Date(phase.endTime)) {
+                status = 'completed'
+            }
+            return { ...phase, status }
+        })
+
+        return period
     }
 }

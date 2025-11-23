@@ -1,14 +1,20 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
-import { CreateCompletionPhaseDto, CreateExecutionPhaseDto, CreateOpenRegPhaseDto, CreatePhaseSubmitTopicDto } from '../dtos/period-phases.dtos'
+import {
+    CreateCompletionPhaseDto,
+    CreateExecutionPhaseDto,
+    CreateOpenRegPhaseDto,
+    CreatePhaseSubmitTopicDto
+} from '../dtos/period-phases.dtos'
 import { PeriodNotFoundException } from '../../../common/exceptions/period-exceptions'
-import { plainToClass } from 'class-transformer'
+import { plainToClass, plainToInstance } from 'class-transformer'
 import { ValidatePeriodPhaseProvider } from './validate-phase.provider'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
+import mongoose from 'mongoose'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -34,12 +40,12 @@ export class CreatePhaseProvider {
             period.currentPhase,
             PeriodPhaseName.SUBMIT_TOPIC
         )
-
-        if (isValid) {
+        if (!isValid) {
             throw new BadRequestException(
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.SUBMIT_TOPIC}`
             )
         }
+
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
         return this.iPeriodRepository.createPhaseInPeriod(newPeriodPhase, periodId)
     }

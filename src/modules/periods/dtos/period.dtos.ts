@@ -57,22 +57,31 @@ export class GetPeriodDto {
     @Expose()
     @Type(() => GetFacultyDto)
     faculty: GetFacultyDto
-    // @Expose()
-    // @Type(() => PeriodPhase)
-    // phases: PeriodPhase[]
+    @Expose()
+    @Type(() => GetPeriodPhaseDto)
+    phases: GetPeriodPhaseDto[]
     @Expose()
     status: string
-
+    @Expose()
+    currentPhase: string
     @Expose()
     startTime: Date
     @Expose()
     endTime: Date
+    // // @Expose()
+    // // totalTopics: number
     // @Expose()
-    // totalTopics: number
-    @Expose()
-    currentPhaseDetail: GetPeriodPhaseDto | null
+    // currentPhaseDetail: GetPeriodPhaseDto | null
 }
-
+export class GetMiniPeriodDto {
+    @Expose()
+    _id: string
+    @Expose()
+    name: string
+    @Expose()
+    @Type(() => GetFacultyDto)
+    faculty: GetFacultyDto
+}
 export class GetPaginatedPeriodDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetPeriodDto)

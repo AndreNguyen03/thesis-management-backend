@@ -24,6 +24,7 @@ import {
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PaginatedSubmittedTopics,
     PatchTopicDto
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
@@ -139,6 +140,18 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
+    @Get('/lecturer/get-submitted-topics')
+    async getSubmittedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        const res = await this.topicService.getSubmittedTopics(req.user.sub, query)
+        return plainToInstance(PaginatedSubmittedTopics, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
     @Delete(':topicId/ref-fields-topic/:fieldId')
     async removeFieldFromTopicQuick(
         @Req() req: { user: ActiveUserData },
@@ -204,12 +217,12 @@ export class TopicController {
     async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
     }
-    @Patch('/:topicId/lecturer/submit-topic')
+    @Patch('/lec/submit-topic/:topicId/:periodId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async submitTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        await this.topicService.submitTopic(topicId, req.user.sub)
+    async submitTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Param('periodId') periodId: string) {
+        await this.topicService.submitTopic(topicId, req.user.sub, periodId)
         return { message: 'Nộp đề tài thành công' }
     }
 
@@ -362,5 +375,15 @@ export class TopicController {
     async lecturerDeleteFile(@Param('topicId') topicId: string, @Query('fileId') fileId: string) {
         const resultFiles = await this.topicService.deleteFile(topicId, fileId)
         return { message: `Đã xóa thành công ${resultFiles} file` }
+    }
+
+    // Lấy tất cả các meta options cần thiết để tạo đề tài
+    @Get('/meta-options/for-create')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getMetaOptionsForCreate(@Req() req: { user: ActiveUserData }) {
+        const res = await this.topicService.getMetaOptionsForCreate(req.user.sub)
+        return res
     }
 }

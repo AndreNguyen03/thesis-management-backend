@@ -1,7 +1,8 @@
 import { IsBoolean, IsDate, IsNotEmpty, IsOptional, IsPositive, IsString } from 'class-validator'
-import { PeriodPhaseName } from '../enums/period-phases.enum'
+import { PeriodPhaseName, PeriodPhaseStatus } from '../enums/period-phases.enum'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { Expose, Type } from 'class-transformer'
+import mongoose from 'mongoose'
 
 export class GetPeriodPhaseDto {
     @Expose()
@@ -22,7 +23,7 @@ export class GetPeriodPhaseDto {
     allowManualApproval: boolean
     // external fields
     @Expose()
-    status: string
+    status: PeriodPhaseStatus
 }
 
 export class CreatePhase {
@@ -35,7 +36,9 @@ export class CreatePhase {
 }
 
 export class CreatePhaseSubmitTopicDto extends CreatePhase {
-    private readonly phase: string = PeriodPhaseName.SUBMIT_TOPIC
+    @IsNotEmpty()
+    readonly phase: string = PeriodPhaseName.SUBMIT_TOPIC
+    @IsNotEmpty()
     @IsPositive()
     minTopicsPerLecturer: number
     @IsNotEmpty()
@@ -43,15 +46,23 @@ export class CreatePhaseSubmitTopicDto extends CreatePhase {
     requiredLecturerIds: string[]
     @IsNotEmpty()
     allowManualApproval: boolean = false
+    @IsNotEmpty()
+    readonly _id: string = new mongoose.Types.ObjectId().toHexString()
+    @IsOptional()
+    @IsDate()
+    deleted_at?: Date | null = null
 }
 
 export class CreateOpenRegPhaseDto extends CreatePhase {
+    @IsNotEmpty()
     private readonly phase: string = PeriodPhaseName.OPEN_REGISTRATION
 }
 export class CreateExecutionPhaseDto extends CreatePhase {
+    @IsNotEmpty()
     private readonly phase: string = PeriodPhaseName.EXECUTION
 }
 export class CreateCompletionPhaseDto extends CreatePhase {
+    @IsNotEmpty()
     private readonly phase: string = PeriodPhaseName.COMPLETION
 }
 export class UpdatePeriodPhaseDto {
@@ -70,4 +81,8 @@ export class UpdatePeriodPhaseDto {
     @IsOptional()
     @IsBoolean()
     allowManualApproval: boolean
+}
+export class GetCurrentPhaseResponseDto {
+    currentPhase: string
+    endTime: Date
 }

@@ -5,6 +5,7 @@ import { LecturerRepositoryInterface } from '../repository/lecturer.repository.i
 import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
 import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
+import { PaginationQueryDto as PaginationAn } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../common/pagination/interface/paginated.interface'
 import {
     CreateLecturerDto,
@@ -92,6 +93,10 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         return lecturers
     }
 
+    async getAllLecturers_An(paginationQuery: PaginationAn) {
+        const lecturers = await this.lecturerRepository.getAllLecturersAn(paginationQuery)
+        return lecturers
+    }
     async updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto) {
         const session = await this.connection.startSession()
         session.startTransaction()
