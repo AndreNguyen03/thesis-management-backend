@@ -2,7 +2,7 @@ import { IsArray, IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString }
 import { AcademicTitle } from '../enums/academic-title'
 import { Publication } from '../schemas/lecturer.schema'
 import { PartialType } from '@nestjs/mapped-types'
-import { Expose, Type } from 'class-transformer'
+import { Expose, Transform, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../common/pagination-an/dtos/get-pagination-list.dtos'
 
 export class CreateLecturerDto {
@@ -168,9 +168,19 @@ export class ResponseMiniLecturerDto {
     // @Expose()
     // title: AcademicTitle
     @Expose()
+    @Transform(({ value }) => {
+        switch (value) {
+            case 'Tiến sĩ':
+                return 'TS'
+            case 'Thạc sĩ':
+                return 'ThS'
+            default:
+                return value
+        }
+    })
     title: string
 }
-export class PaginatedMiniLecturer extends GetPaginatedObjectDto{
+export class PaginatedMiniLecturer extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
     data: ResponseMiniLecturerDto[]

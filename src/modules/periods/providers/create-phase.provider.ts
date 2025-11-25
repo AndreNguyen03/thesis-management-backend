@@ -1,20 +1,19 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
 import {
-    CreateCompletionPhaseDto,
-    CreateExecutionPhaseDto,
-    CreateOpenRegPhaseDto,
-    CreatePhaseSubmitTopicDto
+    ConfigCompletionPhaseDto,
+    ConfigExecutionPhaseDto,
+    ConfigOpenRegPhaseDto,
+    ConfigPhaseSubmitTopicDto
 } from '../dtos/period-phases.dtos'
 import { PeriodNotFoundException } from '../../../common/exceptions/period-exceptions'
-import { plainToClass, plainToInstance } from 'class-transformer'
+import { plainToClass } from 'class-transformer'
 import { ValidatePeriodPhaseProvider } from './validate-phase.provider'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
-import mongoose from 'mongoose'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -24,18 +23,22 @@ export class CreatePhaseProvider {
         private readonly topicService: TopicService,
         private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider
     ) {}
+    //Khởi tạo sơ khai cho kì mới
+    async initalizePhasesForNewPeriod(periodId: string): Promise<boolean> {
+        return await this.iPeriodRepository.initalizePhasesForNewPeriod(periodId)
+    }
     //draft -> submit-topic
-    async createPhaseSubmitTopic(
+    async configPhaseSubmitTopic(
         actorId: string,
         periodId: string,
-        dto: CreatePhaseSubmitTopicDto,
+        dto: ConfigPhaseSubmitTopicDto,
         force: boolean = false
     ) {
-        //Kiểm tra xem đợi có tồn tại không
+        //Kiểm tra xem đợt có tồn tại không
         const period = await this.iPeriodRepository.findOneById(periodId)
         if (!period) throw new PeriodNotFoundException()
 
-        //Kiểm tra chuyển pha theo đúng trình tự
+        //Kiểm tra config/chuyển pha theo đúng trình tự chưa
         const isValid = await this.validatePeriodPhaseProvider.validateStatusManualTransition(
             period.currentPhase,
             PeriodPhaseName.SUBMIT_TOPIC
@@ -45,16 +48,16 @@ export class CreatePhaseProvider {
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.SUBMIT_TOPIC}`
             )
         }
-
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
-        return this.iPeriodRepository.createPhaseInPeriod(newPeriodPhase, periodId)
+        console.log('Cấu hình pha Submit Topic thành công!', newPeriodPhase)
+        return this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
     }
 
     //submit-topic -> open registration
-    async createPhaseOpenRegistration(
+    async configPhaseOpenRegistration(
         actorId: string,
         periodId: string,
-        dto: CreateOpenRegPhaseDto,
+        dto: ConfigOpenRegPhaseDto,
         force: boolean = false
     ) {
         const period = await this.iPeriodRepository.findOneById(periodId)
@@ -97,7 +100,7 @@ export class CreatePhaseProvider {
             force
         )
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
-        await this.iPeriodRepository.createPhaseInPeriod(newPeriodPhase, periodId)
+        await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         console.log('Chuyển pha thành công!')
         return {
             success: true,
@@ -106,10 +109,10 @@ export class CreatePhaseProvider {
     }
 
     //open registration -> execution
-    async createCreateExecutionPhaseDto(
+    async configPhaseExecution(
         actorId: string,
         periodId: string,
-        dto: CreateExecutionPhaseDto,
+        dto: ConfigExecutionPhaseDto,
         force: boolean = false
     ): Promise<{ success: boolean; message: string }> {
         const period = await this.iPeriodRepository.findOneById(periodId)
@@ -150,7 +153,7 @@ export class CreatePhaseProvider {
             await this.updateTopicsBatchProvider.updateTopicsBatchToExecutionPhase(periodId, actorId)
 
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
-        await this.iPeriodRepository.createPhaseInPeriod(newPeriodPhase, periodId)
+        await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         console.log('Chuyển pha thành công!')
         return {
             success: true,
@@ -159,10 +162,10 @@ export class CreatePhaseProvider {
     }
 
     //execution -> completion
-    async createCompletionPhase(
+    async configCompletionPhase(
         actorId: string,
         periodId: string,
-        dto: CreateCompletionPhaseDto,
+        dto: ConfigCompletionPhaseDto,
         force: boolean = false
     ): Promise<{ success: boolean; message: string }> {
         const period = await this.iPeriodRepository.findOneById(periodId)
@@ -191,7 +194,7 @@ export class CreatePhaseProvider {
         )
 
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
-        await this.iPeriodRepository.createPhaseInPeriod(newPeriodPhase, periodId)
+        await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         return {
             success: true,
             message: `Chuyển sang ${PeriodPhaseName.COMPLETION} thành công. Có tổng cộng ${evaluationTopics} đề tài đang chờ được bảo vệ.`

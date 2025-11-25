@@ -10,16 +10,16 @@ import { Faculty } from '../../faculties/schemas/faculty.schema'
 export class PeriodPhase extends BaseEntity {
     @Prop({ required: true, type: String, enum: PeriodPhaseName })
     phase: PeriodPhaseName
-    @Prop({ required: true, type: Date })
+    @Prop({ required: false, type: Date })
     startTime: Date
-    @Prop({ required: true, type: Date })
+    @Prop({ required: false, type: Date })
     endTime: Date
     //Option fields for Submit Topic phase
-    @Prop({ default: 0, type: Number, required: false })
+    @Prop({ type: Number, required: false })
     minTopicsPerLecturer: number
-    @Prop({ required: false, type: [mongoose.Schema.Types.ObjectId], ref: Lecturer.name })
+    @Prop({ required: false, ref: Lecturer.name, type: [mongoose.Schema.Types.ObjectId] })
     requiredLecturerIds: string[]
-    @Prop({ default: false, required: false })
+    @Prop({ required: false })
     allowManualApproval: boolean
 }
 

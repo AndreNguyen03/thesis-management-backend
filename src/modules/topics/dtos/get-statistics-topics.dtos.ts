@@ -24,7 +24,7 @@ export class GetTopicsStatisticInExecutionPhaseDto {
     inNormalProcessingNumber: number
     delayedTopicsNumber: number
     pausedTopicsNumber: number
-    submittedTopicsNumber: number
+    submittedToReviewTopicsNumber: number
     readyForEvaluationNumber: number
 }
 

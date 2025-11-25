@@ -9,7 +9,7 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
     getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>>
     getCurrentPhase(periodId: string): Promise<GetCurrentPhaseResponseDto>
     deletePeriod(periodId: string): Promise<boolean>
-    createPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean>
+    configPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean>
     getSubmissionStatus(
         lecturerId: string,
         facultyId: string
@@ -20,6 +20,8 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
         reason: string | null
         minTopics: number
     }>
-    getCurrentPeriodInfo(facultyId: string) 
+    getCurrentPeriodInfo(facultyId: string)
     getDetailPeriod(periodId: string)
+    initalizePhasesForNewPeriod(periodId: string): Promise<boolean>
+    createNewPeriod(period: Period): Promise<Period>
 }

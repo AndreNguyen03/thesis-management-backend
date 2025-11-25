@@ -24,7 +24,9 @@ import {
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PaginatedGeneralTopics,
     PaginatedSubmittedTopics,
+    PaginationTopicsQueryParams,
     PatchTopicDto
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
@@ -54,10 +56,10 @@ export class TopicController {
     async getTopicsOfPeriod(
         @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
-        @Query() query: PaginationQueryDto
+        @Query() query: PaginationTopicsQueryParams
     ) {
         const topics = await this.topicService.getTopicsOfPeriod(req.user.sub, periodId, query)
-        return plainToInstance(GetPaginatedTopicsDto, topics, {
+        return plainToInstance(PaginatedGeneralTopics, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -93,15 +95,6 @@ export class TopicController {
         })
     }
 
-    @Get('/:topicId')
-    @Auth(AuthType.Bearer)
-    async getTopicById(@Param('topicId') topicId: string, @Req() req: { user: ActiveUserData }) {
-        const topic = await this.topicService.getTopicById(topicId, req.user.sub, req.user.role)
-        return plainToInstance(GetTopicDetailResponseDto, topic, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
     @Post()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
@@ -132,6 +125,16 @@ export class TopicController {
     async getDraftTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
         const res = await this.topicService.getDraftTopics(req.user.sub, query)
         return plainToInstance(GetPaginatedTopicsDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/:topicId')
+    @Auth(AuthType.Bearer)
+    async getTopicById(@Param('topicId') topicId: string, @Req() req: { user: ActiveUserData }) {
+        const topic = await this.topicService.getTopicById(topicId, req.user.sub, req.user.role)
+        return plainToInstance(GetTopicDetailResponseDto, topic, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -217,16 +220,20 @@ export class TopicController {
     async unSaveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.unassignSaveTopic(req.user.sub, topicId)
     }
-    @Patch('/lec/submit-topic/:topicId/:periodId')
+    @Patch('/lec/submit-topic/:topicId/in-period/:periodId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async submitTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Param('periodId') periodId: string) {
+    async submitTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Param('periodId') periodId: string
+    ) {
         await this.topicService.submitTopic(topicId, req.user.sub, periodId)
         return { message: 'Nộp đề tài thành công' }
     }
 
-    @Patch('/:topicId/facuty-board/approve-topic')
+    @Patch('/faculty-board/approve-topic/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
@@ -235,7 +242,7 @@ export class TopicController {
         return { message: 'Nộp đề tài thành công' }
     }
 
-    @Patch('/:topicId/facuty-board/reject-topic')
+    @Patch('faculty-board/reject-topic/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)

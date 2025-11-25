@@ -45,7 +45,7 @@ export class GetStatisticsTopicsProvider {
         }
     }
     async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
-        return await this.topicRepositoryInterface.getStatisticTopicsInSubmitPhase(periodId)
+        return await this.topicRepositoryInterface.getStatisticInSubmitPhase(periodId)
     }
     async getStatisticsOpenRegistrationPhase(periodId: string): Promise<GetTopicStatisticInOpenRegPhaseDto> {
         return await this.topicRepositoryInterface.getStatisticsOpenRegistrationPhase(periodId)

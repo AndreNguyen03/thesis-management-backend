@@ -1,6 +1,6 @@
 import { Inject, Injectable, RequestTimeoutException } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
-import { CreatePeriodDto, UpdatePeriodDto } from '../dtos/period.dtos'
+import { CreatePeriodDto, PeriodStatsQueryParams, UpdatePeriodDto } from '../dtos/period.dtos'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { Period } from '../schemas/period.schemas'
 import { CreatePhaseProvider } from '../providers/create-phase.provider'
@@ -8,10 +8,10 @@ import { RequestGetPeriodsDto } from '../dtos/request-get-all.dto'
 import { plainToClass } from 'class-transformer'
 import { PeriodStatus } from '../enums/periods.enum'
 import {
-    CreateCompletionPhaseDto,
-    CreateExecutionPhaseDto,
-    CreateOpenRegPhaseDto,
-    CreatePhaseSubmitTopicDto,
+    ConfigPhaseSubmitTopicDto,
+    ConfigCompletionPhaseDto,
+    ConfigExecutionPhaseDto,
+    ConfigOpenRegPhaseDto,
     UpdatePeriodPhaseDto
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
@@ -42,9 +42,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             ...nest,
             facultyId: facultyId
         }
-        const newPeriod = await this.create(periodData)
-        if (phaseSubmitTopic) {
-            await this.createPhaseSubmitTopic(actorId, newPeriod._id.toString(), phaseSubmitTopic)
+        const newPeriod = plainToClass(Period, periodData)
+        const createdPeriod = await this.iPeriodRepository.createNewPeriod(newPeriod)
+        const res = await this.createPhaseProvider.initalizePhasesForNewPeriod(createdPeriod._id.toString())
+        if (res && phaseSubmitTopic) {
+            await this.configPhaseSubmitTopic(actorId, createdPeriod._id.toString(), phaseSubmitTopic)
         }
     }
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto) {
@@ -79,34 +81,34 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return period
     }
 
-    async createPhaseSubmitTopic(
+    async configPhaseSubmitTopic(
         actorId: string,
         periodId: string,
-        createPhaseSubmitTopicDto: CreatePhaseSubmitTopicDto,
+        createPhaseSubmitTopicDto: ConfigPhaseSubmitTopicDto,
         force: boolean = false
     ) {
-        return this.createPhaseProvider.createPhaseSubmitTopic(actorId, periodId, createPhaseSubmitTopicDto, force)
+        return this.createPhaseProvider.configPhaseSubmitTopic(actorId, periodId, createPhaseSubmitTopicDto, force)
     }
 
-    async createPhaseOpenReg(
+    async configPhaseOpenReg(
         actorId: string,
         periodId: string,
-        createOpenRegPhaseDto: CreateOpenRegPhaseDto,
+        configOpenRegPhaseDto: ConfigOpenRegPhaseDto,
         force: boolean = false
     ) {
-        return this.createPhaseProvider.createPhaseOpenRegistration(actorId, periodId, createOpenRegPhaseDto, force)
+        return this.createPhaseProvider.configPhaseOpenRegistration(actorId, periodId, configOpenRegPhaseDto, force)
     }
 
-    async createPhaseExecution(
+    async configPhaseExecution(
         actorId: string,
         periodId: string,
-        createExecutionPhaseDto: CreateExecutionPhaseDto,
+        configExecutionPhaseDto: ConfigExecutionPhaseDto,
         force: boolean = false
     ): Promise<{ success: boolean; message: string }> {
-        return this.createPhaseProvider.createCreateExecutionPhaseDto(actorId, periodId, createExecutionPhaseDto, force)
+        return this.createPhaseProvider.configPhaseExecution(actorId, periodId, configExecutionPhaseDto, force)
     }
-    async createPhaseCompletion(actorId: string, periodId: string, createCompletionPhaseDto: CreateCompletionPhaseDto) {
-        return this.createPhaseProvider.createCompletionPhase(actorId, periodId, createCompletionPhaseDto)
+    async configPhaseCompletion(actorId: string, periodId: string, configCompletionPhaseDto: ConfigCompletionPhaseDto) {
+        return this.createPhaseProvider.configCompletionPhase(actorId, periodId, configCompletionPhaseDto)
     }
 
     async updatePhase(periodId: string, phaseId: string, updatePhaseDto: UpdatePeriodPhaseDto) {
@@ -143,42 +145,13 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
 
     async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
     // statistics
-    async boardGetStatisticsSubmitTopicPhase(periodId: string) {
+    async boardGetStatisticsInPeriod(periodId: string, query: PeriodStatsQueryParams) {
         //lấy thống kê liên quan tới đề tài
-        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
-            periodId,
-            PeriodPhaseName.SUBMIT_TOPIC
-        )
+        const periodFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(periodId, query.phase)
         //lấy thống kê các thong tin liên quan khác (nếu có)
-        return topicFigures
+        return periodFigures
     }
-    async boardGetStatisticsOpenRegistrationPhase(periodId: string) {
-        //lấy thống kê liên quan tới đề tài
-        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
-            periodId,
-            PeriodPhaseName.OPEN_REGISTRATION
-        )
-        //lấy thống kê các thong tin liên quan khác (nếu có)
-        return topicFigures
-    }
-    async boardGetStatisticsExecutionPhase(periodId: string) {
-        //lấy thống kê liên quan tới đề tài
-        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
-            periodId,
-            PeriodPhaseName.EXECUTION
-        )
-        //lấy thống kê các thong tin liên quan khác (nếu có)
-        return topicFigures
-    }
-    async boardGetStatisticsCompletionPhase(periodId: string) {
-        //lấy thống kê liên quan tới đề tài
-        const topicFigures = await this.getStatisticsTopicsProvider.boardGetTopicsStatistic(
-            periodId,
-            PeriodPhaseName.COMPLETION
-        )
-        //lấy thống kế các thông tin liên quan khác (nếu có)
-        return topicFigures
-    }
+    //cho đi
     async lecturerGetStatisticsSubmitTopicPhase(periodId: string, lecturerId: string) {
         //lấy thống kê liên quan tới đề tài
         const topicFigures = await this.getStatisticsTopicsProvider.lecturerGetTopicsStatistic(

@@ -6,6 +6,7 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PaginationTopicsQueryParams,
     PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
@@ -40,13 +41,9 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
-    getStatisticTopicsInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>
-    getStatisticsOpenRegistrationPhase(periodId: string): Promise<GetTopicStatisticInOpenRegPhaseDto>
+    getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>
     getStatisticsExecutionPhase(periodId: string): Promise<GetTopicsStatisticInExecutionPhaseDto>
-    getStatisticsCompletionPhase(periodId: string): Promise<GetTopicsStatisticInCompletionPhaseDto>
-    getStatisticTopicsInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>
     getStatisticsOpenRegistrationPhase(periodId: string): Promise<GetTopicStatisticInOpenRegPhaseDto>
-    getStatisticsExecutionPhase(periodId: string): Promise<GetTopicsStatisticInExecutionPhaseDto>
     getStatisticsCompletionPhase(periodId: string): Promise<GetTopicsStatisticInCompletionPhaseDto>
     lecturerGetStatisticTopicsInSubmitPhase(
         periodId: string,
@@ -75,5 +72,5 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
-    getTopicsOfPeriod(userId: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    getTopicsOfPeriod(userId: string, periodId: string, query: PaginationTopicsQueryParams): Promise<Paginated<Topic>>
 }

@@ -6,6 +6,7 @@ import {
     CreateTopicDto,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PaginationTopicsQueryParams,
     PatchTopicDto,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseDto
@@ -343,10 +344,24 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         // return await this.topicRepository.aggregate(pipeline)
     }
 
-    async getTopicsOfPeriod(userId: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+    async getTopicsOfPeriod(
+        userId: string,
+        periodId: string,
+        query: PaginationTopicsQueryParams
+    ): Promise<Paginated<Topic>> {
+        console.log('query', query, periodId)
         let pipelineSub: any[] = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract(userId))
-        pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
+        pipelineSub.push(...this.pipelineSubmittedTopics())
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                ...(query.phase ? { currentPhase: query.phase } : {}),
+                ...(query.status ? { currentStatus: query.status } : {}),
+                deleted_at: null
+            }
+        })
+      //  console.log('pipelineSub', pipelineSub)
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
@@ -616,7 +631,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
     }
     // lấy thống kê
-    async getStatisticTopicsInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
+    async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
         const submitPhase = PeriodPhaseName.SUBMIT_TOPIC
         //Kiểm tra kỳ có pha nộp đề tài chưa
         //Lấy các thông số thuộc pha, trong kì
@@ -807,7 +822,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             inNormalProcessingNumber: topicsFigures[0]?.inNormalProcessing[0]?.count || 0,
             delayedTopicsNumber: topicsFigures[0]?.delayedTopics[0]?.count || 0,
             pausedTopicsNumber: topicsFigures[0]?.pausedTopics[0]?.count || 0,
-            submittedTopicsNumber: topicsFigures[0]?.submittedForReviewTopics[0]?.count || 0,
+            submittedToReviewTopicsNumber: topicsFigures[0]?.submittedForReviewTopics[0]?.count || 0,
             readyForEvaluationNumber: topicsFigures[0]?.readyForEvaluationNumber[0]?.count || 0
         }
     }
@@ -1268,12 +1283,19 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     async findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(...this.pipelineSubmittedTopics())
         pipelineSub.push({
             $match: {
                 createBy: new mongoose.Types.ObjectId(lecturerId),
                 currentStatus: { $ne: TopicStatus.Draft }
             }
         })
+
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+    private pipelineSubmittedTopics() {
+        const pipelineSub: any = []
+
         pipelineSub.push(
             ...[
                 {
@@ -1331,11 +1353,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 fieldIds: 1,
                 requirementIds: 1,
                 period: '$periodsInfo',
+                periodId: 1,
                 submittedAt: '$submittedPhaseHistory.createdAt',
                 periodInfo: 1
             }
         })
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+        return pipelineSub
     }
     async getSubmittedTopicsNumber(lecturerId: string): Promise<number> {
         return await this.topicRepository.countDocuments({
