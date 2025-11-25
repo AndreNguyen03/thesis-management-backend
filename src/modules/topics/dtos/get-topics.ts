@@ -8,6 +8,9 @@ import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 import { GetMiniPeriodDto, GetPeriodDto } from '../../periods/dtos/period.dtos'
+import { IsNotEmpty, IsOptional } from 'class-validator'
+import { PeriodPhase } from '../../periods/schemas/period.schemas'
+import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 export class GetPhaseHistoryDto {
     @Expose()
     phaseName: string
@@ -78,7 +81,23 @@ export class GetSubmittedTopic extends AbstractTopic {
     @Type(() => GetMiniPeriodDto)
     periodInfo: GetMiniPeriodDto
 }
-
+// Tổng hợp các thuộc tính của đề tài chung cho việc hiển thị chi tiết phase của kì
+export class GetGeneralTopics extends AbstractTopic {
+    @Expose()
+    submittedAt: Date
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    createByInfo: ResponseMiniLecturerDto
+    @Expose()
+    @Type(() => GetMiniPeriodDto)
+    periodInfo: GetMiniPeriodDto
+    //file đính kèm
+}
+export class PaginatedGeneralTopics extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetGeneralTopics)
+    data: GetGeneralTopics[]
+}
 export class PaginatedSubmittedTopics extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetSubmittedTopic)
@@ -223,3 +242,11 @@ export class GetPaginatedTopicsInPhaseDto extends GetPaginatedObjectDto {
     @Type(() => GetTopicsInPhaseDto)
     data: GetTopicsInPhaseDto[]
 }
+
+export class TopicsQueryParams {
+    @IsOptional()
+    phase: string
+    @IsOptional()
+    status: string
+}
+export class PaginationTopicsQueryParams extends IntersectionType(TopicsQueryParams, PaginationQueryDto) {}

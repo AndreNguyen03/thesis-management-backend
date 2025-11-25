@@ -33,9 +33,12 @@ export class CreatePhase {
     @IsNotEmpty()
     @IsDate()
     endTime: Date
+    @IsOptional()
+    @IsDate()
+    deleted_at?: Date | null = null
 }
 
-export class CreatePhaseSubmitTopicDto extends CreatePhase {
+export class ConfigPhaseSubmitTopicDto extends CreatePhase {
     @IsNotEmpty()
     readonly phase: string = PeriodPhaseName.SUBMIT_TOPIC
     @IsNotEmpty()
@@ -48,22 +51,19 @@ export class CreatePhaseSubmitTopicDto extends CreatePhase {
     allowManualApproval: boolean = false
     @IsNotEmpty()
     readonly _id: string = new mongoose.Types.ObjectId().toHexString()
-    @IsOptional()
-    @IsDate()
-    deleted_at?: Date | null = null
 }
 
-export class CreateOpenRegPhaseDto extends CreatePhase {
+export class ConfigOpenRegPhaseDto extends CreatePhase {
     @IsNotEmpty()
-    private readonly phase: string = PeriodPhaseName.OPEN_REGISTRATION
+    readonly phase: string = PeriodPhaseName.OPEN_REGISTRATION
 }
-export class CreateExecutionPhaseDto extends CreatePhase {
+export class ConfigExecutionPhaseDto extends CreatePhase {
     @IsNotEmpty()
-    private readonly phase: string = PeriodPhaseName.EXECUTION
+    readonly phase: string = PeriodPhaseName.EXECUTION
 }
-export class CreateCompletionPhaseDto extends CreatePhase {
+export class ConfigCompletionPhaseDto extends CreatePhase {
     @IsNotEmpty()
-    private readonly phase: string = PeriodPhaseName.COMPLETION
+    readonly phase: string = PeriodPhaseName.COMPLETION
 }
 export class UpdatePeriodPhaseDto {
     @IsOptional()

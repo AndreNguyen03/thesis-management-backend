@@ -1,4 +1,4 @@
-import { GetTopicResponseDto } from '../getTopics'
+import { GetTopicResponseDto } from '../get-topics'
 import { Expose, Type } from 'class-transformer'
 @Expose()
 export class GetRegistrationDto {

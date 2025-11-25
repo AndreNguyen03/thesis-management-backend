@@ -15,4 +15,25 @@ export class ValidatePeriodPhaseProvider {
         }
         return validTransitions[currentPhase]?.includes(newPhase) ?? false
     }
+
+    async validatePhaseDates(
+        periodId: string,
+        phaseName: string,
+        startTime: Date,
+        endTime: Date,
+        period?: Period
+    ): Promise<boolean> {
+        // Lấy các pha hiện có trong kỳ
+        return false
+    }
+    async validateActionInPhase(currentPhase: string, action: string): Promise<boolean> {
+        const phaseActions = {
+            empty: [],
+            submit_topic: ['submit_topic', 'approve_topic', 'reject_topic'],
+            open_registration: ['register_topic', 'deregister_topic'],
+            execution: ['work_on_topic', 'submit_report'],
+            completion: ['finalize_topic']
+        }
+        return phaseActions[currentPhase]?.includes(action) ?? false
+    }
 }

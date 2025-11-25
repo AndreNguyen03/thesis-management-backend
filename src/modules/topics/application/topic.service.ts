@@ -2,7 +2,13 @@ import { BadRequestException, Inject, Injectable, NotFoundException, RequestTime
 import { StudentRepositoryInterface } from '../../../users/repository/student.repository.interface'
 import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
-import { CreateTopicDto, GetTopicResponseDto, PatchTopicDto, RequestGetTopicsInPeriodDto } from '../dtos'
+import {
+    CreateTopicDto,
+    GetTopicResponseDto,
+    PaginationTopicsQueryParams,
+    PatchTopicDto,
+    RequestGetTopicsInPeriodDto
+} from '../dtos'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
@@ -41,7 +47,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getTopicsOfPeriod(
         userId: string,
         periodId: string,
-        query: PaginationQueryDto
+        query: PaginationTopicsQueryParams
     ): Promise<Paginated<Topic>> {
         return await this.topicRepository.getTopicsOfPeriod(userId, periodId, query)
     }
@@ -54,15 +60,6 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
     public async createTopic(userId: string, topicData: CreateTopicDto): Promise<string> {
         const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
-        // const existingTopicName = await this.topicRepository.findByTitle(
-        //     newTopic.titleVN,
-        //     newTopic.titleEng,
-        //     topicData.periodId
-        // )
-        // if (existingTopicName) {
-        //     throw new BadRequestException('Tên đề tài đã tồn tại.')
-        // }
-        //create phase history
         const newPhaseHistory = this.createPhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
 
@@ -136,7 +133,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId
         )
     }
-    public async rejectTopic(topicId: string,    actorId: string) {
+    public async rejectTopic(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Rejected,

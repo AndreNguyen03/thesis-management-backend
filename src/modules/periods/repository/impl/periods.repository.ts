@@ -6,11 +6,14 @@ import mongoose, { Model } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
-import { plainToInstance } from 'class-transformer'
+import { plainToClass, plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
-import { GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
+import {
+    ConfigPhaseSubmitTopicDto,
+    GetCurrentPhaseResponseDto
+} from '../../dtos/period-phases.dtos'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -20,18 +23,23 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         super(periodModel)
     }
 
-    async createPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean> {
+    async configPhaseInPeriod(updatedPhase: PeriodPhase, periodId: string): Promise<boolean> {
         try {
-            const res = await this.periodModel.findOneAndUpdate(
-                { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
-                {
-                    $push: { phases: newPhase },
-                    $set: { currentPhase: newPhase.phase }
-                }
-            )
+            const res = await this.periodModel.findOneAndUpdate({
+                _id: new mongoose.Types.ObjectId(periodId),
+                deleted_at: null
+            })
             if (!res) {
                 throw new BadRequestException('Không tìm thấy kỳ để thêm giai đoạn')
             }
+            res.currentPhase = updatedPhase.phase
+            res.phases = res.phases.map((phase) => {
+                if (phase.phase === updatedPhase.phase) {
+                    return { ...phase, ...updatedPhase }
+                }
+                return phase
+            })
+            await res.save()
             return true
         } catch (error) {
             console.log('Error in createPhaseInPeriod:', error)
@@ -235,5 +243,29 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         })
 
         return period
+    }
+    async initalizePhasesForNewPeriod(periodId: string): Promise<boolean> {
+        const phases: any[] = []
+        const patternPhase = plainToClass(PeriodPhase, new ConfigPhaseSubmitTopicDto())
+        const newSubmitTopicPhase = { ...patternPhase, phase: PeriodPhaseName.SUBMIT_TOPIC }
+        const newOpenRegPhase = { ...patternPhase, phase: PeriodPhaseName.OPEN_REGISTRATION }
+        const newExecutionPhase = { ...patternPhase, phase: PeriodPhaseName.EXECUTION }
+        const newCompletionPhase = { ...patternPhase, phase: PeriodPhaseName.COMPLETION }
+        phases.push(newSubmitTopicPhase, newOpenRegPhase, newExecutionPhase, newCompletionPhase)
+        const res = await this.periodModel.findOneAndUpdate(
+            {
+                _id: new mongoose.Types.ObjectId(periodId),
+                deleted_at: null
+            },
+            { $set: { phases } }
+        )
+        if (!res) {
+            throw new BadRequestException('Không tìm thấy kỳ để thêm giai đoạn')
+        }
+        return true
+    }
+    async createNewPeriod(period: Period): Promise<Period> {
+        const createdPeriod = new this.periodModel(period)
+        return createdPeriod.save()
     }
 }

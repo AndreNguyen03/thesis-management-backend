@@ -19,6 +19,7 @@ import { TranferStatusAndAddPhaseHistoryProvider } from './providers/tranfer-sta
 import { UpdateTopicsPhaseBatchProvider } from './providers/update-topics-batch.provider'
 import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.provider'
 import { UploadFilesModule } from '../upload-files/upload-files.module'
+import { ValidateTopicStatusProvider } from './providers/validate-status.provider'
 
 @Module({
     controllers: [TopicController],
@@ -42,7 +43,8 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
 
         UpdateTopicsPhaseBatchProvider,
 
-        GetStatisticsTopicsProvider
+        GetStatisticsTopicsProvider,
+        ValidateTopicStatusProvider
     ],
     exports: [
         TopicService,
@@ -51,7 +53,8 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
         'TopicRepositoryInterface',
         TranferStatusAndAddPhaseHistoryProvider,
         UpdateTopicsPhaseBatchProvider,
-        GetStatisticsTopicsProvider
+        GetStatisticsTopicsProvider,
+        ValidateTopicStatusProvider
     ],
     imports: [
         forwardRef(() => TopicModule),

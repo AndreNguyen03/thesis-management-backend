@@ -10,6 +10,7 @@ import { TopicModule } from '../topics/topic.module'
 import { GetPhaseProvider } from './providers/get-phase.provider'
 import { ValidatePeriodPhaseProvider } from './providers/validate-phase.provider'
 import { FacultySchema } from '../faculties/schemas/faculty.schema'
+import { ValidatePeriodProvider } from './providers/validate-period.provider';
 
 @Module({
     controllers: [PeriodsController],
@@ -18,7 +19,8 @@ import { FacultySchema } from '../faculties/schemas/faculty.schema'
         { provide: 'IPeriodRepository', useClass: PeriodRepository },
         CreatePhaseProvider,
         GetPhaseProvider,
-        ValidatePeriodPhaseProvider
+        ValidatePeriodPhaseProvider,
+        ValidatePeriodProvider
     ],
     imports: [MongooseModule.forFeature([{ name: 'Period', schema: PeriodSchema },{ name: 'Faculty', schema: FacultySchema }]), PaginationAnModule, TopicModule]
 })

@@ -12,7 +12,7 @@ import {
     ValidateNested
 } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { CreatePhaseSubmitTopicDto, GetPeriodPhaseDto } from './period-phases.dtos'
+import { ConfigPhaseSubmitTopicDto, GetPeriodPhaseDto } from './period-phases.dtos'
 import { PeriodStatus } from '../enums/periods.enum'
 import { Expose, Type } from 'class-transformer'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
@@ -20,6 +20,8 @@ import { PartialType } from '@nestjs/swagger'
 import mongoose from 'mongoose'
 import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { IntersectionType } from '@nestjs/mapped-types'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
 export class CreatePeriodDto {
     @IsNotEmpty()
@@ -30,7 +32,7 @@ export class CreatePeriodDto {
     @IsOptional()
     @IsArray()
     @ValidateNested()
-    phaseSubmitTopic: CreatePhaseSubmitTopicDto
+    phaseSubmitTopic: ConfigPhaseSubmitTopicDto
     @IsNotEmpty()
     @IsNumber()
     @Min(0)
@@ -86,4 +88,10 @@ export class GetPaginatedPeriodDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetPeriodDto)
     data: GetPeriodDto[]
+}
+
+export class PeriodStatsQueryParams {
+    @IsNotEmpty()
+    @IsEnum(PeriodPhaseName)
+    phase: PeriodPhaseName
 }

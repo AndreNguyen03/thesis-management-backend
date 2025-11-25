@@ -30,11 +30,12 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         ;((newPhaseHistory.phaseName = periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase),
             (newPhaseHistory.status = newStatus))
         newPhaseHistory.actor = actorId
-        if (existingTopic.phaseHistories == null || Array.isArray(existingTopic.phaseHistories)) {
+        if (existingTopic.phaseHistories == null || !Array.isArray(existingTopic.phaseHistories)) {
             existingTopic.phaseHistories = []
         }
 
         existingTopic.phaseHistories.push(newPhaseHistory)
+        console.log(existingTopic.phaseHistories)
         await this.topicRepository.update(topicId, {
             phaseHistories: existingTopic.phaseHistories,
             currentStatus: newStatus,
@@ -42,6 +43,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             periodId: periodId ? periodId : existingTopic.periodId
         })
     }
+    //xử lý các trường hợp đã thực hiện hành động rồi nhưng vẫn gửi thêm request
     private throwExceptionIfActionIsPracticed(currentStatus: string, newStatus: string) {
         if (newStatus === currentStatus) {
             const messageList = {
