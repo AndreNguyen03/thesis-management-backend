@@ -39,14 +39,11 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         success: { fullName: string; email: string; facultyName: string }[]
         failed: { fullName: string; reason: string }[]
     }> {
-        console.log('=== START BATCH CREATE LECTURERS ===')
-        console.log('Input DTOs:', JSON.stringify(dtos, null, 2))
 
         const success: { fullName: string; email: string; facultyName: string }[] = []
         const failed: { fullName: string; reason: string }[] = []
 
         // Lấy email hiện có
-        console.log('[STEP] Fetching existing emails...')
         const existedEmails = await this.userModel
             .find()
             .select('email -_id')
@@ -54,27 +51,21 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
             .exec()
             .then((u) => u.map((x) => x.email))
 
-        console.log('Existing emails:', existedEmails)
         const emailSet = new Set(existedEmails)
 
         const DEFAULT_PASSWORD = '123456789'
 
         for (const dto of dtos) {
-            console.log('\n-------------------------')
-            console.log(`Processing lecturer: ${dto.fullName}`)
 
             try {
                 // GEN EMAIL
                 const email = generateEmail(dto.fullName, emailSet)
                 emailSet.add(email)
-                console.log('Generated email:', email)
 
                 // TÌM FACULTY
-                console.log('Finding faculty:', dto.facultyName)
                 const faculty = await this.facultyModel.findOne({ name: dto.facultyName }).lean()
 
                 if (!faculty) {
-                    console.log('❌ Faculty not found:', dto.facultyName)
                     failed.push({
                         fullName: dto.fullName,
                         reason: `Không tìm thấy khoa '${dto.facultyName}'`
@@ -82,20 +73,12 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                     continue
                 }
 
-                console.log('Faculty found:', faculty)
 
                 // HASH PASSWORD
-                console.log('Hashing default password...')
                 const hashedPassword = await this.hashingProvider.hashPassword(DEFAULT_PASSWORD)
-                console.log('Hashed password:', hashedPassword)
 
                 // TẠO USER
-                console.log('Creating User document with data:', {
-                    email,
-                    fullName: dto.fullName,
-                    role: UserRole.LECTURER,
-                    facultyId: faculty._id
-                })
+              
 
                 const [user] = await this.userModel.create([
                     {
@@ -108,10 +91,8 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                     }
                 ])
 
-                console.log('User created with ID:', user._id)
 
                 // TẠO LECTURER
-                console.log('Creating Lecturer document...')
                 const [lecturer] = await this.lecturerModel.create([
                     {
                         userId: user._id,
@@ -120,7 +101,6 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                     }
                 ])
 
-                console.log('Lecturer created with ID:', lecturer._id)
 
                 // SUCCESS
                 success.push({
@@ -129,9 +109,7 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                     facultyName: faculty.name
                 })
 
-                console.log('✔ SUCCESS:', user.fullName)
             } catch (error) {
-                console.log('❌ ERROR in processing:', error)
 
                 failed.push({
                     fullName: dto.fullName,
@@ -139,18 +117,12 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                 })
             }
         }
-
-        console.log('\n=== END BATCH CREATE ===')
-        console.log('Success:', success)
-        console.log('Failed:', failed)
-
         return { success, failed }
     }
 
     async getLecturersByFaculty(facultyId: string) {
-        const objectFacultyId = new Types.ObjectId(facultyId)
         const lecturers = await this.lecturerModel
-            .find({ facultyId: objectFacultyId })
+            .find({ facultyId: facultyId })
             .populate('userId')
             .populate('facultyId')
             .exec()

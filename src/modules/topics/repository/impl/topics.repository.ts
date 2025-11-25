@@ -203,6 +203,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         return await this.topicRepository.aggregate(pipeline)
     }
+    
     async findSavedTopicsByUserId(
         userId: string,
         paginateQuery: PaginationQueryDto = new PaginationQueryDto()
@@ -543,6 +544,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId) } })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
     }
+    
     async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())

@@ -102,9 +102,7 @@ export class UserController {
     // lecturer endpoint
     @Patch('lecturers/:id')
     async updateLecturerAdmin(@Param('id') id: string, @Body() dto: UpdateLecturerTableDto) {
-        console.log('dto :::', dto)
         const updated = await this.lecturerService.updateLecturerAdmin(id, dto)
-        console.log('updated ::', updated)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
 
@@ -121,13 +119,17 @@ export class UserController {
     @Get('lecturers')
     async getLecturer(@Query() query: PaginationQueryDto) {
         const lecturers = await this.lecturerService.getAllLecturers(query)
-        console.log(lecturers)
         return lecturers
     }
 
     @Get('lecturers/faculty/:facultyId')
     async getLecturersByFaculty(@Param('facultyId') facultyId: string) {
-        return await this.lecturerService.getLecturersByFaculty(facultyId)
+        const lecturersByFaculty = await this.lecturerService.getLecturersByFaculty(facultyId)
+        const lecturersByFacultyResponse = lecturersByFaculty.map((lecturer) => ({
+            id: lecturer._id,
+            fullName: lecturer.userId.fullName
+        }))
+        return lecturersByFacultyResponse
     }
 
     @Delete('lecturers/:id')
