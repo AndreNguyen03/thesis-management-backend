@@ -66,7 +66,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     addRequirementToTopicQuick(topicId: string, fieldId: string, userId: string): Promise<Topic | null>
     removeRequirementFromTopicQuick(topicId: string, requirementId: string, userId: string): Promise<Topic | null>
     //file
-    uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number>
+    storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<number>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>

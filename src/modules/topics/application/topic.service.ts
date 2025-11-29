@@ -4,6 +4,7 @@ import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
 import {
     CreateTopicDto,
+    GetTopicDetailResponseDto,
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
@@ -20,6 +21,10 @@ import { Paginated } from '../../../common/pagination-an/interfaces/paginated.in
 import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
 import { DeleteFileProvider } from '../../upload-files/providers/delete-file.provider'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { PhaseHistoryNote } from '../enum/phase-history-note.enum'
+import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
+import mongoose from 'mongoose'
+import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -36,7 +41,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly studentRegTopicService: StudentRegTopicService,
         private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider,
         private readonly uploadManyFilesProvider: UploadManyFilesProvider,
-        private readonly deleteFileProvider: DeleteFileProvider
+        private readonly deleteFileProvider: DeleteFileProvider,
+        private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider
     ) {
         super(topicRepository)
     }
@@ -56,23 +62,45 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         if (!topic) {
             throw new NotFoundException('Đề tài không tồn tại.')
         }
-        return topic
+        // lấy danh sách sinh viên đăng ký có liên quan
+        return await this.mergeTopicWithRelatedInfo(topic)
     }
-    public async createTopic(userId: string, topicData: CreateTopicDto): Promise<string> {
+    private async mergeTopicWithRelatedInfo(topic: GetTopicDetailResponseDto): Promise<GetTopicDetailResponseDto> {
+        const res = await this.getRegistrationInTopicProvider.getApprovedAndPendingStudentRegistrationsInTopic(
+            topic._id
+        )
+        return {
+            ...topic,
+            students: {
+                approvedStudents: res ? res.approvedStudents : [],
+                pendingStudents: res ? res.pendingStudents : []
+            }
+        }
+    }
+    public async createTopic(userId: string, topicData: CreateTopicDto, files: Express.Multer.File[]): Promise<string> {
         const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
-        const newPhaseHistory = this.createPhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
+        const newPhaseHistory = this.initializePhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
 
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
+            // upload files
+            if (files && files.length > 0) {
+                const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(
+                    userId,
+                    files,
+                    UploadFileTypes.DOCUMENT
+                )
+                await this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
+            }
         } catch (error) {
             console.error('Lỗi khi tạo đề tài:', error)
             throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
         if (lecturerIds && lecturerIds.length > 0)
             await this.lecturerRegTopicService.createRegistrationWithLecturers(userId, lecturerIds, topicId)
-        //create ref students topics - to be continue
+
         if (studentIds && studentIds.length > 0) {
             await this.studentRegTopicService.createRegistrationWithStudents(studentIds, topicId)
         }
@@ -86,7 +114,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             periodId
         )
         if (existingTopicName) {
-            throw new BadRequestException('Tên đề tài đã tồn tại.')
+            throw new BadRequestException('Tên đề tài đã tồn tại trong kì này.')
         }
         return this.topicRepository.updateTopic(id, topicData)
     }
@@ -113,7 +141,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
 
     public async getRegisteredTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
-        return await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
+        return  await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
     }
     public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
@@ -123,6 +151,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             topicId,
             TopicStatus.Submitted,
             actorId,
+            PhaseHistoryNote.TOPIC_SUBMITTED,
             periodId
         )
     }
@@ -130,44 +159,49 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Approved,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_APPROVED
         )
     }
-    public async rejectTopic(topicId: string, actorId: string) {
+    public async rejectTopic(topicId: string, actorId: string, facultyNote: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Rejected,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_REJECTED + ' với lí do: ' + facultyNote
         )
     }
 
-    public async markUnderReviewing(topicId: string, actorId: string) {
-        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-            topicId,
-            TopicStatus.UnderReview,
-            actorId
-        )
-    }
+    // public async markUnderReviewing(topicId: string, actorId: string) {
+    //     await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+    //         topicId,
+    //         TopicStatus.UnderReview,
+    //         actorId,
+    //         PhaseHistoryNote.TOPIC_UNDER_REVIEW
+    //     )
+    // }
     public async setTopicInProgressing(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.InProgress,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_IN_PROGRESS
         )
     }
-    public async markReviewed(topicId: string, actorId: string) {
-        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-            topicId,
-            TopicStatus.Reviewed,
-            actorId
-        )
-    }
+    // public async markReviewed(topicId: string, actorId: string) {
+    //     await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+    //         topicId,
+    //         TopicStatus.Reviewed,
+    //         actorId
+    //     )
+    // }
 
     public async markStudentCompletedProcessing(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.SubmittedForReview,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_SUBMITTED_FOR_REVIEW
         )
     }
 
@@ -175,7 +209,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Delayed,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_DELAYED
         )
     }
 
@@ -183,14 +218,16 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Paused,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_PAUSED
         )
     }
     public async setAwaitingEvaluation(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.AwaitingEvaluation,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_AWAITING_EVALUATION
         )
     }
     public async scoringBoardScoreTopic(topicId: string, actorId: string, body: RequestGradeTopicDto) {
@@ -200,35 +237,40 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
                 topicId,
                 TopicStatus.Graded,
-                actorId
+                actorId,
+                PhaseHistoryNote.TOPIC_GRADED
             )
     }
     public async archiveTopic(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Archived,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_ARCHIVED
         )
     }
     public async scoringBoardRejectTopic(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.RejectedFinal,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_REJECTED_FINAL
         )
     }
     public async facultyBoardReviewGradedTopic(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Reviewed,
-            actorId
+            actorId,
+            PhaseHistoryNote.TOPIC_REVIEWED
         )
     }
-    private createPhaseHistory(actorId: string, currentPhase: string, currentStatus: string) {
+    private initializePhaseHistory(actorId: string, currentPhase: string, currentStatus: string, note: string = '') {
         const newPhaseHistory = new PhaseHistory()
         newPhaseHistory.phaseName = currentPhase
         newPhaseHistory.status = currentStatus
         newPhaseHistory.actor = actorId
+        newPhaseHistory.note = PhaseHistoryNote.LECTURER_INITIATED + ' ' + note
         return newPhaseHistory
     }
     public async addFieldToTopicQuick(topicId: string, fieldId: string, userId: string) {
@@ -257,8 +299,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         if (files.length > 20) {
             throw new BadRequestException('Số lượng file tải lên một lần vượt quá giới hạn cho phép (20 file)')
         }
-        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(userId, files)
-        return this.topicRepository.uploadManyFilesToTopic(topicId, idFiles)
+        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
+        return this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
     }
     public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {
         let neededDeleteFileIds: string[] = []
@@ -282,4 +324,16 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return 0
     }
     public async getMetaOptionsForCreate(userId: string) {}
+    public async setAllowManualApproval(topicId: string, allowManualApproval: boolean) {
+        let topic
+        try {
+            topic = await this.findOneAndUpdate(
+                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+                { allowManualApproval: allowManualApproval }
+            )
+        } catch (error) {
+            throw new RequestTimeoutException('Cập nhật thất bại, vui lòng thử lại.')
+        }
+        return topic ? true : false
+    }
 }

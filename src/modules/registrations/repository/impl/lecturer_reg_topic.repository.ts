@@ -46,7 +46,8 @@ export class LecturerRegTopicRepository
         let res2 = await this.lecturerRegTopicModel.insertMany(
             lecturerIds.map((lecturerId) => ({
                 topicId: new mongoose.Types.ObjectId(topicId),
-                userId: new mongoose.Types.ObjectId(lecturerId)
+                userId: new mongoose.Types.ObjectId(lecturerId),
+                role: LecturerRoleEnum.CO_SUPERVISOR
             }))
         )
 

@@ -1,6 +1,7 @@
+import { Injectable } from '@nestjs/common'
 import { ManageFileInDatabaseProvider } from './manage-file-database.provider'
 import { ManageMinioProvider } from './manage-file-minio.provider'
-
+@Injectable()
 export class DeleteFileProvider {
     constructor(
         private readonly manageFileInDatabaseProvider: ManageFileInDatabaseProvider,

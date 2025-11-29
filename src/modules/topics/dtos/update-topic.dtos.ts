@@ -6,7 +6,6 @@ import { TopicStatus } from '../enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 
 export class PatchTopicDto {
-
     @IsOptional()
     @IsString()
     titleVN: string
@@ -20,33 +19,19 @@ export class PatchTopicDto {
     description: string
 
     @IsOptional()
-    major: string
+    majorId: string
 
     @IsOptional()
     @IsNumber()
     maxStudents: number
 
     @IsOptional()
-    @IsEnum(TopicStatus)
-    currentStatus: TopicStatus
-
-    @IsOptional()
-    @IsEnum(PeriodPhaseName)
-    currentPhase: string
-
-    @IsOptional()
     @IsArray()
-    fields: string[]
+    fieldIds: string[]
 
     @IsArray()
     @IsOptional()
-    requirements?: string[] | []
-
-    // @IsArray()
-    // @IsOptional()
-    // studentIds?: string[] | []
-
-    // @IsArray()
-    // @IsOptional()
-    // lecturerIds?: string[] | []
+    requirementIds?: string[] | []
+    @IsOptional()
+    type: string
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { MajorsService } from './application/majors.service'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
@@ -26,7 +26,16 @@ export class MajorsController {
     @Get()
     @Auth(AuthType.Bearer)
     async getMajorsOfFacultyOwner(@Req() req: { user: { facultyId: string } }, @Query() query: PaginationQueryDto) {
-        const result = await this.majorsService.getMajorsOfFacultyOwner(req.user.facultyId, query)
+        const result = await this.majorsService.getMajorsByFacultyId(req.user.facultyId, query)
+        return await plainToInstance(PaginatedMajorsDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+    @Get('/same-faculty/:facultyId')
+    @Auth(AuthType.Bearer)
+    async getMajorsByFacultyId(@Param('facultyId') facultyId: string, @Query() query: PaginationQueryDto) {
+        const result = await this.majorsService.getMajorsByFacultyId(facultyId, query)
         return await plainToInstance(PaginatedMajorsDto, result, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

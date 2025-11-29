@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator'
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator'
 import { TopicStatus } from '../enum/topic-status.enum'
 import { IsOptional, IsNumber, IsDate, IsArray, IsEnum } from 'class-validator'
 import { TopicType } from '../enum/topic-type.enum'
@@ -64,4 +64,8 @@ export class CreateTopicDto {
 
     @IsOptional()
     grade: Grade[]
+
+    @IsNotEmpty()
+    @IsBoolean()
+    allowManualApproval: boolean
 }

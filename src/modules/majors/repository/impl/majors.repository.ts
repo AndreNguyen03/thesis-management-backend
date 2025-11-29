@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { Major } from '../../schemas/majors.schemas'
 import { IMajorRepository } from '../majors.repository.interface'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
@@ -15,11 +15,12 @@ export class MajorsRepository extends BaseRepositoryAbstract<Major> implements I
     ) {
         super(majorModel)
     }
-    async getMajorsOfFacultyOwner(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>> {
+    async getMajorsByFacultyId(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>> {
         let pipelineSub: any[] = []
         pipelineSub.push({
             $match: {
-                facultyId: facultyId
+                facultyId: new mongoose.Types.ObjectId(facultyId),
+                deleted_at: null
             }
         })
         return await this.paginationProvider.paginateQuery<Major>(query, this.majorModel, pipelineSub)

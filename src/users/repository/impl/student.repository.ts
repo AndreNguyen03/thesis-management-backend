@@ -213,7 +213,7 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         ]
         pipeline.push({
             $project: {
-                id: '$user._id',
+                _id: '$user._id',
                 fullName: '$user.fullName',
                 email: '$user.email',
                 phone: '$user.phone',

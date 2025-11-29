@@ -110,7 +110,7 @@ export class UpdateTopicsPhaseBatchProvider {
         if (actor) newPhaseHistory.actor = actor
         else {
             newPhaseHistory.actor = 'system'
-            newPhaseHistory.notes = 'Hệ thống tự động cập nhật trạng thái đề tài khi chuyển pha'
+            newPhaseHistory.note = 'Hệ thống tự động cập nhật trạng thái đề tài khi chuyển pha'
         }
         return newPhaseHistory
     }

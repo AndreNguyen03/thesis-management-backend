@@ -39,7 +39,8 @@ export class PaginationProvider {
         }
         //tìm kiếm với searchby và query
         if (search_by && query) {
-            const fields = search_by.split(',').map((f) => f.trim())
+            const decodedSearchBy = decodeURIComponent(search_by)
+            const fields = decodedSearchBy.split(',').map((f) => f.trim())
             if (Array.isArray(fields) && fields.length > 0) {
                 pipelineMain.push({
                     $match: {
@@ -63,11 +64,22 @@ export class PaginationProvider {
         })
         //lọc bởi trường filter_by và với giá trị {filter}
         if (filter_by && filter) {
-            pipelineMain.push({
-                $match: {
-                    [filter_by]: new mongoose.Types.ObjectId(filter)
-                }
-            })
+            const decodedFilter = decodeURIComponent(filter)
+            const fields = decodedFilter.split(',').map((f) => f.trim())
+            // Nếu filter là mảng
+            if (Array.isArray(fields)) {
+                pipelineMain.push({
+                    $match: {
+                        [filter_by]: { $in: fields.map((id) => new mongoose.Types.ObjectId(id)) }
+                    }
+                })
+            } else {
+                pipelineMain.push({
+                    $match: {
+                        [filter_by]: new mongoose.Types.ObjectId(filter)
+                    }
+                })
+            }
         }
 
         //facet
@@ -111,7 +123,7 @@ export class PaginationProvider {
                 totalItems: totalItems,
                 currentPage: queryPage,
                 totalPages: totalPages
-            },
+            }
             // links: {
             //     first: 1,
             //     last: totalPages,

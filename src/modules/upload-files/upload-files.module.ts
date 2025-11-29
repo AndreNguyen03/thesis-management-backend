@@ -26,7 +26,13 @@ import { DownLoadFileProvider } from './providers/download-file.provider'
         DownLoadFileProvider
     ],
     controllers: [UploadFilesController],
-    exports: [UploadAvatarProvider, UploadManyFilesProvider, DeleteFileProvider, DownLoadFileProvider],
+    exports: [
+        UploadAvatarProvider,
+        ManageFileInDatabaseProvider,
+        UploadManyFilesProvider,
+        DeleteFileProvider,
+        DownLoadFileProvider
+    ],
     imports: [MongooseModule.forFeature([{ name: File.name, schema: FilesSchema }])]
 })
 export class UploadFilesModule {}

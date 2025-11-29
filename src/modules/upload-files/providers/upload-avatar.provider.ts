@@ -22,7 +22,7 @@ export class UploadAvatarProvider {
         //store file information to database
         const fileData: UploadFileDto = {
             fileNameBase: file.originalname,
-            fileName: fileName,
+            fileUrl: fileName,
             mimeType: file.mimetype,
             fileType: 'avatar',
             size: file.size,

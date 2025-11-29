@@ -4,6 +4,7 @@ import { UploadFileDto } from '../dtos/upload-file.dtos'
 import { IFileRepository } from '../repository/file.repository.interface'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { File } from '../schemas/upload-files.schemas'
+import { RenameFilesDto } from '../dtos/rename-file.dtos'
 
 @Injectable()
 export class UploadFilesService extends BaseServiceAbstract<File> {
@@ -15,6 +16,13 @@ export class UploadFilesService extends BaseServiceAbstract<File> {
     }
 
     async renameFile(fileId: string, newFileName: string): Promise<File | null> {
-        return await this.findOneAndUpdate({ _id: fileId }, { fileNameBase: newFileName })
+        const decodedName = decodeURIComponent(newFileName)
+        return await this.findOneAndUpdate({ _id: fileId }, { fileNameBase: decodedName })
+    }
+    async renameManyFile(body: RenameFilesDto[]) {
+        for (const file of body) {
+            const decodedName = decodeURIComponent(file.newFileName)
+            await this.findOneAndUpdate({ _id: file.fileId }, { fileNameBase: decodedName })
+        }
     }
 }

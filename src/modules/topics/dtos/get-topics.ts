@@ -4,23 +4,45 @@ import { PaginationQueryDto } from '../../../common/pagination-an/dtos/paginatio
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { GetFieldNameReponseDto } from '../../fields/dtos/get-fields.dto'
 import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requirement.dto'
-import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
+import { RelatedStudentInTopic, ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
-import { GetMiniPeriodDto, GetPeriodDto } from '../../periods/dtos/period.dtos'
-import { IsNotEmpty, IsOptional } from 'class-validator'
-import { PeriodPhase } from '../../periods/schemas/period.schemas'
-import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { GetMiniPeriodDto } from '../../periods/dtos/period.dtos'
+import { IsOptional } from 'class-validator'
+import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
+import { GetMiniUserDto } from '../../../users/dtos/user.dto'
+export class GetDetailGrade {
+    @Expose()
+    _id: string
+    @Expose()
+    score: number
+    @Expose()
+    note: string
+    @Expose()
+    actorId: string
+}
+export class GetGrade {
+    @Expose()
+    averageScore: number
+    @Expose()
+    @Type(() => GetDetailGrade)
+    detailGrades: GetDetailGrade[]
+}
 export class GetPhaseHistoryDto {
+    @Expose()
+    _id: string
     @Expose()
     phaseName: string
     @Expose()
     status: string
     @Expose()
-    actor: string
+    actor: GetMiniUserDto
     @Expose()
     notes: string
+    @Expose()
+    createdAt: Date
 }
+
 export class AbstractTopic {
     @Expose()
     _id: string
@@ -47,10 +69,8 @@ export class AbstractTopic {
     @Expose()
     @Type(() => GetRequirementNameReponseDto)
     requirements: GetRequirementNameReponseDto[]
-
     @Expose()
-    @Type(() => ResponseMiniStudentDto)
-    students: ResponseMiniStudentDto[]
+    studentsNum: number
 
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
@@ -70,6 +90,8 @@ export class AbstractTopic {
 
     @Expose()
     currentPhase: string
+    @Expose()
+    allowManualApproval: boolean
 }
 export class GetSubmittedTopic extends AbstractTopic {
     @Expose()
@@ -154,9 +176,8 @@ export class GetTopicResponseDto {
     requirements: GetRequirementNameReponseDto[]
 
     @Expose()
-    @Type(() => ResponseMiniStudentDto)
-    students: ResponseMiniStudentDto[]
-
+    @Type(() => RelatedStudentInTopic)
+    students: RelatedStudentInTopic
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
     lecturers: ResponseMiniLecturerDto[]
@@ -166,6 +187,15 @@ export class GetTopicResponseDto {
 
     @Expose()
     isSaved: boolean
+
+    @Expose()
+    isEditable: boolean
+
+    @Expose()
+    allowManualApproval: boolean
+
+    @Expose()
+    studentsNum: number
 }
 export class GetSubmmitedTopic extends GetTopicResponseDto {}
 export class GetPaginatedTopicsDto extends GetPaginatedObjectDto {
@@ -178,7 +208,19 @@ export class GetCancelRegisteredTopicResponseDto extends GetTopicResponseDto {
     lastestCanceledRegisteredAt?: Date
 }
 
-export class GetTopicDetailResponseDto extends GetTopicResponseDto {}
+export class GetTopicDetailResponseDto extends GetTopicResponseDto {
+    @Expose()
+    @Type(() => GetUploadedFileDto)
+    files: GetUploadedFileDto[]
+
+    @Expose()
+    @Type(() => GetPhaseHistoryDto)
+    phaseHistories: GetPhaseHistoryDto[]
+
+    @Expose()
+    @Type(() => GetGrade)
+    grade: GetGrade
+}
 
 export class RequestGetTopicsInPeriodBaseDto {}
 export class RequestGetTopicsInPeriodDto extends IntersectionType(

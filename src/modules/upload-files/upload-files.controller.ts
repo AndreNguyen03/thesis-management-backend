@@ -8,8 +8,9 @@ import { UserRole } from '../../users/enums/user-role'
 import { DownLoadFileProvider } from './providers/download-file.provider'
 import type { Response } from 'express'
 import { DownloadFileDto } from './dtos/download-file.dtos'
+import { RenameFilesDto } from './dtos/rename-file.dtos'
 
-@Controller('uploadfiles')
+@Controller('upload-files')
 export class UploadFilesController {
     constructor(
         private readonly uploadFilesService: UploadFilesService,
@@ -30,5 +31,16 @@ export class UploadFilesController {
     @Auth(AuthType.Bearer)
     async downloadZip(@Res() res: Response, @Body() body: DownloadFileDto) {
         return this.downLoadFileProvider.downloadZip(body, res)
+    }
+
+    @Patch('rename-many-files')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards()
+    async renameFiles(@Body() body: RenameFilesDto[]) {
+        const res = await this.uploadFilesService.renameManyFile(body)
+        return {
+            message: `Đổi tên file thành công`
+        }
     }
 }

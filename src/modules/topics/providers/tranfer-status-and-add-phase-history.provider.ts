@@ -15,7 +15,13 @@ export class TranferStatusAndAddPhaseHistoryProvider {
     ) {}
     //chuyển trạng thái đề tài (thủ công ) với các hành độgn như từ chối, chấp nhận, tạm dừng,...
     //truyền period khi chueyenr pha từ draft sang submitted
-    async transferStatusAndAddPhaseHistory(topicId: string, newStatus: string, actorId: string, periodId?: string) {
+    async transferStatusAndAddPhaseHistory(
+        topicId: string,
+        newStatus: string,
+        actorId: string,
+        note: string,
+        periodId: string = ''
+    ) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
             deleted_at: null
@@ -33,6 +39,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         if (existingTopic.phaseHistories == null || !Array.isArray(existingTopic.phaseHistories)) {
             existingTopic.phaseHistories = []
         }
+        newPhaseHistory.note = note
 
         existingTopic.phaseHistories.push(newPhaseHistory)
         console.log(existingTopic.phaseHistories)
@@ -43,7 +50,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             periodId: periodId ? periodId : existingTopic.periodId
         })
     }
-    //xử lý các trường hợp đã thực hiện hành động rồi nhưng vẫn gửi thêm request
+
     private throwExceptionIfActionIsPracticed(currentStatus: string, newStatus: string) {
         if (newStatus === currentStatus) {
             const messageList = {
