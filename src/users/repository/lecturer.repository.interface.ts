@@ -12,7 +12,7 @@ export interface LecturerRepositoryInterface extends BaseRepositoryInterface<Lec
     updatePassword(id: string, newHash: string): Promise<void>
     createLecturer(userId: string, dto: CreateLecturerDto, options?: { session?: ClientSession }): Promise<Lecturer>
     getLecturers(paginationQuery: PaginationQueryDto): Promise<Paginated<any>>
-    getAllLecturersAn(paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>>
+    getAllLecturersAn(facultyId: string, paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>>
     updateLecturerByTable(id: string, dto: UpdateLecturerTableDto): Promise<any>
     updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto): Promise<any>
 

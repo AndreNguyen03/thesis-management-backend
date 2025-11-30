@@ -38,6 +38,7 @@ import { Roles } from '../auth/decorator/roles.decorator'
 import { UserRole } from './enums/user-role'
 import { ActiveUserData } from '../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
+import { RolesGuard } from '../auth/guards/roles/roles.guard'
 
 @Controller('users')
 @ApiTags('Users')
@@ -124,8 +125,11 @@ export class UserController {
     }
 
     @Get('lec/get-all-lecturers/combobox')
-    async getAllLecturers_An(@Query() query: PaginationAn) {
-        const res = await this.lecturerService.getAllLecturers_An(query)
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getAllLecturers_An(@Query() query: PaginationAn, @Req() req: { user: ActiveUserData }) {
+        const res = await this.lecturerService.getAllLecturers_An(req.user.facultyId!, query)
         return plainToInstance(PaginatedMiniLecturer, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
