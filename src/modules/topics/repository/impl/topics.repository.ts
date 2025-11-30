@@ -831,17 +831,27 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
 
         return pipeline
     }
-    async getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>> {
+   
+    async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId) } })
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
-    }
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
-        const pipelineSub: any = []
-        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        pipelineSub.push({ $match: { currentPhaseId: new mongoose.Types.ObjectId(phaseId) } })
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                deleted_at: null,
+                ...(query.phase || query.status
+                    ? {
+                          phaseHistories: {
+                              $elemMatch: {
+                                  ...(query.phase ? { phaseName: query.phase } : {}),
+                                  ...(query.status ? { status: query.status } : {})
+                              }
+                          }
+                      }
+                    : {})
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     // lấy thống kê
     async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {

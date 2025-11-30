@@ -8,9 +8,10 @@ import { RelatedStudentInTopic, ResponseMiniStudentDto } from '../../../users/dt
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 import { GetMiniPeriodDto } from '../../periods/dtos/period.dtos'
-import { IsOptional } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import { GetMiniUserDto } from '../../../users/dtos/user.dto'
+import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 export class GetDetailGrade {
     @Expose()
     _id: string
@@ -222,7 +223,11 @@ export class GetTopicDetailResponseDto extends GetTopicResponseDto {
     grade: GetGrade
 }
 
-export class RequestGetTopicsInPeriodBaseDto {}
+export class RequestGetTopicsInPeriodBaseDto {
+    @IsNotEmpty()
+    @IsEnum(PeriodPhaseName)
+    phase: string
+}
 export class RequestGetTopicsInPeriodDto extends IntersectionType(
     RequestGetTopicsInPeriodBaseDto,
     PaginationQueryDto
@@ -274,7 +279,13 @@ export class GetPaginatedTopicsInPeriodDto extends GetPaginatedObjectDto {
     data: GetTopicsInPeriodDto[]
 }
 
-export class RequestGetTopicsInPhaseBaseDto {}
+export class RequestGetTopicsInPhaseBaseDto {
+    @IsNotEmpty()
+    @IsEnum(PeriodPhaseName)
+    phase: string
+    @IsOptional()
+    status: string
+}
 export class RequestGetTopicsInPhaseDto extends IntersectionType(RequestGetTopicsInPhaseBaseDto, PaginationQueryDto) {}
 
 @Expose()

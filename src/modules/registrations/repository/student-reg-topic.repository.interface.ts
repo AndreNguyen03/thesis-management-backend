@@ -21,5 +21,5 @@ export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterf
         role: string,
         lecturerResponse: string
     )
-    rejectStudentRegistrationByLecturer(registrationId: string, reasonType: string, lecturerResponse?: string)
+    rejectStudentRegistrationByLecturer(userId: string, registrationId: string, reasonType: string, lecturerResponse: string)
 }

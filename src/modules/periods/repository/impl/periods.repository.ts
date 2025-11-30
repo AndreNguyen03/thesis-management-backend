@@ -10,10 +10,7 @@ import { plainToClass, plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
-import {
-    ConfigPhaseSubmitTopicDto,
-    GetCurrentPhaseResponseDto
-} from '../../dtos/period-phases.dtos'
+import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -216,6 +213,83 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 }
             ]
         )
+        pipelineMain.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'phases.requiredLecturerIds',
+                        foreignField: '_id',
+                        as: 'lecUserInfo'
+                    }
+                },
+                // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
+                {
+                    $lookup: {
+                        from: 'lecturers',
+                        localField: 'phases.requiredLecturerIds',
+                        foreignField: 'userId',
+                        as: 'lectInfos'
+                    }
+                },
+                {
+                    $addFields: {
+                        lecturers: {
+                            $map: {
+                                input: '$lecUserInfo',
+                                as: 'userInfo',
+                                in: {
+                                    $mergeObjects: [
+                                        {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: '$lectInfos',
+                                                        as: 'lecInfo',
+                                                        cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        },
+                                        '$$userInfo'
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        deleted_at: 1,
+                        name: 1,
+                        facultyId: 1,
+                        currentPhase: 1,
+                        phases: {
+                            $map: {
+                                input: '$phases',
+                                as: 'phase',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$phase',
+                                        {
+                                            requiredLecturers: {
+                                                $filter: {
+                                                    input: '$lecturers',
+                                                    as: 'lec',
+                                                    cond: { $in: ['$$lec._id', '$$phase.requiredLecturerIds'] }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        )
         // kết bảng bảng với phases thể lấy thông tin giai đoạn
         pipelineMain.push({ $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
         return pipelineMain
@@ -241,7 +315,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             }
             return { ...phase, status }
         })
-
         return period
     }
     async initalizePhasesForNewPeriod(periodId: string): Promise<boolean> {

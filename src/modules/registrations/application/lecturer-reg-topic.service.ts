@@ -14,6 +14,10 @@ export class LecturerRegTopicService {
         const res = await this.lecturerRegTopicRepository.createSingleRegistration(topicId, lecturerId)
         return res
     }
+    public async unassignLecturerInTopic(lecturerId: string, topicId: string) {
+        await this.lecturerRegTopicRepository.cancelRegistration(topicId, lecturerId)
+    }
+
     public async createRegistrationWithLecturers(userId: String, lecturerIds: string[], topicId: string) {
         const res = await this.lecturerRegTopicRepository.createRegistrationWithLecturers(userId, lecturerIds, topicId)
         if (!res) {

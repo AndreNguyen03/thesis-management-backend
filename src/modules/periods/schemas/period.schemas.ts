@@ -5,6 +5,7 @@ import { PeriodPhaseName } from '../enums/period-phases.enum'
 import mongoose from 'mongoose'
 import { Lecturer } from '../../../users/schemas/lecturer.schema'
 import { Faculty } from '../../faculties/schemas/faculty.schema'
+import { User } from '../../../users/schemas/users.schema'
 
 @Schema({ timestamps: true })
 export class PeriodPhase extends BaseEntity {
@@ -17,7 +18,7 @@ export class PeriodPhase extends BaseEntity {
     //Option fields for Submit Topic phase
     @Prop({ type: Number, required: false })
     minTopicsPerLecturer: number
-    @Prop({ required: false, ref: Lecturer.name, type: [mongoose.Schema.Types.ObjectId] })
+    @Prop({ required: false, ref: User.name, type: [mongoose.Schema.Types.ObjectId] })
     requiredLecturerIds: string[]
     @Prop({ required: false })
     allowManualApproval: boolean

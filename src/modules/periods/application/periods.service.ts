@@ -133,17 +133,21 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         }
     }
 
-    async getTopicsInPeriod(periodId: string, query: RequestGetPeriodsDto) {
-        const period = await this.getTopicProvider.getTopicsInPeriod(periodId, query)
-        return period
-    }
+    // async getTopicsOfPeriod(periodId: string, query: RequestGetPeriodsDto) {
+    //     const period = await this.getTopicProvider.getTopicsOfPeriod(periodId, query)
+    //     return period
+    // }
 
     async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto) {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }
 
-    async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
+    async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {
+
+
+        
+    }
     // statistics
     async boardGetStatisticsInPeriod(periodId: string, query: PeriodStatsQueryParams) {
         //lấy thống kê liên quan tới đề tài

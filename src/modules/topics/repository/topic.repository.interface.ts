@@ -37,8 +37,8 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         userId: string,
         userRole: string
     ): Promise<GetCancelRegisteredTopicResponseDto[]>
-    getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
-    getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
+   // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
+    getTopicsInPhaseHistory(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
     getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>

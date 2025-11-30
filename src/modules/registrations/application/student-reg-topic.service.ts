@@ -18,6 +18,13 @@ export class StudentRegTopicService {
         const allowManualApproval = await this.checkAllowManualApprovalProvider.checkAllowManualApproval(topicId)
         return this.studentRegTopicRepository.createSingleRegistration(studentId, topicId, allowManualApproval)
     }
+
+    public async lecAssignStudent(studentId: string, topicId: string) {
+        return this.studentRegTopicRepository.createSingleRegistration(studentId, topicId, false)
+    }
+    public async unassignStudentInTopic(studentId: string, topicId: string) {
+        return this.studentRegTopicRepository.cancelRegistration(topicId, studentId)
+    }
     public createRegistrationWithStudents(studentIds: string[], topicId: string) {
         return this.studentRegTopicRepository.createRegistrationWithStudents(topicId, studentIds)
     }
@@ -31,19 +38,24 @@ export class StudentRegTopicService {
     ): Promise<Paginated<StudentRegisterTopic>> {
         return this.studentRegTopicRepository.getStudentRegistrationsHistory(studentId, query)
     }
-    public async replyStudentRegistrationByLecturer(registrationId: string, body: BodyReplyRegistrationDto) {
+    public async replyStudentRegistrationByLecturer(
+        userId: string,
+        registrationId: string,
+        body: BodyReplyRegistrationDto
+    ) {
         //gửi thông báo về cho sinh viên
         if (body.status === RegistrationStatus.APPROVED) {
             //tùy thông tin gửi mail cho sinh viên dưới nội dung gì
             await this.studentRegTopicRepository.approvalStudentRegistrationByLecturer(
+                userId,
                 registrationId,
-                body.status,
                 body.studentRole,
                 body.lecturerResponse
             )
         } else if (body.status === RegistrationStatus.REJECTED) {
             //tùy thông tin gửi mail cho sinh viên dưới nội dung gì
             await this.studentRegTopicRepository.rejectStudentRegistrationByLecturer(
+                userId,
                 registrationId,
                 body.rejectionReasonType,
                 body.lecturerResponse

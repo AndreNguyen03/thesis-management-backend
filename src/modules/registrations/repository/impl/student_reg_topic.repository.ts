@@ -166,6 +166,7 @@ export class StudentRegTopicRepository
     }
 
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
+        console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
         const registration = await this.studentRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
             userId: new mongoose.Types.ObjectId(studentId),
@@ -202,6 +203,7 @@ export class StudentRegTopicRepository
     }
 
     async createSingleRegistration(studentId: string, topicId: string, allowManualApproval: boolean): Promise<any> {
+        console.log('Create single registration called for student:', studentId, 'and topic:', topicId,)
         const topic = await this.topicModel
             .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
             .exec()
@@ -437,14 +439,19 @@ export class StudentRegTopicRepository
         role: string,
         lecturerResponse: string
     ) {
+        console.log('Approval process started', registrationId, userId)
         const session = await this.connection.startSession()
         session.startTransaction()
         try {
-            const registration = await this.studentRegTopicModel.findById(registrationId).session(session)
+            const registration = await this.studentRegTopicModel
+                .findOne({ _id: new mongoose.Types.ObjectId(registrationId), deleted_at: null })
+                .session(session)
             if (!registration) {
                 throw new StudentRegistrationNotFoundException()
             }
-            const topic = await this.topicModel.findById(registration.topicId).session(session)
+            const topic = await this.topicModel
+                .findOne({ _id: new mongoose.Types.ObjectId(registration.topicId), deleted_at: null })
+                .session(session)
             if (!topic) {
                 throw new TopicNotFoundException()
             }
@@ -484,7 +491,12 @@ export class StudentRegTopicRepository
             session.endSession()
         }
     }
-    async rejectStudentRegistrationByLecturer(registrationId: string, reasonType: string, lecturerResponse: string) {
+    async rejectStudentRegistrationByLecturer(
+        userId: string,
+        registrationId: string,
+        reasonType: string,
+        lecturerResponse: string
+    ) {
         const session = await this.connection.startSession()
         session.startTransaction()
         try {
@@ -500,6 +512,7 @@ export class StudentRegTopicRepository
             registration.status = StudentRegistrationStatus.REJECTED
             registration.rejectionReasonType = reasonType
             registration.lecturerResponse = lecturerResponse
+            registration.processedBy = userId
 
             await registration.save({ session })
             await session.commitTransaction()

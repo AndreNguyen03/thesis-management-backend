@@ -29,13 +29,53 @@ export class RegistrationsController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async lecRegisterTopic(
+    async assigeLecInTopic(
         @Req() req: { user: ActiveUserData },
         @Param('lecturerId') lecturerId: string,
         @Param('topicId') topicId: string
     ) {
         await this.lecturerRegTopicService.createSingleRegistration(lecturerId, topicId)
         return { message: 'Giảng viên đã được phân công vào đề tài' }
+    }
+
+    @Delete('/unassign-lecturer/:lecturerId/in/:topicId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async unassignLecturerInTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('lecturerId') lecturerId: string,
+        @Param('topicId') topicId: string
+    ) {
+        await this.lecturerRegTopicService.unassignLecturerInTopic(lecturerId, topicId)
+        return { message: 'Đã xóa thành công đăng ký' }
+    }
+
+    // assign sinh viên khác vào đề tài
+    @Post('/assign-student/:studentId/in/:topicId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async assignStudentToTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('studentId') studentId: string,
+        @Param('topicId') topicId: string
+    ) {
+        await this.studentRegTopicService.lecAssignStudent(studentId, topicId)
+        return { message: 'Sinh viên đã được phân công vào đề tài' }
+    }
+
+    @Delete('/unassign-student/:studentId/in/:topicId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async unassignStudentInTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('studentId') studentId: string,
+        @Param('topicId') topicId: string
+    ) {
+        await this.studentRegTopicService.unassignStudentInTopic(studentId, topicId)
+        return { message: 'Đã xóa thành công đăng ký' }
     }
     @Post('/student-register-topic/:topicId')
     @Auth(AuthType.Bearer)
@@ -91,9 +131,11 @@ export class RegistrationsController {
     @UseGuards(RolesGuard)
     async replyStudentRegistrationByLecturer(
         @Param('registrationId') registrationId: string,
-        @Body() body: BodyReplyRegistrationDto
+        @Body() body: BodyReplyRegistrationDto,
+        @Req() req: { user: ActiveUserData }
     ) {
-        await this.studentRegTopicService.replyStudentRegistrationByLecturer(registrationId, body)
+        console.log('registrationId', registrationId)
+        await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }
 }

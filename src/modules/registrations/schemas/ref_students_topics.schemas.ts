@@ -29,7 +29,7 @@ export class StudentRegisterTopic extends BaseEntity {
     userId: User
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Topic.name, required: true })
-    topicId: Topic
+    topicId: string
 
     @Prop({ type: String, required: true, enum: StudentRegistrationStatus, default: StudentRegistrationStatus.PENDING })
     status: StudentRegistrationStatus

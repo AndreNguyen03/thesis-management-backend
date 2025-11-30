@@ -77,16 +77,17 @@ export class LecturerRegTopicRepository
         try {
             const res = await this.lecturerRegTopicModel.create({
                 topicId: new mongoose.Types.ObjectId(topicId),
-                userId: new mongoose.Types.ObjectId(lecturerId)
+                userId: new mongoose.Types.ObjectId(lecturerId),
+                role: LecturerRoleEnum.CO_SUPERVISOR
             })
         } catch (error) {
             throw new RequestTimeoutException()
         }
     }
-    async cancelRegistration(topicId: string, lecturerId: string): Promise<{ message: string }> {
+    async cancelRegistration(topicId: string, lecturerId: string){
         const registration = await this.lecturerRegTopicModel.findOne({
-            topicId: topicId,
-            lecturerId: lecturerId,
+            topicId: new mongoose.Types.ObjectId(topicId),
+            userId: new mongoose.Types.ObjectId(lecturerId),
             deleted_at: null
         })
         if (!registration) {
@@ -96,15 +97,13 @@ export class LecturerRegTopicRepository
         registration.deleted_at = new Date()
 
         await registration.save()
-
-        return { message: 'Đã xóa thành công đăng ký' }
     }
     async checkFullSlot(topicId: string): Promise<boolean> {
         const registrationCount = await this.lecturerRegTopicModel.countDocuments({
             topicId: topicId,
             deleted_at: null
         })
-        if (registrationCount == 2) {
+        if (registrationCount == 3) {
             return true
         }
         return false
