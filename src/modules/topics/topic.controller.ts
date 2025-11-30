@@ -23,7 +23,6 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
-    GetTopicResponseDto,
     PaginatedGeneralTopics,
     PaginatedSubmittedTopics,
     PaginationTopicsQueryParams,
@@ -36,6 +35,7 @@ import { UserRole } from '../../auth/enum/user-role.enum'
 import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
+import { RejectTopicDto } from './dtos/action-with-topic.dtos'
 
 @Controller('topics')
 export class TopicController {
@@ -99,9 +99,14 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async createTopic(@Req() req: { user: ActiveUserData }, @Body() topic: CreateTopicDto) {
+    @UseInterceptors(FilesInterceptor('files'))
+    async createTopic(
+        @Req() req: { user: ActiveUserData },
+        @UploadedFiles() files: Express.Multer.File[],
+        @Body() topic: CreateTopicDto
+    ) {
         topic.createBy = req.user.sub
-        const topicId = await this.topicService.createTopic(req.user.sub, topic)
+        const topicId = await this.topicService.createTopic(req.user.sub, topic, files)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
     @Patch()
@@ -191,8 +196,10 @@ export class TopicController {
         return { message: 'Xóa yêu cầu cho đề tài thành công' }
     }
 
-    @Patch(':topicId/:periodId')
-    @Auth(AuthType.None)
+    @Patch(':topicId/in-period/:periodId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
     async updateTopic(@Param('topicId') id: string, @Param('periodId') periodId: string, @Body() topic: PatchTopicDto) {
         const result = await this.topicService.updateTopic(id, topic, periodId)
         return { topicId: result?._id, message: 'Cập nhật đề tài thành công' }
@@ -209,7 +216,7 @@ export class TopicController {
 
     @Post('/save-topic/:topicId')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER, UserRole.STUDENT)
+    @Roles(UserRole.LECTURER, UserRole.STUDENT, UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async saveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         return await this.topicService.assignSaveTopic(req.user.sub, topicId)
@@ -239,23 +246,20 @@ export class TopicController {
     @UseGuards(RolesGuard)
     async facultyBoardApproveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.approveTopic(topicId, req.user.sub)
-        return { message: 'Nộp đề tài thành công' }
+        return { message: 'Duyệt đề tài thành công' }
     }
 
     @Patch('faculty-board/reject-topic/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async facultyBoardRejectTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        await this.topicService.rejectTopic(topicId, req.user.sub)
+    async facultyBoardRejectTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Body() body: RejectTopicDto
+    ) {
+        await this.topicService.rejectTopic(topicId, req.user.sub, body.note)
         return { message: 'Đề tài đã được đánh dấu là không hợp lệ và gửi thông báo về cho giảng viên' }
-    }
-    @Patch('/:topicId/under-review')
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async markUnderReviewingTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        await this.topicService.markUnderReviewing(topicId, req.user.sub)
-        return { message: 'Đề tài đã được đánh dấu là đang được xem xét' }
     }
 
     @Patch('/:topicId/set-in-progressing')
@@ -354,7 +358,7 @@ export class TopicController {
         @Param('topicId') topicId: string,
         @Req() req: { user: ActiveUserData }
     ) {
-        if (!files) {
+        if (!files || files.length === 0) {
             throw new BadRequestException('Vui lòng chọn file để tải lên')
         }
         const resultFiles = await this.topicService.uploadManyFiles(req.user.sub, topicId, files)
@@ -392,5 +396,17 @@ export class TopicController {
     async getMetaOptionsForCreate(@Req() req: { user: ActiveUserData }) {
         const res = await this.topicService.getMetaOptionsForCreate(req.user.sub)
         return res
+    }
+    // Thay đổi cờ allowManualApproval
+    @Patch('/:topicId/set-allow-manual-approval')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async setAllowManualApproval(
+        @Param('topicId') topicId: string,
+        @Query('allowManualApproval') allowManualApproval: boolean
+    ) {
+        const res = await this.topicService.setAllowManualApproval(topicId, allowManualApproval)
+        return { message: 'Đã chuyển đổi trạng thái allowManualApproval của đề tài' }
     }
 }

@@ -32,6 +32,8 @@ import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
 import { TopicStatus } from '../../enum'
 import { TopicNotFoundException } from '../../../../common/exceptions'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { de } from '@faker-js/faker/.'
+import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -290,6 +292,161 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //     })
         // }
 
+        // lấy thông tin file đính kèm với topic
+        pipeline.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'files',
+                        localField: 'fileIds',
+                        foreignField: '_id',
+                        as: 'filesInfo'
+                    }
+                },
+                // Lookup actor cho từng file
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'filesInfo.actorId',
+                        foreignField: '_id',
+                        as: 'fileActors'
+                    }
+                },
+                // Map lại files: đổi actorId thành actor object
+                {
+                    $addFields: {
+                        files: {
+                            $map: {
+                                input: '$filesInfo',
+                                as: 'file',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$file',
+                                        {
+                                            actor: {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $filter: {
+                                                            input: '$fileActors',
+                                                            as: 'actor',
+                                                            cond: { $eq: ['$$actor._id', '$$file.actorId'] }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        //lấy thông tin chi tiết phasehistory
+        pipeline.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'phaseHistories.actor',
+                        foreignField: '_id',
+                        as: 'phaseHistoryActors'
+                    }
+                },
+
+                {
+                    $lookup: {
+                        from: 'lecturers',
+                        localField: 'phaseHistoryActors._id',
+                        foreignField: 'userId',
+                        as: 'lectus'
+                    }
+                },
+                {
+                    $addFields: {
+                        phaseHistories: {
+                            $map: {
+                                input: '$phaseHistories',
+                                as: 'phaseHistory',
+                                in: {
+                                    $mergeObjects: [
+                                        ,
+                                        '$$phaseHistory',
+                                        {
+                                            actor: {
+                                                $mergeObjects: [
+                                                    {
+                                                        $arrayElemAt: [
+                                                            {
+                                                                $filter: {
+                                                                    input: '$lectus',
+                                                                    as: 'lec',
+                                                                    cond: {
+                                                                        $eq: ['$$lec.userId', '$$phaseHistory.actor']
+                                                                    }
+                                                                }
+                                                            },
+                                                            0
+                                                        ]
+                                                    },
+                                                    {
+                                                        $arrayElemAt: [
+                                                            {
+                                                                $filter: {
+                                                                    input: '$phaseHistoryActors',
+                                                                    as: 'actor',
+                                                                    cond: {
+                                                                        $eq: ['$$actor._id', '$$phaseHistory.actor']
+                                                                    }
+                                                                }
+                                                            },
+                                                            0
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        pipeline.push({
+            $project: {
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                type: 1,
+                status: 1,
+                createBy: 1,
+                createByInfo: '$createByInfo',
+                deadline: 1,
+                maxStudents: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                periodId: 1,
+                currentStatus: 1,
+                currentPhase: 1,
+                isRegistered: 1,
+                phaseHistories: 1,
+                isSaved: 1,
+                major: 1,
+                lecturers: 1,
+                students: `$students`,
+                fields: `$fields`,
+                requirements: `$requirements`,
+                requirementIds: 1,
+                grade: 1,
+                files: 1,
+                isEditable: 1,
+                allowManualApproval: 1
+            }
+        })
         pipeline.push({
             $match: { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null }
         })
@@ -361,7 +518,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 deleted_at: null
             }
         })
-      //  console.log('pipelineSub', pipelineSub)
+        //  console.log('pipelineSub', pipelineSub)
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
@@ -375,7 +532,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     private getTopicInfoPipelineAbstract(userId?: string) {
         let pipeline: any[] = []
         let save_embedded_pl: any[] = []
-        //kết bảng để lấy các đề tài đã lưu của user
         save_embedded_pl.push({
             $match: {
                 $expr: {
@@ -387,6 +543,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
+        //kết bảng để trả về kết quả: người này có lưu đề tài hay không
         pipeline.push({
             $lookup: {
                 from: 'user_saved_topics',
@@ -414,7 +571,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
-        // Lấy thông tin sinh viên liên quan đến đề tài
+        // Lấy thông tin sinh viên liên quan đến đề tài ( chỉ lấy cơ bản)
         pipeline.push(
             // Join topicIds qua ref_students_topics
             {
@@ -423,52 +580,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     let: { topicId: '$_id' },
                     pipeline: student_reg_embedded_pl,
                     as: 'studentRef'
-                }
-            },
-            // Join user qua ref_students_topics
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'studentRef.userId',
-                    foreignField: '_id',
-                    as: 'stuUserInfo'
-                }
-            },
-            // Join student qua user
-            {
-                $lookup: {
-                    from: 'students',
-                    localField: 'studentRef.userId',
-                    foreignField: 'userId',
-                    as: 'studentInfos'
-                }
-            },
-            //Chủ yếu lấy studentcode của student
-            {
-                $addFields: {
-                    students: {
-                        $map: {
-                            input: '$stuUserInfo',
-                            as: 'userInfo',
-                            in: {
-                                $mergeObjects: [
-                                    '$$userInfo',
-                                    {
-                                        $arrayElemAt: [
-                                            {
-                                                $filter: {
-                                                    input: '$studentInfos',
-                                                    as: 'stuInfo',
-                                                    cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
-                                                }
-                                            },
-                                            0
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    }
                 }
             }
         )
@@ -483,7 +594,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     as: 'lecturerRef'
                 }
             },
-
             // Join users qua ref_lecturers_topics
             {
                 $lookup: {
@@ -510,7 +620,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                             as: 'userInfo',
                             in: {
                                 $mergeObjects: [
-                                    '$$userInfo',
                                     {
                                         $arrayElemAt: [
                                             {
@@ -522,6 +631,82 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                             },
                                             0
                                         ]
+                                    },
+                                    '$$userInfo'
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy roleIntopic của giảng viên
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lect',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lect',
+                                    {
+                                        roleInTopic: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: '$lecturerRef',
+                                                        as: 'ref',
+                                                        in: '$$ref.role'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy facultyName của giảng viên
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'lecturers.facultyId',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lecturer',
+
+                                    {
+                                        facultyName: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$facultyInfo',
+                                                                as: 'faculty',
+                                                                cond: { $eq: ['$$faculty._id', '$$lecturer.facultyId'] }
+                                                            }
+                                                        },
+                                                        as: 'fac',
+                                                        in: '$$fac.name'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
                                     }
                                 ]
                             }
@@ -530,6 +715,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         )
+        //lấy thông tin ngành, lĩnh vực, yêu cầu, người tạo đề tài
         pipeline.push(
             //lấy major
             {
@@ -540,7 +726,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     as: 'majorsInfo'
                 }
             },
-
+            {
+                $unwind: {
+                    path: '$majorsInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             //join fields
             {
                 $lookup: {
@@ -575,7 +766,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     isRegistered: {
                         $or: [
                             {
-                                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$studentRef.userId', []] }]
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $in: [
+                                                new mongoose.Types.ObjectId(userId),
+                                                { $ifNull: ['$studentRef.userId', []] }
+                                            ]
+                                        },
+                                        { $ne: ['$studentRef.status', StudentRegistrationStatus.REJECTED] }
+                                    ]
+                                }
                             },
                             {
                                 $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$lecturerRef.userId', []] }]
@@ -586,6 +787,14 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             })
         }
+        //Kiểm tra xem người dùng có là giảng viên và có quyền chỉnh sửa hay không
+        pipeline.push({
+            $addFields: {
+                isEditable: {
+                    $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$lecturerRef.userId', []] }]
+                }
+            }
+        })
         //add project vô nè
         pipeline.push({
             $project: {
@@ -608,27 +817,41 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 isSaved: 1,
                 major: '$majorsInfo',
                 lecturers: 1,
-                students: 1,
+                studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
                 fields: `$fields`,
                 requirements: `$requirements`,
                 fieldIds: 1,
-                requirementIds: 1
+                fileIds: 1,
+                requirementIds: 1,
+                grade: 1,
+                isEditable: 1,
+                allowManualApproval: 1
             }
         })
 
         return pipeline
     }
-    async getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>> {
+   
+    async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        pipelineSub.push({ $match: { periodId: new mongoose.Types.ObjectId(periodId) } })
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
-    }
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
-        const pipelineSub: any = []
-        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        pipelineSub.push({ $match: { currentPhaseId: new mongoose.Types.ObjectId(phaseId) } })
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository)
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                deleted_at: null,
+                ...(query.phase || query.status
+                    ? {
+                          phaseHistories: {
+                              $elemMatch: {
+                                  ...(query.phase ? { phaseName: query.phase } : {}),
+                                  ...(query.status ? { status: query.status } : {})
+                              }
+                          }
+                      }
+                    : {})
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     // lấy thống kê
     async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
@@ -1123,7 +1346,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             inNormalProcessingNumber: topicsFigures[0]?.inNormalProcessing[0]?.count || 0,
             delayedTopicsNumber: topicsFigures[0]?.delayedTopics[0]?.count || 0,
             pausedTopicsNumber: topicsFigures[0]?.pausedTopics[0]?.count || 0,
-            submittedTopicsNumber: topicsFigures[0]?.submittedForReviewTopics[0]?.count || 0,
+            submittedToReviewTopicsNumber: topicsFigures[0]?.submittedForReviewTopics[0]?.count || 0,
             readyForEvaluationNumber: topicsFigures[0]?.readyForEvaluationNumber[0]?.count || 0
         }
     }
@@ -1225,7 +1448,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             .findByIdAndUpdate(topicId, { createBy: userId, $pull: { requirementIds: requirementId } }, { new: true })
             .lean()
     }
-    async uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number> {
+    async storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<number> {
         try {
             const res = await this.topicRepository
                 .findByIdAndUpdate(
@@ -1275,7 +1498,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({
             $match: {
                 createBy: new mongoose.Types.ObjectId(lecturerId),
-                currentStatus: TopicStatus.Draft
+                currentStatus: TopicStatus.Draft,
+                deleted_at: null
             }
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
@@ -1287,7 +1511,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({
             $match: {
                 createBy: new mongoose.Types.ObjectId(lecturerId),
-                currentStatus: { $ne: TopicStatus.Draft }
+                currentStatus: { $ne: TopicStatus.Draft },
+                deleted_at: null
             }
         })
 
@@ -1355,7 +1580,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 period: '$periodsInfo',
                 periodId: 1,
                 submittedAt: '$submittedPhaseHistory.createdAt',
-                periodInfo: 1
+                periodInfo: 1,
+                studentsNum: 1
             }
         })
         return pipelineSub

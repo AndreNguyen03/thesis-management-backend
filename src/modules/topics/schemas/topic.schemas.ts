@@ -26,7 +26,7 @@ export class PhaseHistory extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     actor: string
     @Prop({ type: String, required: false })
-    notes: string
+    note: string    
 }
 
 @Schema({ timestamps: true })
@@ -85,11 +85,11 @@ export class Topic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: false, ref: Period.name })
     periodId: Period | string
 
-    @Prop({ type: Grade, default: [], required: false })
+    @Prop({ type: Grade, default: {}, required: false })
     grade: Grade
-
-    // @Prop({ type: Boolean, default: false })
-    // allowManualApproval: boolean
+    //đề tài liệu có cần được duyệt hay không
+    @Prop({ type: Boolean, default: false })
+    allowManualApproval: boolean
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Requirement.name }], default: [], index: true })
     requirementIds: Requirement[]
 

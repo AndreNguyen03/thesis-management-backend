@@ -63,7 +63,7 @@ export class LecGetTopicsStatisticInExecutionPhaseDto {
     inNormalProcessingNumber: number
     delayedTopicsNumber: number
     pausedTopicsNumber: number
-    submittedTopicsNumber: number
+    submittedToReviewTopicsNumber: number
     readyForEvaluationNumber: number
 }
 

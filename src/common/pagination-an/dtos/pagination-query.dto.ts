@@ -33,7 +33,7 @@ export class PaginationQueryDto {
     @IsString()
     //Lọc với giá trị của trường "filert_by"
     //Nội dung
-    filter?: string
+    filter?: string 
 
     @IsOptional()
     @IsString()

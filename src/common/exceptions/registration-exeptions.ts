@@ -3,7 +3,11 @@ import { BaseHttpException } from './base-http.exception'
 
 export class LecturerAlreadyRegisteredForThisThesisException extends BaseHttpException {
     constructor() {
-        super('Giảng viên đã đăng ký đề tài này rồi', 'LECTURER_ALREADY_REGISTERED_FOR_THIS_THESIS', HttpStatus.BAD_REQUEST)
+        super(
+            'Giảng viên đã đăng ký đề tài này rồi',
+            'LECTURER_ALREADY_REGISTERED_FOR_THIS_THESIS',
+            HttpStatus.BAD_REQUEST
+        )
     }
 }
 
@@ -21,5 +25,11 @@ export class FullLecturerSlotException extends BaseHttpException {
 export class TopicIsFullRegisteredException extends BaseHttpException {
     constructor() {
         super('Đề tài đã đạt số lượng sinh viên đăng ký tối đa', 'TOPIC_FULL_REGISTERED', HttpStatus.BAD_REQUEST)
+    }
+}
+
+export class StudentRegistrationNotFoundException extends BaseHttpException {
+    constructor() {
+        super('Đăng ký của sinh viên không tồn tại ', 'STUDENT_REGISTRATION_NOT_FOUND', HttpStatus.NOT_FOUND)
     }
 }

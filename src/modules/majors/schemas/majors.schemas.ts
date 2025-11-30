@@ -13,8 +13,8 @@ export class Major extends BaseEntity {
     @Prop({ type: String, required: true, unique: true })
     name: string
 
-    @Prop({ type: mongoose.Schema.Types.String, ref: Faculty.name, required: true })
-    facultyId: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Faculty.name, required: true })
+    facultyId: mongoose.Types.ObjectId
 }
 
 export const MajorSchema = SchemaFactory.createForClass(Major)

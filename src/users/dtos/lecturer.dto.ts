@@ -165,6 +165,7 @@ export class ResponseMiniLecturerDto {
     avatarUrl: string
     @Expose()
     avatarName: string
+
     // @Expose()
     // title: AcademicTitle
     @Expose()
@@ -179,6 +180,11 @@ export class ResponseMiniLecturerDto {
         }
     })
     title: string
+    @Expose()
+    facultyName: string
+
+    @Expose()
+    roleInTopic: string
 }
 export class PaginatedMiniLecturer extends GetPaginatedObjectDto {
     @Expose()

@@ -1,14 +1,16 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import mongoose, { Model } from 'mongoose'
-import { TopicStatus } from '../../../topics/enum'
+import { RegistrationStatus, TopicStatus } from '../../../topics/enum'
 import {
     StudentAlreadyRegisteredException,
     StudentJustRegisterOnlyOneTopicEachType,
     TopicNotFoundException
 } from '../../../../common/exceptions/thesis-exeptions'
 import {
+    FullLecturerSlotException,
     RegistrationNotFoundException,
+    StudentRegistrationNotFoundException,
     TopicIsFullRegisteredException
 } from '../../../../common/exceptions/registration-exeptions'
 import { GetRegistrationDto } from '../../../topics/dtos/registration/get-registration.dto'
@@ -21,6 +23,8 @@ import { TopicTransfer, TopicType } from '../../../topics/enum/topic-type.enum'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
+import { GetStudentsRegistrationsInTopic } from '../../../topics/dtos/registration/get-students-in-topic'
+import { RequestTimeoutException } from '@nestjs/common'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -31,10 +35,99 @@ export class StudentRegTopicRepository
         private readonly studentRegTopicModel: Model<StudentRegisterTopic>,
         @InjectModel(Topic.name)
         private readonly topicModel: Model<Topic>,
-        private readonly paginationProvider: PaginationProvider
+        private readonly paginationProvider: PaginationProvider,
+        private readonly connection: mongoose.Connection
     ) {
         super(studentRegTopicModel)
     }
+
+    private buildStudentPipeline(topicId: string, status: StudentRegistrationStatus) {
+        return [
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'stuUserInfo'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'students',
+                    localField: 'userId',
+                    foreignField: 'userId',
+                    as: 'studentInfos'
+                }
+            },
+            {
+                $addFields: {
+                    student: {
+                        $arrayElemAt: [
+                            {
+                                $map: {
+                                    input: '$stuUserInfo',
+                                    as: 'userInfo',
+                                    in: {
+                                        $mergeObjects: [
+                                            {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $filter: {
+                                                            input: '$studentInfos',
+                                                            as: 'stuInfo',
+                                                            cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            },
+                                            '$$userInfo'
+                                        ]
+                                    }
+                                }
+                            },
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                $project: {
+                    student: 1,
+                    createdAt: 1,
+                    topicId: 1,
+                    status: 1,
+                    deleted_at: 1
+                }
+            },
+            {
+                $match: {
+                    topicId: new mongoose.Types.ObjectId(topicId),
+                    status: status,
+                    deleted_at: null
+                }
+            }
+        ]
+    }
+
+    async getApprovedAndPendingStudentRegistrationsInTopic(
+        topicId: string
+    ): Promise<GetStudentsRegistrationsInTopic | null> {
+        const res = await this.studentRegTopicModel.aggregate([
+            {
+                $facet: {
+                    approvedStudents: this.buildStudentPipeline(topicId, StudentRegistrationStatus.APPROVED),
+                    pendingStudents: this.buildStudentPipeline(topicId, StudentRegistrationStatus.PENDING)
+                }
+            }
+        ])
+        return {
+            topicId,
+            approvedStudents: res[0].approvedStudents || [],
+            pendingStudents: res[0].pendingStudents || []
+        }
+    }
+
     //hoạt động tốt nhưng rất tiếc chưa tối ưu cho các thao tác phân trang
     async getStudentRegistrationsHistory(
         studentId: string,
@@ -47,15 +140,17 @@ export class StudentRegTopicRepository
             pipelineSub
         )
     }
-    async checkFullSlot(maxStudents: number, topicId: string): Promise<boolean> {
+    async checkSlot(checkValue: number, topicId: string): Promise<boolean> {
         const registeredCount = await this.studentRegTopicModel.countDocuments({
-            topicId: topicId,
+            topicId: new mongoose.Types.ObjectId(topicId),
             deleted_at: null
         })
-        return registeredCount === maxStudents
+        return registeredCount === checkValue
     }
     async createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<boolean> {
-        const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
+        const topic = await this.topicModel
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
@@ -71,9 +166,10 @@ export class StudentRegTopicRepository
     }
 
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
+        console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
         const registration = await this.studentRegTopicModel.findOne({
-            topicId: topicId,
-            studentId: studentId,
+            topicId: new mongoose.Types.ObjectId(topicId),
+            userId: new mongoose.Types.ObjectId(studentId),
             deleted_at: null
         })
         if (!registration) {
@@ -81,26 +177,36 @@ export class StudentRegTopicRepository
         }
         registration.deleted_at = new Date()
 
-        const topic = await this.topicModel.findOne({ _id: registration.topicId, deleted_at: null }).exec()
-        if (topic) {
-            if (!(await this.checkFullSlot(topic.maxStudents, topicId))) {
-                topic.currentStatus = TopicStatus.PendingRegistration
-            }
-            await topic.save()
-        } else {
-            throw new TopicNotFoundException()
+        // Tính trạng thái mới cho topic
+        let newStatus: TopicStatus | undefined
+        const isFull = await this.topicModel.exists({
+            _id: registration.topicId,
+            currentStatus: TopicStatus.Full,
+            deleted_at: null
+        })
+        if (isFull) {
+            newStatus = TopicStatus.Registered
+        } else if (await this.checkSlot(1, topicId)) {
+            newStatus = TopicStatus.PendingRegistration
+        }
+
+        // Cập nhật trạng thái topic nếu cần
+        if (newStatus) {
+            await this.topicModel.findOneAndUpdate(
+                { _id: registration.topicId, deleted_at: null },
+                { currentStatus: newStatus }
+            )
         }
 
         await registration.save()
-
         return { message: 'Đã xóa thành công đăng ký' }
     }
 
-    async createSingleRegistration(studentId: string, topicId: string): Promise<any> {
+    async createSingleRegistration(studentId: string, topicId: string, allowManualApproval: boolean): Promise<any> {
+        console.log('Create single registration called for student:', studentId, 'and topic:', topicId,)
         const topic = await this.topicModel
             .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
             .exec()
-        //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
         }
@@ -146,28 +252,35 @@ export class StudentRegTopicRepository
         }
 
         //check if topic is full registered
-        const registeredCount = await this.studentRegTopicModel.countDocuments({
-            topicId: topicId,
-            deleted_at: null
-        })
 
-        if (registeredCount == topic.maxStudents) {
+        if (topic.currentStatus === TopicStatus.Full) {
             throw new TopicIsFullRegisteredException()
         }
-
-        const res = await this.studentRegTopicModel.create({
-            topicId: topicId,
-            userId: studentId,
-            status:
-                topic.type === TopicType.SCIENCE_RESEARCH
-                    ? StudentRegistrationStatus.PENDING
-                    : StudentRegistrationStatus.APPROVED
-        })
-        if (registeredCount === topic.maxStudents - 1) {
-            //update topic to full registered
-            topic.currentStatus = TopicStatus.Full
-            await topic.save()
+        const newStatus =
+            topic.type === TopicType.SCIENCE_RESEARCH || allowManualApproval
+                ? StudentRegistrationStatus.PENDING
+                : StudentRegistrationStatus.APPROVED
+        try {
+            await this.studentRegTopicModel.create({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                userId: new mongoose.Types.ObjectId(studentId),
+                status: newStatus
+            })
+        } catch (error) {
+            console.log('Error during registration creation:', error)
+            throw new RequestTimeoutException()
         }
+
+        //update topic to full registered
+        const res = await this.topicModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+            {
+                currentStatus: (await this.checkSlot(topic.maxStudents - 1, topicId))
+                    ? TopicStatus.Full
+                    : TopicStatus.Registered
+            }
+        )
+
         return res
     }
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {
@@ -284,16 +397,16 @@ export class StudentRegTopicRepository
                             $mergeObjects: [
                                 '$$userInfo',
                                 {
-                                        $arrayElemAt: [
-                                            {
-                                                $filter: {
-                                                    input: '$lecturerDetails',
-                                                    as: 'lecInfo',
-                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
-                                                }
-                                            },
-                                            0
-                                        ]
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$lecturerDetails',
+                                                as: 'lecInfo',
+                                                cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                            }
+                                        },
+                                        0
+                                    ]
                                 }
                             ]
                         }
@@ -319,5 +432,96 @@ export class StudentRegTopicRepository
             }
         })
         return pipelineMain
+    }
+    async approvalStudentRegistrationByLecturer(
+        userId: string,
+        registrationId: string,
+        role: string,
+        lecturerResponse: string
+    ) {
+        console.log('Approval process started', registrationId, userId)
+        const session = await this.connection.startSession()
+        session.startTransaction()
+        try {
+            const registration = await this.studentRegTopicModel
+                .findOne({ _id: new mongoose.Types.ObjectId(registrationId), deleted_at: null })
+                .session(session)
+            if (!registration) {
+                throw new StudentRegistrationNotFoundException()
+            }
+            const topic = await this.topicModel
+                .findOne({ _id: new mongoose.Types.ObjectId(registration.topicId), deleted_at: null })
+                .session(session)
+            if (!topic) {
+                throw new TopicNotFoundException()
+            }
+            const currentApprovedCount = await this.studentRegTopicModel
+                .countDocuments({
+                    topicId: topic._id,
+                    status: RegistrationStatus.APPROVED,
+                    deleted_at: null
+                })
+                .session(session)
+
+            if (currentApprovedCount >= topic.maxStudents) {
+                throw new FullLecturerSlotException()
+            }
+
+            registration.status = StudentRegistrationStatus.APPROVED
+            registration.processedBy = userId
+            registration.lecturerResponse = lecturerResponse
+            registration.studentRole = role
+            //cập nhật trạng thái đề tài sau khi đã duyệt đăng ký 1 sinh viên
+            //chuyển trạng thái từ open_pending(chua có ai đăng ký) sang registered
+            if (topic.currentStatus === TopicStatus.PendingRegistration) {
+                topic.currentStatus = TopicStatus.Registered
+            } else if (currentApprovedCount + 1 === topic.maxStudents) {
+                //chuyển trạng thái từ đã có người đăng ký sang full
+                topic.currentStatus = TopicStatus.Full
+            }
+
+            await topic.save({ session })
+            await registration.save({ session })
+            await session.commitTransaction()
+            return registration
+        } catch (error) {
+            await session.abortTransaction()
+            throw error
+        } finally {
+            session.endSession()
+        }
+    }
+    async rejectStudentRegistrationByLecturer(
+        userId: string,
+        registrationId: string,
+        reasonType: string,
+        lecturerResponse: string
+    ) {
+        const session = await this.connection.startSession()
+        session.startTransaction()
+        try {
+            const registration = await this.studentRegTopicModel.findById(registrationId).session(session)
+            if (!registration) {
+                throw new StudentRegistrationNotFoundException()
+            }
+            const topic = await this.topicModel.findById(registration.topicId).session(session)
+            if (!topic) {
+                throw new TopicNotFoundException()
+            }
+            //cập nhật trạng thái từ chối
+            registration.status = StudentRegistrationStatus.REJECTED
+            registration.rejectionReasonType = reasonType
+            registration.lecturerResponse = lecturerResponse
+            registration.processedBy = userId
+
+            await registration.save({ session })
+            await session.commitTransaction()
+            return registration
+        } catch (error) {
+            await session.abortTransaction()
+            throw error
+        } finally {
+            session.endSession()
+        }
     }
 }

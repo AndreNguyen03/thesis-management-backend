@@ -20,3 +20,11 @@ export class ResponseFacultyBoardProfileDto {
     createdAt: Date
     updatedAt: Date
 }
+
+export class ResponseMiniFacultyBoardDto {
+    _id: string
+    fullName: string
+    avatarUrl: string
+    role: string
+    facultyName: string
+}

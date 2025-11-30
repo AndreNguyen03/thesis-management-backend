@@ -20,6 +20,7 @@ import { UpdateTopicsPhaseBatchProvider } from './providers/update-topics-batch.
 import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.provider'
 import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ValidateTopicStatusProvider } from './providers/validate-status.provider'
+import { CheckAllowManualApprovalProvider } from './providers/check-allow-manual-approval.provider';
 
 @Module({
     controllers: [TopicController],
@@ -44,7 +45,8 @@ import { ValidateTopicStatusProvider } from './providers/validate-status.provide
         UpdateTopicsPhaseBatchProvider,
 
         GetStatisticsTopicsProvider,
-        ValidateTopicStatusProvider
+        ValidateTopicStatusProvider,
+        CheckAllowManualApprovalProvider
     ],
     exports: [
         TopicService,
@@ -54,7 +56,8 @@ import { ValidateTopicStatusProvider } from './providers/validate-status.provide
         TranferStatusAndAddPhaseHistoryProvider,
         UpdateTopicsPhaseBatchProvider,
         GetStatisticsTopicsProvider,
-        ValidateTopicStatusProvider
+        ValidateTopicStatusProvider,
+        CheckAllowManualApprovalProvider
     ],
     imports: [
         forwardRef(() => TopicModule),
@@ -67,7 +70,7 @@ import { ValidateTopicStatusProvider } from './providers/validate-status.provide
         forwardRef(() => UsersModule),
         RegistrationsModule,
         PaginationAnModule,
-        UploadFilesModule
+        UploadFilesModule,
     ]
 })
 export class TopicModule {}

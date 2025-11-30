@@ -11,12 +11,13 @@ export class GetTopicProvider {
     constructor(
         @Inject('TopicRepositoryInterface') private readonly topicRepositoryInterface: TopicRepositoryInterface
     ) {}
-
-    getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>> {
-        return this.topicRepositoryInterface.getTopicsInPeriod(periodId, query)
-    }
+    //Lấy những đề tài trong kỳ cụ thể
+    // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>> {
+    //     return this.topicRepositoryInterface.getTopicsInPeriod(periodId, query)
+    // }
+    //lấy những đề tài trong pha cụ thể
     getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
-        return this.topicRepositoryInterface.getTopicsInPhase(phaseId, query)
+        return this.topicRepositoryInterface.getTopicsInPhaseHistory(phaseId, query)
     }
     getLecturerSubmittedTopicNum(lecturerId: string): Promise<number> {
         return this.topicRepositoryInterface.getSubmittedTopicsNumber(lecturerId)

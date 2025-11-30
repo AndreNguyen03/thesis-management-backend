@@ -3,6 +3,7 @@ import { PartialType } from '@nestjs/mapped-types'
 import { CreateUserDto } from './create-user.dto'
 import { Expose, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { RegistrationDto } from '../../modules/topics/dtos/registration/get-students-in-topic'
 
 // DTO dùng để tạo mới sinh viên
 export class CreateStudentDto extends CreateUserDto {
@@ -57,6 +58,17 @@ export class ResponseMiniStudentDto {
     studentCode: string
     @Expose()
     major: string
+    @Expose()
+    facultyName: string
+}
+
+export class RelatedStudentInTopic {
+    @Expose()
+    @Type(() => RegistrationDto)
+    approvedStudents: RegistrationDto[]
+    @Expose()
+    @Type(() => RegistrationDto)
+    pendingStudents: RegistrationDto[]
 }
 
 // DTO cập nhật profile sinh viên (dùng cho self-update)

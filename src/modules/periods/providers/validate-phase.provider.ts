@@ -21,7 +21,7 @@ export class ValidatePeriodPhaseProvider {
         phaseName: string,
         startTime: Date,
         endTime: Date,
-        period?: Period
+        period?: Period // nếu đã tìm trước đó thì không cần tìm lại
     ): Promise<boolean> {
         // Lấy các pha hiện có trong kỳ
         return false

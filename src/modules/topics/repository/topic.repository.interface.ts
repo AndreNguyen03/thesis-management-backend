@@ -37,8 +37,8 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         userId: string,
         userRole: string
     ): Promise<GetCancelRegisteredTopicResponseDto[]>
-    getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
-    getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
+   // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
+    getTopicsInPhaseHistory(phaseId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
     getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>
@@ -66,7 +66,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     addRequirementToTopicQuick(topicId: string, fieldId: string, userId: string): Promise<Topic | null>
     removeRequirementFromTopicQuick(topicId: string, requirementId: string, userId: string): Promise<Topic | null>
     //file
-    uploadManyFilesToTopic(topicId: string, fileIds: string[]): Promise<number>
+    storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<number>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>

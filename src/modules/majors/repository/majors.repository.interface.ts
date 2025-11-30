@@ -4,5 +4,5 @@ import { BaseRepositoryInterface } from '../../../shared/base/repository/base.re
 import { Major } from '../schemas/majors.schemas'
 
 export interface IMajorRepository extends BaseRepositoryInterface<Major> {
-    getMajorsOfFacultyOwner(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>>
+    getMajorsByFacultyId(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>>
 }
