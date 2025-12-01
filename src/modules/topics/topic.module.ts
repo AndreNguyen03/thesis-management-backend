@@ -20,7 +20,6 @@ import { UpdateTopicsPhaseBatchProvider } from './providers/update-topics-batch.
 import { GetStatisticsTopicsProvider } from './providers/get-statistics-topics.provider'
 import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ValidateTopicStatusProvider } from './providers/validate-status.provider'
-import { CheckAllowManualApprovalProvider } from './providers/check-allow-manual-approval.provider';
 
 @Module({
     controllers: [TopicController],
@@ -46,7 +45,6 @@ import { CheckAllowManualApprovalProvider } from './providers/check-allow-manual
 
         GetStatisticsTopicsProvider,
         ValidateTopicStatusProvider,
-        CheckAllowManualApprovalProvider
     ],
     exports: [
         TopicService,
@@ -57,7 +55,6 @@ import { CheckAllowManualApprovalProvider } from './providers/check-allow-manual
         UpdateTopicsPhaseBatchProvider,
         GetStatisticsTopicsProvider,
         ValidateTopicStatusProvider,
-        CheckAllowManualApprovalProvider
     ],
     imports: [
         forwardRef(() => TopicModule),

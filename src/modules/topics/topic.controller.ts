@@ -36,6 +36,7 @@ import { RequestGradeTopicDto } from './dtos/request-grade-topic.dtos'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { RejectTopicDto } from './dtos/action-with-topic.dtos'
+import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
 
 @Controller('topics')
 export class TopicController {
@@ -408,5 +409,14 @@ export class TopicController {
     ) {
         const res = await this.topicService.setAllowManualApproval(topicId, allowManualApproval)
         return { message: 'Đã chuyển đổi trạng thái allowManualApproval của đề tài' }
+    }
+
+    @Patch('/withdraw-submitted-topics')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async tranferStatus(@Req() req: { user: ActiveUserData }, @Body() body: WithDrawSubmittedTopicQuery) {
+        await this.topicService.withdrawSubmittedTopics(body.topicIds, req.user.sub)
+        return { message: 'Chuyển trạng thái đề tài thành công' }
     }
 }

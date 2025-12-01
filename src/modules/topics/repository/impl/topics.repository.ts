@@ -34,6 +34,7 @@ import { TopicNotFoundException } from '../../../../common/exceptions'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 import { de } from '@faker-js/faker/.'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
+import { allow } from 'joi'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -560,7 +561,22 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         student_reg_embedded_pl.push({
             $match: {
                 $expr: {
-                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
+                    $and: [
+                        { $eq: ['$topicId', '$$topicId'] },
+                        { $eq: ['$deleted_at', null] },
+                        {
+                            $not: {
+                                $in: [
+                                    '$status',
+                                    [
+                                        StudentRegistrationStatus.CANCELLED,
+                                        StudentRegistrationStatus.REJECTED,
+                                        StudentRegistrationStatus.WITHDRAWN
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
                 }
             }
         })
@@ -654,9 +670,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                             $arrayElemAt: [
                                                 {
                                                     $map: {
-                                                        input: '$lecturerRef',
-                                                        as: 'ref',
-                                                        in: '$$ref.role'
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$lecturerRef',
+                                                                as: 'ref',
+                                                                cond: { $eq: ['$$ref.userId', '$$lect._id'] }
+                                                            }
+                                                        },
+                                                        as: 'filteredRef',
+                                                        in: '$$filteredRef.role'
                                                     }
                                                 },
                                                 0
@@ -831,7 +853,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
 
         return pipeline
     }
-   
+
     async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
@@ -1581,7 +1603,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 submittedAt: '$submittedPhaseHistory.createdAt',
                 periodInfo: 1,
-                studentsNum: 1
+                studentsNum: 1,
+                allowManualApproval: 1
             }
         })
         return pipelineSub

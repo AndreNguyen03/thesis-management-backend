@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common'
 import { LecturerRegTopicRepository } from '../repository/impl/lecturer_reg_topic.repository'
 import { CreateErrorException, DeleteErrorException, FullLecturerSlotException } from '../../../common/exceptions'
 import { LecturerRegTopicRepositoryInterface } from '../repository/lecturer-reg-topic.reposittory.interface'
+import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
 
 @Injectable()
 export class LecturerRegTopicService {
@@ -14,8 +15,9 @@ export class LecturerRegTopicService {
         const res = await this.lecturerRegTopicRepository.createSingleRegistration(topicId, lecturerId)
         return res
     }
-    public async unassignLecturerInTopic(lecturerId: string, topicId: string) {
-        await this.lecturerRegTopicRepository.cancelRegistration(topicId, lecturerId)
+    //giảng viên hướng dẫn chính xóa giảng viên khác khỏi đề tài
+    public async unassignLecturerInTopic(user: ActiveUserData, lecturerId: string, topicId: string) {
+        await this.lecturerRegTopicRepository.unassignLecturer(user, topicId, lecturerId)
     }
 
     public async createRegistrationWithLecturers(userId: String, lecturerIds: string[], topicId: string) {
@@ -25,9 +27,9 @@ export class LecturerRegTopicService {
         }
         return res
     }
-
-    public async cancelRegistration(topicId: string, studentId: string) {
-        const res = await this.lecturerRegTopicRepository.cancelRegistration(topicId, studentId)
+    //giảng viên rút đăng ký của mình
+    public async cancelRegistration(topicId: string, lecturerId: string) {
+        const res = await this.lecturerRegTopicRepository.cancelRegistration(topicId, lecturerId)
         if (!res) {
             throw new DeleteErrorException('registration')
         }

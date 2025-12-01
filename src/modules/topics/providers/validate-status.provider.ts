@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class ValidateTopicStatusProvider {
-    //kiểm tra thứ tự của việc chuyển trạng thái    
+    //kiểm tra thứ tự của việc chuyển trạng thái
     async validateStatusManualTransition(currentStatus: string, newStatus: string): Promise<boolean> {
         const validTransitions = {
             draft: ['submitted'], //ok
-            submitted: ['approved', 'rejected', 'under_review'],
+            submitted: ['approved', 'rejected', 'under_review', 'draft' ],
             under_review: ['approved', 'rejected'],
             refected: [],
             approved: ['in_progress'],
