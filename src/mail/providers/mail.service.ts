@@ -13,7 +13,7 @@ export class MailService {
         private readonly configService: ConfigService
     ) {}
 
-    public async sendUserWelcomeMail(user: User ): Promise<void> {
+    public async sendUserWelcomeMail(user: User): Promise<void> {
         const env = this.configService.get<string>('NODE_ENV')
 
         if (env === 'test') {
@@ -34,7 +34,7 @@ export class MailService {
         })
     }
 
-    public async sendResetPasswordMail(user: User , token: string): Promise<void> {
+    public async sendResetPasswordMail(user: User, token: string): Promise<void> {
         const env = this.configService.get<string>('NODE_ENV')
 
         if (env === 'test') {
@@ -53,6 +53,21 @@ export class MailService {
                 email: user.email,
                 resetUrl
             }
+        })
+    }
+
+    public async sendNotificationMail(user: User, subject: string, content: string): Promise<void> {
+        const env = this.configService.get<string>('NODE_ENV')
+
+        if (env === 'test') {
+            return
+        }
+
+        await this.mailerService.sendMail({
+            to: user.email,
+            from: `<UIT support@uit.edu.vn>`,
+            subject,
+            text: content
         })
     }
 }
