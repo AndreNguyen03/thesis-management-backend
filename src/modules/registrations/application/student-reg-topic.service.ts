@@ -3,32 +3,34 @@ import { StudentRegTopicRepositoryInterface } from '../repository/student-reg-to
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { StudentRegisterTopic } from '../schemas/ref_students_topics.schemas'
-import { CheckAllowManualApprovalProvider } from '../../topics/providers/check-allow-manual-approval.provider'
-import { RegistrationStatus } from '../../topics/enum'
 import { BodyReplyRegistrationDto } from '../dtos/query-reply-registration.dto'
+import { UserRole } from '../../../users/enums/user-role'
+import { StudentRegistrationStatus } from '../enum/student-registration-status.enum'
+import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
 
 @Injectable()
 export class StudentRegTopicService {
     constructor(
         @Inject('StudentRegTopicRepositoryInterface')
-        private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface,
-        private readonly checkAllowManualApprovalProvider: CheckAllowManualApprovalProvider
+        private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface
     ) {}
-    public async createSingleRegistration(studentId: string, topicId: string) {
-        const allowManualApproval = await this.checkAllowManualApprovalProvider.checkAllowManualApproval(topicId)
-        return this.studentRegTopicRepository.createSingleRegistration(studentId, topicId, allowManualApproval)
+    //cả studentSignleRegistration và lecAssignStudent đều dùng hàm này createSingleRegistration
+    public async studentSingleRegistration(actionRole: string, studentId: string, topicId: string) {
+        return this.studentRegTopicRepository.createSingleRegistration(actionRole, studentId, topicId)
     }
 
     public async lecAssignStudent(studentId: string, topicId: string) {
-        return this.studentRegTopicRepository.createSingleRegistration(studentId, topicId, false)
+        return this.studentRegTopicRepository.createSingleRegistration(UserRole.LECTURER, studentId, topicId)
     }
-    public async unassignStudentInTopic(studentId: string, topicId: string) {
-        return this.studentRegTopicRepository.cancelRegistration(topicId, studentId)
+    //Giảng viên HD chính bỏ sinh viên ra khỏi đề tài
+    public async unassignStudentInTopic(user: ActiveUserData, studentId: string, topicId: string) {
+        //trong giai đoạn còn submitted hoặc draft mới được bỏ
+        return this.studentRegTopicRepository.unassignStudentInTopic(user, topicId, studentId)
     }
     public createRegistrationWithStudents(studentIds: string[], topicId: string) {
         return this.studentRegTopicRepository.createRegistrationWithStudents(topicId, studentIds)
     }
-
+    //sinh viên hủy đăng ký
     public cancelRegistration(topicId: string, studentId: string) {
         return this.studentRegTopicRepository.cancelRegistration(topicId, studentId)
     }
@@ -44,7 +46,7 @@ export class StudentRegTopicService {
         body: BodyReplyRegistrationDto
     ) {
         //gửi thông báo về cho sinh viên
-        if (body.status === RegistrationStatus.APPROVED) {
+        if (body.status === StudentRegistrationStatus.APPROVED) {
             //tùy thông tin gửi mail cho sinh viên dưới nội dung gì
             await this.studentRegTopicRepository.approvalStudentRegistrationByLecturer(
                 userId,
@@ -52,7 +54,7 @@ export class StudentRegTopicService {
                 body.studentRole,
                 body.lecturerResponse
             )
-        } else if (body.status === RegistrationStatus.REJECTED) {
+        } else if (body.status === StudentRegistrationStatus.REJECTED) {
             //tùy thông tin gửi mail cho sinh viên dưới nội dung gì
             await this.studentRegTopicRepository.rejectStudentRegistrationByLecturer(
                 userId,

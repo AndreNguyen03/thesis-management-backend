@@ -13,6 +13,7 @@ import { Paginated } from '../../../common/pagination/interface/paginated.interf
 import { User } from '../../schemas/users.schema'
 import { Faculty } from '../../../modules/faculties/schemas/faculty.schema'
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
+import { fa } from '@faker-js/faker/.'
 
 @Injectable()
 export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> implements LecturerRepositoryInterface {
@@ -196,7 +197,7 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
             .exec()
         return lecturer
     }
-    async getAllLecturersAn(paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>> {
+    async getAllLecturersAn(facultyId: string, paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>> {
         const pipeline: any[] = [
             {
                 $lookup: {
@@ -217,6 +218,12 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
             },
             { $unwind: '$faculty' }
         ]
+        pipeline.push({
+            $match: {
+                facultyId: new Types.ObjectId(facultyId),
+                'user.isActive': true
+            }
+        })
         pipeline.push({
             $project: {
                 _id: '$user._id',

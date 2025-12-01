@@ -15,6 +15,7 @@ import { LecturerRegTopicRepositoryInterface } from '../lecturer-reg-topic.repos
 import { RequestTimeoutException } from '@nestjs/common'
 import { bool } from 'aws-sdk/clients/signer'
 import { LecturerRoleEnum } from '../../enum/lecturer-role.enum'
+import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
 
 export class LecturerRegTopicRepository
     extends BaseRepositoryAbstract<LecturerRegisterTopic>
@@ -55,7 +56,11 @@ export class LecturerRegTopicRepository
         return res || res2.length > 0 ? true : false
     }
 
-    async createSingleRegistration(topicId: string, lecturerId: string): Promise<any> {
+    async createSingleRegistration(
+        topicId: string,
+        lecturerId: string,
+        role: string = LecturerRoleEnum.CO_SUPERVISOR
+    ): Promise<any> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
         if (!topic) {
@@ -84,7 +89,7 @@ export class LecturerRegTopicRepository
             throw new RequestTimeoutException()
         }
     }
-    async cancelRegistration(topicId: string, lecturerId: string){
+    async cancelRegistration(topicId: string, lecturerId: string) {
         const registration = await this.lecturerRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
             userId: new mongoose.Types.ObjectId(lecturerId),
@@ -94,6 +99,20 @@ export class LecturerRegTopicRepository
             throw new RegistrationNotFoundException()
         }
 
+        registration.deleted_at = new Date()
+
+        await registration.save()
+    }
+
+    async unassignLecturer(user: ActiveUserData, topicId: string, lecturerId: string) {
+        const registration = await this.lecturerRegTopicModel.findOne({
+            topicId: new mongoose.Types.ObjectId(topicId),
+            userId: new mongoose.Types.ObjectId(lecturerId),
+            deleted_at: null
+        })
+        if (!registration) {
+            throw new RegistrationNotFoundException()
+        }
         registration.deleted_at = new Date()
 
         await registration.save()

@@ -8,10 +8,23 @@ export class StudentAlreadyRegisteredException extends BaseHttpException {
 }
 export class StudentJustRegisterOnlyOneTopicEachType extends BaseHttpException {
     constructor(message: string) {
-        super(`Sinh viên chỉ được đăng ký một đề tài thuộc: ${message}`, 'STUDENT_JUST_REGISTER_ONE_TOPIC_EACH_TYPE', HttpStatus.BAD_REQUEST)
+        super(
+            `Sinh viên chỉ được đăng ký một đề tài loại: ${message}`,
+            'STUDENT_JUST_REGISTER_ONE_TOPIC_EACH_TYPE',
+            HttpStatus.BAD_REQUEST
+        )
     }
 }
-
+//Sinh viên đã bị từ chối trước đó
+export class StudentRejectedException extends BaseHttpException {
+    constructor() {
+        super(
+            `Sinh viên đã bị từ chối đăng ký trước đó`,
+            'STUDENT_REJECTED_EXCEPTION',
+            HttpStatus.BAD_REQUEST
+        )
+    }
+}
 
 export class TopicNotFoundException extends BaseHttpException {
     constructor() {

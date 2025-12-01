@@ -7,8 +7,7 @@ import {
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
-    PatchTopicDto,
-    RequestGetTopicsInPeriodDto
+    PatchTopicDto
 } from '../dtos'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
@@ -141,7 +140,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
 
     public async getRegisteredTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
-        return  await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
+        return await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
     }
     public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
         return await this.topicRepository.findCanceledRegisteredTopicsByUserId(userId, userRole)
@@ -335,5 +334,13 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             throw new RequestTimeoutException('Cập nhật thất bại, vui lòng thử lại.')
         }
         return topic ? true : false
+    }
+    public async withdrawSubmittedTopics(topicIds: string[], actorId: string) {
+        for (const topicId of topicIds)
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                topicId,
+                TopicStatus.Draft,
+                actorId
+            )
     }
 }

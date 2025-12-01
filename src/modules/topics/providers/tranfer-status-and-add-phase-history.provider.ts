@@ -6,12 +6,15 @@ import { TopicNotFoundException } from '../../../common/exceptions'
 import { TopicStatus } from '../enum'
 import { Period, PeriodPhase } from '../../periods/schemas/period.schemas'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { validate } from 'class-validator'
+import { ValidateTopicStatusProvider } from './validate-status.provider'
 
 @Injectable()
 export class TranferStatusAndAddPhaseHistoryProvider {
     constructor(
         @Inject('TopicRepositoryInterface')
-        private readonly topicRepository: TopicRepositoryInterface
+        private readonly topicRepository: TopicRepositoryInterface,
+        private readonly validateTopicStatusProvider: ValidateTopicStatusProvider
     ) {}
     //chuyển trạng thái đề tài (thủ công ) với các hành độgn như từ chối, chấp nhận, tạm dừng,...
     //truyền period khi chueyenr pha từ draft sang submitted
@@ -19,8 +22,8 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         topicId: string,
         newStatus: string,
         actorId: string,
-        note: string,
-        periodId: string = ''
+        note: string = '',
+        periodId?: string
     ) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
@@ -32,6 +35,12 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         }
         const res = this.throwExceptionIfActionIsPracticed(existingTopic.currentStatus, newStatus)
         if (!res) return
+
+        //Xác thực xem chuyển trạng thái có hợp lệ hay không/ đúng thứ tự hay không
+
+        if (!this.validateTopicStatusProvider.validateStatusManualTransition(existingTopic.currentStatus, newStatus)) {
+            throw new BadRequestException('Chuyển trạng thái đề tài không hợp lệ')
+        }
         const newPhaseHistory = new PhaseHistory()
         ;((newPhaseHistory.phaseName = periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase),
             (newPhaseHistory.status = newStatus))
@@ -42,7 +51,16 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         newPhaseHistory.note = note
 
         existingTopic.phaseHistories.push(newPhaseHistory)
-        console.log(existingTopic.phaseHistories)
+
+        // nếu đề tài chuyển từ trạng thái đã nộp về lại nháp thì cần
+        //xóa lịch sử pha
+        //periodId cũng xóa
+        if (newStatus === TopicStatus.Draft) {
+            existingTopic.periodId = ''
+            existingTopic.currentPhase = PeriodPhaseName.EMPTY
+            existingTopic.currentStatus = TopicStatus.Draft
+        }
+        //  console.log(existingTopic.phaseHistories)
         await this.topicRepository.update(topicId, {
             phaseHistories: existingTopic.phaseHistories,
             currentStatus: newStatus,

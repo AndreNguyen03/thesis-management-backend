@@ -93,8 +93,8 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         return lecturers
     }
 
-    async getAllLecturers_An(paginationQuery: PaginationAn) {
-        const lecturers = await this.lecturerRepository.getAllLecturersAn(paginationQuery)
+    async getAllLecturers_An(facultyId: string, paginationQuery: PaginationAn) {
+        const lecturers = await this.lecturerRepository.getAllLecturersAn(facultyId, paginationQuery)
         return lecturers
     }
     async updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto) {

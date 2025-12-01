@@ -25,6 +25,7 @@ export class RegistrationsController {
 
     //BCN, giảng viên là chủ đề tài
     // assign giảng viên khác vào đề tài
+    //cho giảng viên chính
     @Post('/assign-lecturer/:lecturerId/in/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
@@ -37,7 +38,7 @@ export class RegistrationsController {
         await this.lecturerRegTopicService.createSingleRegistration(lecturerId, topicId)
         return { message: 'Giảng viên đã được phân công vào đề tài' }
     }
-
+    //cho giảng viên chính
     @Delete('/unassign-lecturer/:lecturerId/in/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
@@ -47,7 +48,7 @@ export class RegistrationsController {
         @Param('lecturerId') lecturerId: string,
         @Param('topicId') topicId: string
     ) {
-        await this.lecturerRegTopicService.unassignLecturerInTopic(lecturerId, topicId)
+        await this.lecturerRegTopicService.unassignLecturerInTopic(req.user, lecturerId, topicId)
         return { message: 'Đã xóa thành công đăng ký' }
     }
 
@@ -74,7 +75,7 @@ export class RegistrationsController {
         @Param('studentId') studentId: string,
         @Param('topicId') topicId: string
     ) {
-        await this.studentRegTopicService.unassignStudentInTopic(studentId, topicId)
+        await this.studentRegTopicService.unassignStudentInTopic(req.user, studentId, topicId)
         return { message: 'Đã xóa thành công đăng ký' }
     }
     @Post('/student-register-topic/:topicId')
@@ -82,17 +83,19 @@ export class RegistrationsController {
     @Roles(UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async studentRegisterTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        return this.studentRegTopicService.createSingleRegistration(req.user.sub, topicId)
+        return this.studentRegTopicService.studentSingleRegistration(req.user.role, req.user.sub, topicId)
     }
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.STUDENT)
     @UseGuards(RolesGuard)
-    @Delete('cancel-registration/:topicId')
-    async cancelRegistration(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+    @Delete('leave-topic/:topicId')
+    async leaveRegistration(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         const { sub: userId, role } = req.user
         if (role === 'student') {
+            //sinh viên hủy đăng ký đề tài
             return this.studentRegTopicService.cancelRegistration(topicId, userId)
         } else if (role === 'lecturer') {
+            //giảng viên rút khỏi đề tài
             return this.lecturerRegTopicService.cancelRegistration(topicId, userId)
         } else {
             throw new Error('Invalid user role')

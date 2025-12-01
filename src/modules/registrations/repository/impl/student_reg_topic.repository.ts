@@ -1,10 +1,11 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
-import mongoose, { Model } from 'mongoose'
-import { RegistrationStatus, TopicStatus } from '../../../topics/enum'
+import mongoose, { Model, mongo } from 'mongoose'
+import { TopicStatus } from '../../../topics/enum'
 import {
     StudentAlreadyRegisteredException,
     StudentJustRegisterOnlyOneTopicEachType,
+    StudentRejectedException,
     TopicNotFoundException
 } from '../../../../common/exceptions/thesis-exeptions'
 import {
@@ -25,6 +26,8 @@ import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagina
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { GetStudentsRegistrationsInTopic } from '../../../topics/dtos/registration/get-students-in-topic'
 import { RequestTimeoutException } from '@nestjs/common'
+import { UserRole } from '../../../../users/enums/user-role'
+import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -143,10 +146,12 @@ export class StudentRegTopicRepository
     async checkSlot(checkValue: number, topicId: string): Promise<boolean> {
         const registeredCount = await this.studentRegTopicModel.countDocuments({
             topicId: new mongoose.Types.ObjectId(topicId),
+            status: StudentRegistrationStatus.APPROVED,
             deleted_at: null
         })
         return registeredCount === checkValue
     }
+    //Sử dụng trong việc tạo đề tài
     async createRegistrationWithStudents(topicId: string, studentIds: string[]): Promise<boolean> {
         const topic = await this.topicModel
             .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
@@ -164,27 +169,76 @@ export class StudentRegTopicRepository
         )
         return createdStudentRegs.length > 0 ? true : false
     }
-
+    //sinh viên hủy đăng ký
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
-        console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
+        //  console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
+        const topic = await this.topicModel
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .exec()
+        if (!topic) {
+            throw new TopicNotFoundException()
+        }
         const registration = await this.studentRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
             userId: new mongoose.Types.ObjectId(studentId),
+            status: { $in: [StudentRegistrationStatus.PENDING] },
             deleted_at: null
         })
         if (!registration) {
             throw new RegistrationNotFoundException()
         }
-        registration.deleted_at = new Date()
-
+        registration.status = StudentRegistrationStatus.WITHDRAWN
+        registration.processedBy = studentId
         // Tính trạng thái mới cho topic
         let newStatus: TopicStatus | undefined
-        const isFull = await this.topicModel.exists({
-            _id: registration.topicId,
-            currentStatus: TopicStatus.Full,
+
+        if (topic.currentStatus === TopicStatus.Full) {
+            newStatus = TopicStatus.Registered
+        } else if (await this.checkSlot(1, topicId)) {
+            newStatus = TopicStatus.PendingRegistration
+        }
+
+        // Cập nhật trạng thái topic nếu cần
+        if (newStatus) {
+            await this.topicModel.findOneAndUpdate(
+                { _id: registration.topicId, deleted_at: null },
+                { currentStatus: newStatus }
+            )
+        }
+
+        await registration.save()
+        return { message: 'Đã xóa thành công đăng ký' }
+        //giảng viên hd bỏ sinh viên ra khỏi đề tài
+    }
+    //giảng viên hd chính bỏ sinh viên ra khỏi đề tài
+    async unassignStudentInTopic(
+        user: ActiveUserData,
+        topicId: string,
+        studentId: string
+    ): Promise<{ message: string }> {
+        const { role, sub: lecturerId } = user
+        //  console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
+        const topic = await this.topicModel
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .exec()
+        if (!topic) {
+            throw new TopicNotFoundException()
+        }
+        const registration = await this.studentRegTopicModel.findOne({
+            topicId: new mongoose.Types.ObjectId(topicId),
+            userId: new mongoose.Types.ObjectId(studentId),
+            status: { $in: [StudentRegistrationStatus.PENDING, StudentRegistrationStatus.APPROVED] },
             deleted_at: null
         })
-        if (isFull) {
+        if (!registration) {
+            throw new RegistrationNotFoundException()
+        }
+        registration.status = StudentRegistrationStatus.CANCELLED
+        registration.processedBy = lecturerId
+        // Tính trạng thái mới cho topic
+        let newStatus: TopicStatus | undefined
+
+        if (topic.currentStatus === TopicStatus.Full) {
             newStatus = TopicStatus.Registered
         } else if (await this.checkSlot(1, topicId)) {
             newStatus = TopicStatus.PendingRegistration
@@ -202,33 +256,42 @@ export class StudentRegTopicRepository
         return { message: 'Đã xóa thành công đăng ký' }
     }
 
-    async createSingleRegistration(studentId: string, topicId: string, allowManualApproval: boolean): Promise<any> {
-        console.log('Create single registration called for student:', studentId, 'and topic:', topicId,)
+    async createSingleRegistration(actionRole: string, studentId: string, topicId: string): Promise<any> {
+        //console.log('Create single registration called for student:', studentId, 'and topic:', topicId)
         const topic = await this.topicModel
             .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
             .exec()
         if (!topic) {
             throw new TopicNotFoundException()
         }
-
+        if (actionRole === 'student') {
+            //Nếu là sinh viên đăng ký thì kiểm tra sinh viên có bị từ chối trước đó hay không
+            const existingRejectedRegistration = await this.studentRegTopicModel.findOne({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                userId: new mongoose.Types.ObjectId(studentId),
+                status: StudentRegistrationStatus.REJECTED,
+                deleted_at: null
+            })
+            if (existingRejectedRegistration) {
+                throw new StudentRejectedException()
+            }
+        }
+        //Với tất cả các role
+        //Kiểm tra đăng ký đã tồn tại trước đó hay chưa
         const existingRegistration = await this.studentRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
             userId: new mongoose.Types.ObjectId(studentId),
+            status: { $in: [StudentRegistrationStatus.PENDING, StudentRegistrationStatus.APPROVED] },
             deleted_at: null
         })
         if (existingRegistration) {
             throw new StudentAlreadyRegisteredException()
         }
-        // kiểm tra có đăng ký cùng type không nhưng mà trừ nghiên cứu khoa học ra
-        let checkExistingRegisterOtherSameType = []
+        // kiểm tra có đăng ký đề tài khóa luận khác không
+        //riêng nghiên cứu khoa học thì không kiểm tra vì sinh viên có thể đăng ký được nhiều đề tài nghiên cứu khoa học
+
         if (topic.type !== TopicType.SCIENCE_RESEARCH) {
-            checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
-                {
-                    $match: {
-                        studentId: new mongoose.Types.ObjectId(studentId),
-                        deleted_at: null
-                    }
-                },
+            let checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
                 {
                     $lookup: {
                         from: 'topics',
@@ -242,22 +305,29 @@ export class StudentRegTopicRepository
                 },
                 {
                     $match: {
-                        'topicInfo.type': { $nin: [TopicType.SCIENCE_RESEARCH] }
+                        $expr: {
+                            $and: [
+                                { $not: { $in: ['$topicInfo.type', [TopicType.SCIENCE_RESEARCH]] } },
+                                { $eq: ['$userId', new mongoose.Types.ObjectId(studentId)] },
+                                { $eq: ['$status', StudentRegistrationStatus.APPROVED] },
+                                { $eq: ['$deleted_at', null] }
+                            ]
+                        }
                     }
                 }
             ])
-        }
-        if (checkExistingRegisterOtherSameType.length > 0) {
-            throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
+            if (checkExistingRegisterOtherSameType.length > 0) {
+                throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
+            }
         }
 
         //check if topic is full registered
-
         if (topic.currentStatus === TopicStatus.Full) {
             throw new TopicIsFullRegisteredException()
         }
+        //nếu là giáng vin assign cho sinh viên thì không cần xét duyệt (xét status là approved luôn)
         const newStatus =
-            topic.type === TopicType.SCIENCE_RESEARCH || allowManualApproval
+            actionRole !== UserRole.LECTURER && (topic.type === TopicType.SCIENCE_RESEARCH || topic.allowManualApproval)
                 ? StudentRegistrationStatus.PENDING
                 : StudentRegistrationStatus.APPROVED
         try {
@@ -275,7 +345,7 @@ export class StudentRegTopicRepository
         const res = await this.topicModel.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
             {
-                currentStatus: (await this.checkSlot(topic.maxStudents - 1, topicId))
+                currentStatus: (await this.checkSlot(topic.maxStudents , topicId))
                     ? TopicStatus.Full
                     : TopicStatus.Registered
             }
@@ -458,13 +528,44 @@ export class StudentRegTopicRepository
             const currentApprovedCount = await this.studentRegTopicModel
                 .countDocuments({
                     topicId: topic._id,
-                    status: RegistrationStatus.APPROVED,
+                    status: StudentRegistrationStatus.APPROVED,
                     deleted_at: null
                 })
                 .session(session)
 
             if (currentApprovedCount >= topic.maxStudents) {
                 throw new FullLecturerSlotException()
+            }
+            //Kiểm tra sinh viên    đã đăng ký đề tài cùng loại
+            if (topic.type !== TopicType.SCIENCE_RESEARCH) {
+                let checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
+                    {
+                        $lookup: {
+                            from: 'topics',
+                            localField: 'topicId',
+                            foreignField: '_id',
+                            as: 'topicInfo'
+                        }
+                    },
+                    {
+                        $unwind: '$topicInfo'
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $not: { $in: ['$topicInfo.type', [TopicType.SCIENCE_RESEARCH]] } },
+                                    { $eq: ['$userId', registration.userId] },
+                                    { $eq: ['$status', StudentRegistrationStatus.APPROVED] },
+                                    { $eq: ['$deleted_at', null] }
+                                ]
+                            }
+                        }
+                    }
+                ])
+                if (checkExistingRegisterOtherSameType.length > 0) {
+                    throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
+                }
             }
 
             registration.status = StudentRegistrationStatus.APPROVED
