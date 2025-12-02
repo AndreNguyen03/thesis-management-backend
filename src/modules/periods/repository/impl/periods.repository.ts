@@ -63,6 +63,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     async deletePeriod(periodId: string): Promise<boolean> {
+        console.log(periodId)
         const result = await this.periodModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },
             { $project: { phasesCount: { $size: '$phases' } } }

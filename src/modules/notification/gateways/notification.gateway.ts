@@ -1,10 +1,9 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { OnlineUserService } from '../services/online-user.service'
-import { NotificationService } from '../services/notification.service'
 import { NotificationPublisherService } from '../publisher/notification.publisher.service'
 
-@WebSocketGateway()
+@WebSocketGateway({ namespace: 'notifications' })
 export class NotificationGateway {
     @WebSocketServer()
     server: Server
@@ -16,9 +15,10 @@ export class NotificationGateway {
 
     async handleConnection(client: Socket) {
         const userId = client.handshake.query.userId as string
-        if (userId) await this.onlineUserService.addSocket(userId, client.id)
-
-        await this.notiPublisher.sendUnseenNotifications(userId)
+        if (userId) {
+            await this.onlineUserService.addSocket(userId, client.id)
+            await this.notiPublisher.sendUnseenNotifications(userId)
+        }
     }
 
     async handleDisconnect(client: Socket) {

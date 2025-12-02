@@ -455,6 +455,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
     async createTopic(topicData: CreateTopicDto): Promise<string> {
         const res = await this.topicRepository.create(topicData)
+        console.log(res)
         const newTopic = plainToInstance(GetTopicResponseDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

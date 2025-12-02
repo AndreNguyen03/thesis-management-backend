@@ -65,7 +65,7 @@ export class CreateTopicDto {
     @IsOptional()
     grade: Grade[]
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsBoolean()
-    allowManualApproval: boolean
+    allowManualApproval: boolean = false
 }

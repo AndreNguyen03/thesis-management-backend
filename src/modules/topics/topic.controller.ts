@@ -106,8 +106,11 @@ export class TopicController {
         @UploadedFiles() files: Express.Multer.File[],
         @Body() topic: CreateTopicDto
     ) {
+        console.log('files:', files)
+        console.log('body:', topic)
         topic.createBy = req.user.sub
         const topicId = await this.topicService.createTopic(req.user.sub, topic, files)
+        console.log(topicId)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
     @Patch()

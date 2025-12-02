@@ -41,7 +41,7 @@ export class NotificationQueueProcessor {
         // update db
         await this.notiModel.updateMany({ userId, seen: false }, { seen: true })
 
-        // emit ws to all user socket
+        // emit ws to all user socket (if user has more than 1 device access to app)
         const sockets = await this.onlineUserService.getSockets(userId)
         sockets.forEach((sid) => {
             this.notiGateway.server.to(sid).emit('notifications-marked-read-all')

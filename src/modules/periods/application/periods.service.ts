@@ -143,11 +143,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return period
     }
 
-    async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {
-
-
-        
-    }
+    async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
     // statistics
     async boardGetStatisticsInPeriod(periodId: string, query: PeriodStatsQueryParams) {
         //lấy thống kê liên quan tới đề tài
