@@ -11,6 +11,7 @@ import { Paginated } from '../../../../common/pagination-an/interfaces/paginated
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
+import { GetPeriodDto, GetPeriodInterface } from '../../dtos/period.dtos'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -159,7 +160,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         }
     }
 
-    async getCurrentPeriodInfo(facultyId: string) {
+    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodInterface | null> {
         const currentPeriod = await this.periodModel
             .findOne({
                 facultyId: new mongoose.Types.ObjectId(facultyId),
@@ -167,29 +168,53 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 deleted_at: null
             })
             .populate('facultyId')
+            .lean()
         if (!currentPeriod) {
             return null
         }
-        const { currentPhase, facultyId: facultyIdRes, ...currentPeriodObject } = currentPeriod.toObject()
+        const { currentPhase, facultyId: facultyIdRes, ...currentPeriodObject } = currentPeriod
         const currentPeriodPhase = currentPeriod.phases.find((phase) => phase.phase === currentPeriod.currentPhase)
+
         return {
-            ...currentPeriodObject,
+            _id: currentPeriodObject._id.toString(),
+            name: currentPeriodObject.name,
             faculty: facultyIdRes,
-            currentPhaseDetail: currentPeriodPhase
-                ? {
-                      ...currentPeriodPhase,
-                      status: (() => {
-                          const now = new Date()
-                          if (now < currentPeriodPhase.startTime) {
-                              return 'PENDING'
-                          } else if (now >= currentPeriodPhase.startTime && now <= currentPeriodPhase.endTime) {
-                              return 'ACTIVE'
-                          } else {
-                              return 'COMPLETED'
-                          }
-                      })()
-                  }
-                : null
+            phases: currentPeriodObject.phases.map((phase) => ({
+                ...phase,
+                status: (() => {
+                    const now = new Date()
+                    if (!phase.startTime || !phase.endTime) {
+                        return 'PENDING'
+                    }
+                    if (now < phase.startTime) {
+                        return 'PENDING'
+                    } else if (now >= phase.startTime && now <= phase.endTime) {
+                        return 'ACTIVE'
+                    } else {
+                        return 'TIMEOUT'
+                    }
+                })()
+            })),
+            status: currentPeriodObject.status,
+            currentPhase: currentPhase,
+            currentPhaseDetail: {
+                ...currentPeriodPhase,
+                status: (() => {
+                    const now = new Date()
+                    if (!currentPeriodPhase || !currentPeriodPhase.startTime || !currentPeriodPhase.endTime) {
+                        return 'PENDING'
+                    }
+                    if (now < currentPeriodPhase.startTime) {
+                        return 'PENDING'
+                    } else if (now >= currentPeriodPhase.startTime && now <= currentPeriodPhase.endTime) {
+                        return 'ACTIVE'
+                    } else {
+                        return 'TIMEOUT'
+                    }
+                })()
+            },
+            startTime: currentPeriodObject.startTime,
+            endTime: currentPeriodObject.endTime
         }
     }
 

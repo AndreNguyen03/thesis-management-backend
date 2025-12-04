@@ -250,7 +250,6 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async getCurrentPeriodInfo(@Req() req: { user: ActiveUserData }) {
         const res = await this.periodsService.getCurrentPeriodInfo(req.user.facultyId!)
-        // return res
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
