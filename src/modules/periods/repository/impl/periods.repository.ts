@@ -303,7 +303,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                 $filter: {
                                                     input: '$lecturers',
                                                     as: 'lec',
-                                                    cond: { $in: ['$$lec._id', '$$phase.requiredLecturerIds'] }
+                                                    cond: {
+                                                        $in: [
+                                                            '$$lec._id',
+                                                            { $ifNull: ['$$phase.requiredLecturerIds', []] }
+                                                        ]
+                                                    }
                                                 }
                                             }
                                         }
