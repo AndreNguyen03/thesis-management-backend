@@ -11,54 +11,75 @@ export class UpdateTopicsPhaseBatchProvider {
 
     async updateTopicsBatchToExecutionPhase(
         periodId: string,
-        actorId: string,
-        force: boolean = false
+        actorId: string
     ): Promise<{ registeredTopics: number; cleanedUpTopics: number }> {
-        //Task1: cập nhật những đề tài có trạng thái là registered hoặc full
-        //Chuyển chúng sang pha mới với trạng thái là in-progress
+        console.log('================= UPDATE TOPICS BATCH → EXECUTION PHASE =================')
+        console.log('[INPUT]', { periodId, actorId })
+
+        console.log('\n----[TASK 1] Tìm đề tài có sinh viên đăng ký ----')
         const registeredTopics = await this.topicRepository.findByCondition({
             periodId: periodId,
             currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
             currentStatus: { $in: [TopicStatus.Registered, TopicStatus.Full] },
             deleted_at: null
         })
-        console.log(`----Tìm thấy ${registeredTopics?.length ?? 0} đề tài đã đăng ký trong kì ${periodId}`)
 
-        registeredTopics?.forEach(async (topic) => {
-            await this.topicRepository.update(topic._id.toString(), {
+        console.log(`[RESULT] Số lượng đề tài chuyển sang EXECUTION: ${registeredTopics?.length ?? 0}`)
+
+        // 1) Chuyển các đề tài có đăng ký sang EXECUTION
+        for (const topic of registeredTopics ?? []) {
+            const payload = {
                 currentPhase: PeriodPhaseName.EXECUTION,
                 currentStatus: TopicStatus.InProgress,
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
+<<<<<<< HEAD
                     this.createPhaseHistory(PeriodPhaseName.EXECUTION, TopicStatus.InProgress, actorId)
+=======
+                    this.createPhaseHistory( PeriodPhaseName.EXECUTION, TopicStatus.InProgress, actorId)
+>>>>>>> 544f215 (fix(update-batch-history): fix logic)
                 ]
-            })
-            console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Đang thực hiện thành công`)
-        })
-        //Task2: Dọn dẹp các đề tài bị kẹt lại
-        // Những đề tài có trạng thái là pending registration hoặc cancelled mà BCN ép force bỏ qua
-        //Chúng ta sẽ tự động cancel chúng
-        if (force === false) return { registeredTopics: registeredTopics?.length ?? 0, cleanedUpTopics: 0 }
+            }
 
-        const cleanupTopics = await this.topicRepository.findByCondition({
+            console.log(`\n[UPDATE] Cập nhật đề tài ${topic._id}:`, payload)
+            await this.topicRepository.update(topic._id.toString(), payload)
+            console.log(`[OK] -> ${topic._id} chuyển sang InProgress`)
+        }
+
+        console.log('\n----[TASK 2] Tự động dọn dẹp đề tài KHÔNG có sinh viên đăng ký ----')
+
+        // Tìm các đề tài không có ai đăng ký
+        const unregisteredTopics = await this.topicRepository.findByCondition({
             periodId: periodId,
             currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
             currentStatus: { $in: [TopicStatus.PendingRegistration, TopicStatus.Cancelled] },
             deleted_at: null
         })
-        console.log(`----Tìm thấy ${cleanupTopics?.length ?? 0} đề tài cần dọn dẹp trong kì ${periodId}`)
-        cleanupTopics?.forEach(async (topic) => {
-            await this.topicRepository.update(topic._id.toString(), {
-                currentStatus: TopicStatus.Cancelled,
+
+        console.log(`[RESULT] Đề tài không có người đăng ký cần đưa về Draft: ${unregisteredTopics?.length ?? 0}`)
+
+        // 2) Tự động chuyển về Draft
+        for (const topic of unregisteredTopics ?? []) {
+            const payload = {
+                currentPhase: PeriodPhaseName.OPEN_REGISTRATION, // vẫn giữ phase cũ
+                currentStatus: TopicStatus.Draft, // auto chuyển về Draft
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory(PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Cancelled)
+                    this.createPhaseHistory( PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Draft, actorId)
                 ]
-            })
-            console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Đang thực hiện thành công`)
-        })
-        console.log('Xử lí đề tài thành công!')
-        return { registeredTopics: registeredTopics?.length ?? 0, cleanedUpTopics: cleanupTopics?.length ?? 0 }
+            }
+
+            console.log(`\n[CLEANUP] Chuyển đề tài ${topic._id} → Draft`, payload)
+            await this.topicRepository.update(topic._id.toString(), payload)
+            console.log(`[OK] -> ${topic._id} chuyển về Draft`)
+        }
+
+        console.log('\n===== SUCCESS: Xử lý batch đề tài hoàn tất! =====')
+
+        return {
+            registeredTopics: registeredTopics?.length ?? 0,
+            cleanedUpTopics: unregisteredTopics?.length ?? 0
+        }
     }
 
     async updateTopicsBatchToRegisPhase(periodId: string, actorId: string, force: boolean = false): Promise<number> {

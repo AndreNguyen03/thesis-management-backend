@@ -1,4 +1,4 @@
-import { Inject, Injectable, RequestTimeoutException } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
 import { CreatePeriodDto, PeriodStatsQueryParams, UpdatePeriodDto } from '../dtos/period.dtos'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
@@ -23,6 +23,20 @@ import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statisti
 
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { GetCustomRequestDto } from '../dtos/custom-request.dtos'
+import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
+import {
+    PeriodDetail,
+    PeriodPhaseDetail,
+    Phase1Response,
+    Phase2Response,
+    Phase3Response
+} from '../dtos/phase-resolve.dto'
+import {
+    GetTopicStatisticInSubmitPhaseDto,
+    LecGetTopicStatisticInSubmitPhaseDto
+} from '../../topics/dtos/get-statistics-topics.dtos'
+import { TopicService } from '../../topics/application/topic.service'
+import { TopicStatus } from '../../topics/enum'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -32,10 +46,151 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
         private readonly getPhaseProvider: GetPhaseProvider,
-        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider
+        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
+        private readonly topicService: TopicService
     ) {
         super(iPeriodRepository)
     }
+
+    async closePhase(
+        periodId: string,
+        phase: PeriodPhaseName,
+        user: ActiveUserData
+    ): Promise<Phase1Response | Phase2Response | Phase3Response> {
+        const period = await this.iPeriodRepository.getDetailPeriod(periodId)
+        const phaseDetail = period?.phases.find((p) => p.phase === phase && p.status === 'completed')
+        const canTriggerNextPhase = phaseDetail?.endTime
+        if (!period) throw new NotFoundException('Không tìm thấy đợt')
+        if (!phaseDetail) throw new NotFoundException('Không tìm thấy pha')
+        switch (phase) {
+            case PeriodPhaseName.SUBMIT_TOPIC:
+                return await this.handleCloseSubmitTopicPhase(phaseDetail, period)
+            case PeriodPhaseName.OPEN_REGISTRATION:
+                return await this.handleCloseOpenRegistrationPhase(phaseDetail, period)
+            case PeriodPhaseName.EXECUTION:
+                return await this.handleCloseExecutionPhase(phaseDetail, period)
+            // case PeriodPhaseName.COMPLETION:
+            //     return await this.handleCloseCompletionPhase(phaseDetail)
+            default:
+                throw new BadRequestException('Pha không hợp lệ!')
+        }
+    }
+    // async handleCloseCompletionPhase(phaseDetail: PeriodPhaseDetail) {
+    //     throw new Error('Method not implemented.')
+    // }
+    async handleCloseExecutionPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail): Promise<Phase3Response> {
+        throw new Error('Method not implemented.')
+    }
+    //     export interface Phase2Response {
+    //     periodId: string
+    //     phase: 'open_registration'
+    //     resolveTopics: {
+    //         draft: { topicId: string; title: string }[]
+    //         executing: { topicId: string; title: string }[]
+    //     }
+    // }
+    async handleCloseOpenRegistrationPhase(
+        phaseDetail: PeriodPhaseDetail,
+        period: PeriodDetail
+    ): Promise<Phase2Response> {
+        let result: Phase2Response = {
+            periodId: period._id.toString(),
+            phase: 'open_registration',
+            resolveTopics: { draft: [], executing: [] },
+            canTriggerNextPhase: false
+        }
+        const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
+        const nextPhase = period.phases[currentIndex + 1]
+
+        result.canTriggerNextPhase = this.computeCanTriggerNextPhase(phaseDetail, nextPhase, false)
+
+        return result
+    }
+    async handleCloseSubmitTopicPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail) {
+        console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
+
+        // init dto
+        let result: Phase1Response = {
+            periodId: period._id.toString(),
+            phase: 'submit_topic',
+            missingTopics: [],
+            pendingTopics: 0,
+            canTriggerNextPhase: false
+        }
+
+        const minTopicsRequired = phaseDetail.minTopicsPerLecturer
+        console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
+
+        // loop get missing topic count per lecturer
+        for (const lec of phaseDetail.requiredLecturers) {
+            console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
+
+            const lecStatsPhase1 = (await this.lecturerGetStatisticsSubmitTopicPhase(
+                period._id.toString(),
+                lec._id
+            )) as LecGetTopicStatisticInSubmitPhaseDto
+
+            console.log(
+                '[handleCloseSubmitTopicPhase] Lecturer submitted topics:',
+                lecStatsPhase1.submittedTopicsNumber
+            )
+
+            const submited = lecStatsPhase1.submittedTopicsNumber
+
+            if (submited < minTopicsRequired) {
+                const missing = minTopicsRequired - submited
+                console.log(`[handleCloseSubmitTopicPhase] Lecturer missing topics: ${missing}`)
+
+                result.missingTopics.push({
+                    lecturerId: lec._id,
+                    lecturerEmail: lec.email,
+                    minTopicsRequired: minTopicsRequired,
+                    lecturerName: lec.fullName,
+                    submittedTopicsCount: submited,
+                    missingTopicsCount: missing
+                })
+            }
+        }
+        
+        // get board stats to get remaining submitted
+        const boardStatsPhase1 = (await this.boardGetStatisticsInPeriod(period._id.toString(), {
+            phase: phaseDetail.phase
+        })) as GetTopicStatisticInSubmitPhaseDto
+
+        console.log(
+            '[handleCloseSubmitTopicPhase] Board submitted topics remaining:',
+            boardStatsPhase1.submittedTopicsNumber
+        )
+
+        result.pendingTopics = boardStatsPhase1.submittedTopicsNumber
+
+        console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
+        const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
+        const nextPhase = period.phases[currentIndex + 1]
+
+        result.canTriggerNextPhase = this.computeCanTriggerNextPhase(
+            phaseDetail,
+            nextPhase,
+            result.missingTopics.length > 0 && result.pendingTopics > 0
+        )
+
+        return result
+    }
+
+    computeCanTriggerNextPhase(
+        currentPhase: PeriodPhaseDetail,
+        nextPhase: PeriodPhaseDetail | undefined,
+        hasPending: boolean
+    ): boolean {
+        const now = new Date()
+
+        const isEnded = currentPhase.endTime != null && new Date(currentPhase.endTime) < now
+
+        const nextPhaseIsConfigured = nextPhase != null && nextPhase.startTime != null
+
+        return isEnded && !hasPending && !nextPhaseIsConfigured
+    }
+
     async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto) {
         const { phaseSubmitTopic, ...nest } = createPeriodDto
         const periodData = {
@@ -76,7 +231,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return this.iPeriodRepository.update(periodId, updatedPeriod)
     }
 
-    async getPeriodInfo(periodId: string) {
+    async getPeriodInfo(periodId: string): Promise<PeriodDetail | null> {
         const period = await this.iPeriodRepository.getDetailPeriod(periodId)
         return period
     }

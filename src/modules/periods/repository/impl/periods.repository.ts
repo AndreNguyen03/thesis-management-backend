@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { Period, PeriodPhase } from '../../schemas/period.schemas'
 import { IPeriodRepository } from '../periods.repository.interface'
-import mongoose, { Model } from 'mongoose'
+import mongoose, { Model, Types } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
@@ -11,7 +11,11 @@ import { Paginated } from '../../../../common/pagination-an/interfaces/paginated
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
+<<<<<<< HEAD
 import { GetPeriodDto, GetPeriodInterface } from '../../dtos/period.dtos'
+=======
+import { PeriodDetail } from '../../dtos/phase-resolve.dto'
+>>>>>>> 544f215 (fix(update-batch-history): fix logic)
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -232,32 +236,55 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         as: 'faculty'
                     }
                 },
+                { $unwind: { path: '$faculty', preserveNullAndEmptyArrays: true } },
+
+                // Convert requiredLecturerIds (string) sang ObjectId để lookup
                 {
-                    $unwind: {
-                        path: '$faculty'
+                    $addFields: {
+                        phases: {
+                            $map: {
+                                input: '$phases',
+                                as: 'phase',
+                                in: {
+                                    $mergeObjects: [
+                                        '$$phase',
+                                        {
+                                            requiredLecturerIdsObj: {
+                                                $map: {
+                                                    input: '$$phase.requiredLecturerIds',
+                                                    as: 'id',
+                                                    in: { $toObjectId: '$$id' }
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     }
-                }
-            ]
-        )
-        pipelineMain.push(
-            ...[
+                },
+
+                // Lookup users
                 {
                     $lookup: {
                         from: 'users',
-                        localField: 'phases.requiredLecturerIds',
+                        localField: 'phases.requiredLecturerIdsObj',
                         foreignField: '_id',
                         as: 'lecUserInfo'
                     }
                 },
-                // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
+
+                // Lookup lecturers
                 {
                     $lookup: {
                         from: 'lecturers',
-                        localField: 'phases.requiredLecturerIds',
+                        localField: 'phases.requiredLecturerIdsObj',
                         foreignField: 'userId',
                         as: 'lectInfos'
                     }
                 },
+
+                // Merge user info + lecturer info
                 {
                     $addFields: {
                         lecturers: {
@@ -285,6 +312,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         }
                     }
                 },
+
+                // Map requiredLecturers cho từng phase
                 {
                     $project: {
                         _id: 1,
@@ -304,7 +333,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                 $filter: {
                                                     input: '$lecturers',
                                                     as: 'lec',
-                                                    cond: { $in: ['$$lec._id', '$$phase.requiredLecturerIds'] }
+                                                    cond: { $in: ['$$lec._id', '$$phase.requiredLecturerIdsObj'] }
                                                 }
                                             }
                                         }
@@ -317,13 +346,14 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             ]
         )
         // kết bảng bảng với phases thể lấy thông tin giai đoạn
+
         pipelineMain.push({ $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
         return pipelineMain
     }
-    async getDetailPeriod(periodId: string) {
+    
+    async getDetailPeriod(periodId: string): Promise<PeriodDetail | null> {
         let pipelineMain: any[] = []
         pipelineMain.push(...(await this.AbstractGetPeriodInfo(periodId)))
-
         const result = await this.periodModel.aggregate(pipelineMain)
         if (!result || result.length === 0) return null
 
