@@ -130,6 +130,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 lec._id
             )) as LecGetTopicStatisticInSubmitPhaseDto
 
+            console.log(lecStatsPhase1)
+
             console.log(
                 '[handleCloseSubmitTopicPhase] Lecturer submitted topics:',
                 lecStatsPhase1.submittedTopicsNumber

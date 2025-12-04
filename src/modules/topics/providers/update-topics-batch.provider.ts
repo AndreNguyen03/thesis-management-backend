@@ -33,11 +33,7 @@ export class UpdateTopicsPhaseBatchProvider {
                 currentStatus: TopicStatus.InProgress,
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-<<<<<<< HEAD
                     this.createPhaseHistory(PeriodPhaseName.EXECUTION, TopicStatus.InProgress, actorId)
-=======
-                    this.createPhaseHistory( PeriodPhaseName.EXECUTION, TopicStatus.InProgress, actorId)
->>>>>>> 544f215 (fix(update-batch-history): fix logic)
                 ]
             }
 
