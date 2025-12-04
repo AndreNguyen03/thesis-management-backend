@@ -82,14 +82,15 @@ export class CreatePhaseProvider {
         }
 
         //Kiểm tra toàn vẹn dữ liệu
-        const topics = await this.topicService.findByCondition({
-            periodId: periodId,
-            currentPhase: period.currentPhase,
-            currentStatus: { $in: [TopicStatus.Submitted, TopicStatus.UnderReview] },
-            deleted_at: null
-        })
+        const topics =
+            (await this.topicService.findByCondition({
+                periodId: periodId,
+                currentPhase: period.currentPhase,
+                currentStatus: { $in: [TopicStatus.Submitted, TopicStatus.UnderReview] },
+                deleted_at: null
+            })) ?? []
 
-        if (topics) {
+        if (!force && topics.length > 0) {
             throw new BadRequestException(
                 `Vẫn còn ${topics.length} đề tài ở trạng thái Submitted hoặc UnderReview. Có thể dùng force.`
             )
@@ -115,46 +116,86 @@ export class CreatePhaseProvider {
         dto: ConfigExecutionPhaseDto,
         force: boolean = false
     ): Promise<{ success: boolean; message: string }> {
+        console.log('================= CONFIG PHASE EXECUTION =================')
+        console.log('[INPUT]', { actorId, periodId, dto, force })
+
         const period = await this.iPeriodRepository.findOneById(periodId)
+        console.log('[PERIOD FOUND]', period ? period._id : 'NOT FOUND')
+
         if (!period) throw new PeriodNotFoundException()
 
-        //Kiểm tra chuyển pha theo đúng trình tự
+        // Kiểm tra chuyển pha theo đúng trình tự
+        console.log('[CHECK] Validate manual transition:', {
+            currentPhase: period.currentPhase,
+            newPhase: PeriodPhaseName.EXECUTION
+        })
         const isValid = await this.validatePeriodPhaseProvider.validateStatusManualTransition(
             period.currentPhase,
             PeriodPhaseName.EXECUTION
         )
+        console.log('[RESULT] isValidTransition =', isValid)
 
-        if (isValid) {
+        if (!isValid) {
+            console.log('[ERROR] INVALID TRANSITION')
             throw new BadRequestException(
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.EXECUTION}`
             )
         }
 
-        //Kiểm tra thời gian
+        // Kiểm tra thời gian
         const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
+        console.log('[CHECK] End time of current phase:', currentPeriodPhase?.endTime)
+        console.log('[CHECK] Now < EndTime ? =>', new Date() < new Date(currentPeriodPhase!.endTime))
+
         if (!force && new Date() < new Date(currentPeriodPhase!.endTime)) {
+            console.log('[ERROR] Not yet end time')
             throw new BadRequestException('Chưa đến thời gian kết thúc pha hiện tại. Có thể dùng force.')
         }
 
-        //Kiểm tra toàn vẹn dữ liệu
-        const topics = await this.topicService.findByCondition({
-            periodId: periodId,
-            currentPhase: period.currentPhase,
-            currentStatus: { $in: [TopicStatus.Submitted, TopicStatus.UnderReview] },
-            deleted_at: null
-        })
+        // Kiểm tra toàn vẹn dữ liệu
+        console.log('[CHECK] Checking topics with invalid statuses...')
+        const topics =
+            (await this.topicService.findByCondition({
+                periodId: periodId,
+                currentPhase: period.currentPhase,
+                currentStatus: { $in: [TopicStatus.Submitted, TopicStatus.UnderReview] },
+                deleted_at: null
+            })) ?? []
 
-        if (topics) {
+        console.log(`[RESULT] Found ${topics.length} topics in bad statuses`)
+        if (topics.length > 0) {
+            console.log(
+                '[TOPICS]',
+                topics.map((t) => ({ id: t._id, status: t.currentStatus }))
+            )
+        }
+
+        if (!force && topics.length > 0) {
+            console.log('[ERROR] INVALID TOPICS REMAINING')
             throw new BadRequestException(
                 `Vẫn còn ${topics.length} đề tài ở trạng thái Submitted hoặc UnderReview. Có thể dùng force.`
             )
         }
+
+        // Update topics batch
+        console.log('[ACTION] Updating topics batch to execution phase...')
         const { registeredTopics, cleanedUpTopics } =
             await this.updateTopicsBatchProvider.updateTopicsBatchToExecutionPhase(periodId, actorId)
 
+        console.log('[RESULT] Batch update result:', {
+            registeredTopics,
+            cleanedUpTopics
+        })
+
+        // Cập nhật pha mới
+        console.log('[ACTION] Updating phase config in DB...')
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
+        console.log('[NEW PHASE DATA]', newPeriodPhase)
+
         await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
-        console.log('Chuyển pha thành công!')
+
+        console.log('===== SUCCESS: Phase switched to EXECUTION =====')
+
         return {
             success: true,
             message: `Chuyển sang ${PeriodPhaseName.EXECUTION} thành công. ${registeredTopics} đề tài tiến hành thực hiện, dọn dẹp ${cleanedUpTopics} đề tài.`

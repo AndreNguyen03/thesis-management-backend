@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { Period, PeriodPhase } from '../../schemas/period.schemas'
 import { IPeriodRepository } from '../periods.repository.interface'
-import mongoose, { Model } from 'mongoose'
+import mongoose, { Model, Types } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
@@ -11,7 +11,8 @@ import { Paginated } from '../../../../common/pagination-an/interfaces/paginated
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
-import { GetPeriodDto, GetPeriodInterface } from '../../dtos/period.dtos'
+import { PeriodDetail } from '../../dtos/phase-resolve.dto'
+import { GetPeriodInterface } from '../../dtos/period.dtos'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -63,6 +64,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     async deletePeriod(periodId: string): Promise<boolean> {
+        console.log(periodId)
         const result = await this.periodModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },
             { $project: { phasesCount: { $size: '$phases' } } }
@@ -324,10 +326,10 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         pipelineMain.push({ $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
         return pipelineMain
     }
-    async getDetailPeriod(periodId: string) {
+
+    async getDetailPeriod(periodId: string): Promise<PeriodDetail | null> {
         let pipelineMain: any[] = []
         pipelineMain.push(...(await this.AbstractGetPeriodInfo(periodId)))
-
         const result = await this.periodModel.aggregate(pipelineMain)
         if (!result || result.length === 0) return null
 

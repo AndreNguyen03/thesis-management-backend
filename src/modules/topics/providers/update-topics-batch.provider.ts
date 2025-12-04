@@ -57,11 +57,11 @@ export class UpdateTopicsPhaseBatchProvider {
         // 2) Tự động chuyển về Draft
         for (const topic of unregisteredTopics ?? []) {
             const payload = {
-                currentPhase: PeriodPhaseName.EMPTY,
+                currentPhase: PeriodPhaseName.OPEN_REGISTRATION, // vẫn giữ phase cũ
                 currentStatus: TopicStatus.Draft, // auto chuyển về Draft
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory(PeriodPhaseName.EMPTY, TopicStatus.Draft, actorId)
+                    this.createPhaseHistory( PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Draft, actorId)
                 ]
             }
 
@@ -69,6 +69,7 @@ export class UpdateTopicsPhaseBatchProvider {
             await this.topicRepository.update(topic._id.toString(), payload)
             console.log(`[OK] -> ${topic._id} chuyển về Draft`)
         }
+
         console.log('\n===== SUCCESS: Xử lý batch đề tài hoàn tất! =====')
 
         return {

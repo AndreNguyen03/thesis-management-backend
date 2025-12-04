@@ -37,14 +37,16 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         userId: string,
         userRole: string
     ): Promise<GetCancelRegisteredTopicResponseDto[]>
-   // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
+    // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
     getTopicsInPhaseHistory(phaseName: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
+    //faculty board get statistics
     getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto>
     getStatisticsExecutionPhase(periodId: string): Promise<GetTopicsStatisticInExecutionPhaseDto>
     getStatisticsOpenRegistrationPhase(periodId: string): Promise<GetTopicStatisticInOpenRegPhaseDto>
     getStatisticsCompletionPhase(periodId: string): Promise<GetTopicsStatisticInCompletionPhaseDto>
+    //lecturer get statistics
     lecturerGetStatisticTopicsInSubmitPhase(
         periodId: string,
         lecturerId: string
@@ -72,5 +74,4 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
-    getTopicsOfPeriod(userId: string, periodId: string, query: PaginationTopicsQueryParams): Promise<Paginated<Topic>>
 }

@@ -2,6 +2,7 @@ import { Paginated } from '../../../common/pagination-an/interfaces/paginated.in
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import { GetCurrentPhaseResponseDto } from '../dtos/period-phases.dtos'
 import { GetPeriodDto } from '../dtos/period.dtos'
+import { PeriodDetail } from '../dtos/phase-resolve.dto'
 import { RequestGetPeriodsDto } from '../dtos/request-get-all.dto'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
 
@@ -21,7 +22,7 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
         minTopics: number
     }>
     getCurrentPeriodInfo(facultyId: string)
-    getDetailPeriod(periodId: string)
+    getDetailPeriod(periodId: string): Promise<PeriodDetail | null>
     initalizePhasesForNewPeriod(periodId: string): Promise<boolean>
     createNewPeriod(period: Period): Promise<Period>
 }

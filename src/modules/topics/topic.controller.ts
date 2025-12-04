@@ -52,20 +52,6 @@ export class TopicController {
         })
     }
 
-    @Get('/period-topics/:periodId')
-    @Auth(AuthType.Bearer)
-    async getTopicsOfPeriod(
-        @Req() req: { user: ActiveUserData },
-        @Param('periodId') periodId: string,
-        @Query() query: PaginationTopicsQueryParams
-    ) {
-        const topics = await this.topicService.getTopicsOfPeriod(req.user.sub, periodId, query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
-
     @Get('/saved-topics')
     @Auth(AuthType.Bearer)
     async getSavedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
@@ -106,8 +92,11 @@ export class TopicController {
         @UploadedFiles() files: Express.Multer.File[],
         @Body() topic: CreateTopicDto
     ) {
+        console.log('files:', files)
+        console.log('body:', topic)
         topic.createBy = req.user.sub
         const topicId = await this.topicService.createTopic(req.user.sub, topic, files)
+        console.log(topicId)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
     @Patch()

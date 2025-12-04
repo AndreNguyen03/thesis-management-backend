@@ -17,7 +17,7 @@ import {
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
 } from './dtos/period-phases.dtos'
-import { RequestGetTopicsInPhaseDto } from '../topics/dtos'
+import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseDto } from '../topics/dtos'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
@@ -26,6 +26,8 @@ import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Period } from './schemas/period.schemas'
 import { GetStatiticInPeriod } from './dtos/statistic.dtos'
+import { PeriodPhaseName } from './enums/period-phases.enum'
+import { Phase1Response, Phase2Response, Phase3Response } from './dtos/phase-resolve.dto'
 
 @Controller('periods')
 export class PeriodsController {
@@ -160,7 +162,10 @@ export class PeriodsController {
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
         const topics = await this.periodsService.getTopicsInPhase(periodId, query)
-        return topics
+        return plainToInstance(PaginatedGeneralTopics, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
@@ -254,5 +259,17 @@ export class PeriodsController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+
+    @Post('/:periodId/phases/:phase/resolve')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async closePhase(
+        @Param('periodId') periodId: string,
+        @Param('phase') phase: PeriodPhaseName,
+        @Req() req: { user: ActiveUserData }
+    ): Promise<Phase1Response | Phase2Response | Phase3Response> {
+        return this.periodsService.closePhase(periodId, phase, req.user)
     }
 }
