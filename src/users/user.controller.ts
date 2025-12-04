@@ -127,6 +127,7 @@ export class UserController {
     @Get('lec/get-all-lecturers/combobox')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
+    @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getAllLecturers_An(@Query() query: PaginationAn, @Req() req: { user: ActiveUserData }) {
         const res = await this.lecturerService.getAllLecturers_An(req.user.facultyId!, query)

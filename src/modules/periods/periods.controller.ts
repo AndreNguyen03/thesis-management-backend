@@ -17,7 +17,7 @@ import {
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
 } from './dtos/period-phases.dtos'
-import { RequestGetTopicsInPhaseDto } from '../topics/dtos'
+import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseDto } from '../topics/dtos'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
@@ -89,7 +89,6 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
         const res = await this.periodsService.getPeriodInfo(periodId)
-        console.log('period detail ::: ', res)
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -163,7 +162,10 @@ export class PeriodsController {
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
         const topics = await this.periodsService.getTopicsInPhase(periodId, query)
-        return topics
+        return plainToInstance(PaginatedGeneralTopics, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác

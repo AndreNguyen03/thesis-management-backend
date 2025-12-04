@@ -162,7 +162,7 @@ export class ResponseMiniLecturerDto {
     @Expose()
     phone: string
     @Expose()
-    avatarUrl: string
+    avatarUrl: string   
     @Expose()
     avatarName: string
 

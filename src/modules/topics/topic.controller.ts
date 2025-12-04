@@ -52,20 +52,6 @@ export class TopicController {
         })
     }
 
-    @Get('/period-topics/:periodId')
-    @Auth(AuthType.Bearer)
-    async getTopicsOfPeriod(
-        @Req() req: { user: ActiveUserData },
-        @Param('periodId') periodId: string,
-        @Query() query: PaginationTopicsQueryParams
-    ) {
-        const topics = await this.topicService.getTopicsOfPeriod(req.user.sub, periodId, query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
-
     @Get('/saved-topics')
     @Auth(AuthType.Bearer)
     async getSavedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {

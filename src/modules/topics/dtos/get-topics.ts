@@ -109,6 +109,8 @@ export class GetGeneralTopics extends AbstractTopic {
     @Expose()
     submittedAt: Date
     @Expose()
+    lastStatusInPhaseHistory : GetPhaseHistoryDto
+    @Expose()
     @Type(() => ResponseMiniLecturerDto)
     createByInfo: ResponseMiniLecturerDto
     @Expose()

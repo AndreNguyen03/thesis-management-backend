@@ -114,7 +114,7 @@ export class UpdateTopicsPhaseBatchProvider {
         const awaitingEvaluationTopics = await this.topicRepository.findByCondition({
             periodId: periodId,
             currentPhase: PeriodPhaseName.EXECUTION,
-            currentStatus: TopicStatus.Approved,
+            currentStatus: TopicStatus.AwaitingEvaluation,
             deleted_at: null
         })
         console.log(`----Tìm thấy ${awaitingEvaluationTopics?.length ?? 0} đề tài đang chờ đánh giá ${periodId}`)

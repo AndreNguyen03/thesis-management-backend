@@ -35,6 +35,8 @@ import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagina
 import { de } from '@faker-js/faker/.'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { allow } from 'joi'
+import { pipe } from 'rxjs'
+import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -860,20 +862,85 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
+        pipelineSub.push({
+            $addFields: {
+                lastStatusInPhaseHistory: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: '$phaseHistories',
+                                as: 'ph',
+                                cond: {
+                                    $and: [
+                                        ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
+                                        ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
+                                    ]
+                                }
+                            }
+                        },
+                        -1
+                    ]
+                }
+            }
+        })
+        //mục đích là không phải lấy trường này mà là để lấy thêm thời gian nộp đề tài
+        pipelineSub.push({
+            $addFields: {
+                submittedPhaseHistory: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: '$phaseHistories',
+                                as: 'ph',
+                                cond: { $eq: ['$$ph.status', 'submitted'] }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        })
+        pipelineSub.push({
+            $project: {
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                type: 1,
+                status: 1,
+                createBy: 1,
+                createByInfo: '$createByInfo',
+                deadline: 1,
+                maxStudents: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                periodId: 1,
+                currentStatus: 1,
+                currentPhase: 1,
+                isRegistered: 1,
+                isSaved: 1,
+                major: '$majorsInfo',
+                lecturers: 1,
+                studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
+                fields: `$fields`,
+                requirements: `$requirements`,
+                fieldIds: 1,
+                fileIds: 1,
+                requirementIds: 1,
+                grade: 1,
+                isEditable: 1,
+                allowManualApproval: 1,
+                lastStatusInPhaseHistory: 1,
+                //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
+                //Không thì thôi vì phải plainToInstance
+                submittedAt: '$submittedPhaseHistory.createdAt'
+            }
+        })
         pipelineSub.push({
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
-                deleted_at: null,
-                ...(query.phase || query.status
-                    ? {
-                          phaseHistories: {
-                              $elemMatch: {
-                                  ...(query.phase ? { phaseName: query.phase } : {}),
-                                  ...(query.status ? { status: query.status } : {})
-                              }
-                          }
-                      }
-                    : {})
+                lastStatusInPhaseHistory: { $ne: null },
+                deleted_at: null
             }
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
@@ -883,96 +950,126 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         const submitPhase = PeriodPhaseName.SUBMIT_TOPIC
         //Kiểm tra kỳ có pha nộp đề tài chưa
         //Lấy các thông số thuộc pha, trong kì
-        const topicsFigures = await this.topicRepository.aggregate([
-            {
-                $facet: {
-                    rejectedTopics: [
-                        {
-                            $match: {
-                                periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Rejected
-                                    }
-                                },
-                                deleted_at: null
-                            }
-                        },
-                        { $count: 'count' }
-                    ],
-                    approvedTopics: [
-                        {
-                            $match: {
-                                periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Approved
-                                    }
-                                },
-                                deleted_at: null
-                            }
-                        },
-                        { $count: 'count' }
-                    ],
-                    submittedTopics: [
-                        {
-                            $match: {
-                                periodId: new mongoose.Types.ObjectId(periodId),
-                                deleted_at: null,
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Submitted
-                                    }
-                                },
-                                $nor: [
+        // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
+        let pipelineMain: any = []
+
+        pipelineMain.push({
+            $facet: {
+                rejectedTopics: [
+                    {
+                        $addFields: {
+                            lastStatusInPhaseHistory: {
+                                $arrayElemAt: [
                                     {
-                                        phaseHistories: {
-                                            $elemMatch: {
-                                                phaseName: submitPhase,
-                                                status: { $in: [TopicStatus.Rejected, TopicStatus.Approved] }
-                                            }
+                                        $filter: {
+                                            input: '$phaseHistories',
+                                            as: 'ph',
+                                            cond: { $eq: ['$$ph.phaseName', submitPhase] }
                                         }
-                                    }
+                                    },
+                                    -1
                                 ]
                             }
-                        },
-                        { $count: 'count' }
-                    ],
-                    underReviewTopics: [
-                        {
-                            $match: {
-                                periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.UnderReview
-                                    }
-                                },
-                                deleted_at: null
+                        }
+                    },
+                    {
+                        $project: {
+                            lastStatusInPhaseHistory: 1,
+                            periodId: 1,
+                            deleted_at: 1,
+                            phaseHistories: 1
+                        }
+                    },
+                    {
+                        $match: {
+                            periodId: new mongoose.Types.ObjectId(periodId),
+                            'lastStatusInPhaseHistory.status': TopicStatus.Rejected,
+                            deleted_at: null
+                        }
+                    },
+                    { $count: 'count' }
+                ],
+                approvedTopics: [
+                    {
+                        $addFields: {
+                            lastStatusInPhaseHistory: {
+                                $arrayElemAt: [
+                                    {
+                                        $filter: {
+                                            input: '$phaseHistories',
+                                            as: 'ph',
+                                            cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                        }
+                                    },
+                                    -1
+                                ]
                             }
-                        },
-                        { $count: 'count' }
-                    ],
-                    totalTopicsInPhase: [
-                        {
-                            $match: {
-                                periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase
-                                    }
-                                },
-                                deleted_at: null
+                        }
+                    },
+
+                    {
+                        $match: {
+                            periodId: new mongoose.Types.ObjectId(periodId),
+                            'lastStatusInPhaseHistory.status': TopicStatus.Approved,
+                            deleted_at: null
+                        }
+                    },
+                    { $count: 'count' }
+                ],
+                submittedTopics: [
+                    {
+                        $addFields: {
+                            lastStatusInPhaseHistory: {
+                                $arrayElemAt: [
+                                    {
+                                        $filter: {
+                                            input: '$phaseHistories',
+                                            as: 'ph',
+                                            cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                        }
+                                    },
+                                    -1
+                                ]
                             }
-                        },
-                        { $count: 'count' }
-                    ]
-                }
+                        }
+                    },
+                    {
+                        $match: {
+                            periodId: new mongoose.Types.ObjectId(periodId),
+                            deleted_at: null,
+                            'lastStatusInPhaseHistory.status': TopicStatus.Submitted
+                        }
+                    },
+                    { $count: 'count' }
+                ],
+                underReviewTopics: [
+                    {
+                        $match: {
+                            periodId: new mongoose.Types.ObjectId(periodId),
+                            phaseHistories: {
+                                $elemMatch: {
+                                    phaseName: submitPhase,
+                                    status: TopicStatus.UnderReview
+                                }
+                            },
+                            deleted_at: null
+                        }
+                    },
+                    { $count: 'count' }
+                ],
+                totalTopicsInPhase: [
+                    {
+                        $match: {
+                            periodId: new mongoose.Types.ObjectId(periodId),
+                            'phaseHistories.phaseName': submitPhase,
+                            deleted_at: null
+                        }
+                    },
+                    { $count: 'count' }
+                ]
             }
-        ])
+        })
+        const topicsFigures = await this.topicRepository.aggregate(pipelineMain)
         return {
             periodId: periodId,
             currentPhase: submitPhase,
@@ -990,9 +1087,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     emptyTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.PendingRegistration,
+                                'lastStatusInPhaseHistory.status': TopicStatus.PendingRegistration,
                                 deleted_at: null
                             }
                         },
@@ -1000,9 +1113,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     registeredTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Registered,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Registered,
                                 deleted_at: null
                             }
                         },
@@ -1010,9 +1139,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     fullTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Full,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Full,
                                 deleted_at: null
                             }
                         },
@@ -1022,7 +1167,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: currentPhase,
+                                'phaseHistories.phaseName': currentPhase,
                                 deleted_at: null
                             }
                         },
@@ -1047,9 +1192,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     inNormalProcessing: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.InProgress,
+                                'lastStatusInPhaseHistory.status': TopicStatus.InProgress,
                                 deleted_at: null
                             }
                         },
@@ -1057,9 +1218,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     delayedTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Delayed,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Delayed,
                                 deleted_at: null
                             }
                         },
@@ -1067,9 +1244,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     pausedTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Paused,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Paused,
                                 deleted_at: null
                             }
                         },
@@ -1077,9 +1270,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     submittedForReviewTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.SubmittedForReview,
+                                'lastStatusInPhaseHistory.status': TopicStatus.SubmittedForReview,
                                 deleted_at: null
                             }
                         },
@@ -1087,9 +1296,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     readyForEvaluationNumber: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                curentPhase: currentPhase,
+                                'lastStatusInPhaseHistory.status': TopicStatus.AwaitingEvaluation,
                                 deleted_at: null
                             }
                         },
@@ -1115,10 +1340,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     readyForEvaluation: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: PeriodPhaseName.EXECUTION,
-                                currentStatus: TopicStatus.AwaitingEvaluation,
+                                'lastStatusInPhaseHistory.status': TopicStatus.AwaitingEvaluation,
                                 deleted_at: null
                             }
                         },
@@ -1128,9 +1368,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     gradedTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Graded,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Graded,
                                 deleted_at: null
                             }
                         },
@@ -1140,9 +1396,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     archivedTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Archived,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Archived,
                                 deleted_at: null
                             }
                         },
@@ -1152,9 +1424,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     rejectedFinalTopics: [
                         {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.RejectedFinal,
+                                'lastStatusInPhaseHistory.status': TopicStatus.RejectedFinal,
                                 deleted_at: null
                             }
                         },
@@ -1180,22 +1468,62 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         lecturerId: string
     ): Promise<LecGetTopicStatisticInSubmitPhaseDto> {
         const submitPhase = PeriodPhaseName.SUBMIT_TOPIC
-        //Kiểm tra kỳ có pha nộp đề tài chưa
         //Lấy các thông số thuộc pha, trong kì
         const topicsFigures = await this.topicRepository.aggregate([
             {
                 $facet: {
                     rejectedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Rejected
-                                    }
-                                },
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Rejected,
                                 deleted_at: null
                             }
                         },
@@ -1203,15 +1531,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     approvedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Approved
-                                    }
-                                },
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Approved,
                                 deleted_at: null
                             }
                         },
@@ -1219,15 +1588,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     submittedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.Submitted
-                                    }
-                                },
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Submitted,
                                 deleted_at: null
                             }
                         },
@@ -1235,15 +1645,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     underReviewTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', submitPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase,
-                                        status: TopicStatus.UnderReview
-                                    }
-                                },
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.UnderReview,
                                 deleted_at: null
                             }
                         },
@@ -1251,14 +1702,40 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     totalTopicsInPhase: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                phaseHistories: {
-                                    $elemMatch: {
-                                        phaseName: submitPhase
-                                    }
-                                },
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                phaseHistories: { $elemMatch: { phaseName: submitPhase } },
                                 deleted_at: null
                             }
                         },

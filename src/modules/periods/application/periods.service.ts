@@ -153,7 +153,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 })
             }
         }
-        
+
         // get board stats to get remaining submitted
         const boardStatsPhase1 = (await this.boardGetStatisticsInPeriod(period._id.toString(), {
             phase: phaseDetail.phase
