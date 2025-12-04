@@ -10,7 +10,8 @@ import { TopicModule } from '../topics/topic.module'
 import { GetPhaseProvider } from './providers/get-phase.provider'
 import { ValidatePeriodPhaseProvider } from './providers/validate-phase.provider'
 import { FacultySchema } from '../faculties/schemas/faculty.schema'
-import { ValidatePeriodProvider } from './providers/validate-period.provider';
+import { ValidatePeriodProvider } from './providers/validate-period.provider'
+import { BullModule } from '@nestjs/bull'
 
 @Module({
     controllers: [PeriodsController],
@@ -22,6 +23,14 @@ import { ValidatePeriodProvider } from './providers/validate-period.provider';
         ValidatePeriodPhaseProvider,
         ValidatePeriodProvider
     ],
-    imports: [MongooseModule.forFeature([{ name: 'Period', schema: PeriodSchema },{ name: 'Faculty', schema: FacultySchema }]), PaginationAnModule, TopicModule]
+    imports: [
+        MongooseModule.forFeature([
+            { name: 'Period', schema: PeriodSchema },
+            { name: 'Faculty', schema: FacultySchema }
+        ]),
+        PaginationAnModule,
+        TopicModule,
+        BullModule.registerQueue({ name: 'period' })
+    ]
 })
 export class PeriodsModule {}

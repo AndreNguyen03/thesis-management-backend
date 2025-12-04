@@ -45,7 +45,6 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     ) {
         super(topicRepository)
     }
-
     public async getAllTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.getAllTopics(userId)
     }

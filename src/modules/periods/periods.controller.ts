@@ -26,6 +26,8 @@ import { AuthType } from '../../auth/enum/auth-type.enum'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Period } from './schemas/period.schemas'
 import { GetStatiticInPeriod } from './dtos/statistic.dtos'
+import { PeriodPhaseName } from './enums/period-phases.enum'
+import { Phase1Response, Phase2Response, Phase3Response } from './dtos/phase-resolve.dto'
 
 @Controller('periods')
 export class PeriodsController {
@@ -87,6 +89,7 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
         const res = await this.periodsService.getPeriodInfo(periodId)
+        console.log('period detail ::: ', res)
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -254,5 +257,17 @@ export class PeriodsController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+
+    @Post('/:periodId/phases/:phase/resolve')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async closePhase(
+        @Param('periodId') periodId: string,
+        @Param('phase') phase: PeriodPhaseName,
+        @Req() req: { user: ActiveUserData }
+    ): Promise<Phase1Response | Phase2Response | Phase3Response> {
+        return this.periodsService.closePhase(periodId, phase, req.user)
     }
 }

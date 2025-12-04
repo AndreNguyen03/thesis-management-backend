@@ -455,6 +455,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
     async createTopic(topicData: CreateTopicDto): Promise<string> {
         const res = await this.topicRepository.create(topicData)
+        console.log(res)
         const newTopic = plainToInstance(GetTopicResponseDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -1188,7 +1189,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Rejected,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Rejected
+                                    }
+                                },
                                 lecturerIds: new mongoose.Types.ObjectId(lecturerId),
                                 deleted_at: null
                             }
@@ -1199,9 +1205,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Approved,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Approved
+                                    }
+                                },
                                 lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-
                                 deleted_at: null
                             }
                         },
@@ -1211,7 +1221,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Submitted,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Submitted
+                                    }
+                                },
                                 lecturerIds: new mongoose.Types.ObjectId(lecturerId),
                                 deleted_at: null
                             }
@@ -1222,7 +1237,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.UnderReview,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.UnderReview
+                                    }
+                                },
                                 lecturerIds: new mongoose.Types.ObjectId(lecturerId),
                                 deleted_at: null
                             }
@@ -1233,7 +1253,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: submitPhase,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase
+                                    }
+                                },
                                 lecturerIds: new mongoose.Types.ObjectId(lecturerId),
                                 deleted_at: null
                             }
