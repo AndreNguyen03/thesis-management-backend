@@ -30,7 +30,7 @@ export class UpdateTopicsPhaseBatchProvider {
                 currentStatus: TopicStatus.InProgress,
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory(actorId, PeriodPhaseName.EXECUTION, TopicStatus.InProgress)
+                    this.createPhaseHistory(PeriodPhaseName.EXECUTION, TopicStatus.InProgress, actorId)
                 ]
             })
             console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Đang thực hiện thành công`)
@@ -78,7 +78,7 @@ export class UpdateTopicsPhaseBatchProvider {
                 currentStatus: TopicStatus.PendingRegistration,
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory(actorId, PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.PendingRegistration)
+                    this.createPhaseHistory(PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.PendingRegistration, actorId)
                 ]
             })
             console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Mở đăng ký thành công`)

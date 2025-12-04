@@ -37,6 +37,7 @@ import { GetTopicStatusProvider } from './modules/topics/providers/get-status-to
 import { UploadFilesModule } from './modules/upload-files/upload-files.module'
 import { NestMinioModule } from 'nestjs-minio'
 import { minioConfig } from './config/minio.config'
+import { NotificationsModule } from './modules/notifications/notifications.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -106,7 +107,8 @@ const ENV = process.env.NODE_ENV
         PaginationModule,
         PaginationAnModule,
         PeriodsModule,
-        UploadFilesModule
+        UploadFilesModule,
+        NotificationsModule
     ],
     controllers: [AppController],
     providers: [

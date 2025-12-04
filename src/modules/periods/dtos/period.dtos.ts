@@ -70,10 +70,25 @@ export class GetPeriodDto {
     startTime: Date
     @Expose()
     endTime: Date
+    @Expose()
+    @Type(() => GetPeriodPhaseDto)
+    currentPhaseDetail: GetPeriodPhaseDto
     // // @Expose()
     // // totalTopics: number
-    // @Expose()
-    // currentPhaseDetail: GetPeriodPhaseDto | null
+}
+
+export interface GetPeriodInterface {
+    _id: string
+    name: string
+    faculty: any
+    phases: any
+    status: string
+    startTime: Date
+    endTime: Date
+    currentPhaseDetail: any
+    currentPhase: string
+    // // @Expose()
+    // // totalTopics: number
 }
 export class GetMiniPeriodDto {
     @Expose()

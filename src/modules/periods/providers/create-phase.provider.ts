@@ -104,7 +104,7 @@ export class CreatePhaseProvider {
         console.log('Chuyển pha thành công!')
         return {
             success: true,
-            message: `Chuyển sang ${PeriodPhaseName.EXECUTION} thành công. ${approvedTopicsCount} đề tài được mở đăng ký.`
+            message: `Chuyển sang ${PeriodPhaseName.OPEN_REGISTRATION} thành công. ${approvedTopicsCount} đề tài được mở đăng ký.`
         }
     }
 

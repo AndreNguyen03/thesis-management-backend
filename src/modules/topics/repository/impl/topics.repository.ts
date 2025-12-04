@@ -222,7 +222,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
         pipeline.push({ $match: { deleted_at: null, isSaved: true } })
-
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
         const topics = await this.paginationProvider.paginateQuery<Topic>(paginateQuery, this.topicRepository, pipeline)
         return topics
@@ -780,6 +779,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     foreignField: '_id',
                     as: 'createByInfo'
                 }
+            },
+            {
+                $unwind: { path: '$createByInfo', preserveNullAndEmptyArrays: true }
             }
         )
         if (userId) {
@@ -887,7 +889,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Rejected,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Rejected
+                                    }
+                                },
                                 deleted_at: null
                             }
                         },
@@ -897,7 +904,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Approved,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Approved
+                                    }
+                                },
                                 deleted_at: null
                             }
                         },
@@ -907,8 +919,23 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Submitted,
-                                deleted_at: null
+                                deleted_at: null,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.Submitted
+                                    }
+                                },
+                                $nor: [
+                                    {
+                                        phaseHistories: {
+                                            $elemMatch: {
+                                                phaseName: submitPhase,
+                                                status: { $in: [TopicStatus.Rejected, TopicStatus.Approved] }
+                                            }
+                                        }
+                                    }
+                                ]
                             }
                         },
                         { $count: 'count' }
@@ -917,7 +944,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.UnderReview,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase,
+                                        status: TopicStatus.UnderReview
+                                    }
+                                },
                                 deleted_at: null
                             }
                         },
@@ -927,7 +959,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: submitPhase,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        phaseName: submitPhase
+                                    }
+                                },
                                 deleted_at: null
                             }
                         },
