@@ -29,7 +29,19 @@ export class LecturerRegTopicRepository
     ) {
         super(lecturerRegTopicModel)
     }
-
+    async getTopicIdsByLecturerId(lecturerId: string): Promise<string[]> {
+        const regs = await this.lecturerRegTopicModel.find(
+            {
+                userId: new mongoose.Types.ObjectId(lecturerId),
+                deleted_at: null
+            },
+            {
+                topicId: 1,
+                _id: 0
+            }
+        )
+        return regs ? regs.map((id) => id.toString()) : []
+    }
     async createRegistrationWithLecturers(userId: string, lecturerIds: string[], topicId: string): Promise<boolean> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
@@ -61,7 +73,9 @@ export class LecturerRegTopicRepository
         lecturerId: string,
         role: string = LecturerRoleEnum.CO_SUPERVISOR
     ): Promise<any> {
-        const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
+        const topic = await this.topicModel
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
@@ -127,4 +141,11 @@ export class LecturerRegTopicRepository
         }
         return false
     }
+    async deleteForceLecturerRegistrationsInTopics(topicId: string[]): Promise<void> {
+        await this.lecturerRegTopicModel.deleteMany({
+            topicId: { $in: topicId.map((id) => new mongoose.Types.ObjectId(id)) },
+            deleted_at: null
+        })
+    }
+  
 }

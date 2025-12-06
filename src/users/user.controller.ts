@@ -60,7 +60,7 @@ export class UserController {
     @Get('profile')
     async getMyProfile(@Req() req) {
         const { sub: id, role } = req.user
-        console.log('role :::', role)
+        //console.log('role :::', role)
         return this.getUserByRoleAndId(role, id)
     }
 
@@ -74,7 +74,7 @@ export class UserController {
                 return user
             case 'lecturer':
                 user = await this.lecturerService.getById(id)
-                console.log('user lecturer :::', user)
+                //console.log('user lecturer :::', user)
                 return user ? this.lecturerService.toResponseLecturerProfile(user) : null
             case 'admin':
                 user = await this.adminService.getById(id)
@@ -126,8 +126,7 @@ export class UserController {
 
     @Get('lec/get-all-lecturers/combobox')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER)
-    @Roles(UserRole.FACULTY_BOARD)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getAllLecturers_An(@Query() query: PaginationAn, @Req() req: { user: ActiveUserData }) {
         const res = await this.lecturerService.getAllLecturers_An(req.user.facultyId!, query)

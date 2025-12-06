@@ -6,6 +6,7 @@ import { CacheService } from '../../../redis/providers/cache.service'
 import jwtConfig from '../../config/jwt.config'
 import { REQUEST_USER_KEY } from '../../constants/auth.constants'
 import { AccessTokenExpiredException, TokenInvalidException } from '../../../common/exceptions'
+import { RequestAuthPayload } from '../../../modules/socket/type/socket.type'
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -17,7 +18,7 @@ export class AccessTokenGuard implements CanActivate {
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest<Request>()
+        const request: RequestAuthPayload = context.switchToHttp().getRequest<RequestAuthPayload>()
         const token = this.extractTokenFromHeader(request)
 
         if (!token) throw new TokenInvalidException()

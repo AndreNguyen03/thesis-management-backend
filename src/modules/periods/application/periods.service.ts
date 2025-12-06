@@ -107,7 +107,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return result
     }
     async handleCloseSubmitTopicPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail) {
-        console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
+      //  console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
 
         // init dto
         let result: Phase1Response = {
@@ -119,11 +119,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         }
 
         const minTopicsRequired = phaseDetail.minTopicsPerLecturer
-        console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
+      //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
 
         // loop get missing topic count per lecturer
         for (const lec of phaseDetail.requiredLecturers) {
-            console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
+          //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
 
             const lecStatsPhase1 = (await this.lecturerGetStatisticsSubmitTopicPhase(
                 period._id.toString(),
@@ -132,10 +132,10 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
 
             console.log(lecStatsPhase1)
 
-            console.log(
-                '[handleCloseSubmitTopicPhase] Lecturer submitted topics:',
-                lecStatsPhase1.submittedTopicsNumber
-            )
+            // console.log(
+            //     '[handleCloseSubmitTopicPhase] Lecturer submitted topics:',
+            //     lecStatsPhase1.submittedTopicsNumber
+            // )
 
             const submited = lecStatsPhase1.submittedTopicsNumber
 
@@ -159,14 +159,14 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             phase: phaseDetail.phase
         })) as GetTopicStatisticInSubmitPhaseDto
 
-        console.log(
-            '[handleCloseSubmitTopicPhase] Board submitted topics remaining:',
-            boardStatsPhase1.submittedTopicsNumber
-        )
+        // console.log(
+        //     '[handleCloseSubmitTopicPhase] Board submitted topics remaining:',
+        //     boardStatsPhase1.submittedTopicsNumber
+        // )
 
         result.pendingTopics = boardStatsPhase1.submittedTopicsNumber
 
-        console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
+       // console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
 

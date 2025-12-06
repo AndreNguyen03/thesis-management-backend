@@ -29,4 +29,6 @@ export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterf
         reasonType: string,
         lecturerResponse: string
     )
+    getTopicIdsByStudentId(studentId: string): Promise<string[]>
+    deleteForceStudentRegistrationsInTopics(topicId: string[]): Promise<void>
 }

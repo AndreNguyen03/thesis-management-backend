@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, RequestTimeoutException } from '@nestjs/common'
 import { PhaseHistory } from '../schemas/topic.schemas'
 import { TopicRepositoryInterface } from '../repository'
 import mongoose from 'mongoose'
@@ -61,12 +61,16 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             existingTopic.currentStatus = TopicStatus.Draft
         }
         //  console.log(existingTopic.phaseHistories)
-        await this.topicRepository.update(topicId, {
-            phaseHistories: existingTopic.phaseHistories,
-            currentStatus: newStatus,
-            currentPhase: periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase,
-            periodId: periodId ? periodId : existingTopic.periodId
-        })
+        try {
+            await this.topicRepository.update(topicId, {
+                phaseHistories: existingTopic.phaseHistories,
+                currentStatus: newStatus,
+                currentPhase: periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase,
+                periodId: periodId ? periodId : existingTopic.periodId
+            })
+        } catch (error) {
+            throw new RequestTimeoutException('Chuyển trạng thái đề tài không thành công')
+        }
     }
 
     private throwExceptionIfActionIsPracticed(currentStatus: string, newStatus: string) {

@@ -34,4 +34,9 @@ export class LecturerRegTopicService {
             throw new DeleteErrorException('registration')
         }
     }
+
+    //Xóa những đăng ký của giảng viên trong đề tài
+    public async deleteForceLecturerRegistrationsInTopics(topicId: string[]) {
+        await this.lecturerRegTopicRepository.deleteForceLecturerRegistrationsInTopics(topicId)
+    }
 }

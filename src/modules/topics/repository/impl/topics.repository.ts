@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer'
 import { Topic } from '../../schemas/topic.schemas'
 import {
     CreateTopicDto,
+    GetMiniTopicInfo,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
@@ -37,6 +38,7 @@ import { StudentRegistrationStatus } from '../../../registrations/enum/student-r
 import { allow } from 'joi'
 import { pipe } from 'rxjs'
 import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
+import { title } from 'process'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -46,6 +48,20 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+    async getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo> {
+        const topicData = await this.topicRepository
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .lean()
+        if (!topicData) {
+            throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
+        }
+        return {
+            _id: topicData._id.toString(),
+            titleVN: topicData.titleVN,
+            titleEng: topicData.titleEng,
+            createBy: topicData.createBy.toString()
+        }
     }
     async updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null> {
         return await this.topicRepository.findOneAndUpdate(
@@ -463,23 +479,19 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             enableImplicitConversion: true
         })
         return newTopic._id
-    }
-    async deleteTopic(topicId: string, ownerId: string): Promise<boolean> {
-        const topic = await this.topicRepository.findOne({
-            _id: new mongoose.Types.ObjectId(topicId),
-            deleted_at: null
+    } 
+    //chỉ xóa thẳng những đề tài ở trạng thái draft và do chính người dùng tạo
+    async deleteTopics(topicIds: string[], ownerId: string): Promise<boolean> {
+        const topics = await this.topicRepository.deleteMany({
+            _id: { $in: topicIds.map((id) => new mongoose.Types.ObjectId(id)) },
+            currentStatus: TopicStatus.Draft,
+            createBy: new mongoose.Types.ObjectId(ownerId)
         })
-        if (!topic) {
+        if (!topics) {
             throw new BadRequestException('Đề tài không tồn tại hoặc đã bị xóa.')
         }
-        if (topic.createBy.toString() !== ownerId) {
-            throw new BadRequestException("Bạn không có quyền xóa đề tài này. Don't owner.")
-        }
-        const result = await this.topicRepository.findOneAndUpdate(
-            { _id: new mongoose.Types.ObjectId(topicId) },
-            { deleted_at: new Date() }
-        )
-        return result ? true : false
+
+        return topics ? true : false
     }
     async findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null> {
         console.log('titleVN, titleEng, periodId', titleVN, titleEng, periodId)
@@ -1765,10 +1777,58 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     emptyTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.PendingRegistration,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                //đang mở đăng ký
+                                //vì nếu cso đăng ký thì trạng thái sẽ là registered
+                                'lastStatusInPhaseHistory.status': TopicStatus.PendingRegistration,
                                 deleted_at: null
                             }
                         },
@@ -1776,10 +1836,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     registeredTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Registered,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Registered,
                                 deleted_at: null
                             }
                         },
@@ -1787,10 +1893,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     fullTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentStatus: TopicStatus.Full,
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Full,
                                 deleted_at: null
                             }
                         },
@@ -1798,10 +1950,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     totalTopicsInPhase: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentPhase: currentPhase,
+                                isMainSupervisor: true,
+                                phaseHistories: { $elemMatch: { phaseName: currentPhase } },
                                 deleted_at: null
                             }
                         },
@@ -1828,11 +2026,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     canceledTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentStatus: TopicStatus.Cancelled,
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Cancelled,
                                 deleted_at: null
                             }
                         },
@@ -1842,10 +2085,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     inNormalProcessing: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentStatus: TopicStatus.InProgress,
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.InProgress,
                                 deleted_at: null
                             }
                         },
@@ -1853,10 +2142,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     delayedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentStatus: TopicStatus.Delayed,
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Delayed,
                                 deleted_at: null
                             }
                         },
@@ -1864,10 +2199,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     pausedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
-                                currentStatus: TopicStatus.Paused,
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Paused,
                                 deleted_at: null
                             }
                         },
@@ -1875,10 +2256,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     submittedForReviewTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.SubmittedForReview,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                'lastStatusInPhaseHistory.status': TopicStatus.SubmittedForReview,
+                                isMainSupervisor: true,
                                 deleted_at: null
                             }
                         },
@@ -1886,10 +2313,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     readyForEvaluationNumber: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                curentPhase: currentPhase,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.AwaitingEvaluation,
                                 deleted_at: null
                             }
                         },
@@ -1920,11 +2393,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     readyForEvaluation: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentPhase: PeriodPhaseName.EXECUTION,
-                                currentStatus: TopicStatus.AwaitingEvaluation,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.AwaitingEvaluation,
                                 deleted_at: null
                             }
                         },
@@ -1934,10 +2452,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     gradedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Graded,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.AwaitingEvaluation,
                                 deleted_at: null
                             }
                         },
@@ -1947,10 +2511,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     archivedTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.Archived,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.Archived,
                                 deleted_at: null
                             }
                         },
@@ -1960,10 +2570,56 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     rejectedFinalTopics: [
                         {
+                            $lookup: {
+                                //tìm những topic mà người này là hướng dẫn chính
+                                from: 'ref_lecturers_topics',
+                                let: { topicId: '$_id' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
+                                                    { $eq: ['$topicId', '$$topicId'] },
+                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'lecTopicRefs'
+                            }
+                        },
+                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
+                        {
+                            $addFields: {
+                                isMainSupervisor: {
+                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
+                                }
+                            }
+                        },
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                currentStatus: TopicStatus.RejectedFinal,
-                                lecturerIds: new mongoose.Types.ObjectId(lecturerId),
+                                isMainSupervisor: true,
+                                'lastStatusInPhaseHistory.status': TopicStatus.RejectedFinal,
                                 deleted_at: null
                             }
                         },
@@ -2152,5 +2808,44 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             currentStatus: TopicStatus.Submitted,
             deleted_at: null
         })
+    }
+    async copyToDraft(topicId: string, actorId: string): Promise<string> {
+        const topic = await this.topicRepository.findOne({ _id: topicId, deleted_at: null }).lean()
+        if (!topic) {
+            throw new BadRequestException('Đề tài không tồn tại hoặc đã bị xóa')
+        }
+        // Tìm các bản nháp trùng tên
+        const baseTitleVN = topic.titleVN + ' (Bản nháp)'
+        const baseTitleEng = topic.titleEng + ' (Draft)'
+        let titleVN = baseTitleVN
+        let titleEng = baseTitleEng
+        let count = 1
+
+        while (await this.topicRepository.findOne({ titleVN, currentStatus: TopicStatus.Draft, deleted_at: null })) {
+            count++
+            titleVN = `${baseTitleVN} ${count}`
+        }
+        while (await this.topicRepository.findOne({ titleEng, currentStatus: TopicStatus.Draft, deleted_at: null })) {
+            titleEng = `${baseTitleEng} ${count}`
+        }
+        const { _id, phaseHistories, periodId, ...topicData } = topic
+        const newTopic = {
+            ...topicData,
+            titleVN: titleVN,
+            titleEng: titleEng,
+            createBy: new mongoose.Types.ObjectId(actorId),
+            currentStatus: TopicStatus.Draft,
+            currentPhase: PeriodPhaseName.EMPTY,
+            createAt: new Date(),
+            updatedAt: new Date()
+        }
+        let res
+        try {
+            res = await this.topicRepository.create(newTopic)
+        } catch (error) {
+            console.error('Error copying topic to draft:', error)
+            throw new BadRequestException('Không thể sao chép đề tài')
+        }
+        return res._id.toString()
     }
 }

@@ -1,37 +1,38 @@
 import { Process, Processor } from '@nestjs/bull'
-import { NotificationGateway } from '../gateways/notification.gateway'
-import { OnlineUserService } from '../services/online-user.service'
+import { OnlineUserService } from '../application/online-user.service'
 import { Job } from 'bull'
-import { Notification, NotificationDocument } from '../schemas/notification.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { NotFoundException } from '@nestjs/common'
 import { MailService } from '../../../mail/providers/mail.service'
-import { User } from '../../../users/schemas/users.schema'
 import { UserService } from '../../../users/application/users.service'
+import { NotificationsGateway } from '../gateways/notifications.gateway'
+import { Notification } from '../schemas/notification.schemas'
 
 @Processor('notifications')
 export class NotificationQueueProcessor {
     constructor(
-        private readonly notiGateway: NotificationGateway,
+        private readonly notiGateway: NotificationsGateway,
         private readonly onlineUserService: OnlineUserService,
         private readonly mailService: MailService,
         private readonly userService: UserService,
         @InjectModel(Notification.name)
-        private readonly notiModel: Model<NotificationDocument>
+        private readonly notiModel: Model<Notification>
     ) {}
-
+    //Gửi thông báo mới nhất riêng cho một user, trên nhiều thiết bị
     @Process('send-notification')
     async handleSendNotification(job: Job) {
-        const { userId, content, meta, type, link } = job.data
-
-        const isOnline = await this.onlineUserService.isUserOnline(userId)
+        const { _id, recipientId, title, message, createdAt, type, isRead, metadata } = job.data
+        const isOnline = await this.onlineUserService.isUserOnline(recipientId)
+        console.log(`Is user ${recipientId} online?`, isOnline)
         if (isOnline) {
-            const sockets = await this.onlineUserService.getSockets(userId)
-            sockets.forEach((sid) => {
-                this.notiGateway.server.to(sid).emit('notification', { content, meta, type, link })
-            })
+            this.notiGateway.server
+                .to('user_' + recipientId)
+                .emit('notification', { _id, title, message, createdAt, type, isRead, metaData: metadata })
+            console.log(`Notification sent to user ${recipientId} via WebSocket.`)
         }
+        //code cũ không cần thiết vì cứ một trình duyệt mở socket là được đnagư ký trong roome user_{userId} rùi
+        //không cần thiết phải gửi từng socket của user nữa => mất đi tính tiện lợi của chức năng tạo room của socket
     }
 
     @Process('mark-read-all')
@@ -39,13 +40,13 @@ export class NotificationQueueProcessor {
         const { userId } = job.data
 
         // update db
-        await this.notiModel.updateMany({ userId, seen: false }, { seen: true })
+        await this.notiModel.updateMany({ userId, isRead: false }, { isRead: true })
 
         // emit ws to all user socket (if user has more than 1 device access to app)
-        const sockets = await this.onlineUserService.getSockets(userId)
-        sockets.forEach((sid) => {
-            this.notiGateway.server.to(sid).emit('notifications-marked-read-all')
-        })
+        // const sockets = await this.onlineUserService.getSockets(userId)
+        // sockets.forEach((sid) => {
+
+        //   })
     }
 
     @Process('mark-read')
@@ -56,17 +57,17 @@ export class NotificationQueueProcessor {
 
         if (!noti) throw new NotFoundException('Notification not found')
 
-        const sockets = await this.onlineUserService.getSockets(noti?.userId.toString())
+        const sockets = await this.onlineUserService.getSockets(noti?.recipientId.toString())
         sockets.forEach((sid) => {
             this.notiGateway.server.to(sid).emit('notification-marked-read', { notificationId })
         })
     }
 
     @Process('send-email')
-    async handleSendEmail(job: Job<{ userId: string; subject: string; content: string }>) {
-        const { userId, subject, content } = job.data
+    async handleSendEmail(job: Job<{ recipientId: string; subject: string; content: string }>) {
+        const { recipientId, subject, content } = job.data
 
-        const user = await this.userService.findById(userId)
+        const user = await this.userService.findById(recipientId)
 
         if (!user) throw new NotFoundException('Not found user!')
 

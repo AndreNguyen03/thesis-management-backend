@@ -8,4 +8,6 @@ export interface LecturerRegTopicRepositoryInterface extends BaseRepositoryInter
     cancelRegistration(topicId: string, lecturerId: string)
     unassignLecturer(user: ActiveUserData, topicId: string, lecturerId: string)
     checkFullSlot(topicId: string): Promise<boolean>
+    getTopicIdsByLecturerId(lecturerId: string): Promise<string[]>
+    deleteForceLecturerRegistrationsInTopics(topicId: string[]): Promise<void>
 }

@@ -19,7 +19,6 @@ export class LecturerRegisterTopic extends BaseEntity {
 
     @Prop({ type: String, enum: LecturerRoleEnum, default: LecturerRoleEnum.CO_SUPERVISOR })
     role: string
-
 }
 
 export const LecturerRegisterTopicSchema = SchemaFactory.createForClass(LecturerRegisterTopic)

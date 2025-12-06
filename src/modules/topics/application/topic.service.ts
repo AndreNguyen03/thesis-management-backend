@@ -24,6 +24,8 @@ import { PhaseHistoryNote } from '../enum/phase-history-note.enum'
 import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
 import mongoose from 'mongoose'
 import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
+import { PersonalNotificationProvider } from '../../notifications/providers/practice-actions.provider'
+import { GetMiniTopicInfoProvider } from '../providers/get-mini-topic-info.provider'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -41,7 +43,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider,
         private readonly uploadManyFilesProvider: UploadManyFilesProvider,
         private readonly deleteFileProvider: DeleteFileProvider,
-        private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider
+        private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider,
+        private readonly personalNotificationProvider: PersonalNotificationProvider,
+        private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider
     ) {
         super(topicRepository)
     }
@@ -110,8 +114,14 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
         return this.topicRepository.updateTopic(id, topicData)
     }
-    public async deleteTopic(id: string, ownerId: string) {
-        return this.topicRepository.deleteTopic(id, ownerId)
+    public async deleteTopics(ids: string[], ownerId: string) {
+        //xóa đăng ký giảng viên trong đề tài
+        const res = await this.topicRepository.deleteTopics(ids, ownerId)
+        if (res) {
+            await this.lecturerRegTopicService.deleteForceLecturerRegistrationsInTopics(ids)
+            await this.studentRegTopicService.deleteForceStudentRegistrationsInTopics(ids)
+        }
+        return res
     }
 
     public async getSavedTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
@@ -154,6 +164,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId,
             PhaseHistoryNote.TOPIC_APPROVED
         )
+        //Gửi thông báo tới giảng viên HD chính
+        const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
+        await this.personalNotificationProvider.sendApprovalTopicNotification(topicInfor.createBy, actorId, topicInfor)
     }
     public async rejectTopic(topicId: string, actorId: string, facultyNote: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
@@ -162,6 +175,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId,
             PhaseHistoryNote.TOPIC_REJECTED + ' với lí do: ' + facultyNote
         )
+        const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
+        await this.personalNotificationProvider.sendRejectedTopicNotification(topicInfor.createBy, actorId, topicInfor)
     }
 
     // public async markUnderReviewing(topicId: string, actorId: string) {
@@ -335,5 +350,10 @@ export class TopicService extends BaseServiceAbstract<Topic> {
                 TopicStatus.Draft,
                 actorId
             )
+    }
+    public async copyToDraft(topicId: string, actorId: string) {
+        const newTopicId = await this.topicRepository.copyToDraft(topicId, actorId)
+        //tạo đăng ký cho giảng viên
+        await this.lecturerRegTopicService.createSingleRegistration(actorId, newTopicId)
     }
 }

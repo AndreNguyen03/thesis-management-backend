@@ -60,7 +60,77 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>> {
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
-        pipelineSub.unshift({ $match: { facultyId: new mongoose.Types.ObjectId(facultyId), deleted_at: null } })
+        pipelineSub.push({
+            $addFields: {
+                status: {
+                    $switch: {
+                        branches: [
+                            {
+                                case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
+                                then: 'pending'
+                            },
+                            {
+                                case: { $lt: ['$$NOW', '$startTime'] },
+                                then: 'pending'
+                            },
+                            {
+                                case: { $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }] },
+                                then: 'active'
+                            }
+                        ],
+                        default: 'timeout'
+                    }
+                }
+            }
+        }, {
+            $addFields: {
+                phases: {
+                    $map: {
+                        input: '$phases',
+                        as: 'phase',
+                        in: {
+                            $mergeObjects: [
+                                '$$phase',
+                                {
+                                    status: {
+                                        $switch: {
+                                            branches: [
+                                                {
+                                                    case: { $or: [{ $not: '$$phase.startTime' }, { $not: '$$phase.endTime' }] },
+                                                    then: 'pending'
+                                                },
+                                                {
+                                                    case: { $lt: ['$$NOW', '$$phase.startTime'] },
+                                                    then: 'pending'
+                                                },
+                                                {
+                                                    case: { $and: [{ $gte: ['$$NOW', '$$phase.startTime'] }, { $lte: ['$$NOW', '$$phase.endTime'] }] },
+                                                    then: 'active'
+                                                }
+                                            ],
+                                            default: 'timeout'
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+
+                    }
+                }
+            }
+        })
+        pipelineSub.push({ $match: { facultyId: new mongoose.Types.ObjectId(facultyId), deleted_at: null } })
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                name: 1,
+                phases: "$phases",
+                startTime: 1,
+                endTime: 1,
+                status: 1,
+                currentPhase: 1,
+            }
+        })
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     async deletePeriod(periodId: string): Promise<boolean> {
@@ -167,8 +237,10 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             .findOne({
                 facultyId: new mongoose.Types.ObjectId(facultyId),
                 status: PeriodStatus.OnGoing,
+                currentPhase: { $ne: PeriodPhaseName.EMPTY },
                 deleted_at: null
             })
+            .sort({ createdAt: -1 })
             .populate('facultyId')
             .lean()
         if (!currentPeriod) {
@@ -186,32 +258,44 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 status: (() => {
                     const now = new Date()
                     if (!phase.startTime || !phase.endTime) {
-                        return 'PENDING'
+                        return 'pending'
                     }
                     if (now < phase.startTime) {
-                        return 'PENDING'
+                        return 'pending'
                     } else if (now >= phase.startTime && now <= phase.endTime) {
-                        return 'ACTIVE'
+                        return 'active'
                     } else {
-                        return 'TIMEOUT'
+                        return 'timeout'
                     }
                 })()
             })),
-            status: currentPeriodObject.status,
+            status: (() => {
+                const now = new Date()
+                if (!currentPeriodObject.startTime || !currentPeriodObject.endTime) {
+                    return 'pending'
+                }
+                if (now < currentPeriodObject.startTime) {
+                    return 'pending'
+                } else if (now >= currentPeriodObject.startTime && now <= currentPeriodObject.endTime) {
+                    return 'active'
+                } else {
+                    return 'timeout'
+                }
+            })(),
             currentPhase: currentPhase,
             currentPhaseDetail: {
                 ...currentPeriodPhase,
                 status: (() => {
                     const now = new Date()
                     if (!currentPeriodPhase || !currentPeriodPhase.startTime || !currentPeriodPhase.endTime) {
-                        return 'PENDING'
+                        return 'pending'
                     }
                     if (now < currentPeriodPhase.startTime) {
-                        return 'PENDING'
+                        return 'pending'
                     } else if (now >= currentPeriodPhase.startTime && now <= currentPeriodPhase.endTime) {
-                        return 'ACTIVE'
+                        return 'active'
                     } else {
-                        return 'TIMEOUT'
+                        return 'timeout'
                     }
                 })()
             },

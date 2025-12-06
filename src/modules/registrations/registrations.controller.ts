@@ -137,7 +137,6 @@ export class RegistrationsController {
         @Body() body: BodyReplyRegistrationDto,
         @Req() req: { user: ActiveUserData }
     ) {
-        console.log('registrationId', registrationId)
         await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }

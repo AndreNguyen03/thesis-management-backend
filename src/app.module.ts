@@ -38,6 +38,7 @@ import { UploadFilesModule } from './modules/upload-files/upload-files.module'
 import { NestMinioModule } from 'nestjs-minio'
 import { minioConfig } from './config/minio.config'
 import { NotificationsModule } from './modules/notifications/notifications.module'
+import { SocketModule } from './modules/socket/socket.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -108,7 +109,8 @@ const ENV = process.env.NODE_ENV
         PaginationAnModule,
         PeriodsModule,
         UploadFilesModule,
-        NotificationsModule
+        NotificationsModule,
+        SocketModule,
     ],
     controllers: [AppController],
     providers: [
