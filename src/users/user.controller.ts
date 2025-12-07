@@ -19,7 +19,7 @@ import { AuthType } from '../auth/enum/auth-type.enum'
 import { StudentService } from './application/student.service'
 import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
-import { CreateStudentDto, PaginatedMiniStudent, UpdateStudentTableDto } from './dtos/student.dto'
+import { CreateStudentDto, PaginatedMiniStudent, UpdateStudentProfileDto, UpdateStudentTableDto } from './dtos/student.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
 import {
     CreateLecturerDto,
@@ -71,6 +71,7 @@ export class UserController {
                 user = await this.studentService.getById(id)
                 if (!user) return null
                 user = this.studentService.toResponseStudentProfile(user)
+                console.log('user student :::', user)
                 return user
             case 'lecturer':
                 user = await this.lecturerService.getById(id)
@@ -101,6 +102,7 @@ export class UserController {
 
     @Patch('lecturers/profile/:id')
     async updateLecturerProfile(@Param('id') id: string, @Body() dto: UpdateLecturerProfileDto) {
+        console.log('dto :::', dto)
         const updated = await this.lecturerService.updateLecturerProfile(id, dto)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
@@ -156,6 +158,13 @@ export class UserController {
     @Get('students')
     async getStudents(@Query() query: PaginationQueryDto) {
         return await this.studentService.getAllStudents(query)
+    }
+
+    @Patch('students/profile/:id')
+    async updateStudentProfile(@Param('id') id: string, @Body() dto: UpdateStudentProfileDto) {
+        console.log('dto :::', dto)
+        const updated = await this.studentService.updateStudentProfile(id, dto)
+        return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
 
     @Get('/lec/get-all-students/combobox')

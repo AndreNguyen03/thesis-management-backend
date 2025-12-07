@@ -58,6 +58,10 @@ export class UpdateLecturerProfileDto {
 
     @IsOptional()
     @IsString()
+    bio?: string
+
+    @IsOptional()
+    @IsString()
     phone?: string
 
     @IsOptional()
@@ -137,6 +141,7 @@ export class ResponseLecturerProfileDto {
     userId: string
     fullName: string
     email: string
+    bio?: string
     phone?: string
     avatarUrl?: string
     title: AcademicTitle

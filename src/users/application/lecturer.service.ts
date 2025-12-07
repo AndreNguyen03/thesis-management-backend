@@ -39,6 +39,7 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             fullName: doc.userId.fullName,
             email: doc.userId.email,
             phone: doc.userId.phone,
+            bio: doc.userId.bio,
             avatarUrl: doc.userId.avatarUrl,
             title: doc.title,
             role: doc.userId.role,
