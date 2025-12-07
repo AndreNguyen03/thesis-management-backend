@@ -8,7 +8,7 @@ import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.rep
 import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
 import { PaginationQueryDto as Pagination_An } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination/interface/paginated.interface'
-import { Paginated  as Paginated_An } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { Paginated as Paginated_An } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { CreateStudentDto, UpdateStudentProfileDto, UpdateStudentTableDto } from '../../dtos/student.dto'
 import { User } from '../../schemas/users.schema'
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
@@ -85,15 +85,16 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         const student = await this.studentModel.findOne({ userId: objectId })
         if (!student) throw new Error('Student not found')
 
-        // Update user fields
-        if (dto.fullName || dto.email || dto.isActive !== undefined) {
-            await this.userModel.findByIdAndUpdate(objectId, {
-                fullName: dto.fullName,
-                email: dto.email,
-                isActive: dto.isActive,
-                phone: dto.phone,
-                avatarUrl: dto.avatarUrl
-            })
+        let userUpdate: Partial<User> = {}
+        if (dto.fullName !== undefined) userUpdate.fullName = dto.fullName
+        if (dto.email !== undefined) userUpdate.email = dto.email
+        if (dto.bio !== undefined) userUpdate.bio = dto.bio
+        if (dto.phone !== undefined) userUpdate.phone = dto.phone
+        if (dto.avatarUrl !== undefined) userUpdate.avatarUrl = dto.avatarUrl
+        if (dto.isActive !== undefined) userUpdate.isActive = dto.isActive
+
+        if (Object.keys(userUpdate).length > 0) {
+            await this.userModel.findByIdAndUpdate(objectId, userUpdate, { new: true })
         }
 
         // Update student fields

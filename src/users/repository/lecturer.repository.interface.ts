@@ -15,7 +15,6 @@ export interface LecturerRepositoryInterface extends BaseRepositoryInterface<Lec
     getAllLecturersAn(facultyId: string, paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>>
     updateLecturerByTable(id: string, dto: UpdateLecturerTableDto): Promise<any>
     updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto): Promise<any>
-
     removeByUserId(userId: string): Promise<{ deletedCount?: number }>
     getById(id: string)
 }

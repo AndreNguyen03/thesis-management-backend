@@ -80,6 +80,10 @@ export class UpdateStudentProfileDto {
     @IsOptional()
     @IsString()
     email?: string
+    
+    @IsOptional()
+    @IsString()
+    bio? : string
 
     @IsOptional()
     @IsString()
