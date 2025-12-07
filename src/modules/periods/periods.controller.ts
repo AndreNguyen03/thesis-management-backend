@@ -50,7 +50,7 @@ export class PeriodsController {
     async getAllPeriods(
         @Req() req: { user: ActiveUserData },
         @Query() query: RequestGetPeriodsDto
-    ): Promise<GetPaginatedPeriodDto> {
+    ) {
         const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
         return plainToInstance(GetPaginatedPeriodDto, res, {
             excludeExtraneousValues: true,
@@ -238,15 +238,14 @@ export class PeriodsController {
         return statistics
     }
 
-    @Get('/me/submission-status')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER)
-    @UseGuards(RolesGuard)
-    async getSubmissionStatus(@Req() req: { user: ActiveUserData }) {
-        console.log('facultyId in controller:', req.user)
-        const status = await this.periodsService.getSubmissionStatus(req.user.sub, req.user.facultyId!)
-        return status
-    }
+    // @Get('/me/submission-status')
+    // @Auth(AuthType.Bearer)
+    // @Roles(UserRole.LECTURER)
+    // @UseGuards(RolesGuard)
+    // async getSubmissionStatus(@Req() req: { user: ActiveUserData }) {
+    //     const status = await this.periodsService.getSubmissionStatus(req.user.sub, req.user.facultyId!)
+    //     return status
+    // }
 
     //Lấy thông tin của kỳ hiện tại
     @Get('/current-period/info')
@@ -270,6 +269,10 @@ export class PeriodsController {
         @Param('phase') phase: PeriodPhaseName,
         @Req() req: { user: ActiveUserData }
     ): Promise<Phase1Response | Phase2Response | Phase3Response> {
-        return this.periodsService.closePhase(periodId, phase, req.user)
+        return this.periodsService.closePhase(
+            periodId,
+            phase
+            //    , req.user
+        )
     }
 }

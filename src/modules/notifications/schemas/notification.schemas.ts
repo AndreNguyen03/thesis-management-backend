@@ -9,10 +9,17 @@ export enum NotificationType {
     ERROR = 'ERROR', // Lỗi/Từ chối (Bị từ chối, Hủy)
     INFO = 'INFO' // Tin thường (Được add vào nhóm)
 }
-@Schema({ timestamps: true, collection: 'notifications' })
+@Schema({
+    timestamps: {
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt'
+    },
+    collection: 'notifications'
+})
 export class Notification extends BaseEntity {
+    //thông báo cho ai
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true, index: true })
-    userId: User
+    recipientId: User
 
     // Người gửi thông báo (Optional - Vì tin hệ thống có thể không có người gửi)
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: false })

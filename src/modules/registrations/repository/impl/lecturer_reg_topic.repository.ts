@@ -16,6 +16,8 @@ import { RequestTimeoutException } from '@nestjs/common'
 import { bool } from 'aws-sdk/clients/signer'
 import { LecturerRoleEnum } from '../../enum/lecturer-role.enum'
 import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
+import { User } from '../../../../users/schemas/users.schema'
+import { CheckUserInfoProvider } from '../../../../users/provider/check-user-info.provider'
 
 export class LecturerRegTopicRepository
     extends BaseRepositoryAbstract<LecturerRegisterTopic>
@@ -25,11 +27,24 @@ export class LecturerRegTopicRepository
         @InjectModel(LecturerRegisterTopic.name)
         private readonly lecturerRegTopicModel: Model<LecturerRegisterTopic>,
         @InjectModel(Topic.name)
-        private readonly topicModel: Model<Topic>
+        private readonly topicModel: Model<Topic>,
+        private readonly checkUserInfoProvider: CheckUserInfoProvider
     ) {
         super(lecturerRegTopicModel)
     }
-
+    async getTopicIdsByLecturerId(lecturerId: string): Promise<string[]> {
+        const regs = await this.lecturerRegTopicModel.find(
+            {
+                userId: new mongoose.Types.ObjectId(lecturerId),
+                deleted_at: null
+            },
+            {
+                topicId: 1,
+                _id: 0
+            }
+        )
+        return regs ? regs.map((id) => id.toString()) : []
+    }
     async createRegistrationWithLecturers(userId: string, lecturerIds: string[], topicId: string): Promise<boolean> {
         const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
         //topic not found or deleted
@@ -61,7 +76,9 @@ export class LecturerRegTopicRepository
         lecturerId: string,
         role: string = LecturerRoleEnum.CO_SUPERVISOR
     ): Promise<any> {
-        const topic = await this.topicModel.findOne({ _id: topicId, deleted_at: null }).exec()
+        const topic = await this.topicModel
+            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .exec()
         //topic not found or deleted
         if (!topic) {
             throw new TopicNotFoundException()
@@ -126,5 +143,45 @@ export class LecturerRegTopicRepository
             return true
         }
         return false
+    }
+    async deleteForceLecturerRegistrationsInTopics(topicId: string[]): Promise<void> {
+        await this.lecturerRegTopicModel.deleteMany({
+            topicId: { $in: topicId.map((id) => new mongoose.Types.ObjectId(id)) },
+            deleted_at: null
+        })
+    }
+    async getCoSupervisorsInTopic(topicId: string): Promise<User[] | null> {
+        const regs = await this.lecturerRegTopicModel.find(
+            {
+                topicId: new mongoose.Types.ObjectId(topicId),
+                role: LecturerRoleEnum.CO_SUPERVISOR,
+                deleted_at: null
+            },
+            {
+                userId: 1,
+                _id: 0
+            }
+        )
+        const userIDs = regs ? regs.map((reg) => reg.userId.toString()) : []
+        return await this.checkUserInfoProvider.getUsersByIds(userIDs)
+    }
+    async getMainSupervisorInTopic(topicId: string): Promise<User | null> {
+        const reg = await this.lecturerRegTopicModel.findOne(
+            {
+                topicId: new mongoose.Types.ObjectId(topicId),
+                role: LecturerRoleEnum.MAIN_SUPERVISOR,
+                deleted_at: null
+            },
+            {
+                userId: 1,
+                _id: 0
+            }
+        )
+        if (!reg) {
+            return null
+        }
+        const userId = reg.userId.toString()
+        const users = await this.checkUserInfoProvider.getUsersByIds([userId])
+        return users && users.length > 0 ? users[0] : null
     }
 }

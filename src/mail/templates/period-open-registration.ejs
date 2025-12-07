@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Thông báo mở đợt đăng ký</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        /* Header màu xanh dương đậm - đại diện cho sự tin cậy/hệ thống */
+        .header { background-color: #0056b3; padding: 30px 20px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .content { padding: 40px 30px; color: #333; line-height: 1.6; }
+        
+        /* Box thông tin nổi bật */
+        .info-box { 
+            background-color: #e3f2fd; 
+            border-left: 5px solid #2196f3; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 4px;
+        }
+        .info-title { font-weight: bold; color: #0d47a1; font-size: 16px; margin-bottom: 5px; }
+        .period-name { font-size: 18px; color: #333; font-weight: bold; }
+
+        /* Nút Action */
+        .btn-container { text-align: center; margin-top: 35px; }
+        .btn { 
+            background-color: #0056b3; color: white; padding: 14px 30px; 
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;
+            display: inline-block; box-shadow: 0 4px 6px rgba(0,50,150,0.2);
+        }
+        .btn:hover { background-color: #004494; }
+
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thông Báo Mở Đợt Đăng Ký</h1>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong><%= name %></strong>,</p>
+            
+            <p>Hệ thống Quản lý Khóa luận trân trọng thông báo:</p>
+
+            <div class="info-box">
+                <div class="info-title">📅 ĐỢT ĐĂNG KÝ MỚI</div>
+                <div class="period-name"><%= periodName %></div>
+                <p style="margin: 10px 0 0 0; font-size: 14px;">
+                    <%= message %>
+                </p>
+            </div>
+
+            <p>Cổng đăng ký đã chính thức mở. Bạn vui lòng truy cập hệ thống để thực hiện đăng ký đề tài/nhóm hướng dẫn theo đúng thời gian quy định.</p>
+
+            <div class="btn-container">
+                <a href="<%= link %>" class="btn">Truy cập Cổng đăng ký ngay</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Hệ thống Quản lý Khóa luận Tốt nghiệp - UIT</p>
+            <p>Email này được gửi tự động, vui lòng không phản hồi.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -230,7 +230,7 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         ]
         pipeline.push({
             $match: {
-                facultyId: new Types.ObjectId(facultyId),
+                faculty: new Types.ObjectId(facultyId),
                 'user.isActive': true
             }
         })

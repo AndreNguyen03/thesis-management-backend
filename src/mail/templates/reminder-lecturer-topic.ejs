@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Nhắc nhở nộp đề tài</title>
+        <style>
+            body {
+                font-family: 'Times New Roman', Times, serif;
+                background-color: #f9f9f9;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 650px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+            }
+
+            /* Header màu xanh đậm học thuật */
+            .header {
+                background-color: #003366;
+                padding: 25px;
+                text-align: center;
+                color: #fff;
+            }
+            .header h2 {
+                margin: 0;
+                font-size: 18px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .content {
+                padding: 30px;
+                color: #333;
+                line-height: 1.6;
+                font-size: 16px;
+            }
+
+            /* Box hiển thị KPI số lượng */
+            .kpi-box {
+                background-color: #f0f7ff;
+                border-left: 5px solid #007bff;
+                padding: 15px;
+                margin: 20px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .kpi-stat {
+                font-size: 18px;
+                font-weight: bold;
+                color: #0056b3;
+            }
+            .kpi-label {
+                font-size: 14px;
+                color: #555;
+                text-transform: uppercase;
+            }
+
+            .deadline-alert {
+                color: #d9534f;
+                font-weight: bold;
+            }
+
+            .btn {
+                display: inline-block;
+                background-color: #003366;
+                color: #fff;
+                text-decoration: none;
+                padding: 10px 25px;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+
+            .footer {
+                background-color: #f1f1f1;
+                padding: 15px;
+                text-align: center;
+                font-size: 13px;
+                color: #777;
+            }
+            .contact-info a {
+                color: #003366;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>KHOA <%= facultyName.toUpperCase() %></h2>
+                <p style="margin: 5px 0 0 0; font-size: 14px">Trường Đại học Công nghệ Thông tin - ĐHQG TP.HCM</p>
+            </div>
+
+            <div class="content">
+                <p>Kính gửi Quý Thầy/Cô <strong><%= lecturerName %></strong>,</p>
+
+                <p>
+                    Ban Chủ Nhiệm Khoa trân trọng thông báo và nhắc nhở Quý Thầy/Cô về việc đăng ký đề tài hướng dẫn
+                    khóa luận tốt nghiệp cho đợt: <strong><%= periodName %></strong>.
+                </p>
+
+                <p>
+                    Theo rà soát trên hệ thống, số lượng đề tài Thầy/Cô đã nộp hiện tại chưa đạt chỉ tiêu yêu cầu của
+                    Khoa:
+                </p>
+
+                <div class="kpi-box">
+                    <div>
+                        <div class="kpi-label">Đã nộp</div>
+                        <div class="kpi-stat"><%= currentCount %> đề tài</div>
+                    </div>
+                    <div style="font-size: 20px; color: #ccc">/</div>
+                    <div>
+                        <div class="kpi-label">Yêu cầu tối thiểu</div>
+                        <div class="kpi-stat" style="color: #d9534f"><%= requiredCount %> đề tài</div>
+                    </div>
+                </div>
+
+                <p>Hạn chót nộp đề tài trên hệ thống là: <span class="deadline-alert"><%= deadline %></span>.</p>
+
+                <p>
+                    Kính mong Quý Thầy/Cô sắp xếp thời gian hoàn thành việc đăng ký để đảm bảo tiến độ chung của Khoa và
+                    quyền lợi đăng ký của sinh viên.
+                </p>
+
+                <div style="text-align: center">
+                    <a href="<%= link %>" class="btn">Đăng nhập & Nộp đề tài</a>
+                </div>
+            </div>
+
+            <div class="footer">
+                <p><strong><%= senderName %></strong></p>
+                <div class="contact-info">
+                    Email hỗ trợ: <a href="mailto:<%= facultyEmail %>"><%= facultyEmail %></a> | Website:
+                    <a href="<%= facultyWebsite %>"><%= facultyWebsite %></a>
+                </div>
+                <p style="margin-top: 10px; font-style: italic; font-size: 12px">
+                    Email này được gửi tự động từ hệ thống quản lý khóa luận.
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
