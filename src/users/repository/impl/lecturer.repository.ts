@@ -57,32 +57,42 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
     async updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto) {
         const objectId = new Types.ObjectId(userId)
+
+        // Lấy lecturer
         const lecturer = await this.lecturerModel.findOne({ userId: objectId })
         if (!lecturer) throw new Error('Lecturer not found')
 
-        // Update user fields
-        if (dto.fullName || dto.email || dto.isActive !== undefined) {
-            await this.userModel.findByIdAndUpdate(objectId, {
-                fullName: dto.fullName,
-                email: dto.email,
-                isActive: dto.isActive,
-                phone: dto.phone,
-                avatarUrl: dto.avatarUrl
-            })
+        // Cập nhật User fields
+        const userUpdate: Partial<User> = {}
+        if (dto.fullName !== undefined) userUpdate.fullName = dto.fullName
+        if (dto.email !== undefined) userUpdate.email = dto.email
+        if (dto.bio !== undefined) userUpdate.bio = dto.bio
+        if (dto.phone !== undefined) userUpdate.phone = dto.phone
+        if (dto.avatarUrl !== undefined) userUpdate.avatarUrl = dto.avatarUrl
+        if (dto.isActive !== undefined) userUpdate.isActive = dto.isActive
+
+        if (Object.keys(userUpdate).length > 0) {
+            await this.userModel.findByIdAndUpdate(objectId, userUpdate, { new: true })
         }
 
-        // Update lecturer fields
-        if (dto.facultyId) lecturer.facultyId = new Types.ObjectId(dto.facultyId)
-        if (dto.title) {
-            console.log(`dto title, lecturer title`, dto.title, lecturer.title)
-            lecturer.title = dto.title
+        // Cập nhật Lecturer fields
+        if (dto.facultyId !== undefined) lecturer.facultyId = new Types.ObjectId(dto.facultyId)
+        if (dto.title !== undefined) lecturer.title = dto.title
+        if (dto.areaInterest !== undefined) lecturer.areaInterest = dto.areaInterest
+        if (dto.researchInterests !== undefined) lecturer.researchInterests = dto.researchInterests
+        if (dto.publications !== undefined) {
+            lecturer.publications = dto.publications.map((pub) => ({
+                title: pub.title ?? '',
+                journal: pub.journal ?? '',
+                conference: pub.conference ?? '',
+                year: pub.year ?? '',
+                type: pub.type ?? '',
+                citations: pub.citations ?? 0,
+                link: pub.link ?? ''
+            }))
         }
-        if (dto.areaInterest) lecturer.areaInterest = dto.areaInterest
-        if (dto.researchInterests) lecturer.researchInterests = dto.researchInterests
-        if (dto.supervisedThesisIds)
-            lecturer.supervisedThesisIds = dto.supervisedThesisIds.map((id) => new Types.ObjectId(id))
-        if (dto.publications) lecturer.publications = dto.publications
         await lecturer.save()
+
         return { message: 'Profile updated successfully' }
     }
 

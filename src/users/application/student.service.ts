@@ -37,6 +37,7 @@ export class StudentService extends BaseServiceAbstract<Student> {
         return {
             userId: doc.userId._id.toString(),
             fullName: doc.userId.fullName,
+            bio: doc.userId.bio,
             email: doc.userId.email,
             phone: doc.userId.phone || undefined,
             avatarUrl: doc.userId.avatarUrl || undefined,
