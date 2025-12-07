@@ -2,7 +2,7 @@ import { Process, Processor } from '@nestjs/bull'
 import { OnlineUserService } from '../application/online-user.service'
 import { Job } from 'bull'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { NotFoundException } from '@nestjs/common'
 import { MailService } from '../../../mail/providers/mail.service'
 import { UserService } from '../../../users/application/users.service'
@@ -39,7 +39,7 @@ export class NotificationQueueProcessor {
         if (isOnline) {
             this.notiGateway.server
                 .to('user_' + recipientId)
-                .emit('notification', { _id, title, message, createdAt, type, isRead, metaData: metadata })
+                .emit('notification:new', { _id, title, message, createdAt, type, isRead, metaData: metadata })
             console.log(`Notification sent to user ${recipientId} via WebSocket.`)
         }
         //code cũ không cần thiết vì cứ một trình duyệt mở socket là được đnagư ký trong roome user_{userId} rùi
@@ -63,7 +63,10 @@ export class NotificationQueueProcessor {
         const { userId } = job.data
 
         // update db
-        await this.notiModel.updateMany({ userId, isRead: false }, { isRead: true })
+        await this.notiModel.updateMany(
+            { recipientId: new mongoose.Types.ObjectId(userId), isRead: false },
+            { isRead: true }
+        )
 
         // emit ws to all user socket (if user has more than 1 device access to app)
         // const sockets = await this.onlineUserService.getSockets(userId)
@@ -76,14 +79,13 @@ export class NotificationQueueProcessor {
     async handleMarkRead(job: Job<{ notificationId: string }>) {
         const { notificationId } = job.data
 
-        const noti = await this.notiModel.findByIdAndUpdate({ _id: notificationId }, { seen: true })
+        const noti = await this.notiModel.findByIdAndUpdate({ _id: notificationId }, { isRead: true })
 
         if (!noti) throw new NotFoundException('Notification not found')
-
-        const sockets = await this.onlineUserService.getSockets(noti?.recipientId.toString())
-        sockets.forEach((sid) => {
-            this.notiGateway.server.to(sid).emit('notification-marked-read', { notificationId })
-        })
+        console.log('Emitting mark-read for notification:', noti)
+        this.notiGateway.server
+            .to('user_' + noti.recipientId.toString())
+            .emit('notification:marked-read', notificationId )
     }
 
     @Process('send-email')
@@ -111,9 +113,7 @@ export class NotificationQueueProcessor {
         await this.mailService.sendReminderSubmitTopicMail(user!, message, deadline, metadata, faculty)
     }
     @Process('send-email-approval-topic-notification')
-    async handleSendApprovalEmail(
-        job: Job<SendApprovalEmail>
-    ) {
+    async handleSendApprovalEmail(job: Job<SendApprovalEmail>) {
         const { user, topicInfo, faculty, type } = job.data
         if (type === LecturerRoleEnum.MAIN_SUPERVISOR)
             await this.mailService.sendApprovalTopicNotification(user!, topicInfo, faculty)

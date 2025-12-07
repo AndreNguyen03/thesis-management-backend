@@ -212,7 +212,9 @@ export class NotificationPublisherService {
             {
                 topicId: topicInfo._id,
                 titleVN: topicInfo.titleVN,
-                titleEng: topicInfo.titleEng
+                titleEng: topicInfo.titleEng,
+                // chuyển hướng tới xem những đề tài đã nộp
+                actionUrl: `/manage-topics/submitted`
             },
             false
         )
