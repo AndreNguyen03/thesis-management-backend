@@ -13,14 +13,13 @@ import { NotificationType } from '../../notifications/schemas/notification.schem
 import { getRejectionReasonText } from '../../../common/utils/translate-code-to-semantic-text'
 import { GetMiniTopicInfoProvider } from '../../topics/providers/get-mini-topic-info.provider'
 import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
-import { PersonalNotificationProvider } from '../../notifications/providers/practice-actions.provider'
 
 @Injectable()
 export class StudentRegTopicService {
     constructor(
         @Inject('StudentRegTopicRepositoryInterface')
         private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface,
-        private readonly personalNotificationProvider: PersonalNotificationProvider,
+        private readonly notificationPublisherService: NotificationPublisherService,
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider
     ) {}
     //cả studentSignleRegistration và lecAssignStudent đều dùng hàm này createSingleRegistration
@@ -76,7 +75,7 @@ export class StudentRegTopicService {
             )
 
             //Gửi thông báo cho sinh viên về việc từ chối đăng ký
-            await this.personalNotificationProvider.sendApprovedRegisterationNotification(
+            await this.notificationPublisherService.sendApprovedRegisterationNotification(
                 registration.userId,
                 userId,
                 topicInfo
@@ -89,7 +88,7 @@ export class StudentRegTopicService {
                 body.lecturerResponse
             )
             //Gửi thông báo cho sinh viên về việc từ chối đăng ký
-            await this.personalNotificationProvider.sendRejectedRegisterationNotification(
+            await this.notificationPublisherService.sendRejectedRegisterationNotification(
                 registration.userId,
                 userId,
                 topicInfo,

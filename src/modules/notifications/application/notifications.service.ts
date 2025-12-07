@@ -1,51 +1,28 @@
-import { Injectable, RequestTimeoutException } from '@nestjs/common'
+import { BadRequestException, Injectable, RequestTimeoutException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
-import { NotificationsGateway } from '../gateways/notifications.gateway'
 import { Notification } from '../schemas/notification.schemas'
-import { CreateAndSend } from '../dto/create-and-send.dtos'
+import { CreateNotification } from '../dtos/create-and-send.dtos'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bull'
-import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 
 @Injectable()
 export class NotificationsService {
     constructor(
         @InjectModel(Notification.name) private readonly notiModel: Model<Notification>,
-        private notificationsGateway: NotificationsGateway,
-        @InjectQueue('notifications') private readonly queue: Queue
+        @InjectQueue('notifications') private readonly queue: Queue,
+        private readonly paginationProvider: PaginationProvider
     ) {}
-    async createAndSend(actorId: string, createDto: CreateAndSend) {
-        // 1. Persistence: Lưu vào DB trước (Source of Truth)
-        let newNoti
-        try {
-            newNoti = await this.notiModel.create({
-                ...createDto,
-                actorId: actorId,
-                readAt: null
-            })
-        } catch (error) {
-            throw new RequestTimeoutException('Failed to create notification')
-        }
 
-        // 2. Real-time: Bắn socket sau
-        // Chỉ gửi những data cần thiết để hiển thị Toast/Popup
-        const socketPayload = {
-            id: newNoti._id,
-            content: newNoti.content,
-            type: newNoti.type,
-            createdAt: newNoti['createdAt']
-        }
-
-     
-
-        return newNoti
-    }
-    async getUserNotifications(userId: string) {
-        return await this.notiModel
-            .find({ recipientId: new mongoose.Types.ObjectId(userId), deleted_at: null })
-            .sort({ createdAt: -1 })
-            .exec()
+    async getUserNotifications(userId: string, query: PaginationQueryDto) {
+        const pipelineSub: any[] = []
+        pipelineSub.push(
+            { $match: { recipientId: new mongoose.Types.ObjectId(userId), deleted_at: null } },
+            { $sort: { createdAt: -1 } }
+        )
+        return await this.paginationProvider.paginateQuery<Notification>(query, this.notiModel, pipelineSub)
     }
 
     async getUnreadNotifications(userId: string) {
@@ -60,5 +37,14 @@ export class NotificationsService {
     async markReadAll(userId: string) {
         await this.queue.add('mark-read-all', { userId })
         return { success: true }
+    }
+    async createNotification(createDto: CreateNotification) {
+        let res
+        try {
+            res = (await this.notiModel.create(createDto)).toObject()
+        } catch (error) {
+            throw new BadRequestException('Không thể tạo thông báo')
+        }
+        return res
     }
 }

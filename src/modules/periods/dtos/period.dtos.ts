@@ -1,61 +1,57 @@
-import {
-    IsArray,
-    IsDate,
-    IsEmpty,
-    IsEnum,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsPositive,
-    IsString,
-    Min,
-    ValidateNested
-} from 'class-validator'
+import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { ConfigPhaseSubmitTopicDto, GetPeriodPhaseDto } from './period-phases.dtos'
-import { PeriodStatus } from '../enums/periods.enum'
+import { PeriodType } from '../enums/periods.enum'
 import { Expose, Type } from 'class-transformer'
-import { Period, PeriodPhase } from '../schemas/period.schemas'
-import { PartialType } from '@nestjs/swagger'
-import mongoose from 'mongoose'
 import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
-import { IntersectionType } from '@nestjs/mapped-types'
-import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { GetPeriodPhaseDto } from './period-phases.dtos'
 
 export class CreatePeriodDto {
     @IsNotEmpty()
-    name: string
+    year: string
     @IsNotEmpty()
-    @IsEnum(PeriodStatus)
-    status: PeriodStatus = PeriodStatus.OnGoing
-    @IsOptional()
-    @IsArray()
-    @ValidateNested()
-    phaseSubmitTopic: ConfigPhaseSubmitTopicDto
+    semester: number
     @IsNotEmpty()
-    @IsNumber()
-    @Min(0)
-    totalTopics: number = 0
+    @IsEnum(PeriodType)
+    type: string
     @IsNotEmpty()
     @IsDate()
     startTime: Date = new Date()
     @IsNotEmpty()
     @IsDate()
     endTime: Date
+   
 }
-
-export class UpdatePeriodDto {
-    @IsNotEmpty()
-    @IsString()
+export class GetMiniPeriodDto {
+    @Expose()
+    _id: string
+    @Expose()
     name: string
+    @Expose()
+    @Type(() => GetFacultyDto)
+    faculty: GetFacultyDto
+}
+export class UpdatePeriodDto {
+    @IsOptional()
+    @IsString()
+    year: string
+    @IsOptional()
+    @IsNumber()
+    semester: number
+    @IsOptional()
+    @IsString()
+    type: string
 }
 
 export class GetPeriodDto {
     @Expose()
     _id: string
     @Expose()
-    name: string
+    year: string
+    @Expose()
+    semester: number
+    @Expose()
+    type: string
     @Expose()
     @Type(() => GetFacultyDto)
     faculty: GetFacultyDto
@@ -73,32 +69,8 @@ export class GetPeriodDto {
     @Expose()
     @Type(() => GetPeriodPhaseDto)
     currentPhaseDetail: GetPeriodPhaseDto
-    // // @Expose()
-    // // totalTopics: number
 }
 
-export interface GetPeriodInterface {
-    _id: string
-    name: string
-    faculty: any
-    phases: any
-    status: string
-    startTime: Date
-    endTime: Date
-    currentPhaseDetail: any
-    currentPhase: string
-    // // @Expose()
-    // // totalTopics: number
-}
-export class GetMiniPeriodDto {
-    @Expose()
-    _id: string
-    @Expose()
-    name: string
-    @Expose()
-    @Type(() => GetFacultyDto)
-    faculty: GetFacultyDto
-}
 export class GetPaginatedPeriodDto extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetPeriodDto)

@@ -48,4 +48,12 @@ export class CheckUserInfoProvider {
             return facu ? facu._id.toString() : null
         } else return null
     }
+    async getUsersByIds(userIds: string[]): Promise<User[] | null> {
+        const objectIds = userIds.map((id) => new mongoose.Types.ObjectId(id))
+        const users = await this.userRepository.findByCondition({
+            _id: { $in: objectIds.map((id) => new mongoose.Types.ObjectId(id)) },
+            deleted_at: null
+        })
+        return users
+    }
 }

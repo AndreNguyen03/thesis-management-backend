@@ -8,10 +8,12 @@ export enum PeriodPhaseName {
     COMPLETION = 'completion'
 }
 export enum PeriodPhaseStatus {
-    UPCOMING = 'not_started',
     ONGOING = 'ongoing',
     COMPLETED = 'completed'
 }
+//đây là trạng thái lưu db để khi query ra biết kì đã xong chưa, còn ongoing mà timout => timeout, còn completed là hoàn thành
+//thực tế api trả về sẽ kiểm tra động và cho ra kết quả thuộc ["pending","active","timeout"]
+
 export const ValidateContinuePhase = (currentPhase: string) => {
     const validateClass = {
         empty: [PeriodPhaseName.SUBMIT_TOPIC],

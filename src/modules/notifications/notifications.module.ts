@@ -13,10 +13,13 @@ import { NotificationPublisherService } from './publisher/notification.publisher
 import { UsersModule } from '../../users/users.module'
 import { NotificationQueueProcessor } from './processors/notification.processor'
 import { UserVerifyInfoService } from './providers/user-verify.info.services'
-import { AuthModule } from '../../auth/auth.module'
-import { PersonalNotificationProvider } from './providers/practice-actions.provider'
 import { RegistrationsModule } from '../registrations/registrations.module'
-
+import { PeriodsModule } from '../periods/periods.module'
+import { MailModule } from '../../mail/mail.module'
+import { Faculty } from '../faculties/schemas/faculty.schema'
+import { FacultyModule } from '../faculties/faculty.module'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+//Module thông báo, gửi email để thông báo
 @Module({
     providers: [
         NotificationsGateway,
@@ -24,7 +27,6 @@ import { RegistrationsModule } from '../registrations/registrations.module'
         OnlineUserService,
         NotificationPublisherService,
         NotificationQueueProcessor,
-        PersonalNotificationProvider,
         UserVerifyInfoService
     ],
     imports: [
@@ -33,9 +35,13 @@ import { RegistrationsModule } from '../registrations/registrations.module'
         JwtModule.registerAsync(jwtConfig.asProvider()),
         BullModule.registerQueue({ name: 'notifications' }),
         forwardRef(() => UsersModule),
-        forwardRef(() => RegistrationsModule)
+        forwardRef(() => RegistrationsModule),
+        forwardRef(() => PeriodsModule),
+        MailModule,
+        FacultyModule,
+        PaginationAnModule
     ],
-    exports: [PersonalNotificationProvider],
+    exports: [NotificationPublisherService],
     controllers: [NotificationsController]
 })
 export class NotificationsModule {}

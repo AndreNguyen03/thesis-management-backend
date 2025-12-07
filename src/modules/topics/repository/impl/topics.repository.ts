@@ -479,7 +479,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             enableImplicitConversion: true
         })
         return newTopic._id
-    } 
+    }
     //chỉ xóa thẳng những đề tài ở trạng thái draft và do chính người dùng tạo
     async deleteTopics(topicIds: string[], ownerId: string): Promise<boolean> {
         const topics = await this.topicRepository.deleteMany({
@@ -952,6 +952,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
                 lastStatusInPhaseHistory: { $ne: null },
+                ...{...(query.status ? { 'lastStatusInPhaseHistory.status': query.status } : {})},
                 deleted_at: null
             }
         })
@@ -2821,11 +2822,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         let titleEng = baseTitleEng
         let count = 1
 
-        while (await this.topicRepository.findOne({ titleVN, currentStatus: TopicStatus.Draft, deleted_at: null })) {
+        while (await this.topicRepository.findOne({ titleVN })) {
             count++
             titleVN = `${baseTitleVN} ${count}`
         }
-        while (await this.topicRepository.findOne({ titleEng, currentStatus: TopicStatus.Draft, deleted_at: null })) {
+        while (await this.topicRepository.findOne({ titleEng })) {
             titleEng = `${baseTitleEng} ${count}`
         }
         const { _id, phaseHistories, periodId, ...topicData } = topic

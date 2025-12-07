@@ -8,6 +8,7 @@ import { PaginationProvider } from '../../../common/pagination-an/providers/pagi
 import { InjectModel } from '@nestjs/mongoose'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { CreateFacultyDto } from '../dtos/faculty.dtos'
+import mongoose from 'mongoose'
 
 @Injectable()
 export class FacultyService extends BaseServiceAbstract<Faculty> {
@@ -41,7 +42,7 @@ export class FacultyService extends BaseServiceAbstract<Faculty> {
     }
 
     async getFacultyById(id: string): Promise<Faculty | null> {
-        return this.findOneById(id)
+        return await this.findOneByCondition({_id: new mongoose.Types.ObjectId(id), deleted_at: null})
     }
 
     async updateFaculty(id: string, updateDto: Partial<Faculty>): Promise<Faculty | null> {

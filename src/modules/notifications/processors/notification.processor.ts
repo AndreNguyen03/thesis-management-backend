@@ -7,7 +7,18 @@ import { NotFoundException } from '@nestjs/common'
 import { MailService } from '../../../mail/providers/mail.service'
 import { UserService } from '../../../users/application/users.service'
 import { NotificationsGateway } from '../gateways/notifications.gateway'
-import { Notification } from '../schemas/notification.schemas'
+import { Notification, NotificationType } from '../schemas/notification.schemas'
+import { MissingTopicRecord } from '../../periods/dtos/phase-resolve.dto'
+import { GetNotificationDto } from '../dtos/get-notifications'
+import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
+import { NotificationTitleEnum } from '../enum/title.enum'
+import { User } from '../../../users/schemas/users.schema'
+import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
+import { OpenPeriodNotificationTypeEnum } from '../enum/open-period.enum'
+import { GetMiniTopicInfo } from '../../topics/dtos'
+import { LecturerRoleEnum } from '../../registrations/enum/lecturer-role.enum'
+import { SendApprovalEmail } from '../dtos/processor-job.dtos'
+import { GetPeriodDto } from '../../periods/dtos/period.dtos'
 
 @Processor('notifications')
 export class NotificationQueueProcessor {
@@ -34,6 +45,18 @@ export class NotificationQueueProcessor {
         //code cũ không cần thiết vì cứ một trình duyệt mở socket là được đnagư ký trong roome user_{userId} rùi
         //không cần thiết phải gửi từng socket của user nữa => mất đi tính tiện lợi của chức năng tạo room của socket
     }
+
+    @Process('send-notifications-inphase')
+    async handleSendRemindersSubmitPhase(job: Job<{ senderId: string; notiSend: GetNotificationDto }>) {
+        const { senderId, notiSend } = job.data
+        //Gửi thông báo qua socket
+        const isOnline = await this.onlineUserService.isUserOnline(senderId)
+        if (isOnline) {
+            this.notiGateway.server.to('user_' + senderId).emit('notification', notiSend)
+        }
+    }
+    //code cũ không cần thiết vì cứ một trình duyệt mở socket là được đnagư ký trong roome user_{userId} rùi
+    //không cần thiết phải gửi từng socket của user nữa => mất đi tính tiện lợi của chức năng tạo room của socket
 
     @Process('mark-read-all')
     async handleMarkReadAll(job: Job<{ userId: string }>) {
@@ -78,5 +101,34 @@ export class NotificationQueueProcessor {
             console.error(`Failed to send email to ${user.email}`, error)
             throw error
         }
+    }
+
+    @Process('send-email-reminders')
+    async handleSendReminderEmail(
+        job: Job<{ user: User; message: string; deadline: Date; metadata: Record<string, any>; faculty: GetFacultyDto }>
+    ) {
+        const { user, message, deadline, metadata, faculty } = job.data
+        await this.mailService.sendReminderSubmitTopicMail(user!, message, deadline, metadata, faculty)
+    }
+    @Process('send-email-approval-topic-notification')
+    async handleSendApprovalEmail(
+        job: Job<SendApprovalEmail>
+    ) {
+        const { user, topicInfo, faculty, type } = job.data
+        if (type === LecturerRoleEnum.MAIN_SUPERVISOR)
+            await this.mailService.sendApprovalTopicNotification(user!, topicInfo, faculty)
+        else if (type === LecturerRoleEnum.CO_SUPERVISOR)
+            await this.mailService.sendAssignedCoSupervisorNotification(user!, topicInfo, faculty)
+    }
+
+    @Process('send-email-open-period')
+    async handleSendOpenPeriodEmail(
+        job: Job<{ user: User; periodInfo: GetPeriodDto; faculty: GetFacultyDto; type: string }>
+    ) {
+        const { user, periodInfo, faculty } = job.data
+        if (job.data.type === OpenPeriodNotificationTypeEnum.OPEN_REGISTRATION)
+            await this.mailService.sendPeriodOpenRegistrationNotification(user!, periodInfo, faculty)
+        else if (job.data.type === OpenPeriodNotificationTypeEnum.NEW_SEMESTER)
+            await this.mailService.sendNewSemesticOpenGeneralNotification(user!, periodInfo, faculty)
     }
 }

@@ -80,9 +80,8 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
             { name: FacultyBoard.name, schema: FacultyBoardSchema }
         ]),
         ConfigModule.forFeature(profileConfig),
-        UploadFilesModule,
-        PaginationAnModule,
-        forwardRef(() => NotificationsModule)
+        forwardRef(() => UploadFilesModule),
+        forwardRef(() => PaginationAnModule)
     ] // Add any other modules that UsersService depends on here
 })
 export class UsersModule {}

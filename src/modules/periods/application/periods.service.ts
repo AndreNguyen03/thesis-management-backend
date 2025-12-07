@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
-import { CreatePeriodDto, PeriodStatsQueryParams, UpdatePeriodDto } from '../dtos/period.dtos'
+import { CreatePeriodDto, GetPeriodDto, PeriodStatsQueryParams, UpdatePeriodDto } from '../dtos/period.dtos'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { Period } from '../schemas/period.schemas'
 import { CreatePhaseProvider } from '../providers/create-phase.provider'
@@ -46,16 +46,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
         private readonly getPhaseProvider: GetPhaseProvider,
-        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
-        private readonly topicService: TopicService
+        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider
     ) {
         super(iPeriodRepository)
     }
 
     async closePhase(
         periodId: string,
-        phase: PeriodPhaseName,
-        user: ActiveUserData
+        phase: PeriodPhaseName
+        // user: ActiveUserData
     ): Promise<Phase1Response | Phase2Response | Phase3Response> {
         const period = await this.iPeriodRepository.getDetailPeriod(periodId)
         const phaseDetail = period?.phases.find((p) => p.phase === phase && p.status === 'completed')
@@ -107,7 +106,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return result
     }
     async handleCloseSubmitTopicPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail) {
-      //  console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
+        //  console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
 
         // init dto
         let result: Phase1Response = {
@@ -119,11 +118,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         }
 
         const minTopicsRequired = phaseDetail.minTopicsPerLecturer
-      //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
+        //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
 
         // loop get missing topic count per lecturer
         for (const lec of phaseDetail.requiredLecturers) {
-          //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
+            //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
 
             const lecStatsPhase1 = (await this.lecturerGetStatisticsSubmitTopicPhase(
                 period._id.toString(),
@@ -166,7 +165,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
 
         result.pendingTopics = boardStatsPhase1.submittedTopicsNumber
 
-       // console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
+        // console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
 
@@ -194,17 +193,14 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     }
 
     async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto) {
-        const { phaseSubmitTopic, ...nest } = createPeriodDto
+        console.log('Creating new period with data:', { actorId, facultyId, createPeriodDto })
         const periodData = {
-            ...nest,
-            facultyId: facultyId
+            ...createPeriodDto,
+            faculty: facultyId,
+            actorId
         }
         const newPeriod = plainToClass(Period, periodData)
-        const createdPeriod = await this.iPeriodRepository.createNewPeriod(newPeriod)
-        const res = await this.createPhaseProvider.initalizePhasesForNewPeriod(createdPeriod._id.toString())
-        if (res && phaseSubmitTopic) {
-            await this.configPhaseSubmitTopic(actorId, createdPeriod._id.toString(), phaseSubmitTopic)
-        }
+        await this.iPeriodRepository.createNewPeriod(newPeriod)
     }
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto) {
         return this.iPeriodRepository.getAllPeriods(facultyId, query)
@@ -349,25 +345,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         //lấy thống kê các thong tin liên quan khác (nếu có)
         return topicFigures
     }
-    async getSubmissionStatus(lecturerId: string, facultyId: string): Promise<GetCustomRequestDto> {
-        const res = await this.iPeriodRepository.getSubmissionStatus(lecturerId, facultyId)
-        let submittedCount = 0
-        if (res.isEligible) {
-            submittedCount = await this.getTopicProvider.getLecturerSubmittedTopicNum(lecturerId)
-            return {
-                ...res,
-                requirements: {
-                    minTopics: res.minTopics,
-                    submittedTopics: submittedCount
-                }
-            }
-        }
-        return {
-            ...res
-        }
-    }
 
-    async getCurrentPeriodInfo(facultyId: string): Promise<Period | null> {
+    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodDto | null> {
         return this.iPeriodRepository.getCurrentPeriodInfo(facultyId)
     }
 }

@@ -12,7 +12,9 @@ import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
 import { PeriodDetail } from '../../dtos/phase-resolve.dto'
-import { GetPeriodInterface } from '../../dtos/period.dtos'
+import { GetPeriodDto } from '../../dtos/period.dtos'
+import { $ } from '@faker-js/faker/dist/airline-CLphikKp'
+import { start } from 'repl'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -60,77 +62,90 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>> {
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
-        pipelineSub.push({
-            $addFields: {
-                status: {
-                    $switch: {
-                        branches: [
-                            {
-                                case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
-                                then: 'pending'
-                            },
-                            {
-                                case: { $lt: ['$$NOW', '$startTime'] },
-                                then: 'pending'
-                            },
-                            {
-                                case: { $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }] },
-                                then: 'active'
-                            }
-                        ],
-                        default: 'timeout'
+        pipelineSub.push(
+            {
+                $addFields: {
+                    status: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: { $lt: ['$$NOW', '$startTime'] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: {
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                    },
+                                    then: 'active'
+                                },
+                                {
+                                    case: {
+                                        $eq: ['status', PeriodStatus.Completed]
+                                    },
+                                    then: PeriodStatus.Completed
+                                }
+                            ],
+                            default: 'timeout'
+                        }
                     }
                 }
-            }
-        }, {
-            $addFields: {
-                phases: {
-                    $map: {
-                        input: '$phases',
-                        as: 'phase',
-                        in: {
-                            $mergeObjects: [
-                                '$$phase',
-                                {
-                                    status: {
-                                        $switch: {
-                                            branches: [
-                                                {
-                                                    case: { $or: [{ $not: '$$phase.startTime' }, { $not: '$$phase.endTime' }] },
-                                                    then: 'pending'
-                                                },
-                                                {
-                                                    case: { $lt: ['$$NOW', '$$phase.startTime'] },
-                                                    then: 'pending'
-                                                },
-                                                {
-                                                    case: { $and: [{ $gte: ['$$NOW', '$$phase.startTime'] }, { $lte: ['$$NOW', '$$phase.endTime'] }] },
-                                                    then: 'active'
-                                                }
-                                            ],
-                                            default: 'timeout'
+            },
+            {
+                $addFields: {
+                    phases: {
+                        $map: {
+                            input: '$phases',
+                            as: 'phase',
+                            in: {
+                                $mergeObjects: [
+                                    '$$phase',
+                                    {
+                                        status: {
+                                            $switch: {
+                                                branches: [
+                                                    {
+                                                        case: {
+                                                            $or: [
+                                                                { $not: '$$phase.startTime' },
+                                                                { $not: '$$phase.endTime' }
+                                                            ]
+                                                        },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: { $lt: ['$$NOW', '$$phase.startTime'] },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $and: [
+                                                                { $gte: ['$$NOW', '$$phase.startTime'] },
+                                                                { $lte: ['$$NOW', '$$phase.endTime'] }
+                                                            ]
+                                                        },
+                                                        then: 'active'
+                                                    }
+                                                ],
+                                                default: 'timeout'
+                                            }
                                         }
                                     }
-                                }
-                            ]
+                                ]
+                            }
                         }
-
                     }
                 }
             }
-        })
-        pipelineSub.push({ $match: { facultyId: new mongoose.Types.ObjectId(facultyId), deleted_at: null } })
-        pipelineSub.push({
-            $project: {
-                _id: 1,
-                name: 1,
-                phases: "$phases",
-                startTime: 1,
-                endTime: 1,
-                status: 1,
-                currentPhase: 1,
-            }
-        })
+        )
+        pipelineSub.push(
+            { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
+            { $sort: { startTime: -1 } }
+        )
+      
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     async deletePeriod(periodId: string): Promise<boolean> {
@@ -153,155 +168,162 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         )
         return res.modifiedCount > 0
     }
-    async getSubmissionStatus(
-        lecturerId: string,
-        facultyId: string
-    ): Promise<{
-        currentPeriod: string | null
-        currentPhase: string | null
-        isEligible: boolean
-        reason: string | null
-        minTopics: number
-    }> {
-        console.log('facultyId in repo:', facultyId)
-        const period = await this.periodModel.findOne({
-            status: PeriodStatus.OnGoing,
-            facultyId: new mongoose.Types.ObjectId(facultyId),
-            deleted_at: null
-        })
+    // async getSubmissionStatus(
+    //     lecturerId: string,
+    //     facultyId: string
+    // ): Promise<{
+    //     currentPeriod: string | null
+    //     currentPhase: string | null
+    //     isEligible: boolean
+    //     reason: string | null
+    //     minTopics: number
+    // }> {
+    //     console.log('facultyId in repo:', facultyId)
+    //     const period = await this.periodModel.findOne({
+    //         status: PeriodStatus.OnGoing,
+    //         facultyId: new mongoose.Types.ObjectId(facultyId),
+    //         deleted_at: null
+    //     })
 
-        if (!period)
-            return {
-                currentPeriod: null,
-                currentPhase: null,
-                isEligible: false,
-                reason: 'Không tìm thấy kì hiện tại',
-                minTopics: 0
-            }
-        if (period.currentPhase !== PeriodPhaseName.SUBMIT_TOPIC) {
-            return {
-                currentPeriod: period.name,
-                currentPhase: period.currentPhase,
-                isEligible: false,
-                reason: 'Kì hiện tại không ở giai đoạn nộp đề tài',
-                minTopics: 0
-            }
-        }
+    //     if (!period)
+    //         return {
+    //             currentPeriod: null,
+    //             currentPhase: null,
+    //             isEligible: false,
+    //             reason: 'Không tìm thấy kì hiện tại',
+    //             minTopics: 0
+    //         }
+    //     if (period.currentPhase !== PeriodPhaseName.SUBMIT_TOPIC) {
+    //         return {
+    //             currentPeriod: period,
+    //             currentPhase: period.currentPhase,
+    //             isEligible: false,
+    //             reason: 'Kì hiện tại không ở giai đoạn nộp đề tài',
+    //             minTopics: 0
+    //         }
+    //     }
 
-        const currenPhaseDetail = period?.phases.filter((phase) => phase.phase === PeriodPhaseName.SUBMIT_TOPIC)
+    //     const currenPhaseDetail = period?.phases.filter((phase) => phase.phase === PeriodPhaseName.SUBMIT_TOPIC)
 
-        //Kiểm tra xem giảng viên có trong danh sách được nộp đề tài hay không
-        const isEligible = currenPhaseDetail[0]?.requiredLecturerIds.includes(lecturerId)
-        if (isEligible) {
-            if (currenPhaseDetail[0]?.endTime < new Date()) {
-                // Kiểm tra xem thời gian nộp đề tài đã kế thúc hay chưa
-                return {
-                    currentPeriod: period.name,
-                    currentPhase: period.currentPhase,
-                    isEligible: false,
-                    reason: 'Thời gian nộp đề tài đã kết thúc',
-                    minTopics: 0
-                }
-            }
-            if (currenPhaseDetail[0]?.startTime > new Date()) {
-                // Kiểm tra xem thời gian nộp đề tài đã bắt đầu hay chưa
-                return {
-                    currentPeriod: period.name,
-                    currentPhase: period.currentPhase,
-                    isEligible: false,
-                    reason: 'Chưa đến thời gian nộp đề tài',
-                    minTopics: 0
-                }
-            }
-        } else {
-            return {
-                currentPeriod: period.name,
-                currentPhase: period.currentPhase,
-                isEligible: false,
-                reason: 'Bạn không được yêu cầu nộp đề tài trong kỳ này',
-                minTopics: 0
-            }
-        }
+    //     //Kiểm tra xem giảng viên có trong danh sách được nộp đề tài hay không
+    //     const isEligible = currenPhaseDetail[0]?.requiredLecturerIds.includes(lecturerId)
+    //     if (isEligible) {
+    //         if (currenPhaseDetail[0]?.endTime < new Date()) {
+    //             // Kiểm tra xem thời gian nộp đề tài đã kế thúc hay chưa
+    //             return {
+    //                 currentPeriod: period.name,
+    //                 currentPhase: period.currentPhase,
+    //                 isEligible: false,
+    //                 reason: 'Thời gian nộp đề tài đã kết thúc',
+    //                 minTopics: 0
+    //             }
+    //         }
+    //         if (currenPhaseDetail[0]?.startTime > new Date()) {
+    //             // Kiểm tra xem thời gian nộp đề tài đã bắt đầu hay chưa
+    //             return {
+    //                 currentPeriod: period.name,
+    //                 currentPhase: period.currentPhase,
+    //                 isEligible: false,
+    //                 reason: 'Chưa đến thời gian nộp đề tài',
+    //                 minTopics: 0
+    //             }
+    //         }
+    //     } else {
+    //         return {
+    //             currentPeriod: period.name,
+    //             currentPhase: period.currentPhase,
+    //             isEligible: false,
+    //             reason: 'Bạn không được yêu cầu nộp đề tài trong kỳ này',
+    //             minTopics: 0
+    //         }
+    //     }
 
-        return {
-            currentPeriod: period.name,
-            currentPhase: period.currentPhase,
-            isEligible: true,
-            reason: null,
-            minTopics: currenPhaseDetail[0]?.minTopicsPerLecturer || 0
-        }
-    }
+    //     return {
+    //         currentPeriod: period.name,
+    //         currentPhase: period.currentPhase,
+    //         isEligible: true,
+    //         reason: null,
+    //         minTopics: currenPhaseDetail[0]?.minTopicsPerLecturer || 0
+    //     }
+    // }
 
-    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodInterface | null> {
+    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodDto> {
         const currentPeriod = await this.periodModel
             .findOne({
-                facultyId: new mongoose.Types.ObjectId(facultyId),
+                faculty: new mongoose.Types.ObjectId(facultyId),
                 status: PeriodStatus.OnGoing,
                 currentPhase: { $ne: PeriodPhaseName.EMPTY },
                 deleted_at: null
             })
             .sort({ createdAt: -1 })
-            .populate('facultyId')
+            .populate('faculty')
             .lean()
+        console.log('currentPeriod:', currentPeriod)
         if (!currentPeriod) {
-            return null
+            throw new BadRequestException('Không tìm thấy kỳ hiện tại')
         }
-        const { currentPhase, facultyId: facultyIdRes, ...currentPeriodObject } = currentPeriod
+        const { currentPhase, faculty: facultyRes, ...currentPeriodObject } = currentPeriod
         const currentPeriodPhase = currentPeriod.phases.find((phase) => phase.phase === currentPeriod.currentPhase)
 
-        return {
-            _id: currentPeriodObject._id.toString(),
-            name: currentPeriodObject.name,
-            faculty: facultyIdRes,
-            phases: currentPeriodObject.phases.map((phase) => ({
-                ...phase,
+        return await plainToInstance(
+            GetPeriodDto,
+            {
+                _id: currentPeriodObject._id.toString(),
+                semester: currentPeriodObject.semester,
+                year: currentPeriodObject.year,
+                type: currentPeriodObject.type,
+                faculty: facultyRes,
+                phases: currentPeriodObject.phases.map((phase) => ({
+                    ...phase,
+                    status: (() => {
+                        const now = new Date()
+                        if (!phase.startTime || !phase.endTime) {
+                            return 'pending'
+                        }
+                        if (now < phase.startTime) {
+                            return 'pending'
+                        } else if (now >= phase.startTime && now <= phase.endTime) {
+                            return 'active'
+                        } else {
+                            return 'timeout'
+                        }
+                    })()
+                })),
                 status: (() => {
                     const now = new Date()
-                    if (!phase.startTime || !phase.endTime) {
+                    if (!currentPeriodObject.startTime || !currentPeriodObject.endTime) {
                         return 'pending'
                     }
-                    if (now < phase.startTime) {
+                    if (now < currentPeriodObject.startTime) {
                         return 'pending'
-                    } else if (now >= phase.startTime && now <= phase.endTime) {
+                    } else if (now >= currentPeriodObject.startTime && now <= currentPeriodObject.endTime) {
                         return 'active'
                     } else {
                         return 'timeout'
                     }
-                })()
-            })),
-            status: (() => {
-                const now = new Date()
-                if (!currentPeriodObject.startTime || !currentPeriodObject.endTime) {
-                    return 'pending'
-                }
-                if (now < currentPeriodObject.startTime) {
-                    return 'pending'
-                } else if (now >= currentPeriodObject.startTime && now <= currentPeriodObject.endTime) {
-                    return 'active'
-                } else {
-                    return 'timeout'
-                }
-            })(),
-            currentPhase: currentPhase,
-            currentPhaseDetail: {
-                ...currentPeriodPhase,
-                status: (() => {
-                    const now = new Date()
-                    if (!currentPeriodPhase || !currentPeriodPhase.startTime || !currentPeriodPhase.endTime) {
-                        return 'pending'
-                    }
-                    if (now < currentPeriodPhase.startTime) {
-                        return 'pending'
-                    } else if (now >= currentPeriodPhase.startTime && now <= currentPeriodPhase.endTime) {
-                        return 'active'
-                    } else {
-                        return 'timeout'
-                    }
-                })()
+                })(),
+                currentPhase: currentPhase,
+                currentPhaseDetail: {
+                    ...currentPeriodPhase,
+                    status: (() => {
+                        const now = new Date()
+                        if (!currentPeriodPhase || !currentPeriodPhase.startTime || !currentPeriodPhase.endTime) {
+                            return 'pending'
+                        }
+                        if (now < currentPeriodPhase.startTime) {
+                            return 'pending'
+                        } else if (now >= currentPeriodPhase.startTime && now <= currentPeriodPhase.endTime) {
+                            return 'active'
+                        } else {
+                            return 'timeout'
+                        }
+                    })()
+                },
+                startTime: currentPeriodObject.startTime,
+                endTime: currentPeriodObject.endTime
             },
-            startTime: currentPeriodObject.startTime,
-            endTime: currentPeriodObject.endTime
-        }
+            { excludeExtraneousValues: true, enableImplicitConversion: true }
+        )
     }
 
     private async AbstractGetPeriodInfo(periodId: string) {
@@ -312,7 +334,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 {
                     $lookup: {
                         from: 'faculties',
-                        localField: 'facultyId',
+                        localField: 'faculty',
                         foreignField: '_id',
                         as: 'faculty'
                     }
@@ -456,5 +478,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     async createNewPeriod(period: Period): Promise<Period> {
         const createdPeriod = new this.periodModel(period)
         return createdPeriod.save()
+    }
+    async getMiniPeriodById(periodId: string): Promise<Partial<Period> | null> {
+        const period = await this.periodModel.findOne(
+            { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
+            { _id: 1, name: 1, startTime: 1, endTime: 1, status: 1, facultyId: 1 }
+        )
+        return period
     }
 }

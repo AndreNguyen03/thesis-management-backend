@@ -61,7 +61,6 @@ import { NotificationsModule } from '../notifications/notifications.module'
         GetMiniTopicInfoProvider
     ],
     imports: [
-        forwardRef(() => TopicModule),
         MongooseModule.forFeature([
             { name: Topic.name, schema: TopicSchema },
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
@@ -70,8 +69,8 @@ import { NotificationsModule } from '../notifications/notifications.module'
         ]),
         forwardRef(() => UsersModule),
         forwardRef(() => RegistrationsModule),
-        PaginationAnModule,
-        UploadFilesModule,
+        forwardRef(() => PaginationAnModule),
+        forwardRef(() => UploadFilesModule),
         forwardRef(() => NotificationsModule)
     ]
 })

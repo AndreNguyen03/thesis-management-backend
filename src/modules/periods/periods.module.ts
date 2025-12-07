@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { PeriodsController } from './periods.controller'
 import { PeriodsService } from './application/periods.service'
 import { PeriodRepository } from './repository/impl/periods.repository'
@@ -29,8 +29,9 @@ import { BullModule } from '@nestjs/bull'
             { name: 'Faculty', schema: FacultySchema }
         ]),
         PaginationAnModule,
-        TopicModule,
+        forwardRef(() => TopicModule),
         BullModule.registerQueue({ name: 'period' })
-    ]
+    ],
+    exports: [PeriodsService]
 })
 export class PeriodsModule {}

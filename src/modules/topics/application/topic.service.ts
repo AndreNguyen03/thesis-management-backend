@@ -24,8 +24,10 @@ import { PhaseHistoryNote } from '../enum/phase-history-note.enum'
 import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
 import mongoose from 'mongoose'
 import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
-import { PersonalNotificationProvider } from '../../notifications/providers/practice-actions.provider'
 import { GetMiniTopicInfoProvider } from '../providers/get-mini-topic-info.provider'
+import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
+import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-by-userId.provider'
+import { UserRole } from '../../../auth/enum/user-role.enum'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -44,8 +46,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly uploadManyFilesProvider: UploadManyFilesProvider,
         private readonly deleteFileProvider: DeleteFileProvider,
         private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider,
-        private readonly personalNotificationProvider: PersonalNotificationProvider,
-        private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider
+        private readonly notificationPublisherService: NotificationPublisherService,
+        private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
+        private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider
     ) {
         super(topicRepository)
     }
@@ -164,9 +167,20 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             actorId,
             PhaseHistoryNote.TOPIC_APPROVED
         )
-        //Gửi thông báo tới giảng viên HD chính
+        //Gửi thông báo tới giảng viên HD chính createBy
+        //đồng thời thông báo cho giảng viên đồng hướng dẫn nữa
         const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
-        await this.personalNotificationProvider.sendApprovalTopicNotification(topicInfor.createBy, actorId, topicInfor)
+        //thoogn tin hd chisnh
+        const mainSupervisor = await this.lecturerRegTopicService.getMainSupervisorInTopic(topicId)
+        const coSupervisors = await this.lecturerRegTopicService.getCoSupervisorsInTopic(topicId)
+        const facultyId = await this.getFacultyByUserIdProvider.getFacultyIdByUserId(actorId, UserRole.FACULTY_BOARD)
+        await this.notificationPublisherService.sendApprovalTopicNotification(
+            mainSupervisor,
+            actorId,
+            coSupervisors,
+            topicInfor,
+            facultyId
+        )
     }
     public async rejectTopic(topicId: string, actorId: string, facultyNote: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
@@ -176,7 +190,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             PhaseHistoryNote.TOPIC_REJECTED + ' với lí do: ' + facultyNote
         )
         const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
-        await this.personalNotificationProvider.sendRejectedTopicNotification(topicInfor.createBy, actorId, topicInfor)
+        await this.notificationPublisherService.sendRejectedTopicNotification(topicInfor.createBy, actorId, topicInfor)
     }
 
     // public async markUnderReviewing(topicId: string, actorId: string) {

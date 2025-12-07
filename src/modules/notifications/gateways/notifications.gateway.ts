@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
@@ -15,8 +15,9 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     @WebSocketServer()
     server: Server
     constructor(
-        private readonly userVerifyInfoService: UserVerifyInfoService,
-        private readonly onlineUserService: OnlineUserService,
+        // @Inject(forwardRef(() => UserVerifyInfoService))
+        // private readonly userVerifyInfoService: UserVerifyInfoService,
+        private readonly onlineUserService: OnlineUserService
     ) {}
     onlineUsers = new Map<string, string>()
     async handleConnection(client: SocketWithAuth) {
@@ -28,8 +29,11 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
                 throw new BadRequestException('Unauthorized')
             }
             const userId = payload.sub
-         
-            await this.userVerifyInfoService.joinRoom(new User(), client)
+
+            // await this.userVerifyInfoService.joinRoom(new User(), client)
+            const userRoom = `user_${userId.toString()}`
+            await client.join(userRoom)
+            console.log(`Client ${client.id} joined room ${userRoom}`)
             await this.onlineUserService.addSocket(userId, client.id)
             client.emit('connection_success', 'Kết nối WebSocket thành công')
         } catch (error) {
