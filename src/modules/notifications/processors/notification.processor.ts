@@ -61,13 +61,11 @@ export class NotificationQueueProcessor {
     @Process('mark-read-all')
     async handleMarkReadAll(job: Job<{ userId: string }>) {
         const { userId } = job.data
-
         // update db
         await this.notiModel.updateMany(
             { recipientId: new mongoose.Types.ObjectId(userId), isRead: false },
             { isRead: true }
         )
-
         // emit ws to all user socket (if user has more than 1 device access to app)
         // const sockets = await this.onlineUserService.getSockets(userId)
         // sockets.forEach((sid) => {
@@ -82,7 +80,7 @@ export class NotificationQueueProcessor {
         const noti = await this.notiModel.findByIdAndUpdate({ _id: notificationId }, { isRead: true })
 
         if (!noti) throw new NotFoundException('Notification not found')
-        console.log('Emitting mark-read for notification:', noti)
+       // console.log('Emitting mark-read for notification:', noti)
         this.notiGateway.server
             .to('user_' + noti.recipientId.toString())
             .emit('notification:marked-read', notificationId )

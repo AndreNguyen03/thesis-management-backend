@@ -28,6 +28,13 @@ class GetStudentRegistrationsHistoryDto {
     periodName: string
     @Expose()
     periodId: string
+    @Expose()
+    lecturerResponse: string
+    @Expose()
+    rejectionReasonType: string
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    processedBy: ResponseMiniLecturerDto
 }
 export class GetPaginatedStudentRegistrationsHistory extends GetPaginatedObjectDto {
     @Type(() => GetStudentRegistrationsHistoryDto)
