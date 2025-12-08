@@ -111,23 +111,24 @@ export class NotificationPublisherService {
     //Khi giảng viên HD chính từ chối đăng ký của sinh viên
     async sendRejectedRegisterationNotification(
         recipientId: string,
-        actorId: string,
+        lecturerInfo: User,
         topicInfo: GetMiniTopicInfo,
         body: BodyReplyRegistrationDto
     ) {
-        const lecturerInfo = await this.checkUserInfoProvider.getUserInfo(actorId)
-        const message = `Giảng viên ${lecturerInfo!.fullName} đã từ từ chối yêu cầu tham gia đề tài ${topicInfo.titleVN}. Lý do: ${getRejectionReasonText(body.rejectionReasonType as RejectionReasonType)} - ${body.lecturerResponse}`
+        const message = `Giảng viên ${lecturerInfo!.fullName} đã từ  chối yêu cầu tham gia đề tài "${topicInfo.titleVN}". Lý do chính: ${getRejectionReasonText(body.rejectionReasonType as RejectionReasonType)} `
         await this.createAndSendNoti(
             recipientId,
             NotificationTitleEnum.REJECTED_REGISTRATION,
             message,
             NotificationType.ERROR,
-            actorId,
+            lecturerInfo._id.toString(),
             //meta
             {
                 topicId: topicInfo._id,
                 titleVN: topicInfo.titleVN,
                 titleEng: topicInfo.titleEng,
+                message,
+                reasonSub: body.lecturerResponse,
                 rejectedBy: lecturerInfo!.fullName,
                 actionUrl: `/detail-topic/${topicInfo._id}`
             },
@@ -212,7 +213,10 @@ export class NotificationPublisherService {
             {
                 topicId: topicInfo._id,
                 titleVN: topicInfo.titleVN,
-                titleEng: topicInfo.titleEng
+                titleEng: topicInfo.titleEng,
+                reasonSub: 'Vui lòng liên hệ Ban Chủ nhiệm khoa để biết thêm chi tiết.',
+                // chuyển hướng tới xem những đề tài đã nộp
+                actionUrl: `/manage-topics/submitted`
             },
             false
         )

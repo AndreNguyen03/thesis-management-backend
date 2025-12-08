@@ -19,8 +19,8 @@ export class NotificationsController {
         return await this.notificationsService.markRead(id)
     }
 
-    @Post('mark-read-all')
-    async markReadAl(@Req() req) {
+    @Post('mark-all-read')
+    async markReadAl(@Req() req: {user: ActiveUserData}) {
         const userId = req.user.sub
         return await this.notificationsService.markReadAll(userId)
     }

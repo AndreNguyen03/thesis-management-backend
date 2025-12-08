@@ -25,6 +25,9 @@ export class CheckUserInfoProvider {
             isActive: true,
             deleted_at: null
         })
+        if(!existingUser){
+            throw new Error('User not found')
+        }
         return existingUser
     }
     async getFacultyBoardIdByUserId(userId: string, role: string): Promise<string | null> {

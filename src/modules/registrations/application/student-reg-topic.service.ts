@@ -20,7 +20,8 @@ export class StudentRegTopicService {
         @Inject('StudentRegTopicRepositoryInterface')
         private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface,
         private readonly notificationPublisherService: NotificationPublisherService,
-        private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider
+        private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
+        private readonly checkUserInfoProvider: CheckUserInfoProvider
     ) {}
     //cả studentSignleRegistration và lecAssignStudent đều dùng hàm này createSingleRegistration
     public async studentSingleRegistration(actionRole: string, studentId: string, topicId: string) {
@@ -58,7 +59,7 @@ export class StudentRegTopicService {
         const registration = await this.studentRegTopicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(registrationId),
             status: StudentRegistrationStatus.PENDING,
-            deleted: false
+            deleted: null
         })
         if (!registration) {
             throw new BadRequestException('Đăng ký không tồn tại')
@@ -74,7 +75,7 @@ export class StudentRegTopicService {
                 body.lecturerResponse
             )
 
-            //Gửi thông báo cho sinh viên về việc từ chối đăng ký
+            //Gửi thông báo cho sinh viên về việc đồng ý đăng ký
             await this.notificationPublisherService.sendApprovedRegisterationNotification(
                 registration.userId,
                 userId,
@@ -87,12 +88,14 @@ export class StudentRegTopicService {
                 body.rejectionReasonType,
                 body.lecturerResponse
             )
+            const lecturerInfo = await this.checkUserInfoProvider.getUserInfo(userId)
             //Gửi thông báo cho sinh viên về việc từ chối đăng ký
             await this.notificationPublisherService.sendRejectedRegisterationNotification(
                 registration.userId,
-                userId,
+                lecturerInfo,
                 topicInfo,
-                body
+                body,
+                
             )
         }
     }

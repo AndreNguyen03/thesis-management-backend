@@ -498,6 +498,24 @@ export class StudentRegTopicRepository
                 }
             }
         })
+        //lấy ra giảng viên đã thực hiện việc từ chối đăng ký
+        pipelineMain.push(
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'processedBy',
+                    foreignField: '_id',
+                    as: 'processorInfo'
+                }
+            },
+            {
+                $addFields: {
+                    processedBy: {
+                        $arrayElemAt: ['$processorInfo', 0]
+                    }
+                }
+            }
+        )
         //lọc ra
         pipelineMain.push({
             $project: {
@@ -512,7 +530,10 @@ export class StudentRegTopicRepository
                 major: '$majorInfo.name',
                 topicStatus: '$topicInfo.currentStatus',
                 registrationStatus: '$status',
-                registeredAt: '$createdAt'
+                registeredAt: '$createdAt',
+                lecturerResponse: 1,
+                rejectionReasonType: 1,
+                processedBy: 1
             }
         })
         return pipelineMain
