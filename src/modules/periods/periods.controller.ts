@@ -7,7 +7,7 @@ import {
     PeriodStatsQueryParams,
     UpdatePeriodDto
 } from './dtos/period.dtos'
-import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
+import { GetCurrentPeriodRequest, RequestGetPeriodsDto } from './dtos/request-get-all.dto'
 import { plainToInstance } from 'class-transformer'
 import {
     ConfigCompletionPhaseDto,
@@ -47,10 +47,7 @@ export class PeriodsController {
     @Get('/get-all')
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async getAllPeriods(
-        @Req() req: { user: ActiveUserData },
-        @Query() query: RequestGetPeriodsDto
-    ) {
+    async getAllPeriods(@Req() req: { user: ActiveUserData }, @Query() query: RequestGetPeriodsDto) {
         const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
         return plainToInstance(GetPaginatedPeriodDto, res, {
             excludeExtraneousValues: true,
@@ -158,7 +155,7 @@ export class PeriodsController {
         return { message: 'Cập nhật giá trị của phase thành công' }
     }
 
-    //Lấy những đề tài nằm trong pha cụ thể
+    //Lấy những đề tài nằm trong pha cụ thể, trạng thái cụ thể 
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
         const topics = await this.periodsService.getTopicsInPhase(periodId, query)
@@ -252,8 +249,8 @@ export class PeriodsController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
     @UseGuards(RolesGuard)
-    async getCurrentPeriodInfo(@Req() req: { user: ActiveUserData }) {
-        const res = await this.periodsService.getCurrentPeriodInfo(req.user.facultyId!)
+    async getCurrentPeriodInfo(@Req() req: { user: ActiveUserData }, @Query() query: GetCurrentPeriodRequest) {
+        const res = await this.periodsService.getCurrentPeriodInfo(req.user.facultyId!, query.periodType)
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

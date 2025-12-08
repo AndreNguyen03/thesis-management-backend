@@ -28,6 +28,7 @@ import { LecturerRoleEnum } from '../../registrations/enum/lecturer-role.enum'
 import { ConfigService } from '@nestjs/config'
 import { GetPeriodDto } from '../../periods/dtos/period.dtos'
 import { transferNamePeriod } from '../../../common/utils/transfer-name-period'
+import { PeriodType } from '../../periods/enums/periods.enum'
 @Injectable()
 export class NotificationPublisherService {
     constructor(
@@ -223,7 +224,7 @@ export class NotificationPublisherService {
     }
     //Khi đề tài BCn gửi nhắc nhở xử lý các tồn động
     async sendReminderLecturerInPeriod(body: RequestReminderLecturers, senderId: string) {
-        const periodInfo = await this.periodsService.getCurrentPeriodInfo(body.periodId)
+        const periodInfo = await this.periodsService.getCurrentPeriodInfo(body.periodId, PeriodType.THESIS)
         const periodName = transferNamePeriod(periodInfo!)
         const { faculty: facultyInfo, ...nest } = periodInfo!
 

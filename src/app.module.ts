@@ -39,6 +39,7 @@ import { NestMinioModule } from 'nestjs-minio'
 import { minioConfig } from './config/minio.config'
 import { NotificationsModule } from './modules/notifications/notifications.module'
 import { SocketModule } from './modules/socket/socket.module';
+import { TopicVectorModule } from './modules/topic_vector/topic_vector.module';
 
 const ENV = process.env.NODE_ENV
 
@@ -111,6 +112,7 @@ const ENV = process.env.NODE_ENV
         UploadFilesModule,
         NotificationsModule,
         SocketModule,
+        TopicVectorModule,
     ],
     controllers: [AppController],
     providers: [

@@ -208,6 +208,7 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         return lecturer
     }
     async getAllLecturersAn(facultyId: string, paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>> {
+        console.log('facultyId trong repo:', facultyId, paginationQuery)
         const pipeline: any[] = [
             {
                 $lookup: {
@@ -230,7 +231,7 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         ]
         pipeline.push({
             $match: {
-                faculty: new Types.ObjectId(facultyId),
+                facultyId: new Types.ObjectId(facultyId),
                 'user.isActive': true
             }
         })
@@ -248,4 +249,5 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
         return this.paginationProvider.paginateQuery<Lecturer>(paginationQuery, this.lecturerModel, pipeline)
     }
+
 }

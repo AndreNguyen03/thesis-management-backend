@@ -19,7 +19,12 @@ import { AuthType } from '../auth/enum/auth-type.enum'
 import { StudentService } from './application/student.service'
 import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
-import { CreateStudentDto, PaginatedMiniStudent, UpdateStudentProfileDto, UpdateStudentTableDto } from './dtos/student.dto'
+import {
+    CreateStudentDto,
+    PaginatedMiniStudent,
+    UpdateStudentProfileDto,
+    UpdateStudentTableDto
+} from './dtos/student.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
 import {
     CreateLecturerDto,
@@ -52,7 +57,7 @@ export class UserController {
         private readonly facultyBoardService: FacultyBoardService
     ) {}
 
-    @Get(':role/:id')
+    @Get('/role/:role/:id')
     async getUser(@Param('role') role: string, @Param('id') id: string) {
         return this.getUserByRoleAndId(role, id)
     }
@@ -65,6 +70,7 @@ export class UserController {
     }
 
     private async getUserByRoleAndId(role: string, id: string) {
+        console.log('Getting user with role:', role, 'and id:', id)
         let user
         switch (role) {
             case 'student':
@@ -126,10 +132,8 @@ export class UserController {
         return await this.lecturerService.getAllLecturers(query)
     }
 
-    @Get('lec/get-all-lecturers/combobox')
+    @Get('/get-all-lecturers/combobox')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
     async getAllLecturers_An(@Query() query: PaginationAn, @Req() req: { user: ActiveUserData }) {
         const res = await this.lecturerService.getAllLecturers_An(req.user.facultyId!, query)
         return plainToInstance(PaginatedMiniLecturer, res, {

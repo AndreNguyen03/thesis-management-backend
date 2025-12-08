@@ -4,6 +4,7 @@ import { CreateErrorException, DeleteErrorException, FullLecturerSlotException }
 import { LecturerRegTopicRepositoryInterface } from '../repository/lecturer-reg-topic.reposittory.interface'
 import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
 import { User } from '../../../users/schemas/users.schema'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class LecturerRegTopicService {
@@ -49,4 +50,5 @@ export class LecturerRegTopicService {
     public async getCoSupervisorsInTopic(topicId: string): Promise<User[] | null> {
         return await this.lecturerRegTopicRepository.getCoSupervisorsInTopic(topicId)
     }
+
 }

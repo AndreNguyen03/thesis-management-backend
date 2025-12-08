@@ -137,4 +137,5 @@ export class RegistrationsController {
         await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }
+
 }
