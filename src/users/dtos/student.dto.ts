@@ -80,10 +80,10 @@ export class UpdateStudentProfileDto {
     @IsOptional()
     @IsString()
     email?: string
-    
+
     @IsOptional()
     @IsString()
-    bio? : string
+    bio?: string
 
     @IsOptional()
     @IsString()
@@ -170,6 +170,7 @@ export class ResponseStudentProfileDto {
     phone?: string
     avatarUrl?: string
     facultyId: string
+    bio?: string
     facultyName: string
     role: string
     isActive: boolean
