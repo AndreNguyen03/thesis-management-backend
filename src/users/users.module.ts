@@ -22,6 +22,8 @@ import { FacultyBoardService } from './application/faculty-board.service'
 import { UploadFilesModule } from '../modules/upload-files/upload-files.module'
 import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.provider'
 import { PaginationAnModule } from '../common/pagination-an/pagination.module'
+import { CheckUserInfoProvider } from './provider/check-user-info.provider'
+import { NotificationsModule } from '../modules/notifications/notifications.module'
 
 @Module({
     controllers: [UserController],
@@ -51,19 +53,22 @@ import { PaginationAnModule } from '../common/pagination-an/pagination.module'
         AdminService,
         UserService,
         FacultyBoardService,
-        GetFacultyByUserIdProvider
+        GetFacultyByUserIdProvider,
+        CheckUserInfoProvider
     ],
     exports: [
         'UserRepositoryInterface',
         'StudentRepositoryInterface',
         'LecturerRepositoryInterface',
         'AdminRepositoryInterface',
+        'FacultyBoardRepositoryInterface',
         StudentService,
         LecturerService,
         AdminService,
         UserService,
         MongooseModule,
-        GetFacultyByUserIdProvider
+        GetFacultyByUserIdProvider,
+        CheckUserInfoProvider
     ],
     imports: [
         forwardRef(() => AuthModule),
@@ -75,8 +80,8 @@ import { PaginationAnModule } from '../common/pagination-an/pagination.module'
             { name: FacultyBoard.name, schema: FacultyBoardSchema }
         ]),
         ConfigModule.forFeature(profileConfig),
-        UploadFilesModule,
-        PaginationAnModule
+        forwardRef(() => UploadFilesModule),
+        forwardRef(() => PaginationAnModule)
     ] // Add any other modules that UsersService depends on here
 })
 export class UsersModule {}

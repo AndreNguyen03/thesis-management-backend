@@ -109,7 +109,7 @@ export class GetGeneralTopics extends AbstractTopic {
     @Expose()
     submittedAt: Date
     @Expose()
-    lastStatusInPhaseHistory : GetPhaseHistoryDto
+    lastStatusInPhaseHistory: GetPhaseHistoryDto
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
     createByInfo: ResponseMiniLecturerDto
@@ -199,6 +199,16 @@ export class GetTopicResponseDto {
 
     @Expose()
     studentsNum: number
+}
+export class GetMiniTopicInfo {
+    @Expose()
+    _id: string
+    @Expose()
+    titleVN: string
+    @Expose()
+    titleEng: string
+    @Expose()
+    createBy: string
 }
 export class GetSubmmitedTopic extends GetTopicResponseDto {}
 export class GetPaginatedTopicsDto extends GetPaginatedObjectDto {

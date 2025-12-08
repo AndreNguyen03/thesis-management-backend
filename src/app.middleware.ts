@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 // import { config } from 'aws-sdk'
 import { LoggingInterceptor } from './common/logger/logging.interceptor'
 import * as cookieParser from 'cookie-parser'
+import { SocketIoAdapter } from './modules/socket/socket-io.adapter'
 
 export function appMiddleware(app: INestApplication) {
     app.setGlobalPrefix('api')
@@ -18,10 +19,9 @@ export function appMiddleware(app: INestApplication) {
             }
         })
     )
-
     // logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor())
-
+    app.useWebSocketAdapter(new SocketIoAdapter(app, app.get(ConfigService)))
     // cookie parser
     app.use(cookieParser())
 

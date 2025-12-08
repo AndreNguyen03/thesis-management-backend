@@ -3,6 +3,7 @@ import { LecturerRegTopicRepository } from '../repository/impl/lecturer_reg_topi
 import { CreateErrorException, DeleteErrorException, FullLecturerSlotException } from '../../../common/exceptions'
 import { LecturerRegTopicRepositoryInterface } from '../repository/lecturer-reg-topic.reposittory.interface'
 import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
+import { User } from '../../../users/schemas/users.schema'
 
 @Injectable()
 export class LecturerRegTopicService {
@@ -33,5 +34,19 @@ export class LecturerRegTopicService {
         if (!res) {
             throw new DeleteErrorException('registration')
         }
+    }
+
+    //Xóa những đăng ký của giảng viên trong đề tài
+    public async deleteForceLecturerRegistrationsInTopics(topicId: string[]) {
+        await this.lecturerRegTopicRepository.deleteForceLecturerRegistrationsInTopics(topicId)
+    }
+
+    //Lấy thông tin của giảng viên hd chính
+    public async getMainSupervisorInTopic(topicId: string): Promise<User | null> {
+        return await this.lecturerRegTopicRepository.getMainSupervisorInTopic(topicId)
+    }
+    //Lấy thông tin của giảng viên đồng hướng dẫn
+    public async getCoSupervisorsInTopic(topicId: string): Promise<User[] | null> {
+        return await this.lecturerRegTopicRepository.getCoSupervisorsInTopic(topicId)
     }
 }

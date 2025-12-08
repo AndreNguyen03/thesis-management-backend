@@ -165,6 +165,7 @@ export class StudentTableRowDto {
 // DTO trả về profile chi tiết sinh viên
 export class ResponseStudentProfileDto {
     userId: string
+    bio: string
     fullName: string
     email: string
     phone?: string

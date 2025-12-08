@@ -195,12 +195,12 @@ export class TopicController {
         return { topicId: result?._id, message: 'Cập nhật đề tài thành công' }
     }
 
-    @Delete('/delete/:topicId')
+    @Delete('/delete/')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async deleteTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') id: string) {
-        const res = await this.topicService.deleteTopic(id, req.user.sub)
+    async deleteTopics(@Req() req: { user: ActiveUserData }, @Body() topicId: string[]) {
+        const res = await this.topicService.deleteTopics(topicId, req.user.sub)
         return res ? { message: 'Xóa đề tài thành công' } : { message: 'Xóa đề tài thất bại' }
     }
 
@@ -407,5 +407,11 @@ export class TopicController {
     async tranferStatus(@Req() req: { user: ActiveUserData }, @Body() body: WithDrawSubmittedTopicQuery) {
         await this.topicService.withdrawSubmittedTopics(body.topicIds, req.user.sub)
         return { message: 'Chuyển trạng thái đề tài thành công' }
+    }
+
+    @Post('/copy-to-draft/:topicId')
+    async copyToDraft(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
+        const newTopicId = await this.topicService.copyToDraft(topicId, req.user.sub)
+        return { message: 'Sao chép đề tài thành công', newTopicId }
     }
 }

@@ -1,18 +1,18 @@
 import { ObjectId } from 'mongoose'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { PeriodPhase } from '../schemas/period.schemas'
-
+export class MissingTopicRecord {
+    lecturerId: string
+    lecturerName: string
+    lecturerEmail: string
+    minTopicsRequired: number
+    submittedTopicsCount: number
+    missingTopicsCount: number
+}
 export interface Phase1Response {
     periodId: string
     phase: 'submit_topic'
-    missingTopics: {
-        lecturerId: string
-        lecturerName: string
-        lecturerEmail: string
-        minTopicsRequired: number
-        submittedTopicsCount: number
-        missingTopicsCount: number
-    }[]
+    missingTopics: MissingTopicRecord[]
     canTriggerNextPhase: boolean
     pendingTopics: number
 }

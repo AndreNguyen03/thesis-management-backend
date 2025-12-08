@@ -1,51 +1,51 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import { OnlineUserService } from '../application/online-user.service'
+import { UserVerifyInfoService } from '../providers/user-verify.info.services'
+import { User } from '../../../users/schemas/users.schema'
+import { SocketWithAuth } from '../../socket/type/socket.type'
 
 @Injectable()
 @WebSocketGateway({
-    cors: { origin: '*' },
     namespace: 'notifications'
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server
-    constructor(private jwtService: JwtService) {}
+    constructor(
+        // @Inject(forwardRef(() => UserVerifyInfoService))
+        // private readonly userVerifyInfoService: UserVerifyInfoService,
+        private readonly onlineUserService: OnlineUserService
+    ) {}
     onlineUsers = new Map<string, string>()
-    async handleConnection(client: Socket) {
+    async handleConnection(client: SocketWithAuth) {
         try {
-            // 1. Lấy token từ handshake (Header hoặc Query)
-            const token = client.handshake.auth?.token || client.handshake.headers?.authorization
-
-            if (!token) throw new BadRequestException('Unauthorized')
-
-            // 2. Verify Token (Logic auth của bạn)
-            const payload = this.jwtService.verify(token)
+            // Lấy user đã xác thực từ socket
+            const payload = client.payload
             if (!payload) {
+                client.disconnect()
                 throw new BadRequestException('Unauthorized')
             }
             const userId = payload.sub
-            this.onlineUsers.set(userId, client.id)
-            this.server.emit('online-users', Array.from(this.onlineUsers.keys()))
-            console.log(`Client ${client.id} authenticated as User ${userId}`)
-            // 3. Join vào room riêng của User
-            const userRoom = `user_${userId}`
-            await client.join(userRoom)
 
+            // await this.userVerifyInfoService.joinRoom(new User(), client)
+            const userRoom = `user_${userId.toString()}`
+            await client.join(userRoom)
             console.log(`Client ${client.id} joined room ${userRoom}`)
+            await this.onlineUserService.addSocket(userId, client.id)
+            client.emit('connection_success', 'Kết nối WebSocket thành công')
         } catch (error) {
             console.log('Connection rejected:', error.message)
             client.disconnect()
         }
     }
-    handleDisconnect(client: Socket) {
+    async handleDisconnect(client: Socket) {
         console.log(`Client ${client.id} disconnected`)
-        this.onlineUsers.delete(client.id)
-        this.server.emit('online-users', Array.from(this.onlineUsers.keys()))
-    }
-
-    sendToUser(userId: string, event: string, data: any) {
-        this.server.to(`user_${userId}`).emit(event, data)
+        // this.onlineUsers.delete(client.id)
+        const userId = client.handshake.query.userId as string
+        await this.onlineUserService.removeSocket(userId, client.id)
+        //  this.server.emit('online-users', Array.from(this.onlineUsers.keys()))
     }
 }

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
-
+//Service to manage online users
 @Injectable()
 export class OnlineUserService {
     constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}

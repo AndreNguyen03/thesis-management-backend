@@ -4,6 +4,7 @@ import { BaseRepositoryInterface } from '../../../shared/base/repository/base.re
 import {
     CreateTopicDto,
     GetCancelRegisteredTopicResponseDto,
+    GetMiniTopicInfo,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
@@ -28,7 +29,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     createTopic(topicData: CreateTopicDto): Promise<string>
     getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null>
     getAllTopics(userId: string): Promise<Paginated<Topic>>
-    deleteTopic(topicId: string, ownerId: string): Promise<boolean>
+    deleteTopics(topicIds: string[], ownerId: string): Promise<boolean>
     updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
     findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
@@ -74,4 +75,6 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
+    getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo>
+    copyToDraft(topicId: string, actorId: string): Promise<string>
 }

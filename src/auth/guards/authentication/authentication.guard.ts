@@ -1,6 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { Observable } from 'rxjs'
 import { AccessTokenGuard } from '../access-token/access-token.guard'
 import { AuthType } from '../../enum/auth-type.enum'
 import { AUTH_TYPE_KEY } from '../../constants/auth.constants'

@@ -106,10 +106,7 @@ export class RegistrationsController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.STUDENT)
     @UseGuards(RolesGuard)
-    async getStudentHistoryRegistrations(
-        @Req() req: { user: ActiveUserData },
-        @Query() query: PaginationQueryDto
-    ): Promise<GetPaginatedStudentRegistrationsHistory> {
+    async getStudentHistoryRegistrations(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
         const res = await this.studentRegTopicService.getStudentHistoryRegistrations(req.user.sub, query)
         return plainToInstance(GetPaginatedStudentRegistrationsHistory, res, {
             excludeExtraneousValues: true,
@@ -137,7 +134,6 @@ export class RegistrationsController {
         @Body() body: BodyReplyRegistrationDto,
         @Req() req: { user: ActiveUserData }
     ) {
-        console.log('registrationId', registrationId)
         await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }

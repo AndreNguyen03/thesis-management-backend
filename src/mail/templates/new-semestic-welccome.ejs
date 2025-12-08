@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Chào mừng học kỳ mới</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                background-color: #fffbf0;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                border: 1px solid #eaeaea;
+            }
+
+            /* Header dạng ảnh banner hoặc màu Gradient tươi sáng */
+            .header {
+                background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+                padding: 40px 20px;
+                text-align: center;
+                color: white;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 800;
+            }
+            .header p {
+                margin: 10px 0 0;
+                font-size: 16px;
+                opacity: 0.9;
+            }
+
+            .content {
+                padding: 40px 30px;
+                color: #444;
+                line-height: 1.6;
+                text-align: center;
+            }
+
+            .welcome-icon {
+                font-size: 48px;
+                margin-bottom: 20px;
+                display: block;
+            }
+
+            .highlight-text {
+                font-size: 18px;
+                font-weight: bold;
+                color: #e65100;
+                margin: 20px 0;
+            }
+
+            .btn {
+                background-color: #ff5722;
+                color: white;
+                padding: 12px 25px;
+                text-decoration: none;
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 14px;
+                display: inline-block;
+                margin-top: 20px;
+            }
+
+            .footer {
+                background-color: #fff;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+                color: #aaa;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>CHÀO MỪNG HỌC KỲ MỚI</h1>
+                <p>Ready for a new journey!</p>
+            </div>
+            <div class="content">
+                <span class="welcome-icon">🚀</span>
+
+                <p>Xin chào <strong><%= name %></strong>,</p>
+
+                <p><%= message %></p>
+
+                <div class="highlight-text"><%= periodName %></div>
+
+                <p>
+                    Hệ thống Quản lý Khóa luận đã sẵn sàng đồng hành cùng bạn trong học kỳ này. Đừng quên kiểm tra các
+                    thông báo quan trọng thường xuyên nhé.
+                </p>
+
+                <a href="<%= link %>" class="btn">Về Dashboard của tôi</a>
+            </div>
+            <div class="footer">
+                <p>&copy; <%= new Date().getFullYear() %> UIT Thesis Management System</p>
+            </div>
+        </div>
+    </body>
+</html>

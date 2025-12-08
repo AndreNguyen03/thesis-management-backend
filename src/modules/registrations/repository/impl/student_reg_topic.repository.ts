@@ -43,7 +43,21 @@ export class StudentRegTopicRepository
     ) {
         super(studentRegTopicModel)
     }
-
+    //Lấy những đề tài mà sinh viên tham gia tức trạng thía đăng ký là approval
+    async getTopicIdsByStudentId(studentId: string): Promise<string[]> {
+        const topic = await this.studentRegTopicModel.find(
+            {
+                userId: new mongoose.Types.ObjectId(studentId),
+                status: StudentRegistrationStatus.APPROVED,
+                deleted_at: null
+            },
+            {
+                topicId: 1,
+                _id: 0
+            }
+        )
+        return topic ? topic.map((id) => id.toString()) : []
+    }
     private buildStudentPipeline(topicId: string, status: StudentRegistrationStatus) {
         return [
             {
@@ -345,7 +359,7 @@ export class StudentRegTopicRepository
         const res = await this.topicModel.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
             {
-                currentStatus: (await this.checkSlot(topic.maxStudents , topicId))
+                currentStatus: (await this.checkSlot(topic.maxStudents, topicId))
                     ? TopicStatus.Full
                     : TopicStatus.Registered
             }
@@ -484,6 +498,24 @@ export class StudentRegTopicRepository
                 }
             }
         })
+        //lấy ra giảng viên đã thực hiện việc từ chối đăng ký
+        pipelineMain.push(
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'processedBy',
+                    foreignField: '_id',
+                    as: 'processorInfo'
+                }
+            },
+            {
+                $addFields: {
+                    processedBy: {
+                        $arrayElemAt: ['$processorInfo', 0]
+                    }
+                }
+            }
+        )
         //lọc ra
         pipelineMain.push({
             $project: {
@@ -498,7 +530,10 @@ export class StudentRegTopicRepository
                 major: '$majorInfo.name',
                 topicStatus: '$topicInfo.currentStatus',
                 registrationStatus: '$status',
-                registeredAt: '$createdAt'
+                registeredAt: '$createdAt',
+                lecturerResponse: 1,
+                rejectionReasonType: 1,
+                processedBy: 1
             }
         })
         return pipelineMain
@@ -624,5 +659,11 @@ export class StudentRegTopicRepository
         } finally {
             session.endSession()
         }
+    }
+    async deleteForceStudentRegistrationsInTopics(topicId: string[]): Promise<void> {
+        await this.studentRegTopicModel.deleteMany({
+            topicId: { $in: topicId.map((id) => new mongoose.Types.ObjectId(id)) },
+            deleted_at: null
+        })
     }
 }

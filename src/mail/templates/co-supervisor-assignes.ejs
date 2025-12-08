@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Phân công đồng hướng dẫn</title>
+    <style>
+        /* Base Styles - Giống template trước */
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; color: #333; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 6px; }
+        
+        /* Header: Clean & Simple */
+        .header { padding: 20px; border-bottom: 1px solid #eee; }
+        .faculty-label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+        
+        /* Màu xanh dương cho tiêu đề */
+        .title { margin: 5px 0 0 0; font-size: 20px; color: #0066cc; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        
+        .content { padding: 20px; line-height: 1.5; font-size: 15px; }
+        
+        /* Box đề tài: Border xanh dương */
+        .topic-box { 
+            background-color: #f0f7ff; /* Nền xanh rất nhạt */
+            padding: 15px; 
+            border-radius: 4px; 
+            margin: 15px 0;
+            border-left: 3px solid #0066cc; /* Điểm nhấn xanh dương */
+        }
+        .topic-vn { font-weight: bold; color: #000; }
+        .topic-en { color: #666; font-size: 13px; margin-top: 4px; font-style: italic; }
+
+        .btn { 
+            display: inline-block; padding: 10px 20px; background-color: #0066cc; color: #fff; 
+            text-decoration: none; border-radius: 4px; font-weight: 500; font-size: 14px;
+        }
+        
+        .footer { padding: 15px 20px; background-color: #f5f5f5; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="faculty-label">KHOA <%= facultyName.toUpperCase() %></div>
+            <h1 class="title">
+                👥 Phân công Đồng hướng dẫn
+            </h1>
+        </div>
+
+        <div class="content">
+            <p>Chào Thầy/Cô <strong><%= name %></strong>,</p>
+            
+            <p>Hệ thống xin thông báo: Thầy/Cô đã được thêm vào danh sách giảng viên hướng dẫn cho đề tài sau:</p>
+
+            <div class="topic-box">
+                <div class="topic-vn"><%= titleVN %></div>
+                <div class="topic-en"><%= titleEng %></div>
+            </div>
+
+            <p>Kính mong Thầy/Cô phối hợp cùng Giảng viên hướng dẫn chính để hỗ trợ sinh viên trong quá trình thực hiện khóa luận.</p>
+
+            <div style="margin-top: 25px;">
+                <a href="<%= link %>" class="btn">Xem chi tiết đề tài</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            Email tự động từ Hệ thống Quản lý Khóa luận - UIT.
+        </div>
+    </div>
+</body>
+</html>

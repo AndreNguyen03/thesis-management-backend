@@ -26,7 +26,7 @@ export enum StudentTopicRole {
 @Schema({ collection: 'ref_students_topics', timestamps: true })
 export class StudentRegisterTopic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
-    userId: User
+    userId: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Topic.name, required: true })
     topicId: string

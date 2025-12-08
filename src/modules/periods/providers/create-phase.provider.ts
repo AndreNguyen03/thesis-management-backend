@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
 import {
     ConfigCompletionPhaseDto,
@@ -20,7 +20,7 @@ export class CreatePhaseProvider {
     constructor(
         @Inject('IPeriodRepository') private readonly iPeriodRepository: IPeriodRepository,
         private readonly validatePeriodPhaseProvider: ValidatePeriodPhaseProvider,
-        private readonly topicService: TopicService,
+        @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
         private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider
     ) {}
     //Khởi tạo sơ khai cho kì mới

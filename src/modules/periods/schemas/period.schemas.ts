@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
-import { PeriodStatus } from '../enums/periods.enum'
-import { PeriodPhaseName } from '../enums/period-phases.enum'
+import { PeriodStatus, PeriodType } from '../enums/periods.enum'
+import { PeriodPhaseName, PeriodPhaseStatus } from '../enums/period-phases.enum'
 import mongoose from 'mongoose'
 import { Lecturer } from '../../../users/schemas/lecturer.schema'
 import { Faculty } from '../../faculties/schemas/faculty.schema'
@@ -16,6 +16,8 @@ export class PeriodPhase extends BaseEntity {
     @Prop({ required: false, type: Date })
     endTime: Date
     //Option fields for Submit Topic phase
+    @Prop({ type: Number, enum: PeriodPhaseStatus, required: false })
+    status: string
     @Prop({ type: Number, required: false })
     minTopicsPerLecturer: number
     @Prop({ required: false, ref: User.name, type: [mongoose.Schema.Types.ObjectId] })
@@ -27,9 +29,13 @@ export class PeriodPhase extends BaseEntity {
 @Schema({ collection: 'periods', timestamps: true })
 export class Period extends BaseEntity {
     @Prop({ required: true })
-    name: string
+    year: string
+    @Prop({ required: true })
+    semester: number
+    @Prop({ required: true, type: String, enum: PeriodType })
+    type: string
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Faculty.name })
-    facultyId: mongoose.Schema.Types.ObjectId
+    faculty: Faculty
     @Prop({ enum: PeriodPhaseName, type: String, default: PeriodPhaseName.EMPTY })
     currentPhase: string
     @Prop({ type: [PeriodPhase], default: [] })
@@ -42,5 +48,7 @@ export class Period extends BaseEntity {
     startTime: Date
     @Prop({ required: true, type: Date })
     endTime: Date
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Lecturer.name })
+    actorId: string
 }
 export const PeriodSchema = SchemaFactory.createForClass(Period)
