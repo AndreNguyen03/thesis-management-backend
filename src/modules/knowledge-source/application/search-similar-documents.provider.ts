@@ -24,7 +24,10 @@ export class SearchSimilarDocumentsProvider {
             .find({ status: KnowledgeStatus.ENABLED, deleted_at: null })
             .select('_id')
             .exec()
-
+        console.log(
+            'Source IDs for search:',
+            sourcIds.map((s) => s._id.toString())
+        )
         const agg = [
             {
                 $vectorSearch: {
@@ -47,7 +50,7 @@ export class SearchSimilarDocumentsProvider {
                     sourceId: 1,
                     score: {
                         $meta: 'vectorSearchScore'
-                    }
+                    }   
                 }
             }
         ]

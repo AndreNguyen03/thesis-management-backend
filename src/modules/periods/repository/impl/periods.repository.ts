@@ -145,7 +145,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
             { $sort: { startTime: -1 } }
         )
-      
+
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     async deletePeriod(periodId: string): Promise<boolean> {
@@ -247,11 +247,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     //     }
     // }
 
-    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodDto> {
+    async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto> {
         const currentPeriod = await this.periodModel
             .findOne({
                 faculty: new mongoose.Types.ObjectId(facultyId),
                 status: PeriodStatus.OnGoing,
+                type: type,
                 currentPhase: { $ne: PeriodPhaseName.EMPTY },
                 deleted_at: null
             })

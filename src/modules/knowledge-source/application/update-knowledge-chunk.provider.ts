@@ -7,7 +7,6 @@ export class UpdateKnowledgeChunkProvider {
         @Inject('IKnowledgeChunkRepository') private readonly knowledgeChunkRepository: IKnowledgeChunkRepository
     ) {}
     //name indexer default
-    private readonly DEFAULT_INDEXER_NAME = 'vector_indexer'
     public async createKnowledgeChunks(sourceId: string, isDeleteNeeded: boolean) {
         return await this.knowledgeChunkRepository.updateKnowledgeChunks(sourceId, isDeleteNeeded)
     }
