@@ -59,6 +59,8 @@ export class RetrievalProvider {
             chunkOverlap: 100,
             separators: ['\n\n', '\n', '. ']
         })
+        //create vector search if not exists
+
         try {
             console.log(url)
             const content = await scrapePage(url)

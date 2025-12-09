@@ -872,6 +872,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
 
     async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
+        console.log('query trong getTopicsInPhaseHistory', query)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
@@ -933,6 +934,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 isSaved: 1,
                 major: '$majorsInfo',
                 lecturers: 1,
+                lecturerIds: {
+                    $map: {
+                        input: '$lecturers',
+                        as: 'lecturer',
+                        in: '$$lecturer._id'
+                    }
+                },
                 studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
                 fields: `$fields`,
                 requirements: `$requirements`,
@@ -948,11 +956,49 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 submittedAt: '$submittedPhaseHistory.createdAt'
             }
         })
+        //Phân trang phụ
+        //rule 99 nghĩa là phân trang với những trường đặc biệt
+        console.log('query trong getTopicsInPhaseHistory', query)
+        if (query.rulesPagination === 99) {
+            if (query.lecturerIds) {
+                pipelineSub.push({
+                    $match: {
+                        ...{
+                            ...(query.lecturerIds
+                                ? {
+                                      lecturerIds: {
+                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.fieldIds
+                                ? {
+                                      fieldIds: {
+                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.queryStatus
+                                ? {
+                                      currentStatus: {
+                                          $in: query.queryStatus
+                                      }
+                                  }
+                                : {})
+                        }
+                    }
+                })
+            }
+        }
         pipelineSub.push({
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
                 lastStatusInPhaseHistory: { $ne: null },
-                ...{...(query.status ? { 'lastStatusInPhaseHistory.status': query.status } : {})},
+                ...{ ...(query.status ? { 'lastStatusInPhaseHistory.status': query.status } : {}) },
                 deleted_at: null
             }
         })

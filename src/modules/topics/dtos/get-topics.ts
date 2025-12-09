@@ -1,4 +1,4 @@
-import { Expose, Type } from 'class-transformer'
+import { Expose, Transform, Type } from 'class-transformer'
 import { IntersectionType } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
@@ -297,6 +297,14 @@ export class RequestGetTopicsInPhaseBaseDto {
     phase: string
     @IsOptional()
     status: string
+    @IsNotEmpty()
+    rulesPagination: number = 0
+    @IsOptional()
+    lecturerIds: string[]
+    @IsOptional()
+    fieldIds: string[]
+    @IsOptional()
+    queryStatus: string[]
 }
 export class RequestGetTopicsInPhaseDto extends IntersectionType(RequestGetTopicsInPhaseBaseDto, PaginationQueryDto) {}
 

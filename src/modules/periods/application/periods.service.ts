@@ -6,7 +6,7 @@ import { Period } from '../schemas/period.schemas'
 import { CreatePhaseProvider } from '../providers/create-phase.provider'
 import { RequestGetPeriodsDto } from '../dtos/request-get-all.dto'
 import { plainToClass } from 'class-transformer'
-import { PeriodStatus } from '../enums/periods.enum'
+import { PeriodStatus, PeriodType } from '../enums/periods.enum'
 import {
     ConfigPhaseSubmitTopicDto,
     ConfigCompletionPhaseDto,
@@ -346,7 +346,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return topicFigures
     }
 
-    async getCurrentPeriodInfo(facultyId: string): Promise<GetPeriodDto | null> {
-        return this.iPeriodRepository.getCurrentPeriodInfo(facultyId)
+    async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
+        return await this.iPeriodRepository.getCurrentPeriodInfo(facultyId, type)
     }
 }
