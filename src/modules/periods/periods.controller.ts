@@ -28,10 +28,14 @@ import { Period } from './schemas/period.schemas'
 import { GetStatiticInPeriod } from './dtos/statistic.dtos'
 import { PeriodPhaseName } from './enums/period-phases.enum'
 import { Phase1Response, Phase2Response, Phase3Response } from './dtos/phase-resolve.dto'
+import { TopicSearchService } from '../topic_search/application/search.service'
 
 @Controller('periods')
 export class PeriodsController {
-    constructor(private readonly periodsService: PeriodsService) {}
+    constructor(
+        private readonly periodsService: PeriodsService,
+        private readonly topicSearchService: TopicSearchService
+    ) {}
 
     // Tạo kì/ đợt đăng ký mới
     @Post()
@@ -155,10 +159,13 @@ export class PeriodsController {
         return { message: 'Cập nhật giá trị của phase thành công' }
     }
 
-    //Lấy những đề tài nằm trong pha cụ thể, trạng thái cụ thể 
+    //Lấy những đề tài nằm trong pha cụ thể, trạng thái cụ thể
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
-        const topics = await this.periodsService.getTopicsInPhase(periodId, query)
+        let topics
+        if (query.rulesPagination === 100)
+            topics = await this.topicSearchService.semanticSearchRegisteringTopic(periodId, query)
+        else topics = await this.periodsService.getTopicsInPhase(periodId, query)
         return plainToInstance(PaginatedGeneralTopics, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

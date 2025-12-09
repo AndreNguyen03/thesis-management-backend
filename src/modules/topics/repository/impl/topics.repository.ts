@@ -764,8 +764,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             },
             {
                 $unwind: {
-                    path: '$majorsInfo',
-                    preserveNullAndEmptyArrays: true
+                    path: '$majorsInfo'
                 }
             },
             //join fields
@@ -834,6 +833,21 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
+        pipeline.push(
+            ...[
+                {
+                    $lookup: {
+                        from: 'periods',
+                        localField: 'periodId',
+                        foreignField: '_id',
+                        as: 'periodInfo'
+                    }
+                },
+                {
+                    $unwind: { path: '$periodInfo' }
+                }
+            ]
+        )
         //add project vô nè
         pipeline.push({
             $project: {
@@ -864,7 +878,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 requirementIds: 1,
                 grade: 1,
                 isEditable: 1,
-                allowManualApproval: 1
+                allowManualApproval: 1,
+                periodInfo: 1
             }
         })
 
@@ -872,7 +887,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
 
     async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
-        console.log('query trong getTopicsInPhaseHistory', query)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
@@ -932,7 +946,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 currentPhase: 1,
                 isRegistered: 1,
                 isSaved: 1,
-                major: '$majorsInfo',
+                major: 1,
                 lecturers: 1,
                 lecturerIds: {
                     $map: {
@@ -953,12 +967,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 lastStatusInPhaseHistory: 1,
                 //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
                 //Không thì thôi vì phải plainToInstance
-                submittedAt: '$submittedPhaseHistory.createdAt'
+                submittedAt: '$submittedPhaseHistory.createdAt',
+                periodInfo: 1
             }
         })
         //Phân trang phụ
         //rule 99 nghĩa là phân trang với những trường đặc biệt
-        console.log('query trong getTopicsInPhaseHistory', query)
         if (query.rulesPagination === 99) {
             if (query.lecturerIds) {
                 pipelineSub.push({
@@ -994,6 +1008,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 })
             }
         }
+        //if (query.rulesPagination === 0)
+        //Nếu là phân trang bình thường
         pipelineSub.push({
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
@@ -1004,6 +1020,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
+
     // lấy thống kê
     async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
         const submitPhase = PeriodPhaseName.SUBMIT_TOPIC
@@ -2839,7 +2856,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 requirements: `$requirements`,
                 fieldIds: 1,
                 requirementIds: 1,
-                period: '$periodsInfo',
                 periodId: 1,
                 submittedAt: '$submittedPhaseHistory.createdAt',
                 periodInfo: 1,

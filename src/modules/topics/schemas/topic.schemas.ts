@@ -61,8 +61,8 @@ export class Topic extends BaseEntity {
     @Prop({ required: true, enum: TopicType })
     type: TopicType
 
-    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: Major.name, required: true })
-    majorId: string[]
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Major.name, required: true })
+    majorId: string
 
     @Prop({ default: 1 })
     maxStudents: number

@@ -349,4 +349,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
         return await this.iPeriodRepository.getCurrentPeriodInfo(facultyId, type)
     }
+    async checkCurrentPeriod(periodId: string): Promise<boolean> {
+        return await this.iPeriodRepository.checkCurrentPeriod(periodId)
+    }
 }

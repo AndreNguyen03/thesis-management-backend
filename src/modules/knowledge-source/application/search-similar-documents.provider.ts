@@ -24,10 +24,7 @@ export class SearchSimilarDocumentsProvider {
             .find({ status: KnowledgeStatus.ENABLED, deleted_at: null })
             .select('_id')
             .exec()
-        console.log(
-            'Source IDs for search:',
-            sourcIds.map((s) => s._id.toString())
-        )
+
         const agg = [
             {
                 $vectorSearch: {
@@ -35,7 +32,8 @@ export class SearchSimilarDocumentsProvider {
                     path: 'plot_embedding_gemini_large',
                     queryVector: queryVector,
                     exact: true,
-                    limit: 10
+                    limit: 10,
+                    skip:0
                 }
             },
             {

@@ -21,7 +21,7 @@ export class CreateKnowledgeSourceProvider {
             ...createKnowledgeSourceDto,
             owner: userId
         })
-        await this.createSearchIndexerProvider.createSearchIndexer(this.DEFAULT_INDEXER_NAME)
+        await this.createSearchIndexerProvider.createSearchKnowledgeIndexer(this.DEFAULT_INDEXER_NAME,"plot_embedding_gemini_large")
         console.log('Created knowledge source:', knowledgeSource._id)
         return knowledgeSource
     }
