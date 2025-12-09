@@ -326,7 +326,15 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             { excludeExtraneousValues: true, enableImplicitConversion: true }
         )
     }
-
+    async checkCurrentPeriod(periodId: string): Promise<boolean> {
+        const currentPeriod = await this.periodModel.findOne({
+            _id: new mongoose.Types.ObjectId(periodId),
+            status: PeriodStatus.OnGoing,
+            currentPhase: { $ne: PeriodPhaseName.EMPTY },
+            deleted_at: null
+        })
+        return currentPeriod ? true : false
+    }
     private async AbstractGetPeriodInfo(periodId: string) {
         let pipelineMain: any[] = []
         //lookup với bảng faculty

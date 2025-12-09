@@ -48,7 +48,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider,
         private readonly notificationPublisherService: NotificationPublisherService,
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
-        private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider
+        private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider,
     ) {
         super(topicRepository)
     }

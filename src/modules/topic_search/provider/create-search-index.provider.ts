@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
+import { TopicVector } from '../schemas/topic-vector.schemas'
 import { Model } from 'mongoose'
-import { KnowledgeChunk } from '../schemas/knowledge-chunk.schema'
+import { InjectModel } from '@nestjs/mongoose'
 
 @Injectable()
-export class CreateSearchIndexerProvider {
-    constructor(@InjectModel(KnowledgeChunk.name) private readonly knowledgeChunkModel: Model<KnowledgeChunk>) {}
-    public async createSearchKnowledgeIndexer(indexerName: string, embeddingField: string) {
+export class CreateSearchIndexProvider {
+    constructor(@InjectModel(TopicVector.name) private readonly topicVectorModel: Model<TopicVector>) {}
+    public async createTopicVectorIndexer(indexerName: string, embeddingField: string = 'embedding') {
         // Logic to create search indexer for knowledge sources
         console.log(`Checking if search index named ${indexerName} exists.`)
         let isExists = false
 
         try {
-            const cursor = await this.knowledgeChunkModel.listSearchIndexes()
-            console.log('Checking cursor:', cursor)
+            const cursor = await this.topicVectorModel.listSearchIndexes()
             for await (const index of cursor) {
                 if (index.name === indexerName) {
                     console.log(`Search index named ${indexerName} already exists.`)
@@ -40,18 +39,34 @@ export class CreateSearchIndexerProvider {
                         path: embeddingField,
                         similarity: 'dotProduct',
                         quantization: 'scalar'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'type'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'periodId'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'lastStatusInPhaseHistory.phaseName'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'lastStatusInPhaseHistory.status'
                     }
                 ]
             }
         }
         // run the helper method
-        const result = await this.knowledgeChunkModel.createSearchIndex(index)
+        const result = await this.topicVectorModel.createSearchIndex(index)
         console.log(`New search index named ${result} is building.`)
         // wait for the index to be ready to query
         console.log('Polling to check if the index is ready. This may take up to a minute.')
         let isQueryable = false
         while (!isQueryable) {
-            const cursor = await this.knowledgeChunkModel.listSearchIndexes()
+            const cursor = await this.topicVectorModel.listSearchIndexes()
             for await (const index of cursor) {
                 if (index.name === result) {
                     isQueryable = true
@@ -59,5 +74,4 @@ export class CreateSearchIndexerProvider {
             }
         }
     }
-  
 }

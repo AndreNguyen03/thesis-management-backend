@@ -34,7 +34,8 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         CreateSearchIndexerProvider,
         CreateKnowledgeChunksProvider,
         UpdateKnowledgeChunkProvider,
-        KnowledgeSourceService
+        KnowledgeSourceService,
+        
     ],
     imports: [
         MongooseModule.forFeature([
@@ -54,7 +55,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         CreateKnowledgeChunksProvider,
         UpdateKnowledgeChunkProvider,
         'IKnowledgeChunkRepository',
-        'IKnowledgeSourceRepository'
+        'IKnowledgeSourceRepository',
     ],
     controllers: [KnowledgeSourceController]
 })

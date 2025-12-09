@@ -12,6 +12,7 @@ import { ValidatePeriodPhaseProvider } from './providers/validate-phase.provider
 import { FacultySchema } from '../faculties/schemas/faculty.schema'
 import { ValidatePeriodProvider } from './providers/validate-period.provider'
 import { BullModule } from '@nestjs/bull'
+import { TopicVectorModule } from '../topic_search/topic_search.module'
 
 @Module({
     controllers: [PeriodsController],
@@ -30,7 +31,8 @@ import { BullModule } from '@nestjs/bull'
         ]),
         PaginationAnModule,
         forwardRef(() => TopicModule),
-        BullModule.registerQueue({ name: 'period' })
+        BullModule.registerQueue({ name: 'period' }),
+        TopicVectorModule
     ],
     exports: [PeriodsService]
 })

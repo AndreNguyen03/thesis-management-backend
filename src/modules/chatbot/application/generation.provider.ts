@@ -13,7 +13,7 @@ export class GenerationProvider {
     ) {
             this.google = createGoogleGenerativeAI({
                 apiKey: this.googleAIConfigValue.apiKey
-            })
+            })  
     }
     public async *streamAIResponse(prompt: string, messages: any[]): AsyncIterable<string> {
         console.log('Streaming AI response with prompt and messages...', prompt)
