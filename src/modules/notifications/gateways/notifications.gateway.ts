@@ -16,7 +16,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     server: Server
     constructor(
         // @Inject(forwardRef(() => UserVerifyInfoService))
-        // private readonly userVerifyInfoService: UserVerifyInfoService,
+        private readonly userVerifyInfoService: UserVerifyInfoService,
         private readonly onlineUserService: OnlineUserService
     ) {}
     onlineUsers = new Map<string, string>()
@@ -30,10 +30,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             }
             const userId = payload.sub
 
-            // await this.userVerifyInfoService.joinRoom(new User(), client)
-            const userRoom = `user_${userId.toString()}`
-            await client.join(userRoom)
-            console.log(`Client ${client.id} joined room ${userRoom}`)
+            await this.userVerifyInfoService.joinRoom(userId, client)
             await this.onlineUserService.addSocket(userId, client.id)
             client.emit('connection_success', 'Kết nối WebSocket thành công')
         } catch (error) {

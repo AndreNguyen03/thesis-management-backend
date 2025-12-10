@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Thông báo sắp diễn ra</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        /* Header màu cam - cảnh báo sắp diễn ra */
+        .header { background-color: #ff6f00; padding: 30px 20px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .content { padding: 40px 30px; color: #333; line-height: 1.6; }
+        
+        /* Box thông tin nổi bật */
+        .info-box { 
+            background-color: #fff3e0; 
+            border-left: 5px solid #ff9800; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 4px;
+        }
+        .info-title { font-weight: bold; color: #e65100; font-size: 16px; margin-bottom: 10px; }
+        .period-name { font-size: 18px; color: #333; font-weight: bold; margin: 10px 0; }
+        .date-info { font-size: 16px; color: #f57c00; font-weight: bold; }
+        
+        /* Countdown visual */
+        .countdown { 
+            background-color: #ffe0b2; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 8px; 
+            margin: 20px 0;
+        }
+        .countdown-value { font-size: 32px; color: #e65100; font-weight: bold; }
+        .countdown-label { font-size: 14px; color: #666; margin-top: 5px; }
+
+        /* Checklist */
+        .checklist { margin: 20px 0; }
+        .checklist-item { 
+            padding: 10px; 
+            margin: 8px 0; 
+            background-color: #f5f5f5; 
+            border-left: 3px solid #ff9800;
+            border-radius: 3px;
+        }
+        .checklist-item::before { content: "✓ "; color: #ff9800; font-weight: bold; margin-right: 8px; }
+
+        /* Nút Action */
+        .btn-container { text-align: center; margin-top: 35px; }
+        .btn { 
+            background-color: #ff6f00; color: white; padding: 14px 30px; 
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;
+            display: inline-block; box-shadow: 0 4px 6px rgba(255,111,0,0.3);
+        }
+        .btn:hover { background-color: #e65100; }
+
+        .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Thông Báo Sắp Diễn Ra</h1>
+        </div>
+        <div class="content">
+            <p>Xin chào <strong><%= name %></strong>,</p>
+            
+            <p>Hệ thống Quản lý Khóa luận xin thông báo về sự kiện quan trọng sắp diễn ra:</p>
+
+            <div class="info-box">
+                <div class="info-title">📌 <%= eventTitle %></div>
+                <div class="period-name"><%= periodName %></div>
+                <div class="date-info">Thời gian bắt đầu: <%= startDate %></div>
+            </div>
+
+            <% if (daysRemaining !== undefined) { %>
+            <div class="countdown">
+                <div class="countdown-value"><%= daysRemaining %></div>
+                <div class="countdown-label">ngày nữa</div>
+            </div>
+            <% } %>
+
+            <p><%= message %></p>
+
+            <% if (checklist && checklist.length > 0) { %>
+            <div class="checklist">
+                <p><strong>📋 Chuẩn bị trước khi bắt đầu:</strong></p>
+                <% checklist.forEach(function(item) { %>
+                <div class="checklist-item"><%= item %></div>
+                <% }); %>
+            </div>
+            <% } %>
+
+            <% if (additionalInfo) { %>
+            <div class="info-box" style="background-color: #e8f5e9; border-left-color: #4caf50;">
+                <div class="info-title" style="color: #2e7d32;">ℹ️ Thông tin bổ sung</div>
+                <p style="margin: 5px 0;"><%= additionalInfo %></p>
+            </div>
+            <% } %>
+
+            <div class="btn-container">
+                <a href="<%= link %>" class="btn">Xem Chi Tiết</a>
+            </div>
+
+            <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                <strong>Lưu ý:</strong> Vui lòng chuẩn bị đầy đủ để không bỏ lỡ thời điểm quan trọng này.
+            </p>
+        </div>
+        <div class="footer">
+            <p>Email này được gửi tự động từ Hệ thống Quản lý Khóa luận UIT</p>
+            <p>© 2025 University of Information Technology. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
