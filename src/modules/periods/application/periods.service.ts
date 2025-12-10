@@ -5,7 +5,7 @@ import { BaseServiceAbstract } from '../../../shared/base/service/base.service.a
 import { Period } from '../schemas/period.schemas'
 import { CreatePhaseProvider } from '../providers/create-phase.provider'
 import { RequestGetPeriodsDto } from '../dtos/request-get-all.dto'
-import { plainToClass } from 'class-transformer'
+import { plainToClass, plainToInstance } from 'class-transformer'
 import { PeriodStatus, PeriodType } from '../enums/periods.enum'
 import {
     ConfigPhaseSubmitTopicDto,
@@ -158,14 +158,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             phase: phaseDetail.phase
         })) as GetTopicStatisticInSubmitPhaseDto
 
-        // console.log(
-        //     '[handleCloseSubmitTopicPhase] Board submitted topics remaining:',
-        //     boardStatsPhase1.submittedTopicsNumber
-        // )
-
         result.pendingTopics = boardStatsPhase1.submittedTopicsNumber
 
-        // console.log('[handleCloseSubmitTopicPhase] Result DTO:', result)
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
 
@@ -174,7 +168,6 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             nextPhase,
             result.missingTopics.length > 0 && result.pendingTopics > 0
         )
-
         return result
     }
 
@@ -348,5 +341,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
 
     async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
         return await this.iPeriodRepository.getCurrentPeriodInfo(facultyId, type)
+    }
+    async checkCurrentPeriod(periodId: string): Promise<boolean> {
+        return await this.iPeriodRepository.checkCurrentPeriod(periodId)
+    }
+    async getPeriodById(periodId: string): Promise<GetPeriodDto | null> {
+        const res = await this.iPeriodRepository.getPeriodById(periodId)
+        return plainToInstance(GetPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 }

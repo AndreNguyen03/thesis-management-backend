@@ -12,6 +12,7 @@ import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import { GetMiniUserDto } from '../../../users/dtos/user.dto'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { PeriodType } from '../../periods/enums/periods.enum'
 export class GetDetailGrade {
     @Expose()
     _id: string
@@ -296,15 +297,15 @@ export class RequestGetTopicsInPhaseBaseDto {
     @IsEnum(PeriodPhaseName)
     phase: string
     @IsOptional()
-    status: string
+    status?: string
     @IsNotEmpty()
-    rulesPagination: number = 0
+    rulesPagination?: number = 0
     @IsOptional()
-    lecturerIds: string[]
+    lecturerIds?: string[]
     @IsOptional()
-    fieldIds: string[]
+    fieldIds?: string[]
     @IsOptional()
-    queryStatus: string[]
+    queryStatus?: string[]
 }
 export class RequestGetTopicsInPhaseDto extends IntersectionType(RequestGetTopicsInPhaseBaseDto, PaginationQueryDto) {}
 

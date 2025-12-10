@@ -12,7 +12,9 @@ export class PaginationProvider {
     /**
      * Use Constructor to Inject Request
      * */
-    constructor(@Inject(REQUEST) private readonly request: Request) {}
+    constructor(
+      //  @Inject(REQUEST) private readonly request: Request
+    ) {}
 
     public async paginateQuery<T extends Record<string, any>>(
         paginationQuery: PaginationQueryDto,

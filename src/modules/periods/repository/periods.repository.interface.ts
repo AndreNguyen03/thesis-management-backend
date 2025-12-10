@@ -15,5 +15,6 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
     getDetailPeriod(periodId: string): Promise<PeriodDetail | null>
     initalizePhasesForNewPeriod(periodId: string): Promise<boolean>
     createNewPeriod(period: Period): Promise<Period>
-    getMiniPeriodById(periodId: string): Promise<Partial<Period> | null>
+    getPeriodById(periodId: string): Promise<Period | null>
+    checkCurrentPeriod(periodId: string): Promise<boolean>
 }

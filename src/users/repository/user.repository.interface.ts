@@ -10,4 +10,7 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     updatePassword(id: string, newHash: string): Promise<boolean>
     createUser(dto: CreateUserDto, role: string, options?: { session?: ClientSession }): Promise<User>
     removeById(userId: string): Promise<{ deletedCount?: number }>
+    getEmailListOfUsers(userIds: string[]): Promise<string[]>
+    getEmailListFromLecturerInFaculty(facultyId: string): Promise<string[]>
+    getEmailListFromStudentInFaculty(facultyId: string): Promise<string[]>
 }

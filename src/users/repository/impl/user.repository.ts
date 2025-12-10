@@ -7,6 +7,8 @@ import { UserRepositoryInterface } from '../user.repository.interface'
 import { HashingProvider } from '../../../auth/providers/hashing.provider'
 import { UserRole } from '../../enums/user-role'
 import { CreateUserDto } from '../../dtos/create-user.dto'
+import { from } from 'form-data'
+import { de } from '@faker-js/faker/.'
 
 @Injectable()
 export class UserRepository extends BaseRepositoryAbstract<User> implements UserRepositoryInterface {
@@ -16,7 +18,6 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
     ) {
         super(userModel)
     }
-   
 
     async findByEmail(email: string): Promise<User | null> {
         return this.userModel.findOne({ email, deleted_at: null }).exec()
@@ -44,5 +45,124 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
         const objectId = new Types.ObjectId(userId)
         const result = await this.userModel.deleteOne({ _id: objectId })
         return { deletedCount: result.deletedCount }
+    }
+    async getEmailListOfUsers(userIds: string[]): Promise<string[]> {
+        const res = await this.userModel.find(
+            { _id: { $in: userIds.map((id) => new Types.ObjectId(id)) } },
+            { email: 1, _id: 0 }
+        )
+        return res.map((user) => user.email)
+    }
+    async getEmailListFromLecturerInFaculty(facultyId: string): Promise<string[]> {
+        let pipeline: any[] = []
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    let: { facultyId: facultyId },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'lecturers'
+                }
+            },
+            //lấy tất cả các userId crua gv thuộc khoa
+            {
+                $addFields: {
+                    lecturerUserIds: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: '$$lecturer.userId'
+                        }
+                    }
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $in: ['$_id', '$lecturerUserIds'] },
+                            { $eq: ['$isActive', true] },
+                            { $eq: ['$deleted_at', null] }
+                        ]
+                    }
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    _id: 0
+                }
+            }
+        )
+        const res = await this.userModel.aggregate(pipeline).exec()
+        return res.map((user) => user.email)
+    }
+    async getEmailListFromStudentInFaculty(facultyId: string): Promise<string[]> {
+        console.log('facultyId trong repo:', facultyId)
+        let pipeline: any[] = []
+        pipeline.push(
+            {
+                //lấy danh sách sinh viên thuộc khoa
+                $lookup: {
+                    from: 'students',
+                    let: { facultyId: facultyId },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'students'
+                }
+            },
+            //lấy tất cả các userId crua sv thuộc khoa
+            {
+                $addFields: {
+                    studentUserIds: {
+                        $map: {
+                            input: '$students',
+                            as: 'student',
+                            in: '$$student.userId'
+                        }
+                    }
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $and: [
+                            { $in: ['$_id', '$studentUserIds'] },
+                            { $eq: ['$isActive', true] },
+                            { $eq: ['$deleted_at', null] }
+                        ]
+                    }
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    _id: 0
+                }
+            }
+        )
+        const res = await this.userModel.aggregate(pipeline).exec()
+        return res.map((user) => user.email)
     }
 }

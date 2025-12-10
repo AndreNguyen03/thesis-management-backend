@@ -26,7 +26,6 @@ export class NotificationQueueProcessor {
         private readonly notiGateway: NotificationsGateway,
         private readonly onlineUserService: OnlineUserService,
         private readonly mailService: MailService,
-        private readonly userService: UserService,
         @InjectModel(Notification.name)
         private readonly notiModel: Model<Notification>
     ) {}
@@ -86,47 +85,15 @@ export class NotificationQueueProcessor {
             .emit('notification:marked-read', notificationId )
     }
 
-    @Process('send-email')
-    async handleSendEmail(job: Job<{ recipientId: string; subject: string; content: string }>) {
-        const { recipientId, subject, content } = job.data
 
-        const user = await this.userService.findById(recipientId)
-
-        if (!user) throw new NotFoundException('Not found user!')
-
-        try {
-            await this.mailService.sendNotificationMail(user, subject, content)
-            console.log(`Email notification sent to ${user.email}`)
-        } catch (error) {
-            console.error(`Failed to send email to ${user.email}`, error)
-            throw error
-        }
-    }
-
-    @Process('send-email-reminders')
-    async handleSendReminderEmail(
-        job: Job<{ user: User; message: string; deadline: Date; metadata: Record<string, any>; faculty: GetFacultyDto }>
-    ) {
-        const { user, message, deadline, metadata, faculty } = job.data
-        await this.mailService.sendReminderSubmitTopicMail(user!, message, deadline, metadata, faculty)
-    }
-    @Process('send-email-approval-topic-notification')
-    async handleSendApprovalEmail(job: Job<SendApprovalEmail>) {
-        const { user, topicInfo, faculty, type } = job.data
-        if (type === LecturerRoleEnum.MAIN_SUPERVISOR)
-            await this.mailService.sendApprovalTopicNotification(user!, topicInfo, faculty)
-        else if (type === LecturerRoleEnum.CO_SUPERVISOR)
-            await this.mailService.sendAssignedCoSupervisorNotification(user!, topicInfo, faculty)
-    }
-
-    @Process('send-email-open-period')
-    async handleSendOpenPeriodEmail(
-        job: Job<{ user: User; periodInfo: GetPeriodDto; faculty: GetFacultyDto; type: string }>
-    ) {
-        const { user, periodInfo, faculty } = job.data
-        if (job.data.type === OpenPeriodNotificationTypeEnum.OPEN_REGISTRATION)
-            await this.mailService.sendPeriodOpenRegistrationNotification(user!, periodInfo, faculty)
-        else if (job.data.type === OpenPeriodNotificationTypeEnum.NEW_SEMESTER)
-            await this.mailService.sendNewSemesticOpenGeneralNotification(user!, periodInfo, faculty)
-    }
+    // @Process('send-email-open-period')
+    // async handleSendOpenPeriodEmail(
+    //     job: Job<{ user: User; periodInfo: GetPeriodDto; faculty: GetFacultyDto; type: string }>
+    // ) {
+    //     const { user, periodInfo, faculty } = job.data
+    //     if (job.data.type === OpenPeriodNotificationTypeEnum.OPEN_REGISTRATION)
+    //         await this.mailService.sendPeriodOpenRegistrationNotification(user!, periodInfo, faculty)
+    //     else if (job.data.type === OpenPeriodNotificationTypeEnum.NEW_SEMESTER)
+    //         await this.mailService.sendNewSemesticOpenGeneralNotification(user!, periodInfo, faculty)
+    // }
 }

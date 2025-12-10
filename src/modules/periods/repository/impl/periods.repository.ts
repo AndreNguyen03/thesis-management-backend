@@ -326,7 +326,15 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             { excludeExtraneousValues: true, enableImplicitConversion: true }
         )
     }
-
+    async checkCurrentPeriod(periodId: string): Promise<boolean> {
+        const currentPeriod = await this.periodModel.findOne({
+            _id: new mongoose.Types.ObjectId(periodId),
+            status: PeriodStatus.OnGoing,
+            currentPhase: { $ne: PeriodPhaseName.EMPTY },
+            deleted_at: null
+        })
+        return currentPeriod ? true : false
+    }
     private async AbstractGetPeriodInfo(periodId: string) {
         let pipelineMain: any[] = []
         //lookup với bảng faculty
@@ -399,6 +407,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         deleted_at: 1,
                         name: 1,
                         facultyId: 1,
+                        faculty: 1,
                         currentPhase: 1,
                         phases: {
                             $map: {
@@ -480,11 +489,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         const createdPeriod = new this.periodModel(period)
         return createdPeriod.save()
     }
-    async getMiniPeriodById(periodId: string): Promise<Partial<Period> | null> {
-        const period = await this.periodModel.findOne(
-            { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
-            { _id: 1, name: 1, startTime: 1, endTime: 1, status: 1, facultyId: 1 }
-        )
+    async getPeriodById(periodId: string): Promise<Period | null> {
+        let pipelineMain = await this.AbstractGetPeriodInfo(periodId)
+        const result = await this.periodModel.aggregate(pipelineMain)
+        if (!result || result.length === 0) return null
+
+        const period = result[0]
         return period
     }
 }

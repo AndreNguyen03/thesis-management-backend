@@ -26,7 +26,8 @@ import {
     PaginatedGeneralTopics,
     PaginatedSubmittedTopics,
     PaginationTopicsQueryParams,
-    PatchTopicDto
+    PatchTopicDto,
+    RequestGetTopicsInPhaseDto
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
 import { Roles } from '../../auth/decorator/roles.decorator'

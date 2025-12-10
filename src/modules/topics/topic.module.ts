@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common'
+import { forwardRef, Global, Module } from '@nestjs/common'
 import { TopicController } from './topic.controller'
 import { MongooseModule } from '@nestjs/mongoose'
 import { UsersModule } from '../../users/users.module'
@@ -22,7 +22,10 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ValidateTopicStatusProvider } from './providers/validate-status.provider'
 import { GetMiniTopicInfoProvider } from './providers/get-mini-topic-info.provider'
 import { NotificationsModule } from '../notifications/notifications.module'
-
+import { ConfigModule } from '@nestjs/config'
+import { googleAIConfig } from '../../config/googleai.config'
+import { mongoConfig } from '../../config/database.config'
+@Global() 
 @Module({
     controllers: [TopicController],
     providers: [
@@ -67,6 +70,8 @@ import { NotificationsModule } from '../notifications/notifications.module'
             { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
             { name: UserSavedTopics.name, schema: UserSavedTopicsSchema }
         ]),
+        ConfigModule.forFeature(googleAIConfig),
+        ConfigModule.forFeature(mongoConfig),
         forwardRef(() => UsersModule),
         forwardRef(() => RegistrationsModule),
         forwardRef(() => PaginationAnModule),

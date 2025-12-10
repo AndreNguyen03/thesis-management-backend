@@ -1,9 +1,15 @@
-import { Global, Module } from '@nestjs/common'
+import { forwardRef, Global, Module } from '@nestjs/common'
 import { MailService } from './providers/mail.service'
+import { MailProcessor } from './providers/mail.processor'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { ConfigService } from '@nestjs/config'
 import { join } from 'path'
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter'
+import { MailController } from './mail.controller'
+import { UsersModule } from '../users/users.module'
+import Bull from 'bull'
+import { BullModule } from '@nestjs/bull'
+import { PeriodsModule } from '../modules/periods/periods.module'
 
 @Global()
 @Module({
@@ -33,10 +39,13 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter'
                     }
                 }
             })
-        })
-        
+        }),
+        UsersModule,
+        BullModule.registerQueue({ name: 'mail-queue' }),
+        forwardRef(() => PeriodsModule)
     ],
-    providers: [MailService],
-    exports: [MailService]
+    providers: [MailService, MailProcessor],
+    exports: [MailService],
+    controllers: [MailController]
 })
 export class MailModule {}
