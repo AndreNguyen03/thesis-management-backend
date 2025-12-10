@@ -140,4 +140,5 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             ? { success: true, message: 'Xóa giảng viên thành công' }
             : { success: false, message: 'Xóa giảng viên thất bại' }
     }
+    
 }

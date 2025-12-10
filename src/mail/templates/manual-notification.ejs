@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <style>
+        /* ... Style cũ ... */
+
+        /* Thêm style cho Info Box chứa thông tin đợt */
+        .period-info {
+            background-color: #e3f2fd; /* Màu xanh nhạt */
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #0d47a1;
+        }
+        .period-info strong {
+            color: #004e92;
+        }
+        .period-row {
+            margin-bottom: 5px;
+        }
+        .period-row:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thông Báo Học Vụ</h1>
+        </div>
+
+        <div class="content">
+            <h2 style="color: #004e92; margin-top: 0; font-size: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <%= subject %>
+            </h2>
+
+            <% if (typeof currPeriod !== 'undefined' && currPeriod) { %>
+                <div class="period-info">
+                    <div class="period-row">
+                        <strong>📌 Đợt:</strong> Học kỳ <%= currPeriod.semester %> - Năm học <%= currPeriod.year %>
+                    </div>
+                    
+                    <% if (currPeriod.faculty) { %>
+                    <div class="period-row">
+                        <strong>🏛️ Khoa:</strong> <%= currPeriod.faculty.name %>
+                    </div>
+                    <% } %>
+
+                    <% if (currPeriod.startTime && currPeriod.endTime) { %>
+                    <div class="period-row">
+                        <strong>⏳ Thời gian đợt:</strong> 
+                        <%= new Date(currPeriod.startTime).toLocaleDateString('vi-VN') %> - 
+                        <%= new Date(currPeriod.endTime).toLocaleDateString('vi-VN') %>
+                    </div>
+                    <% } %>
+                    
+                    <% if (currPeriod.currentPhaseDetail) { %>
+                     <div class="period-row" style="margin-top: 8px; border-top: 1px dashed #a6cbf3; padding-top: 8px;">
+                        <strong>Trạng thái hiện tại:</strong> <%= currPeriod.currentPhaseDetail.name %> 
+                        (Hết hạn: <%= new Date(currPeriod.currentPhaseDetail.endDate).toLocaleDateString('vi-VN') %>)
+                    </div>
+                    <% } %>
+                </div>
+            <% } %>
+            <div class="ck-content">
+                <%- content %>
+            </div>
+            
+            <p style="margin-top: 30px; font-size: 14px; color: #666;">
+                Trân trọng,<br>
+                <strong>Ban Chủ Nhiệm
+                <% if (currPeriod && currPeriod.faculty) { %>
+                     - <%= currPeriod.faculty.name %>
+                <% } %>
+                </strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> University Management System</p>
+        </div>
+    </div>
+</body>
+</html>

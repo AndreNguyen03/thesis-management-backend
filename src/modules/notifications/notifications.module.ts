@@ -16,7 +16,6 @@ import { UserVerifyInfoService } from './providers/user-verify.info.services'
 import { RegistrationsModule } from '../registrations/registrations.module'
 import { PeriodsModule } from '../periods/periods.module'
 import { MailModule } from '../../mail/mail.module'
-import { Faculty } from '../faculties/schemas/faculty.schema'
 import { FacultyModule } from '../faculties/faculty.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 //Module thông báo, gửi email để thông báo
@@ -37,8 +36,8 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         forwardRef(() => UsersModule),
         forwardRef(() => RegistrationsModule),
         forwardRef(() => PeriodsModule),
-        MailModule,
-        FacultyModule,
+        forwardRef(() => MailModule),
+        forwardRef(() => FacultyModule),
         PaginationAnModule
     ],
     exports: [NotificationPublisherService],

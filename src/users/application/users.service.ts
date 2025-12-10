@@ -32,10 +32,21 @@ export class UserService extends BaseServiceAbstract<User> {
         return result
     }
     async uploadAvatar(userId: string, file: Express.Multer.File): Promise<string> {
-        const avatarName = await this.uploadAvatarProvider.uploadAvatar(userId,file)
+        const avatarName = await this.uploadAvatarProvider.uploadAvatar(userId, file)
         const avatarUrl = `${this.minioDownloadUrlBase}/${avatarName}`
         await this.update(userId, { avatarName, avatarUrl })
         return avatarUrl
     }
-
+    async getEmailListOfUsers(userIds: string[]): Promise<string[]> {
+        const emailList = await this.userRepository.getEmailListOfUsers(userIds)
+        return emailList
+    }
+    async getEmailListFromLecturerInFaculty(facultyId: string): Promise<string[]> {
+        const emailList = await this.userRepository.getEmailListFromLecturerInFaculty(facultyId)
+        return emailList
+    }
+    async getEmailListFromStudentInFaculty(facultyId: string): Promise<string[]> {
+        const emailList = await this.userRepository.getEmailListFromStudentInFaculty(facultyId)
+        return emailList
+    }
 }
