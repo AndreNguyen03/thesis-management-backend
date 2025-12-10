@@ -11,7 +11,7 @@ export class ValidatePeriodPhaseProvider {
             submit_topic: [PeriodPhaseName.OPEN_REGISTRATION],
             open_registration: [PeriodPhaseName.EXECUTION],
             execution: [PeriodPhaseName.COMPLETION],
-            completion: []
+            completion: []  
         }
         return validTransitions[currentPhase]?.includes(newPhase) ?? false
     }

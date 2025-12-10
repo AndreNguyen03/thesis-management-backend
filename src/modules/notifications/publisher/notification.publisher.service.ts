@@ -1,9 +1,7 @@
 import { InjectQueue } from '@nestjs/bull'
-import { BadRequestException, Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/mongoose'
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { Queue } from 'bull'
-import { Model } from 'mongoose'
-import { Notification, NotificationType } from '../schemas/notification.schemas'
+import { NotificationType } from '../schemas/notification.schemas'
 import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
 import { NotificationTitleEnum } from '../enum/title.enum'
 import { GetMiniTopicInfo } from '../../topics/dtos'
@@ -21,24 +19,25 @@ import { NotificationsService } from '../application/notifications.service'
 import { plainToInstance } from 'class-transformer'
 import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
 import { OpenPeriodNotificationTypeEnum } from '../enum/open-period.enum'
-import { el } from '@faker-js/faker/.'
-import { SendApprovalEmail } from '../dtos/processor-job.dtos'
 import { User } from '../../../users/schemas/users.schema'
-import { LecturerRoleEnum } from '../../registrations/enum/lecturer-role.enum'
-import { ConfigService } from '@nestjs/config'
 import { GetPeriodDto } from '../../periods/dtos/period.dtos'
 import { transferNamePeriod } from '../../../common/utils/transfer-name-period'
 import { PeriodType } from '../../periods/enums/periods.enum'
+import { MailService } from '../../../mail/providers/mail.service'
+import { UserService } from '../../../users/application/users.service'
 @Injectable()
 export class NotificationPublisherService {
     constructor(
         @InjectQueue('notifications')
         private readonly queue: Queue,
-        private readonly checkUserInfoProvider: CheckUserInfoProvider,
+        @Inject(forwardRef(() => PeriodsService))
         private readonly periodsService: PeriodsService,
         private readonly facultyService: FacultyService,
         private readonly checkUserInfo: CheckUserInfoProvider,
-        private readonly notificationsService: NotificationsService
+        private readonly notificationsService: NotificationsService,
+        @Inject(forwardRef(() => MailService))
+        private readonly mailService: MailService,
+        private readonly userService: UserService
     ) {}
     //Tạo và gửi thông báo cho một người dùng
     async createAndSendNoti(
@@ -63,13 +62,10 @@ export class NotificationPublisherService {
         })
         console.log('Created notification:', noti)
         // push job to queue để hiển thị lên tức thời
-        await this.queue.add('send-notification', noti as GetNotificationDto)
         if (isSendMail) {
-            await this.queue.add('send-email', {
-                recipientId,
-                subject: 'Bạn có thông báo mới',
-                content: contentEmail
-            })
+            const user = await this.userService.findById(recipientId)
+            if (!user) throw new NotFoundException('Not found user!')
+            await this.mailService.sendNotificationMail(user, 'Bạn có thông báo mới', contentEmail!)
         }
         return noti
     }
@@ -163,15 +159,15 @@ export class NotificationPublisherService {
                 },
                 false
             )
-            await this.queue.add('send-email-approval-topic-notification', {
-                user: mainSupervisor,
+
+            await this.mailService.sendApprovalTopicNotification(
+                mainSupervisor,
                 topicInfo,
-                faculty: plainToInstance(GetFacultyDto, facultyInfo, {
+                plainToInstance(GetFacultyDto, facultyInfo, {
                     excludeExtraneousValues: true,
                     enableImplicitConversion: true
-                }),
-                type: LecturerRoleEnum.MAIN_SUPERVISOR
-            } as SendApprovalEmail)
+                })
+            )
         }
 
         const messageCoSupervisor = `Bạn đã được thêm làm Giảng viên đồng hướng dẫn cho đề tài ${topicInfo.titleVN} (${topicInfo.titleEng}). Hãy phối hợp cùng GVHD chính để hỗ trợ sinh viên tốt nhất nhé!`
@@ -190,15 +186,14 @@ export class NotificationPublisherService {
                         actionUrl: `/detail-topic/${topicInfo._id}`
                     }
                 )
-                await this.queue.add('send-email-approval-topic-notification', {
-                    user: coSupervisor,
+                await this.mailService.sendAssignedCoSupervisorNotification(
+                    coSupervisor,
                     topicInfo,
-                    faculty: plainToInstance(GetFacultyDto, facultyInfo, {
+                    plainToInstance(GetFacultyDto, facultyInfo, {
                         excludeExtraneousValues: true,
                         enableImplicitConversion: true
-                    }),
-                    type: LecturerRoleEnum.CO_SUPERVISOR
-                } as SendApprovalEmail)
+                    })
+                )
             }
         }
     }
@@ -266,16 +261,16 @@ export class NotificationPublisherService {
                 //Lấy thông tin người gửi
                 const checkUserInfo = await this.checkUserInfo.getUserInfo(lecturer.lecturerId)
                 const message = 'Kính mong quý thầy/cô sớm hoàn thành việc nộp đề tài'
-                await this.queue.add('send-email-reminders', {
-                    user: checkUserInfo,
+                await this.mailService.sendReminderSubmitTopicMail(
+                    checkUserInfo,
                     message,
-                    metadata: notiSend.metadata,
-                    deadline: body.deadline,
-                    faculty: plainToInstance(GetFacultyDto, facultyInfo, {
+                    body.deadline,
+                    notiSend.metadata!,
+                    plainToInstance(GetFacultyDto, facultyInfo, {
                         excludeExtraneousValues: true,
                         enableImplicitConversion: true
                     })
-                })
+                )
             }
         } else if (body.phaseName === PeriodPhaseName.OPEN_REGISTRATION) {
             list = (await this.periodsService.closePhase(body.periodId, body.phaseName)) as Phase2Response

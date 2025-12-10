@@ -249,5 +249,5 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
         return this.paginationProvider.paginateQuery<Lecturer>(paginationQuery, this.lecturerModel, pipeline)
     }
-
+  
 }
