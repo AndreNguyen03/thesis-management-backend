@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, RequestTimeoutException } from '@nestjs/common'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
 import { Notification } from '../schemas/notification.schemas'

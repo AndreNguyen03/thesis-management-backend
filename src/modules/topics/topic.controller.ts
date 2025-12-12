@@ -23,11 +23,8 @@ import {
     GetCancelRegisteredTopicResponseDto,
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
-    PaginatedGeneralTopics,
     PaginatedSubmittedTopics,
-    PaginationTopicsQueryParams,
     PatchTopicDto,
-    RequestGetTopicsInPhaseDto
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
 import { Roles } from '../../auth/decorator/roles.decorator'

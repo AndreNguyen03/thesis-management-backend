@@ -55,6 +55,10 @@ export class CreateSearchIndexProvider {
                     {
                         type: 'filter',
                         path: 'lastStatusInPhaseHistory.status'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'periodInfo._id'
                     }
                 ]
             }

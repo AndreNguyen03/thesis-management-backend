@@ -1,14 +1,17 @@
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
-import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
+import { RequestGetTopicsInAdvanceSearchParams, RequestGetTopicsInPhaseParams } from '../../topics/dtos'
 import { TopicVector } from '../schemas/topic-vector.schemas'
 
 export interface TopicVectorRepositoryInterface extends BaseRepositoryInterface<TopicVector> {
-    semanticSearchTopicVectors(
+    semanticSearchRegisteringTopics(
         queryVector: number[],
-        periodId: string,
-        query: RequestGetTopicsInPhaseDto,
-        phaseName: string,
-        status: string
+        query: RequestGetTopicsInAdvanceSearchParams,
+        periodId?: string
+    ): Promise<Paginated<TopicVector>>
+
+    semanticSearchTopicsInLibrary(
+        queryVector: number[],
+        query: RequestGetTopicsInAdvanceSearchParams,
     ): Promise<Paginated<TopicVector>>
 }

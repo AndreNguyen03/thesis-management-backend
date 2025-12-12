@@ -23,6 +23,7 @@ export class PaginationProvider {
     ): Promise<Paginated<T>> {
         const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate, filter, filter_by } =
             paginationQuery
+            console.log('Pagination Query:', paginationQuery)
         let queryLimit = limit ?? 10
         let queryPage = page ?? 1
 

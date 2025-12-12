@@ -231,4 +231,100 @@ export class MailProcessor {
             console.error(`Gửi mail đồng hướng dẫn thất bại:`, e)
         }
     }
+
+    @Process('send-upcoming-open-registration')
+    async handleSendUpcomingOpenRegistration(
+        job: Job<{
+            user: User
+            periodInfo: GetPeriodDto
+            faculty: GetFacultyDto
+            startDate: Date
+            daysRemaining: number
+        }>
+    ) {
+        try {
+            const { user, periodInfo, faculty, startDate, daysRemaining } = job.data
+            const frontendUrl = this.configService.get('appConfig.CLIENT_URL')
+            const periodName = `${periodInfo.semester} năm học ${periodInfo.year}`
+
+            await this.mailerService.sendMail({
+                to: user.email,
+                from: `"Ban chủ nhiệm Khoa ${faculty.name}" <${this.configService.get('appConfig.smtpUsername')}>`,
+                subject: `⏰ Sắp mở đợt đăng ký - ${periodName}`,
+                template: './period-upcoming-notification',
+                context: {
+                    name: user.fullName || 'Bạn',
+                    eventTitle: 'SẮP MỞ ĐỢT ĐĂNG KÝ ĐỀ TÀI',
+                    periodName: periodName,
+                    startDate: new Date(startDate).toLocaleString('vi-VN', {
+                        weekday: 'long',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                    daysRemaining: daysRemaining,
+                    message: `Đợt đăng ký đề tài khóa luận cho ${periodName} sẽ chính thức mở trong ${daysRemaining} ngày nữa. Hãy chuẩn bị sẵn sàng!`,
+                    checklist: [
+                        'Kiểm tra tài khoản và thông tin cá nhân',
+                        'Tìm hiểu các đề tài có sẵn trong hệ thống',
+                        'Liên hệ giảng viên hướng dẫn nếu cần',
+                        'Chuẩn bị ý tưởng đề tài (nếu đăng ký đề tài mới)'
+                    ],
+                    additionalInfo: `Thời gian đăng ký sẽ bắt đầu từ ${new Date(startDate).toLocaleDateString('vi-VN')}. Đừng bỏ lỡ cơ hội!`,
+                    link: `${frontendUrl}/periods/${periodInfo._id}/topics`
+                }
+            })
+        } catch (e) {
+            console.error(`Gửi mail chuẩn bị mở đăng ký thất bại cho ${job.data.user._id}:`, e)
+        }
+    }
+
+    @Process('send-upcoming-new-semester')
+    async handleSendUpcomingNewSemester(
+        job: Job<{
+            user: User
+            periodInfo: GetPeriodDto
+            faculty: GetFacultyDto
+            startDate: Date
+            daysRemaining: number
+        }>
+    ) {
+        try {
+            const { user, periodInfo, faculty, startDate, daysRemaining } = job.data
+            const frontendUrl = this.configService.get('appConfig.CLIENT_URL')
+            const periodName = `${periodInfo.semester} năm học ${periodInfo.year}`
+
+            await this.mailerService.sendMail({
+                to: user.email,
+                from: `"Ban chủ nhiệm Khoa ${faculty.name}" <${this.configService.get('appConfig.smtpUsername')}>`,
+                subject: `⏰ Chuẩn bị cho học kỳ mới - ${periodName}`,
+                template: './period-upcoming-notification',
+                context: {
+                    name: user.fullName || 'Bạn',
+                    eventTitle: 'HỌC KỲ MỚI SẮP BẮT ĐẦU',
+                    periodName: periodName,
+                    startDate: new Date(startDate).toLocaleString('vi-VN', {
+                        weekday: 'long',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    }),
+                    daysRemaining: daysRemaining,
+                    message: `Học kỳ ${periodName} sẽ chính thức bắt đầu trong ${daysRemaining} ngày nữa. Hãy chuẩn bị tinh thần và kế hoạch học tập!`,
+                    checklist: [
+                        'Kiểm tra lịch học và lịch deadline các phase',
+                        'Chuẩn bị tài liệu và công cụ cần thiết',
+                        'Đọc lại quy định về khóa luận',
+                        'Lên kế hoạch thời gian biểu cụ thể'
+                    ],
+                    additionalInfo: `Kỳ học sẽ bắt đầu từ ${new Date(startDate).toLocaleDateString('vi-VN')}. Chúc bạn một học kỳ thành công!`,
+                    link: `${frontendUrl}/dashboard`
+                }
+            })
+        } catch (e) {
+            console.error(`Gửi mail chuẩn bị học kỳ mới thất bại cho ${job.data.user._id}:`, e)
+        }
+    }
 }

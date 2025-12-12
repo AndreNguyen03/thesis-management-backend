@@ -9,8 +9,9 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPeriodDto,
-    RequestGetTopicsInPhaseDto
+    RequestGetTopicsInPhaseParams
 } from '../dtos'
 import {
     GetTopicsStatisticInCompletionPhaseDto,
@@ -39,7 +40,9 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         userRole: string
     ): Promise<GetCancelRegisteredTopicResponseDto[]>
     // getTopicsInPeriod(periodId: string, query: RequestGetTopicsInPeriodDto): Promise<Paginated<Topic>>
-    getTopicsInPhaseHistory(phaseName: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>>
+    getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<Paginated<Topic>>
+    getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
+    getRegisteringTopics(periodId: string,query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
     //faculty board get statistics
