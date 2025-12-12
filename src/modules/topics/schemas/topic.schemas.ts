@@ -26,9 +26,9 @@ export class PhaseHistory extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     actor: string
     @Prop({ type: String, required: false })
-    note: string    
+    note: string
 }
-
+//Điểm chấm chi tiết
 @Schema({ timestamps: true })
 export class DetailGrade extends BaseEntity {
     @Prop({ type: Number, required: true })
@@ -45,6 +45,42 @@ export class Grade extends BaseEntity {
     averageScore: number
     @Prop({ type: [DetailGrade], default: [] })
     detailGrades: DetailGrade[]
+}
+
+@Schema({ _id: false })
+class CouncilMemberSnapshot {
+    @Prop({ required: true }) fullName: string
+    @Prop({ required: true }) role: string // "Chủ tịch", "Thư ký"...
+    @Prop() workUnit: string
+}
+
+@Schema({ _id: false })
+class DefenseResult {
+    @Prop({ type: Date, required: true })
+    defenseDate: Date // Dùng để lọc theo "Năm bảo vệ"
+
+    @Prop({ type: String })
+    periodName: string // Lưu tên đợt: "HK1 23-24" (để hiển thị nhanh)
+
+    @Prop({ required: true })
+    finalScore: number // Điểm số: 9.5
+
+    @Prop()
+    gradeText: string // Xếp loại: "Xuất sắc"
+
+    @Prop({ type: [CouncilMemberSnapshot] })
+    councilMembers: CouncilMemberSnapshot[]
+
+    @Prop()
+    councilName: string // VD: "Hội đồng CNPM 01"
+}
+
+@Schema({ _id: false })
+class TopicStats {
+    @Prop({ default: 0 }) views: number // Số lượt xem
+    @Prop({ default: 0 }) downloads: number // Số lượt tải
+    @Prop({ default: 0 }) averageRating: number // Điểm đánh giá trung bình (4.5)
+    @Prop({ default: 0 }) reviewCount: number // Tổng số đánh giá (12)
 }
 
 @Schema({ collection: 'topics', timestamps: true })
@@ -98,5 +134,16 @@ export class Topic extends BaseEntity {
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Field.name }], default: [], index: true })
     fieldIds: Field[]
+
+    // Chỉ có dữ liệu khi status = 'ARCHIVED'
+    @Prop({ type: DefenseResult, required: false })
+    defenseResult: DefenseResult
+
+    @Prop({ type: Boolean, default: false, index: true })
+    isPublishedToLibrary: boolean
+
+    // === NHÓM Thống kê (Cho Thu) ===
+    @Prop({ type: TopicStats, default: () => ({}) })
+    stats: TopicStats
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)

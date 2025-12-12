@@ -17,7 +17,7 @@ import { PeriodsService } from '../../periods/application/periods.service'
 import { SearchRegisteringTopicsDto, SearchTopicsInLibraryDto } from '../dtos/search.dtos'
 import { TopicVectorRepositoryInterface } from '../repository/topic-vector.repository.interface'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
-import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
+import { RequestGetTopicsInAdvanceSearchParams, RequestGetTopicsInPhaseParams } from '../../topics/dtos'
 @Injectable()
 export class TopicSearchService implements OnModuleInit {
     private vectorStoreRead: MongoDBAtlasVectorSearch
@@ -29,7 +29,7 @@ export class TopicSearchService implements OnModuleInit {
         private readonly googleAIConfiguration: ConfigType<typeof googleAIConfig>,
         private readonly periodsService: PeriodsService,
         @Inject('TopicVectorRepositoryInterface')
-        private readonly topicVectorRepoInterface: TopicVectorRepositoryInterface
+        private readonly topicVectorRepoInterface: TopicVectorRepositoryInterface,
     ) {}
 
     async onModuleInit() {
@@ -200,7 +200,7 @@ export class TopicSearchService implements OnModuleInit {
     }
     async semanticSearchRegisteringTopic(
         periodId: string,
-        queries: RequestGetTopicsInPhaseDto
+        queries: RequestGetTopicsInAdvanceSearchParams
     ): Promise<Paginated<TopicVector>> {
         const currPeriod = await this.periodsService.checkCurrentPeriod(periodId)
         if (!currPeriod) {
@@ -211,34 +211,26 @@ export class TopicSearchService implements OnModuleInit {
         if (query && query.trim()) {
             queryVector = await this.queryEmbeddings.embedQuery(query.trim())
         }
-        return await this.topicVectorRepoInterface.semanticSearchTopicVectors(
+        return await this.topicVectorRepoInterface.semanticSearchRegisteringTopics(
             queryVector,
-            periodId,
             queries,
-            PeriodPhaseName.OPEN_REGISTRATION,
-            TopicStatus.PendingRegistration
+            periodId
         )
     }
 
-    async semanticSearchLibraryTopic(
-        periodId: string,
-        queries: RequestGetTopicsInPhaseDto
-    ): Promise<Paginated<TopicVector>> {
-        const currPeriod = await this.periodsService.checkCurrentPeriod(periodId)
-        if (!currPeriod) {
-            throw new BadGatewayException('Không tìm thấy kì hiện tại cho khoa của bạn.')
-        }
+    async semanticSearchLibraryTopic(queries: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<TopicVector>> {
         const { query } = queries
         let queryVector: number[] = []
         if (query && query.trim()) {
             queryVector = await this.queryEmbeddings.embedQuery(query.trim())
         }
-        return await this.topicVectorRepoInterface.semanticSearchTopicVectors(
+        return await this.topicVectorRepoInterface.semanticSearchTopicsInLibrary(
             queryVector,
-            periodId,
-            queries,
-            PeriodPhaseName.EXECUTION,
-            TopicStatus.PendingRegistration
+            queries
         )
     }
+    // async searchTopicsInLibrary(query: RequestGetTopicsInLibraryParams): Promise<Paginated<Topic>> {
+    //     return await this.getTopicProvider.getTopicsInLibrary(query)
+    // }
+    
 }

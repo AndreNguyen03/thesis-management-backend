@@ -12,6 +12,7 @@ import { BullModule } from '@nestjs/bull'
 import { VectorSyncProvider } from './provider/vector-sync.provider'
 import { TopicVectorRepository } from './repository/impl/topic-vector.repository'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { TopicModule } from '../topics/topic.module'
 
 @Module({
     imports: [
@@ -19,7 +20,8 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => PeriodsModule),
         BullModule.registerQueue({ name: 'vector-sync-queue' }),
-        PaginationAnModule
+        PaginationAnModule,
+        TopicModule
     ],
     controllers: [TopicSearchController],
     providers: [

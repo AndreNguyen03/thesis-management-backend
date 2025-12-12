@@ -296,9 +296,12 @@ export class RequestGetTopicsInPhaseBaseDto {
     @IsNotEmpty()
     @IsEnum(PeriodPhaseName)
     phase: string
-    @IsOptional()
-    status?: string
     @IsNotEmpty()
+    status: string
+    @IsNotEmpty()
+    //100 là search semantic
+    //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
+    //mặc định là lọc bình thường
     rulesPagination?: number = 0
     @IsOptional()
     lecturerIds?: string[]
@@ -306,8 +309,36 @@ export class RequestGetTopicsInPhaseBaseDto {
     fieldIds?: string[]
     @IsOptional()
     queryStatus?: string[]
+    @IsOptional()
+    majorIds?: string[]
 }
-export class RequestGetTopicsInPhaseDto extends IntersectionType(RequestGetTopicsInPhaseBaseDto, PaginationQueryDto) {}
+
+export class RequestGetTopicsInPhaseParams extends IntersectionType(
+    RequestGetTopicsInPhaseBaseDto,
+    PaginationQueryDto
+) {}
+
+export class RequestGetTopicsInAdvanceSearch {
+    @IsNotEmpty()
+    //100 là search semanticx
+    //nếu là 0 thì search mặc định
+    rulesPagination?: number = 0
+    @IsOptional()
+    status?: string
+    @IsOptional()
+    lecturerIds?: string[]
+    @IsOptional()
+    fieldIds?: string[]
+    @IsOptional()
+    queryStatus?: string[]
+    @IsOptional()
+    majorIds?: string[]
+}
+
+export class RequestGetTopicsInAdvanceSearchParams extends IntersectionType(
+    RequestGetTopicsInAdvanceSearch,
+    PaginationQueryDto
+) {}
 
 @Expose()
 export class GetTopicsInPhaseDto extends GetTopicsInPeriodDto {}
