@@ -21,4 +21,5 @@ export class OnlineUserService {
     async getSockets(userId: string) {
         return (await this.redis.smembers(`online:${userId}`)) || []
     }
+
 }

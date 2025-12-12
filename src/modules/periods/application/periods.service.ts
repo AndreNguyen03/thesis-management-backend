@@ -16,7 +16,7 @@ import {
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
-import { RequestGetTopicsInPhaseDto } from '../../topics/dtos'
+import { RequestGetTopicsInPhaseParams } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
 import { GetPhaseProvider } from '../providers/get-phase.provider'
 import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
@@ -284,12 +284,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     //     return period
     // }
 
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseDto) {
+    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }
 
-    async changeStatusAllTopicsInPeriod(periodId: string, newStatus: string, newPhaseId: string) {}
     // statistics
     async boardGetStatisticsInPeriod(periodId: string, query: PeriodStatsQueryParams) {
         //lấy thống kê liên quan tới đề tài

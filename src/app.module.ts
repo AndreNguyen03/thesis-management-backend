@@ -38,8 +38,11 @@ import { UploadFilesModule } from './modules/upload-files/upload-files.module'
 import { NestMinioModule } from 'nestjs-minio'
 import { minioConfig } from './config/minio.config'
 import { NotificationsModule } from './modules/notifications/notifications.module'
-import { SocketModule } from './modules/socket/socket.module';
+import { SocketModule } from './modules/socket/socket.module'
 import { TopicVectorModule } from './modules/topic_search/topic_search.module'
+import { GroupsModule } from './modules/groups/groups.module'
+import { MilestonesModule } from './modules/milestones/milestones.module'
+import { TodolistsModule } from './modules/todolists/todolists.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -113,6 +116,9 @@ const ENV = process.env.NODE_ENV
         NotificationsModule,
         SocketModule,
         TopicVectorModule,
+        GroupsModule,
+        MilestonesModule,
+        TodolistsModule
     ],
     controllers: [AppController],
     providers: [

@@ -9,8 +9,8 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
-    RequestGetTopicsInPeriodDto,
-    RequestGetTopicsInPhaseDto
+    RequestGetTopicsInAdvanceSearchParams,
+    RequestGetTopicsInPhaseParams
 } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
 import mongoose, { Model } from 'mongoose'
@@ -83,11 +83,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         if (!existingTopic) {
             throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
         }
-        const amountGradedByActor = existingTopic.grade?.detailGrades?.length
+        const amountGradedByActor = existingTopic.grade?.detailGrades?.length || 0
         if (amountGradedByActor === 3) {
             throw new BadRequestException('Đã đủ số lượng điểm chi tiết, không thể thêm nữa.')
         }
-        if (existingTopic.grade.detailGrades.some((grade) => grade.actorId === actorId)) {
+        if (existingTopic.grade?.detailGrades?.some((grade) => grade.actorId === actorId)) {
             throw new BadRequestException('Người dùng đã chấm điểm cho đề tài này rồi.')
         }
         try {
@@ -764,7 +764,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             },
             {
                 $unwind: {
-                    path: '$majorsInfo'
+                    path: '$majorsInfo',
+                    preserveNullAndEmptyArrays: true
                 }
             },
             //join fields
@@ -844,7 +845,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     }
                 },
                 {
-                    $unwind: { path: '$periodInfo' }
+                    $unwind: { path: '$periodInfo', preserveNullAndEmptyArrays: true }
                 }
             ]
         )
@@ -886,10 +887,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return pipeline
     }
 
-    async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseDto): Promise<Paginated<Topic>> {
+    async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<Paginated<Topic>> {
+        console.log('query', query, periodId)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
+        // // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
         pipelineSub.push({
             $addFields: {
                 lastStatusInPhaseHistory: {
@@ -911,7 +913,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
-        //mục đích là không phải lấy trường này mà là để lấy thêm thời gian nộp đề tài
+        // //mục đích là không phải lấy trường này mà là để lấy thêm thời gian nộp đề tài
         pipelineSub.push({
             $addFields: {
                 submittedPhaseHistory: {
@@ -972,7 +974,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             }
         })
         //Phân trang phụ
-        //rule 99 nghĩa là phân trang với những trường đặc biệt
+        //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
             if (query.lecturerIds) {
                 pipelineSub.push({
@@ -1012,15 +1014,228 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //Nếu là phân trang bình thường
         pipelineSub.push({
             $match: {
-                periodId: new mongoose.Types.ObjectId(periodId),
-                lastStatusInPhaseHistory: { $ne: null },
-                ...{ ...(query.status ? { 'lastStatusInPhaseHistory.status': query.status } : {}) },
+                deleted_at: null,
+                periodId: new mongoose.Types.ObjectId(periodId)
+            }
+        })
+        const res = await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+        console.log('res', res)
+        return res
+    }
+
+    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $project: {
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                type: 1,
+                status: 1,
+                createBy: 1,
+                createByInfo: '$createByInfo',
+                deadline: 1,
+                maxStudents: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                periodId: 1,
+                currentStatus: 1,
+                currentPhase: 1,
+                isRegistered: 1,
+                isSaved: 1,
+                major: 1,
+                lecturers: 1,
+                lecturerIds: {
+                    $map: {
+                        input: '$lecturers',
+                        as: 'lecturer',
+                        in: '$$lecturer._id'
+                    }
+                },
+                studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
+                fields: `$fields`,
+                requirements: `$requirements`,
+                fieldIds: 1,
+                fileIds: 1,
+                requirementIds: 1,
+                grade: 1,
+                isEditable: 1,
+                allowManualApproval: 1,
+                // lastStatusInPhaseHistory: 1,
+                //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
+                //Không thì thôi vì phải plainToInstance
+                submittedAt: '$submittedPhaseHistory.createdAt',
+                periodInfo: 1
+            }
+        })
+        //Phân trang phụ
+        //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
+        if (query.rulesPagination === 99) {
+            if (query.lecturerIds) {
+                pipelineSub.push({
+                    $match: {
+                        ...{
+                            ...(query.lecturerIds
+                                ? {
+                                      lecturerIds: {
+                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.fieldIds
+                                ? {
+                                      fieldIds: {
+                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.queryStatus
+                                ? {
+                                      currentStatus: {
+                                          $in: query.queryStatus
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.majorIds
+                                ? {
+                                      'major._id': {
+                                          $in: query.majorIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        }
+                    }
+                })
+            }
+        }
+        //   if (query.rulesPagination === 0)
+        pipelineSub.push({
+            $match: {
+                currentStatus: TopicStatus.Archived,
                 deleted_at: null
             }
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
-
+    async getRegisteringTopics(
+        periodId: string,
+        query: RequestGetTopicsInAdvanceSearchParams
+    ): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        //mục đích là không phải lấy trường này mà là để lấy thêm thời gian nộp đề tài
+        pipelineSub.push({
+            $addFields: {
+                submittedPhaseHistory: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: '$phaseHistories',
+                                as: 'ph',
+                                cond: { $eq: ['$$ph.status', 'submitted'] }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        })
+        pipelineSub.push({
+            $project: {
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                type: 1,
+                status: 1,
+                createBy: 1,
+                createByInfo: '$createByInfo',
+                deadline: 1,
+                maxStudents: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                periodId: 1,
+                currentStatus: 1,
+                currentPhase: 1,
+                isRegistered: 1,
+                isSaved: 1,
+                major: 1,
+                lecturers: 1,
+                lecturerIds: {
+                    $map: {
+                        input: '$lecturers',
+                        as: 'lecturer',
+                        in: '$$lecturer._id'
+                    }
+                },
+                studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
+                fields: `$fields`,
+                requirements: `$requirements`,
+                fieldIds: 1,
+                fileIds: 1,
+                requirementIds: 1,
+                grade: 1,
+                isEditable: 1,
+                allowManualApproval: 1,
+                //lastStatusInPhaseHistory: 1,
+                //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
+                //Không thì thôi vì phải plainToInstance
+                submittedAt: '$submittedPhaseHistory.createdAt',
+                periodInfo: 1
+            }
+        })
+        //Phân trang phụ
+        //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
+        if (query.rulesPagination === 99) {
+            if (query.lecturerIds) {
+                pipelineSub.push({
+                    $match: {
+                        ...{
+                            ...(query.lecturerIds
+                                ? {
+                                      lecturerIds: {
+                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.fieldIds
+                                ? {
+                                      fieldIds: {
+                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
+                                      }
+                                  }
+                                : {})
+                        },
+                        ...{
+                            ...(query.queryStatus
+                                ? {
+                                      currentStatus: {
+                                          $in: query.queryStatus
+                                      }
+                                  }
+                                : {})
+                        }
+                    }
+                })
+            }
+        }
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
+                deleted_at: null
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
     // lấy thống kê
     async getStatisticInSubmitPhase(periodId: string): Promise<GetTopicStatisticInSubmitPhaseDto> {
         const submitPhase = PeriodPhaseName.SUBMIT_TOPIC

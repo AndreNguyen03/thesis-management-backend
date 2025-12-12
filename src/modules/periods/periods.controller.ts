@@ -17,7 +17,7 @@ import {
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
 } from './dtos/period-phases.dtos'
-import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseDto } from '../topics/dtos'
+import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseParams } from '../topics/dtos'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
@@ -161,27 +161,24 @@ export class PeriodsController {
 
     //Lấy những đề tài nằm trong pha cụ thể, trạng thái cụ thể
     @Get('/:periodId/get-topics-in-phase')
-    async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
-        let topics
-        if (query.rulesPagination === 100)
-            topics = await this.topicSearchService.semanticSearchRegisteringTopic(periodId, query)
-        else topics = await this.periodsService.getTopicsInPhase(periodId, query)
+    async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseParams) {
+        const topics = await this.periodsService.getTopicsInPhase(periodId, query)
         return plainToInstance(PaginatedGeneralTopics, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
     }
 
-    // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
-    @Patch('/:periodId/status/tranfer-phase')
-    async changeStatusAllTopicsInPeriod(
-        @Param('periodId') periodId: string,
-        @Body() body: { newStatus: string; newPhaseId: string }
-    ) {
-        // Logic để thay đổi trạng thái đề tài
-        await this.periodsService.changeStatusAllTopicsInPeriod(periodId, body.newStatus, body.newPhaseId)
-        return { message: 'Đã thay đổi trạng thái đề tài thành công' }
-    }
+    // // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
+    // @Patch('/:periodId/status/tranfer-phase')
+    // async changeStatusAllTopicsInPeriod(
+    //     @Param('periodId') periodId: string,
+    //     @Body() body: { newStatus: string; newPhaseId: string }
+    // ) {
+    //     // Logic để thay đổi trạng thái đề tài
+    //     await this.periodsService.changeStatusAllTopicsInPeriod(periodId, body.newStatus, body.newPhaseId)
+    //     return { message: 'Đã thay đổi trạng thái đề tài thành công' }
+    // }
 
     //BCN khoa lấy thông kê trong kì theo các pha
     @Get('/:periodId/faculty-board/stats')

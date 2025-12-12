@@ -3,23 +3,30 @@ import { TopicSearchService } from './application/search.service'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { SearchRegisteringTopicsDto, SearchTopicsInLibraryDto } from './dtos/search.dtos'
-import { RequestGetTopicsInPhaseDto } from '../topics/dtos'
+import {
+    PaginatedGeneralTopics,
+    RequestGetTopicsInAdvanceSearchParams,
+    RequestGetTopicsInPhaseParams
+} from '../topics/dtos'
 
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { VectorSyncProvider } from './provider/vector-sync.provider'
+import { plainToInstance } from 'class-transformer'
+import { GetTopicProvider } from '../topics/providers/get-topic.provider'
 
 @Controller('topic-search')
 export class TopicSearchController {
     constructor(
         private readonly searchService: TopicSearchService,
-        private readonly vectorSyncProvider: VectorSyncProvider
+        private readonly vectorSyncProvider: VectorSyncProvider,
+        private readonly getTopicProvider: GetTopicProvider
     ) {}
     @Get('/sync-topics/in-period-on-phase/:periodId')
     //trước mắt là ban chủ nhiệm
     @Auth(AuthType.Bearer)
-    async syncTopic(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseDto) {
+    async syncTopic(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseParams) {
         query.limit = 0
         await this.vectorSyncProvider.syncDataInPeriodOnPhase(periodId, query)
         return { message: 'Đang xử lý đồng bộ dữ liệu đề tài đăng ký' }
@@ -34,7 +41,7 @@ export class TopicSearchController {
         @Req() req: { user: ActiveUserData },
         @Body() searchTopicsDto: SearchRegisteringTopicsDto
     ) {
-        return await this.searchService.recommendRegisteringTopics(req.user.facultyId!, searchTopicsDto)
+        const ré = await this.searchService.recommendRegisteringTopics(req.user.facultyId!, searchTopicsDto)
     }
 
     //tìm kiếm trong tập dữ liệu đề tài đã duyệt
@@ -48,13 +55,29 @@ export class TopicSearchController {
     @Get('/advance/registering-topics/:periodId')
     async searchTopicsInLibraryWithDescription(
         @Param('periodId') periodId: string,
-        @Query() query: RequestGetTopicsInPhaseDto
+        @Query() query: RequestGetTopicsInAdvanceSearchParams
     ) {
-        return await this.searchService.semanticSearchRegisteringTopic(periodId, query)
-        //  return plainToInstance(PaginatedGeneralTopics, topics, {
-        //             excludeExtraneousValues: true,
-        //             enableImplicitConversion: true
-        //         })
+        //query.search_by = 'titleVN,titleEng'
+        let topics
+        if (query.rulesPagination === 100)
+            topics = await this.searchService.semanticSearchRegisteringTopic(periodId, query)
+        else topics = await this.getTopicProvider.getRegisteringTopics(periodId, query)
+        return plainToInstance(PaginatedGeneralTopics, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
-    //      @Get('/advance/topics-in-library')
+
+    @Get('/advance/topics-in-library')
+    async searchTopicsInLibrary(@Query() query: RequestGetTopicsInAdvanceSearchParams) {
+        let topics
+        console.log('rulesPagination:', query.rulesPagination)
+        //query.search_by = 'titleVN,titleEng'
+        if (query.rulesPagination === 100) topics = await this.searchService.semanticSearchLibraryTopic(query)
+        else topics = await this.getTopicProvider.getTopicsInLibrary(query)
+        return plainToInstance(PaginatedGeneralTopics, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
 }

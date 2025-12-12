@@ -46,9 +46,7 @@ export class NotificationPublisherService {
         message: string,
         type: NotificationType,
         senderId?: string,
-        metadata?: Record<string, any>,
-        isSendMail?: boolean,
-        contentEmail?: string
+        metadata?: Record<string, any>
     ) {
         // save to db
         const noti = await this.notificationsService.createNotification({
@@ -60,13 +58,9 @@ export class NotificationPublisherService {
             isRead: false,
             metadata
         })
-        console.log('Created notification:', noti)
+        //  console.log('Created notification:', noti)
         // push job to queue để hiển thị lên tức thời
-        if (isSendMail) {
-            const user = await this.userService.findById(recipientId)
-            if (!user) throw new NotFoundException('Not found user!')
-            await this.mailService.sendNotificationMail(user, 'Bạn có thông báo mới', contentEmail!)
-        }
+        await this.queue.add('send-personal-notification', noti as GetNotificationDto)
         return noti
     }
 
@@ -101,8 +95,7 @@ export class NotificationPublisherService {
                 titleVN: topicInfo.titleVN,
                 titleEng: topicInfo.titleEng,
                 actionUrl: `/detail-topic/${topicInfo._id}`
-            },
-            false
+            }
         )
     }
     //Khi giảng viên HD chính từ chối đăng ký của sinh viên
@@ -128,8 +121,7 @@ export class NotificationPublisherService {
                 reasonSub: body.lecturerResponse,
                 rejectedBy: lecturerInfo!.fullName,
                 actionUrl: `/detail-topic/${topicInfo._id}`
-            },
-            false
+            }
         )
     }
     //Khi đề tài đã được BCN chấp thuận
@@ -156,8 +148,7 @@ export class NotificationPublisherService {
                     titleVN: topicInfo.titleVN,
                     titleEng: topicInfo.titleEng,
                     actionUrl: `/detail-topic/${topicInfo._id}`
-                },
-                false
+                }
             )
 
             await this.mailService.sendApprovalTopicNotification(
@@ -213,11 +204,11 @@ export class NotificationPublisherService {
                 reasonSub: 'Vui lòng liên hệ Ban Chủ nhiệm khoa để biết thêm chi tiết.',
                 // chuyển hướng tới xem những đề tài đã nộp
                 actionUrl: `/manage-topics/submitted`
-            },
-            false
+            }
         )
     }
     //Khi đề tài BCn gửi nhắc nhở xử lý các tồn động
+    //có socket
     async sendReminderLecturerInPeriod(body: RequestReminderLecturers, senderId: string) {
         const periodInfo = await this.periodsService.getCurrentPeriodInfo(body.periodId, PeriodType.THESIS)
         const periodName = transferNamePeriod(periodInfo!)
@@ -281,45 +272,163 @@ export class NotificationPublisherService {
     }
 
     //Gửi thông báo khi kỳ mở đăng ký bắt đầu
-    async sendPeriodOpenRegistrationNotification(recipientId: string, periodInfo: GetPeriodDto) {
-        const message = `Hệ thống đã mở đợt đăng ký đề tài cho {semestic} năm học {year}.`
-        await this.createAndSendNoti(
-            recipientId,
-            NotificationTitleEnum.OPEN_REGISTRATION_PERIOD,
-            message,
-            NotificationType.SYSTEM,
-            undefined,
-            {
-                periodId: periodInfo._id,
-                periodName: transferNamePeriod(periodInfo),
-                phaseName: PeriodPhaseName.OPEN_REGISTRATION
-            },
-            false
-        )
-        //Chưa gửi email
+    //chưa có socket
+    async sendPeriodOpenRegistrationNotification(senderId: string, periodInfo: GetPeriodDto) {
+        //lấy thông tin user của toàn bộ user trong faculty
+        const users = await this.userService.getUsersByFacultyId(periodInfo.faculty._id.toString())
+        //1. Tạo thông báo chuẩn bị
+        // Tìm phase mở đăng ký
+        const openRegistrationPhase = periodInfo.phases?.find((p) => p.phase === PeriodPhaseName.OPEN_REGISTRATION)
+
+        if (!openRegistrationPhase?.startTime) {
+            throw new Error('Không tìm thấy thông tin phase mở đăng ký')
+        }
+
+        //2.Tạo thông báo bắt đầu với delay
+        const now = new Date()
+        const startDate = new Date(openRegistrationPhase.startTime)
+        const delayMs = startDate.getTime() - now.getTime()
+
+        //tạo id cho job và email
+        const jobId = `open-registration-${periodInfo._id}`
+        const emailJobId = `open-registration-email-${periodInfo._id}`
+        const upcomingEmailJobId = `open-registration-upcoming-${periodInfo._id}`
+
+        //hủy job trước đó nếu có
+        await this.cancelScheduledJob(jobId)
+        await this.cancelScheduledJob(upcomingEmailJobId)
+
+        // Gửi email chuẩn bị ngay lập tức (không cần delay)
+        if (delayMs > 0) {
+            console.log(`📧 Gửi email chuẩn bị mở đăng ký ngay lập tức`)
+            await this.mailService.sendUpcomingOpenRegistrationNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                startDate,
+                upcomingEmailJobId,
+                0 // Gửi ngay, không delay
+            )
+        }
+
+        // Gửi notification và email khi đến thời điểm mở đăng ký
+        if (delayMs > 0) {
+            console.log(`📢 Schedule thông báo mở đăng ký sau ${Math.floor(delayMs / 1000 / 60)} phút`)
+            await this.queue.add(
+                'send-open-registration-period',
+                { users, senderId, periodInfo },
+                {
+                    jobId,
+                    delay: delayMs,
+                    attempts: 3,
+                    removeOnComplete: true,
+                    removeOnFail: false
+                }
+            )
+            await this.mailService.sendPeriodOpenRegistrationNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                emailJobId,
+                delayMs
+            )
+            console.log(`✅ Đã schedule ${users.length} emails mở đăng ký`)
+        } else {
+            //gửi ngay
+            console.log('⚡ Gửi thông báo mở đăng ký ngay lập tức')
+            await this.queue.add('send-open-registration-period', { users, senderId, periodInfo })
+            await this.mailService.sendPeriodOpenRegistrationNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                emailJobId
+            )
+            console.log(`✅ Đã gửi cho ${users.length} users`)
+        }
     }
-    //Gửi thông báo khi kỳ bắt đầu
-    async sendNewSemesticOpenGeneralNotification(recipientId: string, periodInfo: GetPeriodDto) {
-        const message = `Học kỳ mới - {semestic} năm học {year} đã bắt đầu. Chúc bạn một học kỳ thành công và nhiều trải nghiệm thú vị!`
-        await this.createAndSendNoti(
-            recipientId,
-            NotificationTitleEnum.OPEN_GENERAL_PERIOD,
-            message,
-            NotificationType.SYSTEM,
-            undefined,
-            {
-                periodId: periodInfo._id,
-                periodName: transferNamePeriod(periodInfo)
-            },
-            false
-        )
-        //Chưa gửi email
+    //Gửi thông báo khi kỳ học bắt đầu
+    async sendNewSemesticNotification(senderId: string, periodInfo: GetPeriodDto) {
+        //lấy thông tin user của toàn bộ user trong faculty
+        const users = await this.userService.getUsersByFacultyId(periodInfo.faculty._id.toString())
+
+        // Sử dụng startDate của period thay vì openRegistrationPhase
+        if (!periodInfo.startTime) {
+            throw new Error('Không tìm thấy thông tin ngày bắt đầu kỳ học')
+        }
+
+        const now = new Date()
+        const startDate = new Date(periodInfo.startTime)
+        const delayMs = startDate.getTime() - now.getTime()
+
+
+        //tạo id cho job và email
+        const jobId = `new-semester-${periodInfo._id}`
+        const emailJobId = `new-semester-email-${periodInfo._id}`
+        const upcomingEmailJobId = `new-semester-upcoming-${periodInfo._id}`
+
+        //hủy job trước đó nếu có
+        await this.cancelScheduledJob(jobId)
+        await this.cancelScheduledJob(upcomingEmailJobId)
+
+        // Gửi email chuẩn bị ngay lập tức (không cần delay)
+        if (delayMs > 0) {
+            console.log(`📧 Gửi email chuẩn bị học kỳ mới ngay lập tức`)
+            await this.mailService.sendUpcomingNewSemesterNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                startDate,
+                upcomingEmailJobId,
+                0 // Gửi ngay, không delay
+            )
+        }
+        // Gửi notification và email khi đến thời điểm bắt đầu kỳ học
+        if (delayMs > 0) {
+            console.log(`📢 Schedule thông báo học kỳ mới sau ${Math.floor(delayMs / 1000 / 60)} phút`)
+            await this.queue.add(
+                'send-new-semestic-period',
+                { users, senderId, periodInfo },
+                {
+                    jobId,
+                    delay: delayMs,
+                    attempts: 3
+                }
+            )
+            await this.mailService.sendNewSemesticOpenGeneralNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                emailJobId,
+                delayMs
+            )
+            console.log(`✅ Đã schedule ${users.length} emails học kỳ mới vào ${startDate.toLocaleString('vi-VN')}`)
+        } else {
+            console.log('⚡ Gửi thông báo học kỳ mới ngay lập tức')
+            await this.queue.add('send-new-semestic-period', { users, senderId, periodInfo })
+            await this.mailService.sendNewSemesticOpenGeneralNotification(
+                users,
+                periodInfo,
+                periodInfo.faculty,
+                emailJobId
+            )
+            console.log(`✅ Đã gửi cho ${users.length} users`)
+        }
     }
-    private sendEmailOpenNewPeriod(type: OpenPeriodNotificationTypeEnum) {
-        if (type === OpenPeriodNotificationTypeEnum.OPEN_REGISTRATION) {
-            //comming soon
-        } else if (type === OpenPeriodNotificationTypeEnum.NEW_SEMESTER) {
-            //gửi email chào mừng kỳ mới
+
+    //helper hủy job đã lên lịch
+    private async cancelScheduledJob(jobId: string) {
+        try {
+            const job = await this.queue.getJob(jobId)
+            if (job) {
+                const state = await job.getState()
+                // Chỉ hủy nếu job đang delayed hoặc waiting
+                if (state === 'delayed' || state === 'waiting') {
+                    await job.remove()
+                    console.log(`🗑️ Đã hủy job cũ: ${jobId}`)
+                }
+            }
+        } catch (error) {
+            console.log(`ℹ️ Không tìm thấy job cũ: ${jobId}`)
         }
     }
 }

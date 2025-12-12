@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
 import { ModuleRef } from '@nestjs/core'
-import { GetGeneralTopics, RequestGetTopicsInPhaseDto } from '../../topics/dtos'
+import { GetGeneralTopics } from '../../topics/dtos'
 import { Document } from '@langchain/core/documents'
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai'
 import { googleAIConfig } from '../../../config/googleai.config'

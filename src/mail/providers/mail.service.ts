@@ -68,22 +68,136 @@ export class MailService {
         })
     }
 
+    // 0. Gửi email chuẩn bị trước khi mở đợt đăng ký (3 ngày trước)
+    async sendUpcomingOpenRegistrationNotification(
+        users: User[],
+        periodInfo: GetPeriodDto,
+        faculty: GetFacultyDto,
+        startDate: Date,
+        jobId: string,
+        delayMs?: number
+    ) {
+        this.cancelScheduledJob(jobId)
+
+        const daysRemaining = Math.ceil((startDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+
+        for (let i = 0; i < users.length; i++) {
+            await this.mailQueue.add(
+                'send-upcoming-open-registration',
+                {
+                    user: users[i],
+                    periodInfo,
+                    faculty,
+                    startDate,
+                    daysRemaining
+                },
+                {
+                    jobId: `${jobId}-upcoming`,
+                    delay: (delayMs ?? 0) + i * 500,
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
+    }
+
     // 1. Gửi thông báo Mở đợt đăng ký
-    async sendPeriodOpenRegistrationNotification(user: User, periodInfo: GetPeriodDto, faculty: GetFacultyDto) {
-        await this.mailQueue.add('send-period-open-registration', {
-            user,
-            periodInfo,
-            faculty
-        })
+    async sendPeriodOpenRegistrationNotification(
+        users: User[],
+        periodInfo: GetPeriodDto,
+        faculty: GetFacultyDto,
+        jobId: string,
+        delayMs?: number
+    ) {
+        this.cancelScheduledJob(jobId)
+
+        for (let i = 0; i < users.length; i++) {
+            await this.mailQueue.add(
+                'send-period-open-registration',
+                {
+                    user: users[i],
+                    periodInfo,
+                    faculty
+                },
+                {
+                    jobId: jobId,
+                    delay: (delayMs ?? 0) + i * 500,
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
+    }
+    // 1.5 Gửi email chuẩn bị trước khi kỳ học bắt đầu (3 ngày trước)
+    async sendUpcomingNewSemesterNotification(
+        users: User[],
+        periodInfo: GetPeriodDto,
+        faculty: GetFacultyDto,
+        startDate: Date,
+        jobId: string,
+        delayMs?: number
+    ) {
+        this.cancelScheduledJob(jobId)
+
+        const daysRemaining = Math.ceil((startDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+
+        for (let i = 0; i < users.length; i++) {
+            await this.mailQueue.add(
+                'send-upcoming-new-semester',
+                {
+                    user: users[i],
+                    periodInfo,
+                    faculty,
+                    startDate,
+                    daysRemaining
+                },
+                {
+                    jobId: `${jobId}-upcoming`,
+                    delay: (delayMs ?? 0) + i * 500,
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
     }
 
     // 2. Gửi thông báo Chào mừng kỳ mới
-    async sendNewSemesticOpenGeneralNotification(user: User, periodInfo: GetPeriodDto, faculty: GetFacultyDto) {
-        await this.mailQueue.add('send-new-semester-welcome', {
-            user,
-            periodInfo,
-            faculty
-        })
+    async sendNewSemesticOpenGeneralNotification(
+        users: User[],
+        periodInfo: GetPeriodDto,
+        faculty: GetFacultyDto,
+        jobId: string,
+        delayMs?: number
+    ) {
+        this.cancelScheduledJob(jobId)
+        for (let i = 0; i < users.length; i++) {
+            await this.mailQueue.add(
+                'send-new-semester-welcome',
+                {
+                    user: users[i],
+                    periodInfo,
+                    faculty
+                },
+                {
+                    jobId: jobId ? jobId : undefined,
+                    delay: (delayMs ?? 0) + i * 500, // Delay 0.5s cho mỗi email
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
     }
 
     //Gửi thống báo đề tài được chấp thuận
@@ -141,28 +255,40 @@ export class MailService {
                 )
                 break
         }
-        console.log('recipientEmails :::', recipientEmails.length)
-        console.log('subject :::', subject)
+
         for (let i = 0; i < recipientEmails.length; i++) {
-            for (const email of recipientEmails) {
-                await this.mailQueue.add(
-                    'send-manual-email',
-                    {
-                        to: email,
-                        subject: subject,
-                        content: content,
-                        currentPeriod: currPeriod
-                    },
-                    {
-                        delay: i * 1000, // Delay 1s cho mỗi email
-                        attempts: 3,
-                        backoff: {
-                            type: 'exponential',
-                            delay: 2000 
-                        }
+            await this.mailQueue.add(
+                'send-manual-email',
+                {
+                    to: recipientEmails[i],
+                    subject: subject,
+                    content: content,
+                    currentPeriod: currPeriod
+                },
+                {
+                    delay: i * 500, // Delay 1s cho mỗi email
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
                     }
-                )
+                }
+            )
+        }
+    }
+    private async cancelScheduledJob(jobId: string) {
+        try {
+            const job = await this.mailQueue.getJob(jobId)
+            if (job) {
+                const state = await job.getState()
+                // Chỉ hủy nếu job đang delayed hoặc waiting
+                if (state === 'delayed' || state === 'waiting') {
+                    await job.remove()
+                    console.log(`🗑️ Đã hủy job cũ: ${jobId}`)
+                }
             }
+        } catch (error) {
+            console.log(`ℹ️ Không tìm thấy job cũ: ${jobId}`)
         }
     }
 }
