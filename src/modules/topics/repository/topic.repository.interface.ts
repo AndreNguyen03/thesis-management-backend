@@ -1,6 +1,7 @@
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
 import {
     CreateTopicDto,
     GetCancelRegisteredTopicResponseDto,
@@ -80,4 +81,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
     getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo>
     copyToDraft(topicId: string, actorId: string): Promise<string>
+    getMajorsOfTopicInLibrary()
+    getYearsOfTopicInLibrary():Promise<string[]>
+    //: Promise<GetMiniMiniMajorDto[]>
 }

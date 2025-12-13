@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { GetMiniMiniMajorDto } from '../../dtos/get-major.dto'
 @Injectable()
 export class MajorsRepository extends BaseRepositoryAbstract<Major> implements IMajorRepository {
     constructor(
@@ -25,4 +26,5 @@ export class MajorsRepository extends BaseRepositoryAbstract<Major> implements I
         })
         return await this.paginationProvider.paginateQuery<Major>(query, this.majorModel, pipelineSub)
     }
+
 }

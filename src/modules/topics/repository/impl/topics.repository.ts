@@ -39,6 +39,9 @@ import { allow } from 'joi'
 import { pipe } from 'rxjs'
 import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
 import { title } from 'process'
+import { GetMiniMiniMajorDto } from '../../../majors/dtos/get-major.dto'
+import { pipeline } from 'stream'
+import { IsArray } from 'class-validator'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -49,6 +52,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
+
     async getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo> {
         const topicData = await this.topicRepository
             .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
@@ -70,59 +74,61 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             { new: true }
         )
     }
-
-    async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
-        const newDetailGrade = {
-            score: body.score,
-            note: body.note,
-            actorId: actorId
-        }
-        const existingTopic = await this.topicRepository
-            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
-            .lean()
-        if (!existingTopic) {
-            throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
-        }
-        const amountGradedByActor = existingTopic.grade?.detailGrades?.length || 0
-        if (amountGradedByActor === 3) {
-            throw new BadRequestException('Đã đủ số lượng điểm chi tiết, không thể thêm nữa.')
-        }
-        if (existingTopic.grade?.detailGrades?.some((grade) => grade.actorId === actorId)) {
-            throw new BadRequestException('Người dùng đã chấm điểm cho đề tài này rồi.')
-        }
-        try {
-            const result = await this.topicRepository.findOneAndUpdate(
-                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
-                [
-                    {
-                        $set: {
-                            'grade.detailGrades': {
-                                $concatArrays: [{ $ifNull: ['$grade.detailGrades', []] }, [newDetailGrade]]
-                            }
-                        }
-                    },
-                    {
-                        $set: {
-                            'grade.averageScore': {
-                                $avg: '$grade.detailGrades.score'
-                            }
-                        }
-                    }
-                ],
-                { new: true }
-            )
-            if (result) {
-                console.log(result.grade)
-                console.log('Thêm điểm và cập nhật điểm trung bình thành công!')
-                const count = result.grade.detailGrades.length
-                return count
-            }
-
-            return amountGradedByActor
-        } catch (error) {
-            throw new RequestTimeoutException('Lỗi khi thêm điểm cho đề tài')
-        }
+    addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
+        throw new Error('Method not implemented.')
     }
+    // async addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number> {
+    //     const newDetailGrade = {
+    //         score: body.score,
+    //         note: body.note,
+    //         actorId: actorId
+    //     }
+    //     const existingTopic = await this.topicRepository
+    //         .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+    //         .lean()
+    //     if (!existingTopic) {
+    //         throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
+    //     }
+    //     const amountGradedByActor = existingTopic.grade?.detailGrades?.length || 0
+    //     if (amountGradedByActor === 3) {
+    //         throw new BadRequestException('Đã đủ số lượng điểm chi tiết, không thể thêm nữa.')
+    //     }
+    //     if (existingTopic.grade?.detailGrades?.some((grade) => grade.actorId === actorId)) {
+    //         throw new BadRequestException('Người dùng đã chấm điểm cho đề tài này rồi.')
+    //     }
+    //     try {
+    //         const result = await this.topicRepository.findOneAndUpdate(
+    //             { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+    //             [
+    //                 {
+    //                     $set: {
+    //                         'grade.detailGrades': {
+    //                             $concatArrays: [{ $ifNull: ['$grade.detailGrades', []] }, [newDetailGrade]]
+    //                         }
+    //                     }
+    //                 },
+    //                 {
+    //                     $set: {
+    //                         'grade.averageScore': {
+    //                             $avg: '$grade.detailGrades.score'
+    //                         }
+    //                     }
+    //                 }
+    //             ],
+    //             { new: true }
+    //         )
+    //         if (result) {
+    //             console.log(result.grade)
+    //             console.log('Thêm điểm và cập nhật điểm trung bình thành công!')
+    //             const count = result.grade.detailGrades.length
+    //             return count
+    //         }
+
+    //         return amountGradedByActor
+    //     } catch (error) {
+    //         throw new RequestTimeoutException('Lỗi khi thêm điểm cho đề tài')
+    //     }
+    // }
     async getCurrentStatusTopic(topicId: string): Promise<string> {
         const topic = await this.topicRepository.findById(topicId).lean()
         if (!topic) throw new BadRequestException('Không tìm thấy topic hoặc đã bị xóa')
@@ -880,7 +886,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 grade: 1,
                 isEditable: 1,
                 allowManualApproval: 1,
-                periodInfo: 1
+                periodInfo: 1,
+                defenseResults: 1,
+                studentRef: 1,
+                stats: 1,
+                defenseResult: 1
             }
         })
 
@@ -1018,14 +1028,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: new mongoose.Types.ObjectId(periodId)
             }
         })
-        const res = await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
-        console.log('res', res)
-        return res
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
     async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
+        const { lecturerIds, fieldIds, majorIds, year } = query
+        console.log('query', query)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
         pipelineSub.push({
             $project: {
                 titleEng: 1,
@@ -1045,6 +1056,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 isRegistered: 1,
                 isSaved: 1,
                 major: 1,
+                studentsRegistered: 1,
                 lecturers: 1,
                 lecturerIds: {
                     $map: {
@@ -1066,7 +1078,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
                 //Không thì thôi vì phải plainToInstance
                 submittedAt: '$submittedPhaseHistory.createdAt',
-                periodInfo: 1
+                periodInfo: 1,
+                //lấy năm báo cáo
+                year: { $year: '$defenseResult.defenseDate' },
+                stats: 1,
+                defenseDate: '$defenseResult.defenseDate',
+                defenseResult: 1
             }
         })
         //Phân trang phụ
@@ -1101,28 +1118,111 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                       }
                                   }
                                 : {})
-                        },
-                        ...{
-                            ...(query.majorIds
-                                ? {
-                                      'major._id': {
-                                          $in: query.majorIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
                         }
                     }
                 })
             }
         }
-        //   if (query.rulesPagination === 0)
+        //Nếu là lọc theo năm bảo vệ
+        if (year) {
+            pipelineSub.push({
+                $match: {
+                    year: Number(year)
+                }
+            })
+        }
+
+        //Lọc theo chuyên ngành
+        if (majorIds) {
+            if (Array.isArray(majorIds)) {
+                if (majorIds.length > 0)
+                    pipelineSub.push({
+                        $match: {
+                            'major._id': {
+                                $in: majorIds.map((id) => new mongoose.Types.ObjectId(id))
+                            }
+                        }
+                    })
+            } else
+                pipelineSub.push({
+                    $match: {
+                        'major._id': {
+                            $eq: new mongoose.Types.ObjectId(majorIds)
+                        }
+                    }
+                })
+        }
+
+        //if (query.rulesPagination === 0)
         pipelineSub.push({
             $match: {
                 currentStatus: TopicStatus.Archived,
                 deleted_at: null
             }
         })
+        console.log('pipelineSub', pipelineSub)
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+
+    private buildStudentPipeline(status: StudentRegistrationStatus) {
+        return [
+            {
+                $addFields: {
+                    studentRef: {
+                        $map: {
+                            input: '$studentRef',
+                            as: 'studentReg',
+                            in: {
+                                $cond: [{ $eq: ['$$studentReg.status', status] }, '$$studentReg', null]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'studentRef.userId',
+                    foreignField: '_id',
+                    as: 'userInfos'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'students',
+                    localField: 'studentRef.userId',
+                    foreignField: 'userId',
+                    as: 'studentInfos'
+                }
+            },
+            {
+                $addFields: {
+                    studentsRegistered: {
+                        $map: {
+                            input: '$userInfos',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$studentInfos',
+                                                    as: 'stuInfo',
+                                                    cond: { $eq: ['$$stuInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
+                                    '$$userInfo'
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        ]
     }
     async getRegisteringTopics(
         periodId: string,
@@ -3125,5 +3225,81 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             throw new BadRequestException('Không thể sao chép đề tài')
         }
         return res._id.toString()
+    }
+    async getMajorsOfTopicInLibrary() {
+        // : Promise<GetMiniMiniMajorDto[]>
+        let pipelineSub: any[] = []
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'majors',
+                    localField: 'majorId',
+                    foreignField: '_id',
+                    as: 'majorsInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$majorsInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'majorsInfo.facultyId',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$facultyInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+        //lọc các topic có trạng thái là status
+        pipelineSub.push({
+            $match: {
+                currentStatus: TopicStatus.Archived,
+                deleted_at: null
+            }
+        })
+        //group
+        pipelineSub.push({
+            $group: {
+                _id: '$majorId',
+                name: { $first: '$majorsInfo.name' },
+                facultyName: { $first: '$facultyInfo.name' },
+                count: { $sum: 1 }
+            }
+        })
+        const results = await this.topicRepository.aggregate(pipelineSub)
+        return results
+    }
+    async getYearsOfTopicInLibrary(): Promise<string[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push({
+            $match: {
+                currentStatus: TopicStatus.Archived,
+                deleted_at: null
+            }
+        })
+        pipelineSub.push({
+            $addFields: {
+                year: { $year: '$defenseResult.defenseDate' }
+            }
+        })
+        pipelineSub.push({
+            $group: {
+                _id: '$year'
+            }
+        })
+        pipelineSub.push({
+            $sort: { _id: 1 }
+        })
+        const res = await this.topicRepository.aggregate(pipelineSub)
+        return res.map((item) => item._id).filter((year) => year != null)
     }
 }

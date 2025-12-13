@@ -28,6 +28,7 @@ import { GetMiniTopicInfoProvider } from '../providers/get-mini-topic-info.provi
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-by-userId.provider'
 import { UserRole } from '../../../auth/enum/user-role.enum'
+import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -369,5 +370,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const newTopicId = await this.topicRepository.copyToDraft(topicId, actorId)
         //tạo đăng ký cho giảng viên
         await this.lecturerRegTopicService.createSingleRegistration(actorId, newTopicId)
+    }
+    public async getMajorsOfTopicInLibrary() {
+        return await this.topicRepository.getMajorsOfTopicInLibrary()
+    }
+    public async getYearsOfTopicInLibrary() {
+        return await this.topicRepository.getYearsOfTopicInLibrary()
     }
 }

@@ -24,7 +24,7 @@ import {
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
     PaginatedSubmittedTopics,
-    PatchTopicDto,
+    PatchTopicDto
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
 import { Roles } from '../../auth/decorator/roles.decorator'
@@ -35,6 +35,7 @@ import { FilesInterceptor } from '@nestjs/platform-express'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { RejectTopicDto } from './dtos/action-with-topic.dtos'
 import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
+import { GetMajorLibraryCombox, GetMiniMiniMajorDto } from '../majors/dtos/get-major.dto'
 
 @Controller('topics')
 export class TopicController {
@@ -411,5 +412,19 @@ export class TopicController {
     async copyToDraft(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         const newTopicId = await this.topicService.copyToDraft(topicId, req.user.sub)
         return { message: 'Sao chép đề tài thành công', newTopicId }
+    }
+
+    @Get('/library/majors-combobox')
+    async getComnboboxMajorsInLibrary() {
+        const res = await this.topicService.getMajorsOfTopicInLibrary()
+        return plainToInstance(GetMajorLibraryCombox, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/library/years-combobox')
+    async getComboboxYearsInLibrary() {
+        return await this.topicService.getYearsOfTopicInLibrary()
     }
 }
