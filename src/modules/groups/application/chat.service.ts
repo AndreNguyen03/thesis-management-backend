@@ -102,14 +102,14 @@ export class ChatService {
         }
 
         const query: any = {
-            conversationId: groupId
+            groupId: groupId
         }
 
         if (before) {
             query.createdAt = { $lt: before }
         }
 
-        return this.messageModel
+        const messages = await this.messageModel
             .find(query)
             .sort({ createdAt: -1 })
             .limit(limit)
@@ -118,6 +118,26 @@ export class ChatService {
                 select: '_id fullName avatarUrl'
             })
             .lean()
+
+        return messages
+    }
+
+    // ===================== SEARCH MESSAGES =====================
+    async searchGroupMessages(params: { groupId: string; userId: string; keyword: string; limit?: number }) {
+        const { groupId, userId, keyword, limit = 20 } = params
+        const isMember = await this.isUserInGroup(groupId, userId)
+        if (!isMember) throw new ForbiddenException('User is not in this group')
+
+        const regex = new RegExp(keyword, 'i') // case-insensitive
+
+        const messages = await this.messageModel
+            .find({ groupId, content: { $regex: regex } })
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .populate({ path: 'senderId', select: '_id fullName avatarUrl' })
+            .lean()
+
+        return messages
     }
 
     // ===============================
@@ -138,5 +158,9 @@ export class ChatService {
             { $set: { [`lastSeenAtByUser.${userId}`]: seenAt } },
             { new: true }
         )
+    }
+
+    async resetUnreadCount(groupId: string, userId: string) {
+        return this.groupModel.findByIdAndUpdate(groupId, { $set: { [`unreadCounts.${userId}`]: 0 } }, { new: true })
     }
 }

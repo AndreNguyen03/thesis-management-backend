@@ -285,6 +285,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             // 1️⃣ Cập nhật lastSeenAtByUser trong DB
             await this.chatService.updateGroupLastSeen(groupId, userId, seenAt)
 
+            await this.chatService.resetUnreadCount(groupId, userId)
+
             // 3️⃣ Emit đến tất cả member khác trong group
             client.to(`group:${groupId}`).emit('group_message_seen', {
                 groupId,
