@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req } from '@nestjs/common'
+import { Controller, Get, Param, Query, Req } from '@nestjs/common'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { GroupsService } from './application/groups.service'
@@ -21,7 +21,8 @@ export class GroupsController {
     }
 
     @Get('/detail/:id')
-    async getGroupDetail(@Req() req: { user: ActiveUserData }) {
-        return await this.groupsService.getGroupDetail(req.user.sub)
+    async getGroupDetail(@Param('id') id: string) {
+        console.log('group detail id', id)
+        return await this.groupsService.getGroupDetail(id)
     }
 }

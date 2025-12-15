@@ -1,6 +1,6 @@
 // schemas/message.schema.ts
 
-import { Prop, Schema } from '@nestjs/mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { User } from '../../../users/schemas/users.schema'
 import { Group } from './groups.schemas'
@@ -9,17 +9,30 @@ import { Group } from './groups.schemas'
 @Schema({ timestamps: true, collection: 'messages' })
 export class Message {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Group.name, required: true, index: true })
-    conversationId: string
+    groupId: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     senderId: string
+
     @Prop({ required: true })
     content: string
 
-    @Prop({ type: [String], default: [] }) // Lưu URL ảnh/file
+    @Prop({ enum: ['text', 'file', 'image'], default: 'text' }) // Thêm
+    type: string
+
+    @Prop({ type: [String], default: [] })
     attachments: string[]
 
-    // Có thể thêm field này để biết ai đã seen cụ thể tin nhắn này (nếu cần chi tiết)
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }] })
-    seenBy: string[]
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Message', default: null }) // Thêm cho reply
+    replyTo?: string
+
+
+    @Prop({ default: false }) // Thêm
+    isEdited: boolean
+
+    createdAt: Date
+    updatedAt: Date
 }
+
+export const MessageSchema = SchemaFactory.createForClass(Message)
+// Index tối ưu cho việc sort conversation theo tin nhắn mới nhất

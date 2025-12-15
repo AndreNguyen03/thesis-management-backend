@@ -171,7 +171,6 @@ export class ResponseStudentProfileDto {
     phone?: string
     avatarUrl?: string
     facultyId: string
-    bio?: string
     facultyName: string
     role: string
     isActive: boolean
