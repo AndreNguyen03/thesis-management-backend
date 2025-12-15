@@ -65,23 +65,19 @@ export class UserController {
     @Get('profile')
     async getMyProfile(@Req() req) {
         const { sub: id, role } = req.user
-        //console.log('role :::', role)
         return this.getUserByRoleAndId(role, id)
     }
 
     private async getUserByRoleAndId(role: string, id: string) {
-        console.log('Getting user with role:', role, 'and id:', id)
         let user
         switch (role) {
             case 'student':
                 user = await this.studentService.getById(id)
                 if (!user) return null
                 user = this.studentService.toResponseStudentProfile(user)
-                console.log('user student :::', user)
                 return user
             case 'lecturer':
                 user = await this.lecturerService.getById(id)
-                //console.log('user lecturer :::', user)
                 return user ? this.lecturerService.toResponseLecturerProfile(user) : null
             case 'admin':
                 user = await this.adminService.getById(id)
@@ -108,7 +104,6 @@ export class UserController {
 
     @Patch('lecturers/profile/:id')
     async updateLecturerProfile(@Param('id') id: string, @Body() dto: UpdateLecturerProfileDto) {
-        console.log('dto :::', dto)
         const updated = await this.lecturerService.updateLecturerProfile(id, dto)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
@@ -116,9 +111,7 @@ export class UserController {
     // lecturer endpoint
     @Patch('lecturers/:id')
     async updateLecturerAdmin(@Param('id') id: string, @Body() dto: UpdateLecturerTableDto) {
-        console.log('dto :::', dto)
         const updated = await this.lecturerService.updateLecturerAdmin(id, dto)
-        console.log('updated ::', updated)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }
 
@@ -166,7 +159,6 @@ export class UserController {
 
     @Patch('students/profile/:id')
     async updateStudentProfile(@Param('id') id: string, @Body() dto: UpdateStudentProfileDto) {
-        console.log('dto :::', dto)
         const updated = await this.studentService.updateStudentProfile(id, dto)
         return updated ? { message: 'Cập nhật thành công' } : { message: 'Cập nhật thất bại' }
     }

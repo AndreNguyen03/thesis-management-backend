@@ -22,4 +22,18 @@ export class OnlineUserService {
         return (await this.redis.smembers(`online:${userId}`)) || []
     }
 
+    // Lấy tất cả userIds online (scan keys online:*, check scard > 0)
+    async getAllOnlineUsers(): Promise<string[]> {
+        const keys = await this.redis.keys('online:*') // Lấy all keys online:*
+        if (keys.length === 0) return []
+
+        const onlinePromises = keys.map(async (key: string) => {
+            const userId = key.replace('online:', '') // Extract userId
+            const count = await this.redis.scard(key)
+            return count > 0 ? userId : null
+        })
+
+        const results = await Promise.all(onlinePromises)
+        return results.filter((id): id is string => id !== null) // Filter null
+    }
 }
