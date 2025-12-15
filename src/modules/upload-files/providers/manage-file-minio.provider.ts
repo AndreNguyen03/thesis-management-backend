@@ -60,8 +60,7 @@ export class ManageMinioProvider {
     }
 
     // createZipStream
-    async createZipStream( body: DownloadFileDto, res: Response,topicName: string = 'files',): Promise<void> {
-        const { fileNames } = body
+    async createZipStream(fileNames: string[], res: Response, topicName: string = 'Tai-lieu'): Promise<void> {
         const archive = archiver('zip', { zlib: { level: 9 } })
         const zipFileName = `${topicName}-${new Date().getTime()}.zip`
         res.setHeader('Content-Type', 'application/zip')

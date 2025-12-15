@@ -25,7 +25,7 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
         if (!group) {
             throw new NotFoundException('Không tìm thấy group')
         }
-      
+
         return group
     }
     async getGroupsOfUser(userId: string, query: PaginationQueryDto): Promise<Paginated<Group>> {
@@ -37,4 +37,5 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
         })
         return await this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
     }
+   
 }

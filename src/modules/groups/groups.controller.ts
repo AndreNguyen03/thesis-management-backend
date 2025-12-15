@@ -1,5 +1,4 @@
 import { Controller, Get, Query, Req } from '@nestjs/common'
-import { Auth } from '../../auth/decorator/auth.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { GroupsService } from './application/groups.service'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'

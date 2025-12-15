@@ -271,7 +271,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 const updatedPhase = {
                     ...phases[phaseIndex],
                     ...updatePhaseDto
-                }
+                }   
                 const newPhases = [...phases.slice(0, phaseIndex), updatedPhase, ...phases.slice(phaseIndex + 1)]
                 const newPeriod = { ...period, phases: newPhases }
                 this.update(periodId, newPeriod)

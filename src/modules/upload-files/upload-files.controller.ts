@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Patch, Query, Res, UseGuards } from '@nestjs/common'
+import { BadRequestException, Body, Controller, Get, Param, Patch, Query, Res, UseGuards } from '@nestjs/common'
 import { UploadFilesService } from './application/upload-files.service'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { Auth } from '../../auth/decorator/auth.decorator'
@@ -30,7 +30,7 @@ export class UploadFilesController {
     @Get('download-zip')
     @Auth(AuthType.Bearer)
     async downloadZip(@Res() res: Response, @Body() body: DownloadFileDto) {
-        return this.downLoadFileProvider.downloadZip(body, res)
+        return this.downLoadFileProvider.downloadZip(body.fileNames, res)
     }
 
     @Patch('rename-many-files')
@@ -43,4 +43,6 @@ export class UploadFilesController {
             message: `Đổi tên file thành công`
         }
     }
+    @Get('/group/:groupId/files')
+    async getFilesOfGroup(@Param('groupId') groupId: string) {}
 }

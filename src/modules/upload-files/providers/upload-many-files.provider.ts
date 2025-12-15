@@ -36,11 +36,15 @@ export class UploadManyFilesProvider {
         if (file.size > 100 * 1024 * 1024) {
             throw new BadRequestException('Kích thước file vượt quá giới hạn cho phép (100MB)')
         }
+        // Fix encoding cho filename tiếng Việt
+        const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
         //upload file to minio storage
         const fileName = await this.manageMinioProvider.uploadFileToMinio(file)
+        
         //store file information to database
         const fileData: UploadFileDto = {
-            fileNameBase: file.originalname,
+            fileNameBase: originalName,
             fileUrl: fileName,
             mimeType: file.mimetype,
             fileType: type,
@@ -50,7 +54,11 @@ export class UploadManyFilesProvider {
         const newTopic = await this.manageFileInDatabaseProvider.storeFileData(fileData)
         return newTopic._id.toString()
     }
-    async uploadManyFiles(userId: string, files: Express.Multer.File[], type: string = UploadFileTypes.DOCUMENT): Promise<string[]> {
+    async uploadManyFiles(
+        userId: string,
+        files: Express.Multer.File[],
+        type: string = UploadFileTypes.DOCUMENT
+    ): Promise<string[]> {
         //kiểm tra dung lượng của tất cả các file được upload
         const totalSize = files.reduce((acc, file) => acc + file.size, 0)
         if (totalSize > 1024 * 1024 * 1024) {

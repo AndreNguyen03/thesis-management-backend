@@ -42,6 +42,7 @@ import { title } from 'process'
 import { GetMiniMiniMajorDto } from '../../../majors/dtos/get-major.dto'
 import { pipeline } from 'stream'
 import { IsArray } from 'class-validator'
+import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -3042,7 +3043,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             .findByIdAndUpdate(topicId, { createBy: userId, $pull: { requirementIds: requirementId } }, { new: true })
             .lean()
     }
-    async storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<number> {
+    async storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<GetUploadedFileDto[]> {
         try {
             const res = await this.topicRepository
                 .findByIdAndUpdate(
@@ -3053,7 +3054,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     { new: true }
                 )
                 .lean()
-            return res?.fileIds.length || 0
+            return await this.getDocumentsOfTopic(topicId)
         } catch (error) {
             throw new BadRequestException('Lỗi tải file lên đề tài')
         }
@@ -3301,5 +3302,100 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         const res = await this.topicRepository.aggregate(pipelineSub)
         return res.map((item) => item._id).filter((year) => year != null)
+    }
+    async getDocumentsOfTopic(topicId: string): Promise<GetUploadedFileDto[]> {
+        const res = await this.topicRepository.aggregate([
+            {
+                $lookup: {
+                    from: 'files',
+                    localField: 'fileIds',
+                    foreignField: '_id',
+                    as: 'filesInfo'
+                }
+            },
+
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'filesInfo.actorId',
+                    foreignField: '_id',
+                    as: 'actorInfo'
+                }
+            },
+            {
+                $addFields: {
+                    filesInfo: {
+                        $map: {
+                            input: '$filesInfo',
+                            as: 'file',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        actor: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: '$actorInfo',
+                                                        as: 'actor',
+                                                        cond: { $eq: ['$$actor._id', '$$file.actorId'] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    },
+                                    '$$file',
+                                    {
+                                        type: {
+                                            $cond: [
+                                                {
+                                                    $regexMatch: { input: '$$file.mimeType', regex: '^application/pdf' }
+                                                },
+                                                'pdf',
+                                                {
+                                                    $cond: [
+                                                        {
+                                                            $regexMatch: {
+                                                                input: '$$file.mimeType',
+                                                                regex: 'word|document'
+                                                            }
+                                                        },
+                                                        'doc',
+                                                        {
+                                                            $cond: [
+                                                                {
+                                                                    $regexMatch: {
+                                                                        input: '$$file.mimeType',
+                                                                        regex: '^image/'
+                                                                    }
+                                                                },
+                                                                'image',
+                                                                'other'
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    filesInfo: 1
+                }
+            },
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(topicId),
+                    deleted_at: null
+                }
+            }
+        ])
+        return res[0].filesInfo
     }
 }
