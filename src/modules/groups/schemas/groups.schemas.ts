@@ -38,6 +38,13 @@ export class Group extends BaseEntity {
     // Key: UserId, Value: Số tin chưa đọc
     @Prop({ type: Map, of: Number, default: {} })
     unreadCounts: Map<string, number>
+
+    @Prop({
+        type: Map,
+        of: Date,
+        default: {}
+    })
+    lastSeenAtByUser: Map<string, Date>
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group)
