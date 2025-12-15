@@ -41,4 +41,5 @@ export class MajorsController {
             enableImplicitConversion: true
         })
     }
+
 }

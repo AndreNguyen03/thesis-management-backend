@@ -1,6 +1,5 @@
 import { Expose, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
-import { Types } from 'mongoose'
 
 class LastMessage {
     @Expose()
@@ -9,13 +8,20 @@ class LastMessage {
     senderId: string
     @Expose()
     createdAt: Date
+    @Expose()
+    fullName: string
 }
 export class GetGroupsDto {
     @Expose()
+    _id: string
+    @Expose()
     topicId: string
+    @Expose()
+    titleVN: string
     @Expose()
     type: string
     @Expose()
+    @Type(() => String)
     participants: string[]
     @Expose()
     @Type(() => LastMessage)
@@ -23,6 +29,10 @@ export class GetGroupsDto {
     @Expose()
     @Type(() => Map<string, Number>)
     unreadCounts: Map<string, number>
+    @Expose()
+    createdAt: string
+    @Expose()
+    updatedAt: string
 }
 
 export class RequestPaginatedGroups extends GetPaginatedObjectDto {

@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString, Min } from 'class-validator'
+import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString, Min } from 'class-validator'
 
 import { Type } from 'class-transformer'
 
@@ -14,9 +14,9 @@ export class PaginationQueryDto {
     page?: number = 1
 
     @IsOptional()
-    @IsString()
+    @IsString({ each: true })
     //Tìm kiếm với trường nào
-    search_by?: string
+    search_by?: string[]
 
     @IsOptional()
     @IsString()
@@ -34,7 +34,7 @@ export class PaginationQueryDto {
     //Lọc với giá trị của trường "filert_by"
     //lọc đơn
     //Nội dung
-    filter?: string
+    filter?: string[]
 
     @IsOptional()
     @IsString()

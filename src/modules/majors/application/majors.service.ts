@@ -28,4 +28,5 @@ export class MajorsService extends BaseServiceAbstract<Major> {
     async getMajorsByFacultyId(facultyId: string, query: PaginationQueryDto): Promise<Paginated<Major>> {
         return await this.majorRepositoryInterface.getMajorsByFacultyId(facultyId, query)
     }
+
 }

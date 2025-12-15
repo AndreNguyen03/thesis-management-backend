@@ -1,15 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { IGroupRepository } from '../groups.repository.interface'
-import mongoose, { Model, Types } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { Group } from '../../schemas/groups.schemas'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
-import { Not } from 'typeorm'
-import { NotFoundError } from 'rxjs'
-import { Topic } from '../../../topics/schemas/topic.schemas'
+import { NotFoundException } from '@nestjs/common'
 
 export class GroupRepository extends BaseRepositoryAbstract<Group> implements IGroupRepository {
     constructor(
@@ -33,7 +30,6 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
             throw new NotFoundException('Không tìm thấy group')
         }
 
-
         return group
     }
     async getGroupsOfUser(userId: string, query: PaginationQueryDto): Promise<Paginated<Group>> {
@@ -56,7 +52,7 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
             {
                 $addFields: {
                     // Chuyển array thành object (vì lookup trả array)
-                    topic: { $arrayElemAt: ['$topic', 0] }
+                    topics: { $arrayElemAt: ['$topic', 0] }
                 }
             },
             // Thêm stage $lookup riêng cho sender (nested lookup đúng cách)
@@ -84,21 +80,28 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                         $cond: {
                             if: { $gt: [{ $size: '$senderInfo' }, 0] },
                             then: {
-                                $mergeObjects: [
-                                    '$lastMessage',
-                                    {
-                                        sender: { $arrayElemAt: ['$senderInfo', 0] }
-                                    }
-                                ]
+                                $mergeObjects: ['$lastMessage', { $arrayElemAt: ['$senderInfo', 0] }]
                             },
                             else: '$lastMessage'
                         }
                     }
                 }
             },
-            // Xóa field tạm senderInfo để clean response
             {
-                $unset: 'senderInfo'
+                $project: {
+                    _id: 1,
+                    topicId: 1,
+                    titleVN: '$topics.titleVN',
+                    topicType: '$topics.type',
+                    type: 1,
+                    participants: 1,
+                    lastMessage: 1,
+                    seenBy: 1,
+                    unreadCounts: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    lastSeenAtByUser: 1
+                }
             }
         )
         return await this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)

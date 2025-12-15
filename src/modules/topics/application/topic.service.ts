@@ -28,6 +28,8 @@ import { GetMiniTopicInfoProvider } from '../providers/get-mini-topic-info.provi
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-by-userId.provider'
 import { UserRole } from '../../../auth/enum/user-role.enum'
+import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
+import { Response } from 'express'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -49,6 +51,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly notificationPublisherService: NotificationPublisherService,
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
         private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider,
+        private readonly downLoadFileProvider: DownLoadFileProvider
     ) {
         super(topicRepository)
     }
@@ -317,11 +320,35 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
     //service tải file lên đề tài
     public async uploadManyFiles(userId: string, topicId: string, files: Express.Multer.File[]) {
-        if (files.length > 20) {
-            throw new BadRequestException('Số lượng file tải lên một lần vượt quá giới hạn cho phép (20 file)')
+        // Validate file types
+        const allowedMimeTypes = [
+            'application/pdf', // PDF
+            'application/msword', // DOC
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+            'image/png', // PNG
+            'image/jpeg', // JPG/JPEG
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation' // PPTX
+        ]
+
+        for (const file of files) {
+            if (!allowedMimeTypes.includes(file.mimetype)) {
+                throw new BadRequestException(
+                    `File "${file.originalname}" không hỗ trợ. Chỉ chấp nhận: PDF, DOC, DOCX, PNG, JPG, XLSX, PPTX`
+                )
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                throw new BadRequestException(`File "${file.originalname}" vượt quá giới hạn 20MB`)
+            }
         }
+
+        const totalSize = files.reduce((acc, file) => acc + file.size, 0)
+        if (totalSize > 50 * 1024 * 1024) {
+            throw new BadRequestException('Tổng dung lượng file tải lên vượt quá giới hạn cho phép (50MB)')
+        }
+
         const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
-        return this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
+        return await this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
     }
     public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {
         let neededDeleteFileIds: string[] = []
@@ -369,5 +396,25 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const newTopicId = await this.topicRepository.copyToDraft(topicId, actorId)
         //tạo đăng ký cho giảng viên
         await this.lecturerRegTopicService.createSingleRegistration(actorId, newTopicId)
+    }
+    public async getMajorsOfTopicInLibrary() {
+        return await this.topicRepository.getMajorsOfTopicInLibrary()
+    }
+    public async getYearsOfTopicInLibrary() {
+        return await this.topicRepository.getYearsOfTopicInLibrary()
+    }
+    public async getDocumentsOfTopic(topicId: string) {
+        return await this.topicRepository.getDocumentsOfTopic(topicId)
+    }
+    public async downloadZip(topicId: string, res: Response): Promise<void> {
+        const topic = await this.topicRepository.findOneByCondition({
+            _id: new mongoose.Types.ObjectId(topicId),
+            deleted_at: null
+        })
+        if (!topic) {
+            throw new NotFoundException('Đề tài không tồn tại.')
+        }
+        const documentNames = (await this.topicRepository.getDocumentsOfTopic(topicId)).map((doc) => doc.fileUrl)
+        return this.downLoadFileProvider.downloadZip(documentNames, res)
     }
 }

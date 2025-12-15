@@ -1,8 +1,9 @@
 // schemas/conversation.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose'
+import mongoose, { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { User } from '../../../users/schemas/users.schema'
+import { File } from '../../upload-files/schemas/upload-files.schemas'
 
 export type GroupDocument = HydratedDocument<Group>
 

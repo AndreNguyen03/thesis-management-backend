@@ -1,6 +1,7 @@
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { GetMiniMiniMajorDto } from '../dtos/get-major.dto'
 import { Major } from '../schemas/majors.schemas'
 
 export interface IMajorRepository extends BaseRepositoryInterface<Major> {

@@ -4,7 +4,7 @@ import { File } from '../schemas/upload-files.schemas'
 import { IFileRepository } from '../repository/file.repository.interface'
 import { UploadFileDto } from '../dtos/upload-file.dtos'
 import { ManageMinioProvider } from './manage-file-minio.provider'
-
+import * as path from 'path'
 @Injectable()
 export class ManageFileInDatabaseProvider extends BaseServiceAbstract<File> {
     constructor(@Inject('IFileRepository') private fileRepositoryInterface: IFileRepository) {
@@ -12,6 +12,25 @@ export class ManageFileInDatabaseProvider extends BaseServiceAbstract<File> {
     }
     async storeFileData(fileData: UploadFileDto): Promise<File> {
         try {
+            let flag = false
+            let index = 0
+            let finalName = fileData.fileNameBase
+            let name = fileData.fileNameBase.split('.')[0]
+            let extension = path.extname(fileData.fileNameBase)
+            while (!flag) {
+                const existingFile = await this.fileRepositoryInterface.findByCondition({
+                    fileNameBase: finalName,
+                    mimeType: fileData.mimeType,
+                    deleted_at: null
+                })
+                if (existingFile && existingFile.length > 0) {
+                    name = `${name} (${++index})`
+                    finalName = `${name}${extension}`
+                    continue
+                }
+                flag = true
+            }
+            fileData.fileNameBase = finalName
             const fileRecord = await this.fileRepositoryInterface.create(fileData)
             return fileRecord
         } catch (error) {

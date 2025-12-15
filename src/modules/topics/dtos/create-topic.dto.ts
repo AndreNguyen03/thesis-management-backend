@@ -3,7 +3,7 @@ import { TopicStatus } from '../enum/topic-status.enum'
 import { IsOptional, IsNumber, IsDate, IsArray, IsEnum } from 'class-validator'
 import { TopicType } from '../enum/topic-type.enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
-import { Grade, PhaseHistory } from '../schemas/topic.schemas'
+import { PhaseHistory } from '../schemas/topic.schemas'
 export class CreateTopicDto {
     @IsNotEmpty()
     @IsString()
@@ -61,9 +61,6 @@ export class CreateTopicDto {
 
     @IsOptional()
     phaseHistories: PhaseHistory[]
-
-    @IsOptional()
-    grade: Grade[]
 
     @IsOptional()
     @IsBoolean()

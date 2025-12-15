@@ -6,7 +6,7 @@ import { DownloadFileDto } from '../dtos/download-file.dtos'
 @Injectable()
 export class DownLoadFileProvider {
     constructor(private readonly manageMinioProvider: ManageMinioProvider) {}
-    async downloadZip(body: DownloadFileDto, res: Response) {
-        await this.manageMinioProvider.createZipStream(body, res)
+    async downloadZip(fileNames: string[], res: Response) {
+        await this.manageMinioProvider.createZipStream(fileNames, res)
     }
 }

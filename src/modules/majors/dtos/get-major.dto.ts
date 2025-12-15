@@ -21,3 +21,14 @@ export class PaginatedMajorsDto extends GetPaginatedObjectDto {
     @Type(() => GetMiniMiniMajorDto)
     data: GetMiniMiniMajorDto[]
 }
+
+export class GetMajorLibraryCombox {
+    @Expose()
+    _id: string
+    @Expose()
+    name: string
+    @Expose()
+    facultyName: string
+    @Expose()
+    count:number
+}

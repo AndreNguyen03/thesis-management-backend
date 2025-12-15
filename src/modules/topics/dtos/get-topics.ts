@@ -8,11 +8,12 @@ import { RelatedStudentInTopic, ResponseMiniStudentDto } from '../../../users/dt
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 import { GetMiniPeriodDto } from '../../periods/dtos/period.dtos'
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import { GetMiniUserDto } from '../../../users/dtos/user.dto'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PeriodType } from '../../periods/enums/periods.enum'
+import { RegistrationDto } from './registration/get-students-in-topic'
 export class GetDetailGrade {
     @Expose()
     _id: string
@@ -118,6 +119,94 @@ export class GetGeneralTopics extends AbstractTopic {
     @Type(() => GetMiniPeriodDto)
     periodInfo: GetMiniPeriodDto
     //file đính kèm
+}
+
+class TopicStatsDto {
+    @Expose()
+    views: number // Số lượt xem
+    @Expose()
+    downloads: number // Số lượt tải
+    @Expose()
+    averageRating: number // Điểm đánh giá trung bình (4.5)
+    @Expose()
+    reviewCount: number // Tổng số đánh giá (12)
+}
+class FileSnapshotDto {
+    @Expose()
+    fileId: string // Reference gốc để quản lý xóa/sửa
+    @Expose()
+    fileName: string // VD: "Bao_cao_final_v2.pdf"
+    @Expose()
+    fileUrl: string // URL từ S3/MinIO/Local để download trực tiếp
+    @Expose()
+    size: number
+}
+
+class FinalProduct {
+    @Expose()
+    @Type(() => FileSnapshotDto)
+    thesisReport: FileSnapshotDto
+    @Expose()
+    sourceCodeUrl: string
+    @Expose()
+    @Type(() => FileSnapshotDto)
+    sourceCodeZip: [FileSnapshotDto]
+}
+//thành viên trong hội đồng
+class CouncilMemberSnapshot {
+    @Expose()
+    fullName: string
+    @Expose()
+    role: string // "Chủ tịch", "Thư ký"...
+    @Expose()
+    score: number
+    @Expose()
+    note: string
+}
+
+class DefenseResult {
+    @Expose()
+    defenseDate: Date // Dùng để lọc theo "Năm bảo vệ"
+    @Expose()
+    periodName: string // Lưu tên đợt: "HK1 23-24" (để hiển thị nhanh)
+    @Expose()
+    finalScore: number // Điểm số: 9.5
+    @Expose()
+    gradeText: string // Xếp loại: "Xuất sắc"
+    @Expose()
+    councilMembers: CouncilMemberSnapshot[]
+    @Expose()
+    councilName: string // VD: "Hội đồng CNPM 01"
+}
+//Định nghĩa đề tài nằm trong thư viện số
+export class TopicsInLibrary extends AbstractTopic {
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    createByInfo: ResponseMiniLecturerDto
+    @Expose()
+    @Type(() => GetMiniPeriodDto)
+    periodInfo: GetMiniPeriodDto
+    @Expose()
+    @Type(() => TopicStatsDto)
+    stats: TopicStatsDto
+    @Expose()
+    year: string
+    @Expose()
+    @Type(() => FinalProduct)
+    finalProduct: FinalProduct
+    @Expose()
+    @Type(() => ResponseMiniStudentDto)
+    studentsRegistered: ResponseMiniStudentDto[]
+
+    //kết quả bảo vệ
+    @Expose()
+    defenseResult: DefenseResult
+}
+//Phân trang lấy các đề tài nằm trong thư viện số
+export class PaginatedTopicsInLibrary extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => TopicsInLibrary)
+    data: TopicsInLibrary[]
 }
 export class PaginatedGeneralTopics extends GetPaginatedObjectDto {
     @Expose()
@@ -332,7 +421,10 @@ export class RequestGetTopicsInAdvanceSearch {
     @IsOptional()
     queryStatus?: string[]
     @IsOptional()
-    majorIds?: string[]
+    majorIds?: string[] | string
+    @IsOptional()
+    @IsString()
+    year?: string
 }
 
 export class RequestGetTopicsInAdvanceSearchParams extends IntersectionType(

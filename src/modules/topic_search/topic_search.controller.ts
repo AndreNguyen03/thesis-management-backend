@@ -5,6 +5,7 @@ import { AuthType } from '../../auth/enum/auth-type.enum'
 import { SearchRegisteringTopicsDto, SearchTopicsInLibraryDto } from './dtos/search.dtos'
 import {
     PaginatedGeneralTopics,
+    PaginatedTopicsInLibrary,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPhaseParams
 } from '../topics/dtos'
@@ -71,11 +72,11 @@ export class TopicSearchController {
     @Get('/advance/topics-in-library')
     async searchTopicsInLibrary(@Query() query: RequestGetTopicsInAdvanceSearchParams) {
         let topics
-        console.log('rulesPagination:', query.rulesPagination)
+        // console.log('rulesPagination:', query.rulesPagination)
         //query.search_by = 'titleVN,titleEng'
         if (query.rulesPagination === 100) topics = await this.searchService.semanticSearchLibraryTopic(query)
         else topics = await this.getTopicProvider.getTopicsInLibrary(query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
+        return plainToInstance(PaginatedTopicsInLibrary, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })

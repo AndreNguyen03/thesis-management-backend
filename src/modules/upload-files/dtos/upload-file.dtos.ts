@@ -26,5 +26,23 @@ export class GetUploadedFileDto {
     @Expose()
     actor: ResponseMiniLecturerDto
     @Expose()
-    created_at: Date
+    created_at: string
+}
+export class GetDocumentsDto {
+    @Expose()
+    _id: string
+    @Expose()
+    fileNameBase: string
+    @Expose()
+    fileUrl: string
+    @Expose()
+    type: string
+    @Expose()
+    fileType: string
+    @Expose()
+    size: number
+    @Expose()
+    actor: ResponseMiniLecturerDto
+    @Expose()
+    created_at: string
 }

@@ -1,6 +1,8 @@
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
+import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import {
     CreateTopicDto,
     GetCancelRegisteredTopicResponseDto,
@@ -72,7 +74,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     addRequirementToTopicQuick(topicId: string, fieldId: string, userId: string): Promise<Topic | null>
     removeRequirementFromTopicQuick(topicId: string, requirementId: string, userId: string): Promise<Topic | null>
     //file
-    storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<number>
+    storedFilesIn4ToTopic(topicId: string, fileIds: string[]):Promise<GetUploadedFileDto[]>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
@@ -80,4 +82,8 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
     getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo>
     copyToDraft(topicId: string, actorId: string): Promise<string>
+    getMajorsOfTopicInLibrary()
+    getYearsOfTopicInLibrary():Promise<string[]>
+    //: Promise<GetMiniMiniMajorDto[]>
+    getDocumentsOfTopic(topicId:string): Promise<GetUploadedFileDto[]>
 }

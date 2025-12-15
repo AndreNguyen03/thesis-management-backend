@@ -7,7 +7,6 @@ import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { Major } from '../../majors/schemas/majors.schemas'
 import { User } from '../../../users/schemas/users.schema'
 import { Period } from '../../periods/schemas/period.schemas'
-import { ref } from 'process'
 import { Requirement } from '../../requirements/schemas/requirement.schemas'
 import { File } from '../../upload-files/schemas/upload-files.schemas'
 import { Field } from '../../fields/schemas/fields.schemas'
@@ -17,41 +16,25 @@ import { Field } from '../../fields/schemas/fields.schemas'
         createdAt: 'created_at'
     }
 })
-@Schema({ timestamps: true })
-export class PhaseHistory extends BaseEntity {
-    @Prop({ type: String, enum: PeriodPhaseName, required: true })
-    phaseName: string
-    @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
-    status: string
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
-    actor: string
-    @Prop({ type: String, required: false })
-    note: string
-}
 //Điểm chấm chi tiết
-@Schema({ timestamps: true })
-export class DetailGrade extends BaseEntity {
-    @Prop({ type: Number, required: true })
-    score: number
-    @Prop({ type: String, required: false })
-    note: string
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-    actorId: string
-}
-
-@Schema()
-export class Grade extends BaseEntity {
-    @Prop({ type: Number })
-    averageScore: number
-    @Prop({ type: [DetailGrade], default: [] })
-    detailGrades: DetailGrade[]
-}
+// @Schema({ timestamps: true })
+// export class DetailGrade extends BaseEntity {
+//     @Prop({ type: Number, required: true })
+//     score: number
+//     @Prop({ type: String, required: false })
+//     note: string
+//     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+//     actorId: string
+// }
 
 @Schema({ _id: false })
 class CouncilMemberSnapshot {
     @Prop({ required: true }) fullName: string
     @Prop({ required: true }) role: string // "Chủ tịch", "Thư ký"...
-    @Prop() workUnit: string
+    @Prop({ type: Number, required: false })
+    score: number
+    @Prop({ type: String, required: false })
+    note: string
 }
 
 @Schema({ _id: false })
@@ -83,6 +66,51 @@ class TopicStats {
     @Prop({ default: 0 }) reviewCount: number // Tổng số đánh giá (12)
 }
 
+@Schema({ timestamps: true })
+export class PhaseHistory extends BaseEntity {
+    @Prop({ type: String, enum: PeriodPhaseName, required: true })
+    phaseName: string
+    @Prop({ type: String, enum: TopicStatus, default: TopicStatus.Draft })
+    status: string
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
+    actor: string
+    @Prop({ type: String, required: false })
+    note: string
+}
+@Schema({ _id: false })
+class FileSnapshot {
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: File.name, required: true })
+    fileId: string // Reference gốc để quản lý xóa/sửa
+
+    @Prop({ required: true })
+    fileName: string // VD: "Bao_cao_final_v2.pdf"
+
+    @Prop({ required: true })
+    fileUrl: string // URL từ S3/MinIO/Local để download trực tiếp
+
+    @Prop()
+    size: number // Kích thước file (bytes) - để hiện UI (VD: 5MB)
+
+    // Quyền truy cập tài liệu này
+    @Prop({ type: String, enum: ['PUBLIC', 'INTERNAL', 'PRIVATE'], default: 'INTERNAL' })
+    accessLevel: string
+}
+
+// 2. Định nghĩa Sản phẩm cuối cùng (Artifacts)
+@Schema({ _id: false })
+class FinalProduct {
+    // Tài liệu báo cáo (Khóa luận văn) - Bắt buộc phải có khi lưu kho
+    @Prop({ type: FileSnapshot, required: true })
+    thesisReport: FileSnapshot
+
+    // Source code (Có thể là Link Git hoặc File Zip)
+    @Prop({ type: String })
+    sourceCodeUrl: string // Link GitHub/GitLab (Ưu tiên link repo cho ngành IT)
+
+    @Prop({ type: [FileSnapshot] })
+    sourceCodeZip: [FileSnapshot] // Hoặc file Zip backup nếu trường yêu cầu đóng gói
+}
+
 @Schema({ collection: 'topics', timestamps: true })
 export class Topic extends BaseEntity {
     @Prop({ type: String, required: true })
@@ -106,6 +134,10 @@ export class Topic extends BaseEntity {
     @Prop({ type: [String], default: [] })
     referenceDocs: string[]
 
+    //Sinh viên nộp báo cáo cuois cùng về cho khoa - cuối pha execution
+    @Prop({ type: FinalProduct, default: null })
+    finalProduct: FinalProduct
+
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
     createBy: User
 
@@ -121,11 +153,12 @@ export class Topic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: false, ref: Period.name })
     periodId: Period | string
 
-    @Prop({ type: Grade, default: {}, required: false })
-    grade: Grade
+    // @Prop({ type: DefenseResult, default: {}, required: false })
+    // defenseResult: DefenseResult
     //đề tài liệu có cần được duyệt hay không
     @Prop({ type: Boolean, default: false })
     allowManualApproval: boolean
+
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Requirement.name }], default: [], index: true })
     requirementIds: Requirement[]
 
@@ -135,15 +168,16 @@ export class Topic extends BaseEntity {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Field.name }], default: [], index: true })
     fieldIds: Field[]
 
-    // Chỉ có dữ liệu khi status = 'ARCHIVED'
+    //Chỉ có dữ liệu khi status = 'ARCHIVED'
+    //Hội đồng
     @Prop({ type: DefenseResult, required: false })
     defenseResult: DefenseResult
 
     @Prop({ type: Boolean, default: false, index: true })
     isPublishedToLibrary: boolean
 
-    // === NHÓM Thống kê (Cho Thu) ===
-    @Prop({ type: TopicStats, default: () => ({}) })
+    // === NHÓM Thống kê (Cho Thu viên) ===
+    @Prop({ type: TopicStats, default: { views: 0, downloads: 0, averageRating: 0, reviewCount: 0 } })
     stats: TopicStats
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)

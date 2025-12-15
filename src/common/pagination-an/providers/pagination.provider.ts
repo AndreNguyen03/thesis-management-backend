@@ -6,15 +6,16 @@ import { REQUEST } from '@nestjs/core'
 import { Request } from 'express'
 import * as url from 'url'
 import mongoose, { Model } from 'mongoose'
+import { isObjectId } from '../utils/validate'
 
 @Injectable()
 export class PaginationProvider {
     /**
      * Use Constructor to Inject Request
      * */
-    constructor(
-      //  @Inject(REQUEST) private readonly request: Request
-    ) {}
+    constructor() {
+        //  @Inject(REQUEST) private readonly request: Request
+    }
 
     public async paginateQuery<T extends Record<string, any>>(
         paginationQuery: PaginationQueryDto,
@@ -23,7 +24,7 @@ export class PaginationProvider {
     ): Promise<Paginated<T>> {
         const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate, filter, filter_by } =
             paginationQuery
-            console.log('Pagination Query:', paginationQuery)
+        console.log('Pagination Query:', paginationQuery)
         let queryLimit = limit ?? 10
         let queryPage = page ?? 1
 
@@ -42,20 +43,12 @@ export class PaginationProvider {
         }
         //tìm kiếm với searchby và query
         if (search_by && query) {
-            const decodedSearchBy = decodeURIComponent(search_by)
-            const fields = decodedSearchBy.split(',').map((f) => f.trim())
-            if (Array.isArray(fields) && fields.length > 0) {
+            if (Array.isArray(search_by) && search_by.length > 0) {
                 pipelineMain.push({
                     $match: {
-                        $or: fields.map((field) => ({
+                        $or: search_by.map((field) => ({
                             [field]: { $regex: query, $options: 'i' }
                         }))
-                    }
-                })
-            } else {
-                pipelineMain.push({
-                    $match: {
-                        [search_by]: { $regex: query, $options: 'i' }
                     }
                 })
             }
@@ -67,19 +60,19 @@ export class PaginationProvider {
         })
         //lọc bởi trường filter_by và với giá trị {filter}
         if (filter_by && filter) {
-            const decodedFilter = decodeURIComponent(filter)
-            const fields = decodedFilter.split(',').map((f) => f.trim())
             // Nếu filter là mảng
-            if (Array.isArray(fields)) {
+            //kiểm tra kiểu của mảng filter
+
+            if (isObjectId(filter[0])) {
                 pipelineMain.push({
                     $match: {
-                        [filter_by]: { $in: fields.map((id) => new mongoose.Types.ObjectId(id)) }
+                        [filter_by]: { $in: filter.map((id) => new mongoose.Types.ObjectId(id)) }
                     }
                 })
             } else {
                 pipelineMain.push({
                     $match: {
-                        [filter_by]: new mongoose.Types.ObjectId(filter)
+                        [filter_by]:  { $in: filter}
                     }
                 })
             }
