@@ -49,7 +49,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             existingTopic.phaseHistories = []
         }
         newPhaseHistory.note = note
-
+        console.log('New Phase History:', newPhaseHistory)
         existingTopic.phaseHistories.push(newPhaseHistory)
 
         // nếu đề tài chuyển từ trạng thái đã nộp về lại nháp thì cần

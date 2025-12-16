@@ -185,6 +185,34 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             facultyId
         )
     }
+    public async approveTopics(topicIds: string[], actorId: string) {
+        for (const topicId of topicIds) {
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                topicId,
+                TopicStatus.Approved,
+                actorId,
+                PhaseHistoryNote.TOPIC_APPROVED
+            )
+
+            //Gửi thông báo tới giảng viên HD chính createBy
+            //đồng thời thông báo cho giảng viên đồng hướng dẫn nữa
+            const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
+            //thoogn tin hd chisnh
+            const mainSupervisor = await this.lecturerRegTopicService.getMainSupervisorInTopic(topicId)
+            const coSupervisors = await this.lecturerRegTopicService.getCoSupervisorsInTopic(topicId)
+            const facultyId = await this.getFacultyByUserIdProvider.getFacultyIdByUserId(
+                actorId,
+                UserRole.FACULTY_BOARD
+            )
+            await this.notificationPublisherService.sendApprovalTopicNotification(
+                mainSupervisor,
+                actorId,
+                coSupervisors,
+                topicInfor,
+                facultyId
+            )
+        }
+    }
     public async rejectTopic(topicId: string, actorId: string, facultyNote: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
@@ -195,7 +223,22 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
         await this.notificationPublisherService.sendRejectedTopicNotification(topicInfor.createBy, actorId, topicInfor)
     }
-
+    public async rejectTopics(topicIds: string[], actorId: string, facultyNote: string) {
+        for (const topicId of topicIds) {
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                topicId,
+                TopicStatus.Rejected,
+                actorId,
+                PhaseHistoryNote.TOPIC_REJECTED + `${facultyNote ? ' với lí do: ' + facultyNote : ''}`
+            )
+            const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
+            await this.notificationPublisherService.sendRejectedTopicNotification(
+                topicInfor.createBy,
+                actorId,
+                topicInfor
+            )
+        }
+    }
     // public async markUnderReviewing(topicId: string, actorId: string) {
     //     await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
     //         topicId,

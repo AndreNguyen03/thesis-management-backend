@@ -12,6 +12,16 @@ import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-q
 @Controller('majors')
 export class MajorsController {
     constructor(private readonly majorsService: MajorsService) {}
+    @Get()
+    @Auth(AuthType.Bearer)
+    async getMajorsOfFacultyOwner(@Req() req: { user: { facultyId: string } }, @Query() query: PaginationQueryDto) {
+        console.log('Faculty đsđsID:', req.user.facultyId)
+        const result = await this.majorsService.getMajorsByFacultyId(req.user.facultyId, query)
+        return await plainToInstance(PaginatedMajorsDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
     @Post()
     @Auth(AuthType.Bearer)
     @Roles(UserRole.ADMIN)
@@ -23,15 +33,6 @@ export class MajorsController {
         }
     }
 
-    @Get()
-    @Auth(AuthType.Bearer)
-    async getMajorsOfFacultyOwner(@Req() req: { user: { facultyId: string } }, @Query() query: PaginationQueryDto) {
-        const result = await this.majorsService.getMajorsByFacultyId(req.user.facultyId, query)
-        return await plainToInstance(PaginatedMajorsDto, result, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
-    }
     @Get('/same-faculty/:facultyId')
     @Auth(AuthType.Bearer)
     async getMajorsByFacultyId(@Param('facultyId') facultyId: string, @Query() query: PaginationQueryDto) {
@@ -41,5 +42,4 @@ export class MajorsController {
             enableImplicitConversion: true
         })
     }
-
 }

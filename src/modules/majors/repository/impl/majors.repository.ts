@@ -20,7 +20,7 @@ export class MajorsRepository extends BaseRepositoryAbstract<Major> implements I
         let pipelineSub: any[] = []
         pipelineSub.push({
             $match: {
-                faculty: new mongoose.Types.ObjectId(facultyId),
+                facultyId: new mongoose.Types.ObjectId(facultyId),
                 deleted_at: null
             }
         })

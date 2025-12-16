@@ -10,7 +10,7 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
         this.model = model
     }
     async findOneAndUpdate(condition: object, dto: Partial<T>): Promise<T | null> {
-       return  await this.model.findOneAndUpdate({ ...condition, deleted_at: null }, dto, { new: true })
+        return await this.model.findOneAndUpdate({ ...condition, deleted_at: null }, dto, { new: true })
     }
 
     async create(dto: T | any): Promise<T> {
@@ -111,7 +111,8 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
     }
 
     async update(id: string, dto: Partial<T>): Promise<T | null> {
-        return await this.model.findOneAndUpdate({ _id: id, deleted_at: null }, dto, { new: true })
+        const updated = await this.model.findOneAndUpdate({ _id: id, deleted_at: null }, dto, { new: true }).lean()
+        return updated as T | null
     }
 
     async softDelete(id: string): Promise<boolean> {

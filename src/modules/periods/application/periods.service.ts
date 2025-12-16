@@ -186,7 +186,6 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     }
 
     async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto) {
-        console.log('Creating new period with data:', { actorId, facultyId, createPeriodDto })
         const periodData = {
             ...createPeriodDto,
             faculty: facultyId,
@@ -206,7 +205,31 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     // update period info
     async adjustPeriod(periodId: string, periodDto: UpdatePeriodDto) {
         try {
-            return this.update(periodId, periodDto)
+            const res = await this.update(periodId, {
+                ...periodDto,
+                startTime: new Date(periodDto.startTime!),
+                endTime: new Date(periodDto.endTime!)
+            })
+            if (!res) {
+                throw new NotFoundException('Kỳ không tồn tại')
+            }
+            // Handle status based on time and completion
+            const now = new Date()
+            let status: string
+
+            if (!res.startTime || !res.endTime) {
+                status = 'pending'
+            } else if (now < new Date(res.startTime)) {
+                status = 'pending'
+            } else if (now >= new Date(res.startTime) && now <= new Date(res.endTime)) {
+                status = 'active'
+            } else if (res.status === PeriodStatus.Completed) {
+                status = PeriodStatus.Completed
+            } else {
+                status = 'timeout'
+            }
+
+            return { ...res, status }
         } catch (error) {
             throw new RequestTimeoutException()
         }
@@ -271,7 +294,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 const updatedPhase = {
                     ...phases[phaseIndex],
                     ...updatePhaseDto
-                }   
+                }
                 const newPhases = [...phases.slice(0, phaseIndex), updatedPhase, ...phases.slice(phaseIndex + 1)]
                 const newPeriod = { ...period, phases: newPhases }
                 this.update(periodId, newPeriod)

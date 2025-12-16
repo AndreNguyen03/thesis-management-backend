@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { Period, PeriodPhase } from '../../schemas/period.schemas'
 import { IPeriodRepository } from '../periods.repository.interface'
-import mongoose, { Model, Types } from 'mongoose'
+import mongoose, { Model, now, Types } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
@@ -15,6 +15,7 @@ import { PeriodDetail } from '../../dtos/phase-resolve.dto'
 import { GetPeriodDto } from '../../dtos/period.dtos'
 import { $ } from '@faker-js/faker/dist/airline-CLphikKp'
 import { start } from 'repl'
+import { th } from '@faker-js/faker/.'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -141,6 +142,14 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 }
             }
         )
+        //Xử lý lọc
+        pipelineSub.push({
+            $match: {
+                ...(query.type ? { type: query.type } : {}),
+                ...(query.status ? { status: query.status } : {})
+            }
+        })
+
         pipelineSub.push(
             { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
             { $sort: { startTime: -1 } }
@@ -152,16 +161,28 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         console.log(periodId)
         const result = await this.periodModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },
-            { $project: { phasesCount: { $size: '$phases' } } }
+            { $project: { startTime: 1, endTime: 1, status: 1 } }
         ])
 
         if (result.length === 0) {
             throw new BadRequestException('Kỳ không tồn tại hoặc đã bị xóa')
         }
-        if (result[0].phasesCount > 0) {
-            throw new BadRequestException('Kỳ này đang có giai đoạn có hiệu lực, không thể xóa')
+        const now = new Date()
+        let status: string
+        if (!result[0].startTime || !result[0].endTime) {
+            status = 'pending'
+        } else if (now < new Date(result[0].startTime)) {
+            status = 'pending'
+        } else if (now >= new Date(result[0].startTime) && now <= new Date(result[0].endTime)) {
+            status = 'active'
+        } else if (result[0].status === PeriodStatus.Completed) {
+            status = PeriodStatus.Completed
+        } else {
+            status = 'timeout'
         }
-
+        if (status !== 'pending') {
+            throw new BadRequestException('Kỳ này đã bắt đầu hoặc đã kết thúc, không thể xóa')
+        }
         const res = await this.periodModel.updateOne(
             { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null },
             { deleted_at: new Date() }
@@ -465,7 +486,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         })
         return period
     }
-    async initalizePhasesForNewPeriod(periodId: string): Promise<boolean> {
+    async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
         const phases: any[] = []
         const patternPhase = plainToClass(PeriodPhase, new ConfigPhaseSubmitTopicDto())
         const newSubmitTopicPhase = { ...patternPhase, phase: PeriodPhaseName.SUBMIT_TOPIC }
@@ -473,21 +494,67 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         const newExecutionPhase = { ...patternPhase, phase: PeriodPhaseName.EXECUTION }
         const newCompletionPhase = { ...patternPhase, phase: PeriodPhaseName.COMPLETION }
         phases.push(newSubmitTopicPhase, newOpenRegPhase, newExecutionPhase, newCompletionPhase)
-        const res = await this.periodModel.findOneAndUpdate(
-            {
-                _id: new mongoose.Types.ObjectId(periodId),
-                deleted_at: null
-            },
-            { $set: { phases } }
-        )
+        const res = await this.periodModel
+            .findOneAndUpdate(
+                {
+                    _id: new mongoose.Types.ObjectId(periodId),
+                    deleted_at: null
+                },
+                { $set: { phases } },
+                { new: true }
+            )
+            .lean()
         if (!res) {
             throw new BadRequestException('Không tìm thấy kỳ để thêm giai đoạn')
         }
-        return true
+        return res
     }
     async createNewPeriod(period: Period): Promise<Period> {
+        const periods = await this.periodModel.aggregate([
+            {
+                $addFields: {
+                    status: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: { $lt: ['$$NOW', '$startTime'] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: {
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                    },
+                                    then: 'active'
+                                },
+                                {
+                                    case: { $eq: ['$status', PeriodStatus.Completed] },
+                                    then: PeriodStatus.Completed
+                                }
+                            ],
+                            default: 'timeout'
+                        }
+                    }
+                }
+            },
+            {
+                $match: {
+                    faculty: period.faculty,
+                    type: period.type,
+                    status: { $in: ['pending', 'active', 'completed'] },
+                    deleted_at: null
+                }
+            }
+        ])
+        if (periods.length > 0) {
+            throw new BadRequestException('Đã tồn tại kỳ với loại và trạng thái trùng nhau')
+        }
         const createdPeriod = new this.periodModel(period)
-        return createdPeriod.save()
+        await createdPeriod.save()
+        return await this.initalizePhasesForNewPeriod(createdPeriod._id.toString())
     }
     async getPeriodById(periodId: string): Promise<Period | null> {
         let pipelineMain = await this.AbstractGetPeriodInfo(periodId)

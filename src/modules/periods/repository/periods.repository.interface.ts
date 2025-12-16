@@ -13,7 +13,7 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
     configPhaseInPeriod(newPhase: PeriodPhase, periodId: string): Promise<boolean>
     getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null>
     getDetailPeriod(periodId: string): Promise<PeriodDetail | null>
-    initalizePhasesForNewPeriod(periodId: string): Promise<boolean>
+    initalizePhasesForNewPeriod(periodId: string): Promise<Period>
     createNewPeriod(period: Period): Promise<Period>
     getPeriodById(periodId: string): Promise<Period | null>
     checkCurrentPeriod(periodId: string): Promise<boolean>

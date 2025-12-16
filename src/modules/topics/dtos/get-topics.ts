@@ -385,7 +385,7 @@ export class RequestGetTopicsInPhaseBaseDto {
     @IsNotEmpty()
     @IsEnum(PeriodPhaseName)
     phase: string
-    @IsNotEmpty()
+    @IsOptional()
     status: string
     @IsNotEmpty()
     //100 là search semantic

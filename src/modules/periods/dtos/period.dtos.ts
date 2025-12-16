@@ -20,7 +20,6 @@ export class CreatePeriodDto {
     @IsNotEmpty()
     @IsDate()
     endTime: Date
-   
 }
 export class GetMiniPeriodDto {
     @Expose()
@@ -41,6 +40,12 @@ export class UpdatePeriodDto {
     @IsOptional()
     @IsString()
     type: string
+    @IsOptional()
+    @IsString()
+    startTime: string
+    @IsOptional()
+    @IsString()
+    endTime: string
 }
 
 export class GetPeriodDto {
