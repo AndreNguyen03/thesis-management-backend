@@ -10,7 +10,7 @@ import { PeriodNotFoundException } from '../../../common/exceptions/period-excep
 import { plainToClass } from 'class-transformer'
 import { ValidatePeriodPhaseProvider } from './validate-phase.provider'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { PeriodPhase } from '../schemas/period.schemas'
+import { Period, PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
@@ -24,7 +24,7 @@ export class CreatePhaseProvider {
         private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider
     ) {}
     //Khởi tạo sơ khai cho kì mới
-    async initalizePhasesForNewPeriod(periodId: string): Promise<boolean> {
+    async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
         return await this.iPeriodRepository.initalizePhasesForNewPeriod(periodId)
     }
     //draft -> submit-topic

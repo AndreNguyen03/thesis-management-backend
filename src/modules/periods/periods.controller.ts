@@ -71,8 +71,11 @@ export class PeriodsController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async adjustPeriod(@Param('periodId') periodId: string, @Body() adjustPeriodDto: UpdatePeriodDto) {
-        await this.periodsService.adjustPeriod(periodId, adjustPeriodDto)
-        return { message: 'Điều chỉnh kỳ thành công' }
+        const res = await this.periodsService.adjustPeriod(periodId, adjustPeriodDto)
+        return plainToInstance(GetPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     // Set kỳ đã kết thúc

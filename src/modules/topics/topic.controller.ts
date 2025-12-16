@@ -237,6 +237,15 @@ export class TopicController {
         return { message: 'Duyệt đề tài thành công' }
     }
 
+    @Patch('/faculty-board/approve-topics')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyBoardApproveTopics(@Req() req: { user: ActiveUserData }, @Body() body: { topicIds: string[] }) {
+        await this.topicService.approveTopics(body.topicIds, req.user.sub)
+        return { message: 'Duyệt các đề tài thành công' }
+    }
+
     @Patch('faculty-board/reject-topic/:topicId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
@@ -247,6 +256,18 @@ export class TopicController {
         @Body() body: RejectTopicDto
     ) {
         await this.topicService.rejectTopic(topicId, req.user.sub, body.note)
+        return { message: 'Đề tài đã được đánh dấu là không hợp lệ và gửi thông báo về cho giảng viên' }
+    }
+    @Patch('faculty-board/reject-topics')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyBoardRejectTopics(
+        @Req() req: { user: ActiveUserData },
+
+        @Body() body: RejectTopicDto
+    ) {
+        await this.topicService.rejectTopics(body.topicIds, req.user.sub, body.note)
         return { message: 'Đề tài đã được đánh dấu là không hợp lệ và gửi thông báo về cho giảng viên' }
     }
 

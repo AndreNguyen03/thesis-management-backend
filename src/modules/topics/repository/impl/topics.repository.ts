@@ -43,6 +43,7 @@ import { GetMiniMiniMajorDto } from '../../../majors/dtos/get-major.dto'
 import { pipeline } from 'stream'
 import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
+import path from 'path'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -903,27 +904,34 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         // // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
-        pipelineSub.push({
-            $addFields: {
-                lastStatusInPhaseHistory: {
-                    $arrayElemAt: [
-                        {
-                            $filter: {
-                                input: '$phaseHistories',
-                                as: 'ph',
-                                cond: {
-                                    $and: [
-                                        ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
-                                        ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
-                                    ]
+        pipelineSub.push(
+            {
+                $addFields: {
+                    lastStatusInPhaseHistory: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: '$phaseHistories',
+                                    as: 'ph',
+                                    cond: {
+                                        $and: [
+                                            ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
+                                            ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
+                                        ]
+                                    }
                                 }
-                            }
-                        },
-                        -1
-                    ]
+                            },
+                            -1
+                        ]
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$lastStatusInPhaseHistory'
                 }
             }
-        })
+        )
         // //mục đích là không phải lấy trường này mà là để lấy thêm thời gian nộp đề tài
         pipelineSub.push({
             $addFields: {
