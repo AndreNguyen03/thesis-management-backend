@@ -327,4 +327,36 @@ export class MailProcessor {
             console.error(`Gửi mail chuẩn bị học kỳ mới thất bại cho ${job.data.user._id}:`, e)
         }
     }
+
+    @Process('send-submit-topic-request')
+    async handleSendSubmitTopicRequest(
+        job: Job<{
+            to: string
+            lecturerName: string
+            periodName: string
+            deadline: Date
+            periodId: string
+        }>
+    ) {
+        try {
+            const { to, lecturerName, periodName, deadline, periodId } = job.data
+            const frontendUrl = this.configService.get('appConfig.CLIENT_URL')
+
+            await this.mailerService.sendMail({
+                to: to,
+                from: `"Hệ thống Quản lý Đề tài" <${this.configService.get('appConfig.smtpUsername')}>`,
+                subject: `Yêu cầu nộp đề tài - ${periodName}`,
+                template: './send-submit-topic',
+                context: {
+                    lecturerName: lecturerName,
+                    periodName: periodName,
+                    deadline: new Date(deadline).toLocaleString('vi-VN'),
+                    periodId: periodId,
+                    frontendUrl: frontendUrl
+                }
+            })
+        } catch (e) {
+            console.error(`Gửi mail yêu cầu nộp đề tài thất bại cho ${job.data.to}:`, e)
+        }
+    }
 }

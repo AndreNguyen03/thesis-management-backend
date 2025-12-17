@@ -899,7 +899,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return pipeline
     }
 
-    async getTopicsInPhaseHistory(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<Paginated<Topic>> {
+    async getTopicsInPhaseHistory(
+        periodId: string,
+        query: RequestGetTopicsInPhaseParams,
+        ownerId?: string
+    ): Promise<Paginated<Topic>> {
         console.log('query', query, periodId)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
@@ -1034,9 +1038,12 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({
             $match: {
                 deleted_at: null,
-                periodId: new mongoose.Types.ObjectId(periodId)
+                periodId: new mongoose.Types.ObjectId(periodId),
+                //nếu owner là có tức là giảng viên đang gửi yêu cầu lấy đề tải của họ trong period
+                ...(ownerId ? { 'lecturerIds': { $eq: new mongoose.Types.ObjectId(ownerId) } } : {})
             }
         })
+
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 

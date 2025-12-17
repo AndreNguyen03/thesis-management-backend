@@ -5,17 +5,22 @@ import { IPeriodRepository } from '../periods.repository.interface'
 import mongoose, { Model, now, Types } from 'mongoose'
 import { RequestGetPeriodsDto } from '../../dtos/request-get-all.dto'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
-import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
+import { BadRequestException, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { plainToClass, plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
 import { PeriodDetail } from '../../dtos/phase-resolve.dto'
-import { GetPeriodDto } from '../../dtos/period.dtos'
+import { GetCurrentPeriod, GetPeriodDto } from '../../dtos/period.dtos'
 import { $ } from '@faker-js/faker/dist/airline-CLphikKp'
 import { start } from 'repl'
 import { th } from '@faker-js/faker/.'
+import { UserRole } from '../../../../auth/enum/user-role.enum'
+import { User } from '../../../../users/schemas/users.schema'
+import { pipe } from 'rxjs'
+import { from } from 'form-data'
+import path from 'path'
 
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
@@ -50,10 +55,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     }
     async getCurrentPhase(periodId: string): Promise<GetCurrentPhaseResponseDto> {
         const res = await this.periodModel
-            .findOne(
-                { _id: new mongoose.Types.ObjectId(periodId), isDeleted: false, 'phases.phase': '$currentPhase' },
-                { projection: { currentPhase: 1, 'phases.$.endtime': 1 } }
-            )
+            .findOne({ _id: new mongoose.Types.ObjectId(periodId), deleted_at: null }, { currentPhase: 1 })
             .exec()
         if (!res) {
             throw new BadRequestException('Không tìm thấy kỳ')
@@ -142,20 +144,202 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 }
             }
         )
-        //Xử lý lọc
+
         pipelineSub.push({
             $match: {
                 ...(query.type ? { type: query.type } : {}),
                 ...(query.status ? { status: query.status } : {})
             }
         })
-
         pipelineSub.push(
             { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
             { $sort: { startTime: -1 } }
         )
 
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
+    }
+    //xuwr lý admin xem danh sách kỳ hiện tại của khoa
+    async getCurrentPeriods(facultyId: string, role: string): Promise<GetCurrentPeriod[]> {
+        let pipelineSub: any[] = []
+        //Tìm kiếm những period trong khoa
+        pipelineSub.push(
+            {
+                $addFields: {
+                    status: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: { $lt: ['$$NOW', '$startTime'] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: {
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                    },
+                                    then: 'active'
+                                },
+                                {
+                                    case: {
+                                        $eq: ['status', PeriodStatus.Completed]
+                                    },
+                                    then: PeriodStatus.Completed
+                                }
+                            ],
+                            default: 'timeout'
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    phases: {
+                        $map: {
+                            input: '$phases',
+                            as: 'phase',
+                            in: {
+                                $mergeObjects: [
+                                    '$$phase',
+                                    {
+                                        status: {
+                                            $switch: {
+                                                branches: [
+                                                    {
+                                                        case: {
+                                                            $or: [
+                                                                { $not: '$$phase.startTime' },
+                                                                { $not: '$$phase.endTime' }
+                                                            ]
+                                                        },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: { $lt: ['$$NOW', '$$phase.startTime'] },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $and: [
+                                                                { $gte: ['$$NOW', '$$phase.startTime'] },
+                                                                { $lte: ['$$NOW', '$$phase.endTime'] }
+                                                            ]
+                                                        },
+                                                        then: 'active'
+                                                    }
+                                                ],
+                                                default: 'timeout'
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    //lấy ra để kiểm tra để cho phép thực hiện hành động hay không
+                    currentPhaseDetail: {
+                        $filter: {
+                            input: '$phases',
+                            as: 'phase',
+                            cond: { $eq: ['$$phase.phase', '$currentPhase'] }
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$currentPhaseDetail',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    isActiveAction: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $eq: ['$currentPhaseDetail.status', 'active'] },
+                                    then: true
+                                }
+                            ],
+                            default: false
+                        }
+                    }
+                }
+            }
+        )
+        //Tìm kiếm những period trong khoa
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$facultyInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+        switch (role) {
+            case UserRole.ADMIN: //coming soon admin xem tất cả các kỳ
+                break
+            case UserRole.FACULTY_BOARD:
+                //giảng viên lấy ra thì phải là những period pending hoặc active hoặc timeout
+                //nếu completed thì biến mất
+                pipelineSub.push({
+                    $match: {
+                        status: { $in: ['pending', 'active', 'timeout'] }
+                    }
+                })
+                break
+            case (UserRole.LECTURER, UserRole.FACULTY_BOARD):
+                //giảng viên lấy ra thì phải là những period pending hoặc active hoặc timeout
+                //nếu completed thì biến mất
+                pipelineSub.push({
+                    $match: {
+                        status: { $in: ['pending', 'active', 'timeout'] },
+                        currentPhase: { $ne: PeriodPhaseName.EMPTY }
+                    }
+                })
+                break
+            case UserRole.STUDENT:
+                //sinh viên lấy ra thì phải lá những period đang pending hoặc active
+                pipelineSub.push({
+                    $match: {
+                        status: { $in: ['pending', 'active', 'timeout'] },
+                        currentPhase: PeriodPhaseName.OPEN_REGISTRATION
+                    }
+                })
+                break
+        }
+
+        pipelineSub.push(
+            { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
+            { $sort: { startTime: 1 } }
+        )
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                year: 1,
+                semester: 1,
+                type: 1,
+                facultyName: '$facultyInfo.name',
+                status: 1,
+                startTime: 1,
+                endTime: 1,
+                currentPhase: 1,
+                currentPhaseStatus: '$currentPhaseDetail.status',
+                isActiveAction: 1
+            }
+        })
+        return await this.periodModel.aggregate(pipelineSub).exec()
     }
     async deletePeriod(periodId: string): Promise<boolean> {
         console.log(periodId)
@@ -268,7 +452,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     //     }
     // }
 
-    async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto> {
+    async getPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto> {
         const currentPeriod = await this.periodModel
             .findOne({
                 faculty: new mongoose.Types.ObjectId(facultyId),
@@ -347,6 +531,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             { excludeExtraneousValues: true, enableImplicitConversion: true }
         )
     }
+
     async checkCurrentPeriod(periodId: string): Promise<boolean> {
         const currentPeriod = await this.periodModel.findOne({
             _id: new mongoose.Types.ObjectId(periodId),
@@ -357,110 +542,112 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         return currentPeriod ? true : false
     }
     private async AbstractGetPeriodInfo(periodId: string) {
-        let pipelineMain: any[] = []
-        //lookup với bảng faculty
-        pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'faculties',
-                        localField: 'faculty',
-                        foreignField: '_id',
-                        as: 'faculty'
-                    }
-                },
-                {
-                    $unwind: {
-                        path: '$faculty'
-                    }
+        const pipelineMain: any[] = [
+            // Match the period by ID
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(periodId),
+                    deleted_at: null
                 }
-            ]
-        )
-        pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'phases.requiredLecturerIds',
-                        foreignField: '_id',
-                        as: 'lecUserInfo'
-                    }
-                },
-                // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
-                {
-                    $lookup: {
-                        from: 'lecturers',
-                        localField: 'phases.requiredLecturerIds',
-                        foreignField: 'userId',
-                        as: 'lectInfos'
-                    }
-                },
-                {
-                    $addFields: {
-                        lecturers: {
-                            $map: {
-                                input: '$lecUserInfo',
-                                as: 'userInfo',
-                                in: {
-                                    $mergeObjects: [
-                                        {
-                                            $arrayElemAt: [
-                                                {
-                                                    $filter: {
-                                                        input: '$lectInfos',
-                                                        as: 'lecInfo',
-                                                        cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
-                                                    }
-                                                },
-                                                0
-                                            ]
-                                        },
-                                        '$$userInfo'
-                                    ]
-                                }
+            },
+            // Lookup faculty information
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'faculty',
+                    foreignField: '_id',
+                    as: 'faculty'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$faculty',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Lookup user information for required lecturers
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'phases.requiredLecturerIds',
+                    foreignField: '_id',
+                    as: 'lecUserInfo'
+                }
+            },
+            // Lookup lecturer details
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'lecUserInfo._id',
+                    foreignField: 'userId',
+                    as: 'lectInfos'
+                }
+            },
+            // Merge user and lecturer information
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecUserInfo',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    '$$userInfo',
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    }
+                                ]
                             }
                         }
                     }
-                },
-                {
-                    $project: {
-                        _id: 1,
-                        deleted_at: 1,
-                        name: 1,
-                        facultyId: 1,
-                        faculty: 1,
-                        currentPhase: 1,
-                        phases: {
-                            $map: {
-                                input: '$phases',
-                                as: 'phase',
-                                in: {
-                                    $mergeObjects: [
-                                        '$$phase',
-                                        {
-                                            requiredLecturers: {
-                                                $filter: {
-                                                    input: '$lecturers',
-                                                    as: 'lec',
-                                                    cond: {
-                                                        $in: [
-                                                            '$$lec._id',
-                                                            { $ifNull: ['$$phase.requiredLecturerIds', []] }
-                                                        ]
-                                                    }
+                }
+            },
+            // Map required lecturers to each phase
+            {
+                $addFields: {
+                    phases: {
+                        $map: {
+                            input: '$phases',
+                            as: 'phase',
+                            in: {
+                                $mergeObjects: [
+                                    '$$phase',
+                                    {
+                                        requiredLecturers: {
+                                            $filter: {
+                                                input: '$lecturers',
+                                                as: 'lec',
+                                                cond: {
+                                                    $in: ['$$lec._id', { $ifNull: ['$$phase.requiredLecturerIds', []] }]
                                                 }
                                             }
                                         }
-                                    ]
-                                }
+                                    }
+                                ]
                             }
                         }
                     }
                 }
-            ]
-        )
-        // kết bảng bảng với phases thể lấy thông tin giai đoạn
-        pipelineMain.push({ $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } })
+            },
+            // Project final fields
+            {
+                $project: {
+                    lecUserInfo: 0,
+                    lectInfos: 0,
+                    lecturers: 0
+                }
+            }
+        ]
+
         return pipelineMain
     }
 
@@ -556,12 +743,13 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         await createdPeriod.save()
         return await this.initalizePhasesForNewPeriod(createdPeriod._id.toString())
     }
-    async getPeriodById(periodId: string): Promise<Period | null> {
+    async getPeriodById(periodId: string): Promise<Period> {
         let pipelineMain = await this.AbstractGetPeriodInfo(periodId)
         const result = await this.periodModel.aggregate(pipelineMain)
-        if (!result || result.length === 0) return null
+        if (!result || result.length === 0) throw new NotFoundException('Không tìm thấy kỳ')
 
         const period = result[0]
+        console.log('period detail:', period)
         return period
     }
 }

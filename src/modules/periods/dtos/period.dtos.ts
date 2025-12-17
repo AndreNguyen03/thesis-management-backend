@@ -87,3 +87,29 @@ export class PeriodStatsQueryParams {
     @IsEnum(PeriodPhaseName)
     phase: PeriodPhaseName
 }
+
+export class GetCurrentPeriod {
+    @Expose()
+    _id: string
+    @Expose()
+    @Expose()
+    year: string
+    @Expose()
+    semester: number
+    @Expose()
+    type: PeriodType
+    @Expose()
+    facultyName: string
+    @Expose()
+    status: string
+    @Expose()
+    startTime: Date
+    @Expose()
+    endTime: Date
+    @Expose()
+    currentPhase: string
+    @Expose()
+    currentPhaseStatus: string
+    @Expose()
+    isActiveAction: boolean
+}

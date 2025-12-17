@@ -3,7 +3,7 @@ import { OnlineUserService } from '../application/online-user.service'
 import { Job } from 'bull'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
-import { NotFoundException } from '@nestjs/common'
+import { Inject, NotFoundException } from '@nestjs/common'
 import { MailService } from '../../../mail/providers/mail.service'
 import { UserService } from '../../../users/application/users.service'
 import { NotificationsGateway } from '../gateways/notifications.gateway'
@@ -22,6 +22,7 @@ import { GetPeriodDto } from '../../periods/dtos/period.dtos'
 import { NotificationsService } from '../application/notifications.service'
 import { transferNamePeriod } from '../../../common/utils/transfer-name-period'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
 
 @Processor('notifications')
 export class NotificationQueueProcessor {
@@ -160,5 +161,54 @@ export class NotificationQueueProcessor {
         this.notiGateway.server
             .to('user_' + noti.recipientId.toString())
             .emit('notification:marked-read', notificationId)
+    }
+
+    @Process('submit-topic-request')
+    async handleSubmitTopicRequest(
+        job: Job<{ users: User[]; periodInfo: GetPeriodDto; periodName: string; deadline: string }>
+    ) {
+        const { users, periodInfo, periodName, deadline } = job.data
+        const message = `Bạn được yêu cầu nộp đề tài trong kì ${periodName} trước ngày ${new Date(deadline).toLocaleString()}. Vui lòng đăng nhập hệ thống để nộp đề tài.`
+
+        try {
+            for (const user of users) {
+                await this.notificationsService.createNotification({
+                    recipientId: user._id.toString(),
+                    senderId: undefined,
+                    title: NotificationTitleEnum.REQUEST_SUBMIT_TOPIC,
+                    message,
+                    type: NotificationType.SYSTEM,
+                    isRead: false,
+                    metadata: {
+                        periodId: periodInfo._id,
+                        periodName: transferNamePeriod(periodInfo),
+                        phaseName: PeriodPhaseName.OPEN_REGISTRATION
+                    }
+                })
+                await this.notiGateway.server.to(`user_${user._id.toString()}`).emit('notification:new', {
+                    _id: new mongoose.Types.ObjectId(),
+                    title: NotificationTitleEnum.REQUEST_SUBMIT_TOPIC,
+                    message,
+                    createdAt: new Date(),
+                    type: NotificationType.SYSTEM,
+                    isRead: false,
+                    metaData: {
+                        periodId: periodInfo._id,
+                        periodName: transferNamePeriod(periodInfo),
+                        phaseName: PeriodPhaseName.OPEN_REGISTRATION
+                    }
+                })
+            }
+
+            // Gửi email cho tất cả users
+            await this.mailService.sendSubmitTopicRequestEmail({
+                users,
+                periodName,
+                deadline: deadline,
+                periodId: periodInfo._id.toString()
+            })
+        } catch (error) {
+            console.error('Error sending open registration period notifications:', error)
+        }
     }
 }

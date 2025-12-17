@@ -10,10 +10,8 @@ export class RequestGetPeriodsDto extends IntersectionType(GetPeriodsBasseDto, P
     type?: PeriodType
     @IsOptional()
     status?: string
+    @IsOptional()
+    role?: string
 }
 
-export class GetCurrentPeriodRequest {
-    @IsNotEmpty()
-    @IsString()
-    periodType: PeriodType
-}
+

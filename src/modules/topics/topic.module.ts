@@ -25,6 +25,7 @@ import { NotificationsModule } from '../notifications/notifications.module'
 import { ConfigModule } from '@nestjs/config'
 import { googleAIConfig } from '../../config/googleai.config'
 import { mongoConfig } from '../../config/database.config'
+import { PeriodsModule } from '../periods/periods.module'
 @Global() 
 @Module({
     controllers: [TopicController],
@@ -61,7 +62,7 @@ import { mongoConfig } from '../../config/database.config'
         UpdateTopicsPhaseBatchProvider,
         GetStatisticsTopicsProvider,
         ValidateTopicStatusProvider,
-        GetMiniTopicInfoProvider
+        GetMiniTopicInfoProvider,
     ],
     imports: [
         MongooseModule.forFeature([
@@ -76,7 +77,8 @@ import { mongoConfig } from '../../config/database.config'
         forwardRef(() => RegistrationsModule),
         forwardRef(() => PaginationAnModule),
         forwardRef(() => UploadFilesModule),
-        forwardRef(() => NotificationsModule)
+        forwardRef(() => NotificationsModule),
+        forwardRef(() => PeriodsModule),
     ]
 })
 export class TopicModule {}

@@ -407,6 +407,17 @@ export class RequestGetTopicsInPhaseParams extends IntersectionType(
     PaginationQueryDto
 ) {}
 
+export class RequestLecturerGetTopicsInPhase {
+    @IsOptional()
+    @IsEnum(PeriodPhaseName)
+    phase: string
+    @IsOptional()
+    status: string
+}
+export class RequestLectureGetTopicsInPhaseParams extends IntersectionType(
+    RequestLecturerGetTopicsInPhase,
+    PaginationQueryDto
+) {}
 export class RequestGetTopicsInAdvanceSearch {
     @IsNotEmpty()
     //100 là search semanticx

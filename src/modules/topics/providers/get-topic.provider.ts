@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { TopicRepositoryInterface } from '../repository'
-import { PaginatedGeneralTopics, RequestGetTopicsInAdvanceSearchParams, RequestGetTopicsInPhaseParams } from '../dtos'
+import { PaginatedGeneralTopics, RequestGetTopicsInAdvanceSearchParams, RequestGetTopicsInPhaseParams, RequestLectureGetTopicsInPhaseParams } from '../dtos'
 import { plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { Topic } from '../schemas/topic.schemas'
 import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
+import { GetPhaseProvider } from '../../periods/providers/get-phase.provider'
 @Injectable()
 export class GetTopicProvider {
     // Add methods and logic as needed
     constructor(
         @Inject('TopicRepositoryInterface') private readonly topicRepositoryInterface: TopicRepositoryInterface,
+        private readonly getPhaseProvider: GetPhaseProvider
     ) {}
     async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<Paginated<Topic>> {
         return await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)
@@ -17,7 +19,13 @@ export class GetTopicProvider {
     async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
         return await this.topicRepositoryInterface.getTopicsInLibrary(query)
     }
-
+    async lecturerGetTopicsInPhase(userId: string, periodId: string, query: RequestLectureGetTopicsInPhaseParams) {
+        //lấy phase hiện tại của period
+        const currentPhase = await this.getPhaseProvider.getCurrentPhase(periodId)
+        console.log('currentPhase', currentPhase)
+        query.phase = currentPhase.currentPhase
+        return await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query, userId)
+    }
     async getRegisteringTopics(
         periodId: string,
         query: RequestGetTopicsInAdvanceSearchParams

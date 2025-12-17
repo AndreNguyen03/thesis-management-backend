@@ -18,7 +18,6 @@ import { CreateNotification } from '../dtos/create-and-send.dtos'
 import { NotificationsService } from '../application/notifications.service'
 import { plainToInstance } from 'class-transformer'
 import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
-import { OpenPeriodNotificationTypeEnum } from '../enum/open-period.enum'
 import { User } from '../../../users/schemas/users.schema'
 import { GetPeriodDto } from '../../periods/dtos/period.dtos'
 import { transferNamePeriod } from '../../../common/utils/transfer-name-period'
@@ -332,7 +331,7 @@ export class NotificationPublisherService {
                 emailJobId,
                 delayMs
             )
-            console.log(`✅ Đã schedule ${users.length} emails mở đăng ký`)
+            //console.log(`✅ Đã schedule ${users.length} emails mở đăng ký`)
         } else {
             //gửi ngay
             console.log('⚡ Gửi thông báo mở đăng ký ngay lập tức')
@@ -343,7 +342,7 @@ export class NotificationPublisherService {
                 periodInfo.faculty,
                 emailJobId
             )
-            console.log(`✅ Đã gửi cho ${users.length} users`)
+            //console.log(`✅ Đã gửi cho ${users.length} users`)
         }
     }
     //Gửi thông báo khi kỳ học bắt đầu
@@ -359,7 +358,6 @@ export class NotificationPublisherService {
         const now = new Date()
         const startDate = new Date(periodInfo.startTime)
         const delayMs = startDate.getTime() - now.getTime()
-
 
         //tạo id cho job và email
         const jobId = `new-semester-${periodInfo._id}`
@@ -401,7 +399,7 @@ export class NotificationPublisherService {
                 emailJobId,
                 delayMs
             )
-            console.log(`✅ Đã schedule ${users.length} emails học kỳ mới vào ${startDate.toLocaleString('vi-VN')}`)
+            return `Đã lên lịch gửi ${users.length} emails cho gv sinh viên vào ${startDate.toLocaleString('vi-VN')}`
         } else {
             console.log('⚡ Gửi thông báo học kỳ mới ngay lập tức')
             await this.queue.add('send-new-semestic-period', { users, senderId, periodInfo })
@@ -411,7 +409,7 @@ export class NotificationPublisherService {
                 periodInfo.faculty,
                 emailJobId
             )
-            console.log(`✅ Đã gửi cho ${users.length} users`)
+            return `✅ Đã gửi cho ${users.length} users`
         }
     }
 
@@ -430,5 +428,27 @@ export class NotificationPublisherService {
         } catch (error) {
             console.log(`ℹ️ Không tìm thấy job cũ: ${jobId}`)
         }
+    }
+
+    //Gửi thông báo cho các giảng viên được yêu cầu nộp đề tài trong kì
+    async sendPhaseSubmitTopicNotification(userIds: string[], periodId: string, deadline: Date): Promise<void> {
+        const users = await this.userService.getUsersByUserIds(userIds)
+        const periodInfo = await this.periodsService.getPeriodById(periodId)
+        console.log('Gửi thông báo nộp đề tài cho các giảng viên:', userIds)
+        const payload = {
+            users,
+            periodInfo,
+            periodName: transferNamePeriod(periodInfo),
+            deadline: deadline.toISOString()
+        }
+
+        await this.queue.add('submit-topic-request', payload, {
+            attempts: 3,
+            backoff: {
+                type: 'exponential',
+                delay: 2000
+            }
+        })
+        await this.mailService.sendSubmitTopicRequestEmail({ users, periodName: transferNamePeriod(periodInfo), deadline: deadline.toISOString(), periodId: periodInfo._id.toString() })
     }
 }

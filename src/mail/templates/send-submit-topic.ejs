@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .header {
+                background: #1976d2;
+                color: white;
+                padding: 20px;
+                text-align: center;
+            }
+            .content {
+                background: #f9f9f9;
+                padding: 20px;
+            }
+            .info-box {
+                background: white;
+                padding: 15px;
+                margin: 15px 0;
+                border-left: 4px solid #1976d2;
+            }
+            .deadline {
+                color: #d32f2f;
+                font-weight: bold;
+                font-size: 18px;
+            }
+            .button {
+                display: inline-block;
+                padding: 12px 24px;
+                background: #1976d2;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+                margin-top: 15px;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 12px;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h2>Yêu Cầu Nộp Đề Tài</h2>
+            </div>
+            <div class="content">
+                <p>Kính gửi <strong><%= lecturerName %></strong>,</p>
+
+                <p>Hệ thống quản lý đề tài thông báo đến Quý giảng viên:</p>
+
+                <div class="info-box">
+                    <p><strong>Kỳ học:</strong> <%= periodName %></p>
+                    <p><strong>Yêu cầu:</strong> Nộp đề tài nghiên cứu/khóa luận</p>
+                    <p><strong>Hạn chót:</strong> <span class="deadline"><%= deadline %></span></p>
+                </div>
+
+                <p>Quý giảng viên vui lòng:</p>
+                <ul>
+                    <li>Chuẩn bị đề tài theo mẫu quy định</li>
+                    <li>Nộp đề tài trước thời hạn để kịp xét duyệt</li>
+                    <li>Liên hệ khoa nếu cần hỗ trợ</li>
+                </ul>
+
+                <div style="text-align: center">
+                    <a href="<%= frontendUrl %>/lecturer/topics/create?periodId=<%= periodId %>" class="button">
+                        Nộp Đề Tài Ngay
+                    </a>
+                </div>
+            </div>
+            <div class="footer">
+                <p>Email này được gửi tự động từ Hệ thống Quản lý Đề tài</p>
+                <p>Vui lòng không trả lời email này</p>
+            </div>
+        </div>
+    </body>
+</html>
