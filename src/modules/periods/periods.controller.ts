@@ -18,7 +18,13 @@ import {
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
 } from './dtos/period-phases.dtos'
-import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseParams, RequestLectureGetTopicsInPhaseParams } from '../topics/dtos'
+import {
+    GetGeneralTopics,
+    PaginatedGeneralTopics,
+    PaginatedTopicsInPeriod,
+    RequestGetTopicsInPhaseParams,
+    RequestLectureGetTopicsInPhaseParams
+} from '../topics/dtos'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
@@ -168,7 +174,7 @@ export class PeriodsController {
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseParams) {
         const topics = await this.periodsService.getTopicsInPhase(periodId, query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
+        return plainToInstance(PaginatedTopicsInPeriod, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -184,7 +190,7 @@ export class PeriodsController {
         @Query() query: RequestLectureGetTopicsInPhaseParams
     ) {
         const topics = await this.getTopicProvider.lecturerGetTopicsInPhase(req.user.sub, periodId, query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
+        return plainToInstance(PaginatedTopicsInPeriod, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -274,7 +280,7 @@ export class PeriodsController {
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async getCurrentPeriods(@Req() req: { user: ActiveUserData }) {
-        const res = await this.periodsService.getCurrentPeriods(req.user.facultyId!, req.user.role)
+        const res = await this.periodsService.getCurrentPeriods(req.user.facultyId!, req.user.role, req.user.sub)
         return plainToInstance(GetCurrentPeriod, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -287,7 +293,7 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async closePhase(
         @Param('periodId') periodId: string,
-        @Param('phase') phase: PeriodPhaseName,
+        @Param('phase') phase: PeriodPhaseName
     ): Promise<Phase1Response | Phase2Response | Phase3Response> {
         return this.periodsService.closePhase(
             periodId,

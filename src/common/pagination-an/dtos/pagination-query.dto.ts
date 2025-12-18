@@ -16,7 +16,7 @@ export class PaginationQueryDto {
     @IsOptional()
     @IsString({ each: true })
     //Tìm kiếm với trường nào
-    search_by?: string[]
+    search_by?: string[] | string
 
     @IsOptional()
     @IsString()

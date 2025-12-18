@@ -22,9 +22,9 @@ import {
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
-import { RequestGetTopicsInPhaseParams } from '../../topics/dtos'
+import { PaginatedTopicsInPeriod, RequestGetTopicsInPhaseParams } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
-import { GetPhaseProvider } from '../providers/get-phase.provider'
+import { GetPeriodInfoProvider } from '../providers/get-period-info.provider'
 import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
 
 import { PeriodPhaseName } from '../enums/period-phases.enum'
@@ -50,9 +50,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly createPhaseProvider: CreatePhaseProvider,
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
-        private readonly getPhaseProvider: GetPhaseProvider,
         private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
-        private readonly notificationPublisherService: NotificationPublisherService
+        private readonly notificationPublisherService: NotificationPublisherService,
     ) {
         super(iPeriodRepository)
     }
@@ -318,11 +317,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     //     return period
     // }
 
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) {
+    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) : Promise<PaginatedTopicsInPeriod> {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }
-    
+
     // statistics
     async boardGetStatisticsInPeriod(periodId: string, query: PeriodStatsQueryParams) {
         //lấy thống kê liên quan tới đề tài
@@ -375,8 +374,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
         return await this.iPeriodRepository.getPeriodInfo(facultyId, type)
     }
-    async getCurrentPeriods(facultyId: string, role: string): Promise<GetCurrentPeriod[]> {
-        return await this.iPeriodRepository.getCurrentPeriods(facultyId, role)
+    async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {
+        return await this.iPeriodRepository.getCurrentPeriods(facultyId, role, userId)
     }
     async checkCurrentPeriod(periodId: string): Promise<boolean> {
         return await this.iPeriodRepository.checkCurrentPeriod(periodId)

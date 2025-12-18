@@ -30,6 +30,7 @@ import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { Response } from 'express'
+import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -137,7 +138,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
         return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
     }
-    public async getSubmittedTopics(lecturerId: string, query: PaginationQueryDto) {
+    public async getSubmittedTopics(lecturerId: string, query: SubmittedTopicParamsDto) {
         return await this.topicRepository.findSubmittedTopicsByLecturerId(lecturerId, query)
     }
     public async assignSaveTopic(userId: string, topicId: string) {
@@ -428,11 +429,13 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return topic ? true : false
     }
     public async withdrawSubmittedTopics(topicIds: string[], actorId: string) {
+        console.log('Withdrawing topics:', topicIds)
         for (const topicId of topicIds)
             await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
                 topicId,
                 TopicStatus.Draft,
-                actorId
+                actorId,
+                PhaseHistoryNote.TOPIC_WITHDRAWN
             )
     }
     public async copyToDraft(topicId: string, actorId: string) {

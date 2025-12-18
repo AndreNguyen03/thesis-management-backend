@@ -18,3 +18,4 @@ export class BodyReplyRegistrationDto {
     @IsEnum(StudentTopicRole)
     studentRole: string
 }
+

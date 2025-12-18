@@ -4,6 +4,7 @@ export enum PhaseHistoryNote {
     TOPIC_SUBMITTED = 'Đề tài đã được nộp',
     TOPIC_APPROVED = 'Đề tài đã được duyệt bởi ban chủ nhiệm',
     TOPIC_REJECTED = 'Đề tài bị từ chối',
+    TOPIC_WITHDRAWN = 'Đề tài đã được rút về nháp',
     OPEN_REGISTRATION_STARTED = 'Bắt đầu pha mở đăng ký',
     TOPIC_PENDING_REGISTRATION = 'Đề tài chờ đăng ký',
     TOPIC_REGISTERED = 'Đề tài đã được đăng ký',

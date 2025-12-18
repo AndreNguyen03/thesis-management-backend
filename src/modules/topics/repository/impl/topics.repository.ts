@@ -44,6 +44,7 @@ import { pipeline } from 'stream'
 import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
 import path from 'path'
+import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -458,7 +459,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
+                registrationStatus: 1,
                 phaseHistories: 1,
                 isSaved: 1,
                 major: 1,
@@ -548,7 +549,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     async findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
-        pipeline.push({ $match: { deleted_at: null, isRegistered: true } })
+        pipeline.push({ $match: { deleted_at: null, registrationStatus: { $ne: null } } })
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipeline)
     }
@@ -810,26 +811,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         if (userId) {
             pipeline.push({
                 $addFields: {
-                    isRegistered: {
-                        $or: [
-                            {
-                                $expr: {
-                                    $and: [
-                                        {
-                                            $in: [
-                                                new mongoose.Types.ObjectId(userId),
-                                                { $ifNull: ['$studentRef.userId', []] }
-                                            ]
-                                        },
-                                        { $ne: ['$studentRef.status', StudentRegistrationStatus.REJECTED] }
-                                    ]
-                                }
-                            },
-                            {
-                                $in: [new mongoose.Types.ObjectId(userId), { $ifNull: ['$lecturerRef.userId', []] }]
-                            }
-                        ]
-                    },
                     isSaved: { $gt: [{ $size: { $ifNull: ['$savedInfo', []] } }, 0] }
                 }
             })
@@ -874,7 +855,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
                 phaseHistories: 1,
                 isSaved: 1,
                 major: '$majorsInfo',
@@ -892,7 +872,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 defenseResults: 1,
                 studentRef: 1,
                 stats: 1,
-                defenseResult: 1
+                defenseResult: 1,
+                registrationStatus: { $arrayElemAt: [{ $ifNull: ['$studentRef.status', []] }, 0] }
             }
         })
 
@@ -969,7 +950,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
+                registrationStatus: 1,
                 isSaved: 1,
                 major: 1,
                 lecturers: 1,
@@ -1040,7 +1021,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 deleted_at: null,
                 periodId: new mongoose.Types.ObjectId(periodId),
                 //nếu owner là có tức là giảng viên đang gửi yêu cầu lấy đề tải của họ trong period
-                ...(ownerId ? { 'lecturerIds': { $eq: new mongoose.Types.ObjectId(ownerId) } } : {})
+                ...(ownerId ? { lecturerIds: { $eq: new mongoose.Types.ObjectId(ownerId) } } : {})
             }
         })
 
@@ -1069,7 +1050,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
+                registrationStatus: 1,
                 isSaved: 1,
                 major: 1,
                 studentsRegistered: 1,
@@ -1279,7 +1260,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 periodId: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
+                registrationStatus: 1,
                 isSaved: 1,
                 major: 1,
                 lecturers: 1,
@@ -3114,12 +3095,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
-    async findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+    async findSubmittedTopicsByLecturerId(
+        lecturerId: string,
+        query: SubmittedTopicParamsDto
+    ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
+        console.log('Finding submitted topics for lecturer ID:', lecturerId, 'with query:', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.pipelineSubmittedTopics())
         pipelineSub.push({
             $match: {
+                ...(query.periodId ? { periodId: new mongoose.Types.ObjectId(query.periodId) } : {}),
                 createBy: new mongoose.Types.ObjectId(lecturerId),
                 currentStatus: { $ne: TopicStatus.Draft },
                 deleted_at: null
@@ -3178,7 +3164,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 updatedAt: 1,
                 currentStatus: 1,
                 currentPhase: 1,
-                isRegistered: 1,
+                registrationStatus: 1,
                 isSaved: 1,
                 major: '$majorsInfo',
                 lecturers: 1,

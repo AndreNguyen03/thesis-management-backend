@@ -271,6 +271,6 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
                 }
             }
         )
-        return await this.userModel.aggregate(pipeline)[0].exec()
+        return await this.userModel.aggregate(pipeline)
     }
 }

@@ -10,7 +10,7 @@ import { plainToClass, plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
 import { PeriodPhaseName } from '../../enums/period-phases.enum'
-import { ConfigPhaseSubmitTopicDto, GetCurrentPhaseResponseDto } from '../../dtos/period-phases.dtos'
+import { ConfigPhaseSubmitTopicDto } from '../../dtos/period-phases.dtos'
 import { PeriodDetail } from '../../dtos/phase-resolve.dto'
 import { GetCurrentPeriod, GetPeriodDto } from '../../dtos/period.dtos'
 import { $ } from '@faker-js/faker/dist/airline-CLphikKp'
@@ -52,15 +52,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             console.log('Error in createPhaseInPeriod:', error)
             throw new RequestTimeoutException()
         }
-    }
-    async getCurrentPhase(periodId: string): Promise<GetCurrentPhaseResponseDto> {
-        const res = await this.periodModel
-            .findOne({ _id: new mongoose.Types.ObjectId(periodId), deleted_at: null }, { currentPhase: 1 })
-            .exec()
-        if (!res) {
-            throw new BadRequestException('Không tìm thấy kỳ')
-        }
-        return plainToInstance(GetCurrentPhaseResponseDto, res)
     }
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto): Promise<Paginated<Period>> {
         let pipelineSub: any[] = []
@@ -144,7 +135,26 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 }
             }
         )
-
+        pipelineSub.push(
+            {
+                $addFields: {
+                    //lấy ra để kiểm tra để cho phép thực hiện hành động hay không
+                    currentPhaseDetail: {
+                        $filter: {
+                            input: '$phases',
+                            as: 'phase',
+                            cond: { $eq: ['$$phase.phase', '$currentPhase'] }
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$currentPhaseDetail',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
         pipelineSub.push({
             $match: {
                 ...(query.type ? { type: query.type } : {}),
@@ -155,11 +165,27 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
             { $sort: { startTime: -1 } }
         )
-
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                year: 1,
+                semester: 1,
+                type: 1,
+                facultyName: '$facultyInfo.name',
+                status: 1,
+                startTime: 1,
+                endTime: 1,
+                currentPhase: 1,
+                currentPhaseDetail: 1,
+                isActiveAction: 1,
+                navItem: 1,
+                submittedCount: 1
+            }
+        })
         return this.paginationProvider.paginateQuery<Period>(query, this.periodModel, pipelineSub)
     }
     //xuwr lý admin xem danh sách kỳ hiện tại của khoa
-    async getCurrentPeriods(facultyId: string, role: string): Promise<GetCurrentPeriod[]> {
+    async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
         pipelineSub.push(
@@ -237,7 +263,11 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 ]
                             }
                         }
-                    },
+                    }
+                }
+            },
+            {
+                $addFields: {
                     //lấy ra để kiểm tra để cho phép thực hiện hành động hay không
                     currentPhaseDetail: {
                         $filter: {
@@ -252,21 +282,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 $unwind: {
                     path: '$currentPhaseDetail',
                     preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $addFields: {
-                    isActiveAction: {
-                        $switch: {
-                            branches: [
-                                {
-                                    case: { $eq: ['$currentPhaseDetail.status', 'active'] },
-                                    then: true
-                                }
-                            ],
-                            default: false
-                        }
-                    }
                 }
             }
         )
@@ -287,6 +302,11 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 }
             }
         )
+
+        pipelineSub.push(
+            { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
+            { $sort: { startTime: 1 } }
+        )
         switch (role) {
             case UserRole.ADMIN: //coming soon admin xem tất cả các kỳ
                 break
@@ -299,7 +319,314 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                     }
                 })
                 break
-            case (UserRole.LECTURER, UserRole.FACULTY_BOARD):
+            case UserRole.LECTURER:
+                // Lookup số lượng topics đã submit của giảng viên trong period
+                pipelineSub.push({
+                    $lookup: {
+                        from: 'topics',
+                        let: { periodId: '$_id' },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$periodId', '$$periodId'] },
+                                            { $ne: ['$currentStatus', 'draft'] },
+                                            { $eq: ['$createBy', new mongoose.Types.ObjectId(userId)] },
+                                            { $eq: ['$deleted_at', null] }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $count: 'count'
+                            }
+                        ],
+                        as: 'submittedTopicsCount'
+                    }
+                })
+
+                pipelineSub.push({
+                    $addFields: {
+                        submittedCount: {
+                            $ifNull: [{ $arrayElemAt: ['$submittedTopicsCount.count', 0] }, 0]
+                        }
+                    }
+                })
+
+                pipelineSub.push({
+                    $addFields: {
+                        navItem: {
+                            $cond: {
+                                if: { $eq: ['$currentPhase', PeriodPhaseName.SUBMIT_TOPIC] },
+                                then: {
+                                    $let: {
+                                        vars: {
+                                            submitPhase: {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $filter: {
+                                                            input: '$phases',
+                                                            as: 'phase',
+                                                            cond: {
+                                                                $eq: ['$$phase.phase', PeriodPhaseName.SUBMIT_TOPIC]
+                                                            }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            },
+
+                                            isRequired: {
+                                                $gt: [
+                                                    {
+                                                        $size: {
+                                                            $filter: {
+                                                                input: '$phases',
+                                                                as: 'phase',
+                                                                cond: {
+                                                                    $and: [
+                                                                        {
+                                                                            $eq: [
+                                                                                '$$phase.phase',
+                                                                                PeriodPhaseName.SUBMIT_TOPIC
+                                                                            ]
+                                                                        },
+                                                                        {
+                                                                            $in: [
+                                                                                new mongoose.Types.ObjectId(userId),
+                                                                                '$$phase.requiredLecturerIds'
+                                                                            ]
+                                                                        }
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    0
+                                                ]
+                                            }
+                                        },
+                                        in: {
+                                            $cond: {
+                                                if: '$$isRequired',
+                                                then: {
+                                                    $let: {
+                                                        vars: {
+                                                            minRequired: {
+                                                                $ifNull: ['$$submitPhase.minTopicsPerLecturer', 0]
+                                                            },
+                                                            submitted: '$submittedCount'
+                                                        },
+                                                        in: {
+                                                            $cond: {
+                                                                if: {
+                                                                    $or: [
+                                                                        { $eq: ['$currentPhaseDetail', null] },
+                                                                        { $eq: ['$currentPhaseDetail.status', null] }
+                                                                    ]
+                                                                },
+                                                                then: {
+                                                                    title: 'Giai đoạn chưa được cấu hình',
+                                                                    url: null,
+                                                                    isDisabled: true,
+                                                                    badge: {
+                                                                        text: 'Chưa config',
+                                                                        variant: 'secondary'
+                                                                    }
+                                                                },
+                                                                else: {
+                                                                    $cond: {
+                                                                        if: {
+                                                                            $eq: [
+                                                                                '$currentPhaseDetail.status',
+                                                                                'active'
+                                                                            ]
+                                                                        },
+                                                                        then: {
+                                                                            $cond: {
+                                                                                if: {
+                                                                                    $gte: [
+                                                                                        '$$submitted',
+                                                                                        '$$minRequired'
+                                                                                    ]
+                                                                                },
+                                                                                then: {
+                                                                                    title: 'Đã nộp đủ đề tài',
+                                                                                    url: {
+                                                                                        $concat: [
+                                                                                            '/registration/',
+                                                                                            { $toString: '$_id' },
+                                                                                            '/submit-topics'
+                                                                                        ]
+                                                                                    },
+                                                                                    isDisabled: false,
+                                                                                    badge: {
+                                                                                        text: {
+                                                                                            $concat: [
+                                                                                                'Số lượng nộp ',
+                                                                                                {
+                                                                                                    $toString:
+                                                                                                        '$$submitted'
+                                                                                                },
+                                                                                                '/',
+                                                                                                {
+                                                                                                    $toString:
+                                                                                                        '$$minRequired'
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        variant: 'success'
+                                                                                    }
+                                                                                },
+                                                                                else: {
+                                                                                    title: 'Nộp đề tài',
+                                                                                    url: {
+                                                                                        $concat: [
+                                                                                            '/registration/',
+                                                                                            { $toString: '$_id' },
+                                                                                            '/submit-topics'
+                                                                                        ]
+                                                                                    },
+                                                                                    isDisabled: false,
+                                                                                    badge: {
+                                                                                        text: {
+                                                                                            $concat: [
+                                                                                                {
+                                                                                                    $toString:
+                                                                                                        '$$submitted'
+                                                                                                },
+                                                                                                '/',
+                                                                                                {
+                                                                                                    $toString:
+                                                                                                        '$$minRequired'
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        variant: 'warning'
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        else: {
+                                                                            $cond: {
+                                                                                if: {
+                                                                                    $eq: [
+                                                                                        '$currentPhaseDetail.status',
+                                                                                        'pending'
+                                                                                    ]
+                                                                                },
+                                                                                then: {
+                                                                                    title: 'Chưa đến thời gian nộp',
+                                                                                    url: null,
+                                                                                    isDisabled: true,
+                                                                                    badge: {
+                                                                                        text: {
+                                                                                            $concat: [
+                                                                                                'Yêu cầu nộp ',
+                                                                                                {
+                                                                                                    $toString:
+                                                                                                        '$$minRequired'
+                                                                                                }
+                                                                                            ]
+                                                                                        },
+                                                                                        variant: 'info'
+                                                                                    },
+                                                                                    note: {
+                                                                                        $concat: [
+                                                                                            'Yêu cầu nộp ',
+                                                                                            {
+                                                                                                $toString:
+                                                                                                    '$$minRequired'
+                                                                                            },
+                                                                                            ' đề tài. Hãy chuẩn bị nhé'
+                                                                                        ]
+                                                                                    }
+                                                                                },
+                                                                                else: {
+                                                                                    title: {
+                                                                                        $cond: {
+                                                                                            if: {
+                                                                                                $lt: [
+                                                                                                    '$submittedCount',
+                                                                                                    '$$minRequired'
+                                                                                                ]
+                                                                                            },
+                                                                                            then: 'Quá hạn nộp',
+                                                                                            else: 'Nộp đủ - Đã kết thúc'
+                                                                                        }
+                                                                                    },
+                                                                                    url: {
+                                                                                        $concat: [
+                                                                                            '/registration/',
+                                                                                            { $toString: '$_id' },
+                                                                                            '/submit-topics'
+                                                                                        ]
+                                                                                    },
+                                                                                    isDisabled: false,
+                                                                                    badge: {
+                                                                                        text: 'Thời gian đã hết',
+                                                                                        variant: 'danger'
+                                                                                    },
+                                                                                    note: {
+                                                                                        $cond: {
+                                                                                            if: {
+                                                                                                $lt: [
+                                                                                                    '$submittedCount',
+                                                                                                    '$$minRequired'
+                                                                                                ]
+                                                                                            },
+                                                                                            then: 'Cố gắng hoàn thành',
+                                                                                            else: ''
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                else: {
+                                                    title: 'Không được yêu cầu nộp',
+                                                    url: null,
+                                                    isDisabled: true
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                else: {
+                                    $cond: {
+                                        if: { $eq: ['$currentPhase', PeriodPhaseName.OPEN_REGISTRATION] },
+                                        then: {
+                                            title: 'Đề tài của bạn đã mở đăng ký',
+                                            url: {
+                                                $concat: [{ $toString: '$_id' }, '/manage-topics']
+                                            },
+                                            isDisabled: false
+                                        },
+                                        else: []
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+
+                //giảng viên lấy ra thì phải là những period pending hoặc active hoặc timeout
+                //nếu completed thì biến mất
+                pipelineSub.push({
+                    $match: {
+                        status: { $in: ['pending', 'active', 'timeout'] },
+                        currentPhase: { $ne: PeriodPhaseName.EMPTY }
+                    }
+                })
+
+                break
+            case UserRole.FACULTY_BOARD:
                 //giảng viên lấy ra thì phải là những period pending hoặc active hoặc timeout
                 //nếu completed thì biến mất
                 pipelineSub.push({
@@ -310,20 +637,57 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 })
                 break
             case UserRole.STUDENT:
-                //sinh viên lấy ra thì phải lá những period đang pending hoặc active
+                pipelineSub.push({
+                    $addFields: {
+                        navItem: {
+                            $cond: {
+                                if: { $eq: ['$currentPhaseDetail.status', 'pending'] },
+                                then: {
+                                    title: 'Đợt đăng ký đề tài chưa mở',
+                                    url: null,
+                                    isDisabled: true,
+                                    badge: {
+                                        text: 'Chưa bắt đầu',
+                                        variant: 'default'
+                                    }
+                                },
+                                else: {
+                                    $cond: {
+                                        if: { $eq: ['$currentPhaseDetail.status', 'active'] },
+                                        then: {
+                                            title: 'Khám phá các đề tài đã mở đăng ký',
+                                            url: { $concat: ['/registration/', { $toString: '$_id' }] },
+                                            isDisabled: false,
+                                            badge: {
+                                                text: 'Đang mở',
+                                                variant: 'success'
+                                            }
+                                        },
+                                        else: {
+                                            title: 'Hết hạn đăng ký đề tài',
+                                            url: null,
+                                            isDisabled: true,
+                                            badge: {
+                                                text: 'Hết hạn',
+                                                variant: 'danger'
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+                //sinh viên lấy ra thì phải lấy những period đang pending hoặc active
                 pipelineSub.push({
                     $match: {
                         status: { $in: ['pending', 'active', 'timeout'] },
                         currentPhase: PeriodPhaseName.OPEN_REGISTRATION
                     }
                 })
+
                 break
         }
-
-        pipelineSub.push(
-            { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
-            { $sort: { startTime: 1 } }
-        )
         pipelineSub.push({
             $project: {
                 _id: 1,
@@ -335,17 +699,20 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 startTime: 1,
                 endTime: 1,
                 currentPhase: 1,
-                currentPhaseStatus: '$currentPhaseDetail.status',
-                isActiveAction: 1
+                currentPhaseDetail: 1,
+                isActiveAction: 1,
+                navItem: 1,
+                submittedCount: 1
             }
         })
+
         return await this.periodModel.aggregate(pipelineSub).exec()
     }
     async deletePeriod(periodId: string): Promise<boolean> {
         console.log(periodId)
         const result = await this.periodModel.aggregate([
             { $match: { _id: new mongoose.Types.ObjectId(periodId), deleted_at: null } },
-            { $project: { startTime: 1, endTime: 1, status: 1 } }
+            { $project: { startTime: 1, endTime: 1, status: 1, currentPhase: 1 } }
         ])
 
         if (result.length === 0) {
@@ -364,7 +731,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         } else {
             status = 'timeout'
         }
-        if (status !== 'pending') {
+        if (status !== 'pending' && result[0].currentPhase !== PeriodPhaseName.EMPTY) {
             throw new BadRequestException('Kỳ này đã bắt đầu hoặc đã kết thúc, không thể xóa')
         }
         const res = await this.periodModel.updateOne(
@@ -464,7 +831,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             .sort({ createdAt: -1 })
             .populate('faculty')
             .lean()
-        console.log('currentPeriod:', currentPeriod)
         if (!currentPeriod) {
             throw new BadRequestException('Không tìm thấy kỳ hiện tại')
         }
@@ -740,10 +1106,10 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             throw new BadRequestException('Đã tồn tại kỳ với loại và trạng thái trùng nhau')
         }
         const createdPeriod = new this.periodModel(period)
-        await createdPeriod.save()
-        return await this.initalizePhasesForNewPeriod(createdPeriod._id.toString())
+        const res = await createdPeriod.save()
+        return await this.initalizePhasesForNewPeriod(res._id.toString())
     }
-    async getPeriodById(periodId: string): Promise<Period> {
+    async getPeriodById(periodId: string): Promise<GetPeriodDto> {
         let pipelineMain = await this.AbstractGetPeriodInfo(periodId)
         const result = await this.periodModel.aggregate(pipelineMain)
         if (!result || result.length === 0) throw new NotFoundException('Không tìm thấy kỳ')

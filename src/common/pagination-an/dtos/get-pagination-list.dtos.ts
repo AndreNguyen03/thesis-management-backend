@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer'
 
-class MetaDto {
+export class MetaDto {
     @Expose()
     itemsPerPage: number
     @Expose()

@@ -25,6 +25,7 @@ import {
     LecGetTopicStatisticInOpenRegPhaseDto,
     LecGetTopicStatisticInSubmitPhaseDto
 } from '../dtos/get-statistics-topics.dtos'
+import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Topic } from '../schemas/topic.schemas'
 
@@ -82,7 +83,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
     deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
-    findSubmittedTopicsByLecturerId(lecturerId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    findSubmittedTopicsByLecturerId(lecturerId: string, query: SubmittedTopicParamsDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
     getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo>
     copyToDraft(topicId: string, actorId: string): Promise<string>

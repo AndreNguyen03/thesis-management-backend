@@ -25,7 +25,9 @@ export class GetMiniPeriodDto {
     @Expose()
     _id: string
     @Expose()
-    name: string
+    year: string
+    @Expose()
+    semester: number
     @Expose()
     @Type(() => GetFacultyDto)
     faculty: GetFacultyDto
@@ -88,6 +90,31 @@ export class PeriodStatsQueryParams {
     phase: PeriodPhaseName
 }
 
+export class Badge {
+    @Expose()
+    text: string
+    @Expose()
+    varient: string
+}
+export class Label {
+    @Expose()
+    text: string
+    @Expose()
+    color: string
+}
+export class NavItem {
+    @Expose()
+    url: string
+    @Expose()
+    title: string
+    @Expose()
+    isDisabled: boolean
+    @Expose()
+    badge: Badge
+    @Expose()
+    note: string
+}
+
 export class GetCurrentPeriod {
     @Expose()
     _id: string
@@ -107,9 +134,10 @@ export class GetCurrentPeriod {
     @Expose()
     endTime: Date
     @Expose()
-    currentPhase: string
-    @Expose()
-    currentPhaseStatus: string
+    currentPhaseDetail: GetPeriodPhaseDto
     @Expose()
     isActiveAction: boolean
+    @Expose()
+    @Type(() => NavItem)
+    navItem: NavItem[]
 }
