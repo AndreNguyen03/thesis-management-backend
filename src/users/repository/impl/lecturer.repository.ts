@@ -1,19 +1,27 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { ClientSession, Document, Model, PipelineStage, Types } from 'mongoose'
 import { LecturerRepositoryInterface } from '../lecturer.repository.interface'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 import { Lecturer, LecturerDocument } from '../../schemas/lecturer.schema'
-import { CreateLecturerDto, UpdateLecturerProfileDto, UpdateLecturerTableDto } from '../../dtos/lecturer.dto'
+import {
+    CreateBatchLecturerDto,
+    CreateLecturerDto,
+    UpdateLecturerProfileDto,
+    UpdateLecturerTableDto
+} from '../../dtos/lecturer.dto'
 import { PaginationQueryDto } from '../../../common/pagination/dtos/pagination-query.dto'
 import { PaginationQueryDto as PaginationAn } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated as Paginated_An } from '../../../common/pagination-an/interfaces/paginated.interface'
 
-import { Paginated } from '../../../common/pagination/interface/paginated.interface'
 import { User } from '../../schemas/users.schema'
 import { Faculty } from '../../../modules/faculties/schemas/faculty.schema'
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 import { fa } from '@faker-js/faker/.'
+import { RequestGetLecturerDto } from '../../dtos/request-get.dto'
+import { generateEmail } from '../../helpers/email-gen'
+import { HashingProvider } from '../../../auth/providers/hashing.provider'
+import { UserRole } from '../../enums/user-role'
 
 @Injectable()
 export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> implements LecturerRepositoryInterface {
@@ -22,12 +30,122 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         private readonly lecturerModel: Model<Lecturer>,
         @InjectModel(User.name)
         private readonly userModel: Model<User>,
+        @InjectModel(Faculty.name)
+        private readonly facultyModel: Model<Faculty>,
+        private readonly hashingProvider: HashingProvider,
         private readonly paginationProvider: PaginationProvider
     ) {
         super(lecturerModel)
     }
 
+    private readonly logger = new Logger(LecturerRepository.name)
+
+    async createMany(dtos: CreateBatchLecturerDto[]): Promise<{
+        success: { fullName: string; email: string; facultyName: string }[]
+        failed: { fullName: string; reason: string }[]
+    }> {
+        this.logger.log(`🚀 Bắt đầu tạo hàng loạt giảng viên | Tổng: ${dtos.length}`)
+
+        const success: { fullName: string; email: string; facultyName: string }[] = []
+        const failed: { fullName: string; reason: string }[] = []
+
+        // Lấy email hiện có
+        this.logger.log('🔍 Lấy danh sách email đã tồn tại')
+
+        const existedEmails = await this.userModel
+            .find()
+            .select('email -_id')
+            .lean()
+            .exec()
+            .then((u) => u.map((x) => x.email))
+
+        const emailSet = new Set(existedEmails)
+
+        this.logger.log(`📧 Tổng email đã tồn tại: ${emailSet.size}`)
+
+        const DEFAULT_PASSWORD = '123456789'
+
+        for (const [index, dto] of dtos.entries()) {
+            this.logger.log(`➡️ [${index + 1}/${dtos.length}] Xử lý giảng viên: ${dto.fullName}`)
+
+            try {
+                // GEN EMAIL
+                const email = generateEmail(dto.fullName, emailSet)
+                emailSet.add(email)
+
+                this.logger.log(`📧 Email được tạo: ${email}`)
+
+                // TÌM FACULTY
+                const faculty = await this.facultyModel.findOne({ name: dto.facultyName }).lean()
+
+                if (!faculty) {
+                    const reason = `Không tìm thấy khoa '${dto.facultyName}'`
+
+                    this.logger.warn(`⚠️ ${dto.fullName} | ${reason}`)
+
+                    failed.push({
+                        fullName: dto.fullName,
+                        reason
+                    })
+                    continue
+                }
+
+                // HASH PASSWORD
+                const hashedPassword = await this.hashingProvider.hashPassword(DEFAULT_PASSWORD)
+
+                // TẠO USER
+                const [user] = await this.userModel.create([
+                    {
+                        email,
+                        password_hash: hashedPassword,
+                        fullName: dto.fullName,
+                        role: UserRole.LECTURER,
+                        isActive: true,
+                        phone: dto.phone ?? ''
+                    }
+                ])
+
+                this.logger.log(`👤 User tạo thành công | id=${user._id.toString()}`)
+
+                // TẠO LECTURER
+                await this.lecturerModel.create([
+                    {
+                        userId: user._id,
+                        title: dto.title,
+                        facultyId: faculty._id
+                    }
+                ])
+
+                this.logger.log(`🎓 Lecturer tạo thành công | ${dto.fullName} - ${faculty.name}`)
+
+                // SUCCESS
+                success.push({
+                    fullName: user.fullName,
+                    email: user.email,
+                    facultyName: faculty.name
+                })
+            } catch (error) {
+                const reason = error?.message ?? 'Không rõ lỗi'
+
+                this.logger.error(`❌ Lỗi khi tạo giảng viên: ${dto.fullName}`, error?.stack)
+
+                failed.push({
+                    fullName: dto.fullName,
+                    reason
+                })
+            }
+        }
+
+        // SUMMARY
+        this.logger.log('📊 Kết quả tạo hàng loạt giảng viên')
+        this.logger.log(`✅ Thành công: ${success.length}`)
+        this.logger.log(`❌ Thất bại: ${failed.length}`)
+
+        return { success, failed }
+    }
+
     async updateLecturerByTable(id: string, dto: UpdateLecturerTableDto) {
+        console.log(`Updating lecturer by table with id: ${id}`, dto)
         const objectId = new Types.ObjectId(id)
         const lecturer = await this.lecturerModel.findOne({ userId: objectId })
         if (!lecturer) throw new Error('Lecturer not found')
@@ -96,10 +214,13 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         return { message: 'Profile updated successfully' }
     }
 
-    async getLecturers(query: PaginationQueryDto): Promise<Paginated<any>> {
-        const { page, page_size, search_by, query: q, sort_by, sort_order } = query
+    async getLecturers(query: RequestGetLecturerDto): Promise<Paginated_An<any>> {
+        let pipelineSub: any[] = []
 
-        const pipeline: any[] = [
+        // =======================
+        // Join User
+        // =======================
+        pipelineSub.push(
             {
                 $lookup: {
                     from: 'users',
@@ -108,7 +229,13 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                     as: 'user'
                 }
             },
-            { $unwind: '$user' },
+            { $unwind: '$user' }
+        )
+
+        // =======================
+        // Join Faculty
+        // =======================
+        pipelineSub.push(
             {
                 $lookup: {
                     from: 'faculties',
@@ -118,59 +245,55 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                 }
             },
             { $unwind: '$faculty' }
-        ]
+        )
 
-        // search (chỉ cho phép search theo các field định trước)
-        if (search_by && q) {
-            const searchFieldMap: Record<string, string> = {
-                fullName: 'user.fullName',
-                email: 'user.email',
-                phone: 'user.phone'
-            }
-
-            const searchField = searchFieldMap[search_by]
-            if (searchField) {
-                pipeline.push({
-                    $match: {
-                        [searchField]: { $regex: q, $options: 'i' }
-                    }
-                })
-            }
-        }
-
-        // sort
-        pipeline.push({
-            $sort: { [sort_by || 'createdAt']: sort_order === 'asc' ? 1 : -1 }
-        })
-
-        // pagination
-        const skip = (page - 1) * page_size
-        pipeline.push({ $skip: skip }, { $limit: page_size })
-
-        // flat data
-        pipeline.push({
-            $project: {
-                id: '$user._id',
+        // =======================
+        // Add fields để filter / search
+        // =======================
+        pipelineSub.push({
+            $addFields: {
+                id: '$userId',
+                title: '$title',
                 fullName: '$user.fullName',
                 email: '$user.email',
                 phone: '$user.phone',
                 facultyName: '$faculty.name',
                 facultyId: '$faculty._id',
-                role: '$user.role',
-                title: 1,
-                createdAt: 1,
-                isActive: '$user.isActive'
+                isActive: '$user.isActive',
+                createdAt: '$createdAt'
             }
         })
 
-        // chạy song song aggregate & count
-        const [data, total] = await Promise.all([
-            this.lecturerModel.aggregate(pipeline),
-            this.lecturerModel.countDocuments()
-        ])
+        // =======================
+        // FILTER (BẮT BUỘC – giống getAllPeriods)
+        // =======================
+        pipelineSub.push({
+            $match: {
+                ...(query.title && query.title !== 'all' ? { title: query.title } : {}),
 
-        return { datas: data, totalRecords: total }
+                ...(query.isActive !== undefined && query.isActive !== 'all' ? { isActive: query.isActive } : {}),
+
+                ...(query.facultyId && query.facultyId !== 'all' && mongoose.Types.ObjectId.isValid(query.facultyId)
+                    ? { facultyId: new mongoose.Types.ObjectId(query.facultyId) }
+                    : {}),
+
+                deleted_at: null
+            }
+        })
+
+        // =======================
+        // Sort
+        // =======================
+        pipelineSub.push({
+            $sort: {
+                createdAt: -1
+            }
+        })
+
+        return this.paginationProvider.paginateQuery<any>(query, this.lecturerModel, pipelineSub)
     }
+
+   
 
     async findByEmail(email: string): Promise<LecturerDocument | null> {
         return this.lecturerModel.findOne({ email, deleted_at: null }).exec()
@@ -249,5 +372,4 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
         return this.paginationProvider.paginateQuery<Lecturer>(paginationQuery, this.lecturerModel, pipeline)
     }
-  
 }

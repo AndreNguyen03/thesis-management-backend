@@ -1,4 +1,4 @@
-import { IsArray, IsDateString, IsEnum, IsNotEmpty, IsOptional, IsPositive, IsString, Min } from 'class-validator'
+import { IsArray, IsDateString, IsEnum, IsIn, IsNotEmpty, IsOptional, IsPositive, IsString, Min } from 'class-validator'
 
 import { Type } from 'class-transformer'
 
@@ -44,9 +44,8 @@ export class PaginationQueryDto {
 
     @IsNotEmpty()
     @IsString()
-    @IsEnum(['asc', 'desc'])
-    //trình tự sắp xếp
-    sort_order?: string = 'desc'
+    @IsIn(['asc', 'desc'])
+    sort_order?: 'asc' | 'desc' = 'desc'
 
     //Tìm kiếm xem createAt nằm trong khoảng nào
     @IsOptional()

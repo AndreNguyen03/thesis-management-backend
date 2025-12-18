@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import {
+    CreateBatchStudentDto,
     CreateStudentDto,
     ResponseStudentProfileDto,
     UpdateStudentProfileDto,
@@ -18,6 +19,7 @@ import { Connection } from 'mongoose'
 import { CreateUserDto } from '../dtos/create-user.dto'
 import { UserRole } from '../enums/user-role'
 import { Paginated as Paginated_An } from '../../common/pagination-an/interfaces/paginated.interface'
+import { RequestGetStudentDto } from '../dtos/request-get.dto'
 
 @Injectable()
 export class StudentService extends BaseServiceAbstract<Student> {
@@ -51,6 +53,11 @@ export class StudentService extends BaseServiceAbstract<Student> {
             class: doc.class,
             major: doc.major
         }
+    }
+
+    async createManyStudent(dtos: CreateBatchStudentDto[]) {
+        const result = await this.studentRepository.createMany(dtos)
+        return result
     }
 
     async updatePassword(id: string, newPasswordHash: string): Promise<void> {
@@ -90,7 +97,7 @@ export class StudentService extends BaseServiceAbstract<Student> {
     }
 
     // Lấy tất cả students với phân trang
-    async getAllStudents(paginationQuery: PaginationQueryDto) {
+    async getAllStudents(paginationQuery: RequestGetStudentDto) {
         const students = await this.studentRepository.getStudents(paginationQuery)
         return students
     }

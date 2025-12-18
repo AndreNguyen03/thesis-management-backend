@@ -8,6 +8,7 @@ import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-quer
 import { PaginationQueryDto as PaginationAn } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../common/pagination/interface/paginated.interface'
 import {
+    CreateBatchLecturerDto,
     CreateLecturerDto,
     ResponseLecturerProfileDto,
     UpdateLecturerProfileDto,
@@ -17,6 +18,7 @@ import { UserRepositoryInterface } from '../repository/user.repository.interface
 import { InjectConnection } from '@nestjs/mongoose'
 import { Connection, HydratedDocument } from 'mongoose'
 import { UserRole } from '../enums/user-role'
+import { RequestGetLecturerDto } from '../dtos/request-get.dto'
 
 @Injectable()
 export class LecturerService extends BaseServiceAbstract<Lecturer> {
@@ -52,6 +54,12 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
         }
     }
+
+    async createManyLecturer(dtos: CreateBatchLecturerDto[]) {
+        const result = await this.lecturerRepository.createMany(dtos)
+        return result
+    }
+
     async updatePassword(id: string, newPasswordHash: string): Promise<void> {
         await this.lecturerRepository.updatePassword(id, newPasswordHash)
     }
@@ -89,8 +97,8 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
     }
 
     // get all lecturers with pagination
-    async getAllLecturers(paginationQuery: PaginationQueryDto) {
-        const lecturers = await this.lecturerRepository.getLecturers(paginationQuery)
+    async getAllLecturers(query: RequestGetLecturerDto) {
+        const lecturers = await this.lecturerRepository.getLecturers(query)
         return lecturers
     }
 
@@ -140,5 +148,4 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             ? { success: true, message: 'Xóa giảng viên thành công' }
             : { success: false, message: 'Xóa giảng viên thất bại' }
     }
-    
 }

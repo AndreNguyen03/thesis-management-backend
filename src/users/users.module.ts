@@ -24,6 +24,8 @@ import { GetFacultyByUserIdProvider } from './provider/get-facutly-by-userId.pro
 import { PaginationAnModule } from '../common/pagination-an/pagination.module'
 import { CheckUserInfoProvider } from './provider/check-user-info.provider'
 import { NotificationsModule } from '../modules/notifications/notifications.module'
+import { Faculty, FacultySchema } from '../modules/faculties/schemas/faculty.schema'
+import { Major, MajorSchema } from '../modules/majors/schemas/majors.schemas'
 
 @Module({
     controllers: [UserController],
@@ -77,7 +79,10 @@ import { NotificationsModule } from '../modules/notifications/notifications.modu
             { name: Lecturer.name, schema: LecturerSchema },
             { name: User.name, schema: UserSchema },
             { name: Admin.name, schema: AdminSchema },
-            { name: FacultyBoard.name, schema: FacultyBoardSchema }
+            { name: FacultyBoard.name, schema: FacultyBoardSchema },
+            { name: Faculty.name, schema: FacultySchema },
+            { name: Major.name, schema: MajorSchema }
+            
         ]),
         ConfigModule.forFeature(profileConfig),
         forwardRef(() => UploadFilesModule),
