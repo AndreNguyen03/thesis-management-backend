@@ -14,4 +14,5 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     getEmailListFromLecturerInFaculty(facultyId: string): Promise<string[]>
     getEmailListFromStudentInFaculty(facultyId: string): Promise<string[]>
     getUsersByFacultyId(facultyId: string): Promise<User[]>
+    getUsersByUserIds(userIds: string[]): Promise<User[]>
 }

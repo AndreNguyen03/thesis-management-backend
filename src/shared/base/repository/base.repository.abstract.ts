@@ -111,7 +111,13 @@ export abstract class BaseRepositoryAbstract<T extends BaseEntity> implements Ba
     }
 
     async update(id: string, dto: Partial<T>): Promise<T | null> {
-        const updated = await this.model.findOneAndUpdate({ _id: id, deleted_at: null }, dto, { new: true }).lean()
+        let updated
+        try {
+            updated = await this.model.findOneAndUpdate({ _id: id, deleted_at: null }, dto, { new: true }).lean()
+        } catch (error) {
+            console.error('Update error:', error)
+            throw new RequestTimeoutException()
+        }
         return updated as T | null
     }
 

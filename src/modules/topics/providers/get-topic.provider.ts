@@ -1,23 +1,64 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { TopicRepositoryInterface } from '../repository'
-import { PaginatedGeneralTopics, RequestGetTopicsInAdvanceSearchParams, RequestGetTopicsInPhaseParams } from '../dtos'
+import {
+    GetGeneralTopics,
+    PaginatedGeneralTopics,
+    PaginatedTopicsInPeriod,
+    RequestGetTopicsInAdvanceSearchParams,
+    RequestGetTopicsInPhaseParams,
+    RequestLectureGetTopicsInPhaseParams
+} from '../dtos'
 import { plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { Topic } from '../schemas/topic.schemas'
 import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
+import { PeriodsService } from '../../periods/application/periods.service'
+
 @Injectable()
 export class GetTopicProvider {
     // Add methods and logic as needed
     constructor(
         @Inject('TopicRepositoryInterface') private readonly topicRepositoryInterface: TopicRepositoryInterface,
+        @Inject(forwardRef(() => PeriodsService))
+        private readonly periodsService: PeriodsService
     ) {}
-    async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<Paginated<Topic>> {
-        return await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)
+    async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
+        const currentPhase = await this.periodsService.getPeriodById(periodId)
+        const paginationResult = await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)
+        return {
+            data: plainToInstance(GetGeneralTopics, paginationResult.data, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }),
+            meta: {
+                ...paginationResult.meta,
+                periodInfo: currentPhase
+            }
+        }
     }
     async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
         return await this.topicRepositoryInterface.getTopicsInLibrary(query)
     }
-
+    async lecturerGetTopicsInPhase(
+        userId: string,
+        periodId: string,
+        query: RequestLectureGetTopicsInPhaseParams
+    ): Promise<PaginatedTopicsInPeriod> {
+        //lấy phase hiện tại của period
+        const currentPhase = await this.periodsService.getPeriodById(periodId)
+        query.phase = currentPhase.currentPhase
+        const paginationResult = await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query, userId)
+        return {
+            data: plainToInstance(GetGeneralTopics, paginationResult.data, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }),
+            meta: {
+                ...paginationResult.meta,
+                periodInfo: currentPhase
+            }
+        }
+    }
     async getRegisteringTopics(
         periodId: string,
         query: RequestGetTopicsInAdvanceSearchParams

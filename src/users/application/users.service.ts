@@ -51,6 +51,10 @@ export class UserService extends BaseServiceAbstract<User> {
     }
     async getUsersByFacultyId(facultyId: string): Promise<User[]> {
         const users = await this.userRepository.getUsersByFacultyId(facultyId)
-        return users    
+        return users
+    }
+    async getUsersByUserIds(userIds: string[]): Promise<User[]> {
+        const users = await this.userRepository.getUsersByUserIds(userIds)
+        return users
     }
 }

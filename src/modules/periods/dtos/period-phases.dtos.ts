@@ -82,7 +82,4 @@ export class UpdatePeriodPhaseDto {
     @IsBoolean()
     allowManualApproval: boolean
 }
-export class GetCurrentPhaseResponseDto {
-    currentPhase: string
-    endTime: Date
-}
+

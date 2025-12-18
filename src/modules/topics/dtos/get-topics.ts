@@ -1,19 +1,20 @@
 import { Expose, Transform, Type } from 'class-transformer'
 import { IntersectionType } from '@nestjs/swagger'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
-import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetPaginatedObjectDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { GetFieldNameReponseDto } from '../../fields/dtos/get-fields.dto'
 import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requirement.dto'
 import { RelatedStudentInTopic, ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
-import { GetMiniPeriodDto } from '../../periods/dtos/period.dtos'
+import { GetMiniPeriodDto, GetPeriodDto } from '../../periods/dtos/period.dtos'
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import { GetMiniUserDto } from '../../../users/dtos/user.dto'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PeriodType } from '../../periods/enums/periods.enum'
 import { RegistrationDto } from './registration/get-students-in-topic'
+import { StudentRegistrationStatus } from '../../registrations/enum/student-registration-status.enum'
 export class GetDetailGrade {
     @Expose()
     _id: string
@@ -213,6 +214,18 @@ export class PaginatedGeneralTopics extends GetPaginatedObjectDto {
     @Type(() => GetGeneralTopics)
     data: GetGeneralTopics[]
 }
+export class TopicsInPeriodMeta extends MetaDto {
+    @Expose()
+    @Type(() => GetPeriodDto)
+    periodInfo: GetPeriodDto
+}
+export class PaginatedTopicsInPeriod {
+    @Expose()
+    @Type(() => GetGeneralTopics)
+    data: GetGeneralTopics[]
+    @Expose()
+    meta: TopicsInPeriodMeta
+}
 export class PaginatedSubmittedTopics extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GetSubmittedTopic)
@@ -276,7 +289,7 @@ export class GetTopicResponseDto {
     lecturers: ResponseMiniLecturerDto[]
 
     @Expose()
-    isRegistered: boolean
+    registrationStatus: StudentRegistrationStatus
 
     @Expose()
     isSaved: boolean
@@ -407,6 +420,17 @@ export class RequestGetTopicsInPhaseParams extends IntersectionType(
     PaginationQueryDto
 ) {}
 
+export class RequestLecturerGetTopicsInPhase {
+    @IsOptional()
+    @IsEnum(PeriodPhaseName)
+    phase: string
+    @IsOptional()
+    status: string
+}
+export class RequestLectureGetTopicsInPhaseParams extends IntersectionType(
+    RequestLecturerGetTopicsInPhase,
+    PaginationQueryDto
+) {}
 export class RequestGetTopicsInAdvanceSearch {
     @IsNotEmpty()
     //100 là search semanticx

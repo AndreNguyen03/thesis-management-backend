@@ -291,4 +291,37 @@ export class MailService {
             console.log(`ℹ️ Không tìm thấy job cũ: ${jobId}`)
         }
     }
+
+    // Thêm vào MailService class
+    async sendSubmitTopicRequestEmail(data: {
+        users: User[]
+        periodName: string
+        deadline: string
+        periodId: string
+    }): Promise<void> {
+        if (this.isTestEnv()) return
+
+        const { users, periodName, deadline, periodId } = data
+
+        for (let i = 0; i < users.length; i++) {
+            await this.mailQueue.add(
+                'send-submit-topic-request',
+                {
+                    to: users[i].email,
+                    lecturerName: users[i].fullName,
+                    periodName,
+                    deadline,
+                    periodId
+                },
+                {
+                    delay: i * 2000,
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
+    }
 }

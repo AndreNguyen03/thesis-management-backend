@@ -40,6 +40,7 @@ import { GetMajorLibraryCombox, GetMiniMiniMajorDto } from '../majors/dtos/get-m
 import { GetDocumentsDto, GetUploadedFileDto } from '../upload-files/dtos/upload-file.dtos'
 import { DownloadFileDto } from '../upload-files/dtos/download-file.dtos'
 import { Response } from 'express'
+import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 
 @Controller('topics')
 export class TopicController {
@@ -137,7 +138,7 @@ export class TopicController {
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
     @Get('/lecturer/get-submitted-topics')
-    async getSubmittedTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+    async getSubmittedTopics(@Req() req: { user: ActiveUserData }, @Query() query: SubmittedTopicParamsDto) {
         const res = await this.topicService.getSubmittedTopics(req.user.sub, query)
         return plainToInstance(PaginatedSubmittedTopics, res, {
             excludeExtraneousValues: true,

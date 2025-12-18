@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { ClientSession, Model, Types } from 'mongoose'
+import mongoose, { ClientSession, Model, Types } from 'mongoose'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
 import { User } from '../../schemas/users.schema'
 import { UserRepositoryInterface } from '../user.repository.interface'
@@ -19,6 +19,10 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
         super(userModel)
     }
 
+    async getUsersByUserIds(userIds: string[]): Promise<User[]> {
+        const objectIds = userIds.map((id) => new mongoose.Types.ObjectId(id))
+        return await this.userModel.find({ _id: { $in: objectIds }, deleted_at: null, isActive: true }).exec()
+    }
     async findByEmail(email: string): Promise<User | null> {
         return this.userModel.findOne({ email, deleted_at: null }).exec()
     }
@@ -267,6 +271,6 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
                 }
             }
         )
-        return await this.userModel.aggregate(pipeline)[0].exec()
+        return await this.userModel.aggregate(pipeline)
     }
 }

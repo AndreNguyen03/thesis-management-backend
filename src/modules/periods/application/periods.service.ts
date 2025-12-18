@@ -1,6 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
-import { CreatePeriodDto, GetPeriodDto, PeriodStatsQueryParams, UpdatePeriodDto } from '../dtos/period.dtos'
+import {
+    CreatePeriodDto,
+    GetCurrentPeriod,
+    GetPeriodDto,
+    PeriodStatsQueryParams,
+    UpdatePeriodDto
+} from '../dtos/period.dtos'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { Period } from '../schemas/period.schemas'
 import { CreatePhaseProvider } from '../providers/create-phase.provider'
@@ -16,14 +22,12 @@ import {
 } from '../dtos/period-phases.dtos'
 import { PeriodPhaseNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
-import { RequestGetTopicsInPhaseParams } from '../../topics/dtos'
+import { PaginatedTopicsInPeriod, RequestGetTopicsInPhaseParams } from '../../topics/dtos'
 import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.provider'
-import { GetPhaseProvider } from '../providers/get-phase.provider'
+import { GetPeriodInfoProvider } from '../providers/get-period-info.provider'
 import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
 
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { GetCustomRequestDto } from '../dtos/custom-request.dtos'
-import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
 import {
     PeriodDetail,
     PeriodPhaseDetail,
@@ -37,6 +41,7 @@ import {
 } from '../../topics/dtos/get-statistics-topics.dtos'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
+import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -45,8 +50,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly createPhaseProvider: CreatePhaseProvider,
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
-        private readonly getPhaseProvider: GetPhaseProvider,
-        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider
+        private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
+        private readonly notificationPublisherService: NotificationPublisherService,
     ) {
         super(iPeriodRepository)
     }
@@ -185,14 +190,19 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return isEnded && !hasPending && !nextPhaseIsConfigured
     }
 
-    async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto) {
+    async createNewPeriod(actorId: string, facultyId: string, createPeriodDto: CreatePeriodDto): Promise<string> {
         const periodData = {
             ...createPeriodDto,
             faculty: facultyId,
             actorId
         }
         const newPeriod = plainToClass(Period, periodData)
-        await this.iPeriodRepository.createNewPeriod(newPeriod)
+        const res = await this.iPeriodRepository.createNewPeriod(newPeriod)
+        const periodResult = plainToInstance(GetPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+        return await this.notificationPublisherService.sendNewSemesticNotification(facultyId, periodResult)
     }
     async getAllPeriods(facultyId: string, query: RequestGetPeriodsDto) {
         return this.iPeriodRepository.getAllPeriods(facultyId, query)
@@ -307,7 +317,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     //     return period
     // }
 
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) {
+    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) : Promise<PaginatedTopicsInPeriod> {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }
@@ -362,12 +372,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     }
 
     async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
-        return await this.iPeriodRepository.getCurrentPeriodInfo(facultyId, type)
+        return await this.iPeriodRepository.getPeriodInfo(facultyId, type)
+    }
+    async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {
+        return await this.iPeriodRepository.getCurrentPeriods(facultyId, role, userId)
     }
     async checkCurrentPeriod(periodId: string): Promise<boolean> {
         return await this.iPeriodRepository.checkCurrentPeriod(periodId)
     }
-    async getPeriodById(periodId: string): Promise<GetPeriodDto | null> {
+    async getPeriodById(periodId: string): Promise<GetPeriodDto> {
         const res = await this.iPeriodRepository.getPeriodById(periodId)
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,

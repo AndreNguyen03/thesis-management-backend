@@ -2,12 +2,13 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuard
 import { PeriodsService } from './application/periods.service'
 import {
     CreatePeriodDto,
+    GetCurrentPeriod,
     GetPaginatedPeriodDto,
     GetPeriodDto,
     PeriodStatsQueryParams,
     UpdatePeriodDto
 } from './dtos/period.dtos'
-import { GetCurrentPeriodRequest, RequestGetPeriodsDto } from './dtos/request-get-all.dto'
+import { RequestGetPeriodsDto } from './dtos/request-get-all.dto'
 import { plainToInstance } from 'class-transformer'
 import {
     ConfigCompletionPhaseDto,
@@ -17,7 +18,13 @@ import {
     GetPeriodPhaseDto,
     UpdatePeriodPhaseDto
 } from './dtos/period-phases.dtos'
-import { GetGeneralTopics, PaginatedGeneralTopics, RequestGetTopicsInPhaseParams } from '../topics/dtos'
+import {
+    GetGeneralTopics,
+    PaginatedGeneralTopics,
+    PaginatedTopicsInPeriod,
+    RequestGetTopicsInPhaseParams,
+    RequestLectureGetTopicsInPhaseParams
+} from '../topics/dtos'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
@@ -29,12 +36,13 @@ import { GetStatiticInPeriod } from './dtos/statistic.dtos'
 import { PeriodPhaseName } from './enums/period-phases.enum'
 import { Phase1Response, Phase2Response, Phase3Response } from './dtos/phase-resolve.dto'
 import { TopicSearchService } from '../topic_search/application/search.service'
+import { GetTopicProvider } from '../topics/providers/get-topic.provider'
 
 @Controller('periods')
 export class PeriodsController {
     constructor(
         private readonly periodsService: PeriodsService,
-        private readonly topicSearchService: TopicSearchService
+        private readonly getTopicProvider: GetTopicProvider
     ) {}
 
     // Tạo kì/ đợt đăng ký mới
@@ -43,8 +51,8 @@ export class PeriodsController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async createNewPeriod(@Req() req: { user: ActiveUserData }, @Body() createPeriodDto: CreatePeriodDto) {
-        await this.periodsService.createNewPeriod(req.user.sub, req.user.facultyId!, createPeriodDto)
-        return { message: 'Kỳ mới đã được tạo thành công' }
+        const mess = await this.periodsService.createNewPeriod(req.user.sub, req.user.facultyId!, createPeriodDto)
+        return { message: `Kỳ mới đã được tạo thành công. ${mess}` }
     }
 
     // Lấy tất cả các kỳ
@@ -166,12 +174,27 @@ export class PeriodsController {
     @Get('/:periodId/get-topics-in-phase')
     async getTopicsInPhase(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseParams) {
         const topics = await this.periodsService.getTopicsInPhase(periodId, query)
-        return plainToInstance(PaginatedGeneralTopics, topics, {
+        return plainToInstance(PaginatedTopicsInPeriod, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
     }
-
+    //Giảng viên lấy những đề tài mà mình hướng dẫn trong pha cụ thể của kì cụ thể
+    @Get('/:periodId/lecturer/get-topics-in-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async lecturerGetTopicsInPhase(
+        @Req() req: { user: ActiveUserData },
+        @Param('periodId') periodId: string,
+        @Query() query: RequestLectureGetTopicsInPhaseParams
+    ) {
+        const topics = await this.getTopicProvider.lecturerGetTopicsInPhase(req.user.sub, periodId, query)
+        return plainToInstance(PaginatedTopicsInPeriod, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
     // // Thay đổi trạng thái toàn bộ đề tài thuộc kì này, khi chuyển pha này sang pha khác
     // @Patch('/:periodId/status/tranfer-phase')
     // async changeStatusAllTopicsInPeriod(
@@ -252,13 +275,13 @@ export class PeriodsController {
     // }
 
     //Lấy thông tin của kỳ hiện tại
-    @Get('/current-period/info')
+    @Get('/current-periods')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
     @UseGuards(RolesGuard)
-    async getCurrentPeriodInfo(@Req() req: { user: ActiveUserData }, @Query() query: GetCurrentPeriodRequest) {
-        const res = await this.periodsService.getCurrentPeriodInfo(req.user.facultyId!, query.periodType)
-        return plainToInstance(GetPeriodDto, res, {
+    async getCurrentPeriods(@Req() req: { user: ActiveUserData }) {
+        const res = await this.periodsService.getCurrentPeriods(req.user.facultyId!, req.user.role, req.user.sub)
+        return plainToInstance(GetCurrentPeriod, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -270,8 +293,7 @@ export class PeriodsController {
     @UseGuards(RolesGuard)
     async closePhase(
         @Param('periodId') periodId: string,
-        @Param('phase') phase: PeriodPhaseName,
-        @Req() req: { user: ActiveUserData }
+        @Param('phase') phase: PeriodPhaseName
     ): Promise<Phase1Response | Phase2Response | Phase3Response> {
         return this.periodsService.closePhase(
             periodId,

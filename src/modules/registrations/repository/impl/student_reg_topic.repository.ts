@@ -28,6 +28,7 @@ import { GetStudentsRegistrationsInTopic } from '../../../topics/dtos/registrati
 import { RequestTimeoutException } from '@nestjs/common'
 import { UserRole } from '../../../../users/enums/user-role'
 import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
+import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -39,7 +40,8 @@ export class StudentRegTopicRepository
         @InjectModel(Topic.name)
         private readonly topicModel: Model<Topic>,
         private readonly paginationProvider: PaginationProvider,
-        private readonly connection: mongoose.Connection
+        private readonly connection: mongoose.Connection,
+        private readonly tranferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider
     ) {
         super(studentRegTopicModel)
     }
@@ -145,13 +147,13 @@ export class StudentRegTopicRepository
         }
     }
 
-   
     //hoạt động tốt nhưng rất tiếc chưa tối ưu cho các thao tác phân trang
     async getStudentRegistrationsHistory(
         studentId: string,
         query: PaginationQueryDto
     ): Promise<Paginated<StudentRegisterTopic>> {
-        const pipelineSub = await this.BaseGetStudentRegistrationsHistory(studentId)
+        const pipelineSub: any[] = []
+        pipelineSub.push(this.BaseGetStudentRegistrationsHistory(studentId))
         return await this.paginationProvider.paginateQuery<StudentRegisterTopic>(
             query,
             this.studentRegTopicModel,
@@ -545,7 +547,6 @@ export class StudentRegTopicRepository
         role: string,
         lecturerResponse: string
     ) {
-        console.log('Approval process started', registrationId, userId)
         const session = await this.connection.startSession()
         session.startTransaction()
         try {
@@ -608,18 +609,30 @@ export class StudentRegTopicRepository
             registration.processedBy = userId
             registration.lecturerResponse = lecturerResponse
             registration.studentRole = role
-            //cập nhật trạng thái đề tài sau khi đã duyệt đăng ký 1 sinh viên
-            //chuyển trạng thái từ open_pending(chua có ai đăng ký) sang registered
-            if (topic.currentStatus === TopicStatus.PendingRegistration) {
-                topic.currentStatus = TopicStatus.Registered
-            } else if (currentApprovedCount + 1 === topic.maxStudents) {
-                //chuyển trạng thái từ đã có người đăng ký sang full
-                topic.currentStatus = TopicStatus.Full
-            }
 
             await topic.save({ session })
             await registration.save({ session })
             await session.commitTransaction()
+            //cập nhật trạng thái đề tài sau khi đã duyệt đăng ký 1 sinh viên
+            //chuyển trạng thái từ open_pending(chua có ai đăng ký) sang registered
+            if (currentApprovedCount + 1 === topic.maxStudents) {
+                //chuyển trạng thái từ đã có người đăng ký sang full
+                topic.currentStatus = TopicStatus.Full
+                await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    topic._id.toString(),
+                    TopicStatus.Full,
+                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã đủ người đăng ký',
+                    'Giảng viên duyệt tham gia slot cuối cùng'
+                )
+            } else if (topic.currentStatus === TopicStatus.PendingRegistration) {
+                topic.currentStatus = TopicStatus.Registered
+                await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    topic._id.toString(),
+                    TopicStatus.Registered,
+                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã có người đăng ký',
+                    'Giảng viên duyệt tham gia slot đầu tiên'
+                )
+            }
             return registration
         } catch (error) {
             await session.abortTransaction()

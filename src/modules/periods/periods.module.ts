@@ -7,12 +7,13 @@ import { PeriodSchema } from './schemas/period.schemas'
 import { CreatePhaseProvider } from './providers/create-phase.provider'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { TopicModule } from '../topics/topic.module'
-import { GetPhaseProvider } from './providers/get-phase.provider'
 import { ValidatePeriodPhaseProvider } from './providers/validate-phase.provider'
 import { FacultySchema } from '../faculties/schemas/faculty.schema'
 import { ValidatePeriodProvider } from './providers/validate-period.provider'
 import { BullModule } from '@nestjs/bull'
 import { TopicVectorModule } from '../topic_search/topic_search.module'
+import { NotificationsModule } from '../notifications/notifications.module'
+import { GetPeriodInfoProvider } from './providers/get-period-info.provider'
 
 @Module({
     controllers: [PeriodsController],
@@ -20,7 +21,7 @@ import { TopicVectorModule } from '../topic_search/topic_search.module'
         PeriodsService,
         { provide: 'IPeriodRepository', useClass: PeriodRepository },
         CreatePhaseProvider,
-        GetPhaseProvider,
+        GetPeriodInfoProvider,
         ValidatePeriodPhaseProvider,
         ValidatePeriodProvider
     ],
@@ -32,8 +33,9 @@ import { TopicVectorModule } from '../topic_search/topic_search.module'
         PaginationAnModule,
         forwardRef(() => TopicModule),
         BullModule.registerQueue({ name: 'period' }),
-        TopicVectorModule
+        TopicVectorModule,
+        NotificationsModule
     ],
-    exports: [PeriodsService]
+    exports: [PeriodsService, GetPeriodInfoProvider]
 })
 export class PeriodsModule {}

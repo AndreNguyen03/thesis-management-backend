@@ -14,6 +14,7 @@ import { Period, PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
+import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -21,7 +22,8 @@ export class CreatePhaseProvider {
         @Inject('IPeriodRepository') private readonly iPeriodRepository: IPeriodRepository,
         private readonly validatePeriodPhaseProvider: ValidatePeriodPhaseProvider,
         @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
-        private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider
+        private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider,
+        private readonly notificationPublisherService: NotificationPublisherService
     ) {}
     //Khởi tạo sơ khai cho kì mới
     async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
@@ -50,7 +52,8 @@ export class CreatePhaseProvider {
         }
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
         console.log('Cấu hình pha Submit Topic thành công!', newPeriodPhase)
-        return this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
+        const res = await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
+        if (res) await this.notificationPublisherService.sendPhaseSubmitTopicNotification(dto.requiredLecturerIds, periodId, newPeriodPhase.endTime)
     }
 
     //submit-topic -> open registration

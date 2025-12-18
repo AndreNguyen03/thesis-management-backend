@@ -24,7 +24,6 @@ export class PaginationProvider {
     ): Promise<Paginated<T>> {
         const { limit, page, search_by, query, sort_by, sort_order, startDate, endDate, filter, filter_by } =
             paginationQuery
-        console.log('Pagination Query:', paginationQuery)
         let queryLimit = limit ?? 10
         let queryPage = page ?? 1
 
@@ -51,6 +50,14 @@ export class PaginationProvider {
                         }))
                     }
                 })
+            } else {
+                if (!Array.isArray(search_by)) {
+                    pipelineMain.push({
+                        $match: {
+                            [search_by]: { $regex: query, $options: 'i' }
+                        }
+                    })
+                }
             }
         }
 
@@ -72,7 +79,7 @@ export class PaginationProvider {
             } else {
                 pipelineMain.push({
                     $match: {
-                        [filter_by]:  { $in: filter}
+                        [filter_by]: { $in: filter }
                     }
                 })
             }

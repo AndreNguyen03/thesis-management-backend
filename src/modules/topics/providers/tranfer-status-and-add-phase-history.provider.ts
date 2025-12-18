@@ -23,7 +23,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         newStatus: string,
         actorId: string,
         note: string = '',
-        periodId?: string
+        periodId?: string,
     ) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
@@ -49,7 +49,6 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             existingTopic.phaseHistories = []
         }
         newPhaseHistory.note = note
-        console.log('New Phase History:', newPhaseHistory)
         existingTopic.phaseHistories.push(newPhaseHistory)
 
         // nếu đề tài chuyển từ trạng thái đã nộp về lại nháp thì cần
