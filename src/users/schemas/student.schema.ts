@@ -31,7 +31,7 @@ export class Student extends BaseEntity {
     major: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Faculty' })
-    facultyId: Types.ObjectId
+    facultyId: string
 
     @Prop({ default: [] })
     skills: string[]

@@ -125,15 +125,50 @@ export class UpdateLecturerTableDto {
     title?: AcademicTitle
 }
 
-export class LecturerTableRowDto {
-    id: string
+export class CreateBatchLecturerDto {
+    @IsNotEmpty()
+    @IsString()
     fullName: string
-    email: string
-    phone?: string
+
+    @IsNotEmpty()
+    @IsEnum(AcademicTitle)
+    title: AcademicTitle
+
+    @IsNotEmpty()
+    @IsString()
     facultyName: string
+
+    @IsString()
+    @IsOptional()
+    phone?: string
+}
+
+export class LecturerTableRowDto {
+    @Expose()
+    id: string
+
+    @Expose()
+    fullName: string
+
+    @Expose()
+    email: string
+
+    @Expose()
+    phone?: string
+
+    @Expose()
+    facultyName: string
+
+    @Expose()
     facultyId: string
-    role: string
+
+    @Expose()
+    title: string
+
+    @Expose()
     isActive: boolean
+
+    @Expose()
     createdAt?: Date
 }
 
@@ -167,7 +202,7 @@ export class ResponseMiniLecturerDto {
     @Expose()
     phone: string
     @Expose()
-    avatarUrl: string   
+    avatarUrl: string
     @Expose()
     avatarName: string
 
@@ -195,6 +230,12 @@ export class PaginatedMiniLecturer extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
     data: ResponseMiniLecturerDto[]
+}
+
+export class PaginatedTableLecturer extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => LecturerTableRowDto)
+    data: LecturerTableRowDto[]
 }
 export class ResponseMiniActorDto {
     @Expose()

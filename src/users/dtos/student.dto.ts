@@ -26,17 +26,29 @@ export class CreateStudentDto extends CreateUserDto {
 
 // DTO trả về bảng sinh viên
 export class ResponseStudentTableDto {
+    @Expose()
     id: string
+    @Expose()
     studentCode: string
+    @Expose()
     fullName: string
+    @Expose()
     email: string
+    @Expose()
     phone?: string
+    @Expose()
     class: string
+    @Expose()
     major: string
+    @Expose()
     facultyId: string
+    @Expose()
     facultyName: string
+    @Expose()
     role: string
+    @Expose()
     isActive: boolean
+    @Expose()
     createdAt?: Date
 }
 
@@ -203,4 +215,21 @@ export class PaginatedMiniStudent extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => ResponseMiniStudent)
     data: ResponseMiniStudent[]
+}
+
+export class PaginatedStudentTable extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => ResponseStudentTableDto)
+    data: ResponseStudentTableDto[]
+}
+
+export interface CreateBatchStudentDto {
+	fullName: string;
+	studentCode: string;
+	class: string;
+	major: string;
+	facultyName: string;
+	phone?: string;
+	email?: string;
+	isActive?: boolean;
 }

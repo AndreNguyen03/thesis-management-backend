@@ -20,15 +20,19 @@ import { StudentService } from './application/student.service'
 import { LecturerService } from './application/lecturer.service'
 import { AdminService } from './application/admin.service'
 import {
+    CreateBatchStudentDto,
     CreateStudentDto,
     PaginatedMiniStudent,
+    PaginatedStudentTable,
     UpdateStudentProfileDto,
     UpdateStudentTableDto
 } from './dtos/student.dto'
 import { UpdateAdminDto } from './dtos/admin.dto'
 import {
+    CreateBatchLecturerDto,
     CreateLecturerDto,
     PaginatedMiniLecturer,
+    PaginatedTableLecturer,
     ResponseMiniLecturerDto,
     UpdateLecturerProfileDto,
     UpdateLecturerTableDto
@@ -44,6 +48,7 @@ import { UserRole } from './enums/user-role'
 import { ActiveUserData } from '../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
 import { RolesGuard } from '../auth/guards/roles/roles.guard'
+import { RequestGetLecturerDto, RequestGetStudentDto } from './dtos/request-get.dto'
 
 @Controller('users')
 @ApiTags('Users')
@@ -120,9 +125,20 @@ export class UserController {
         return this.lecturerService.createLecturerTransaction(createLecturerDto)
     }
 
-    @Get('lecturers')
-    async getLecturer(@Query() query: PaginationQueryDto) {
-        return await this.lecturerService.getAllLecturers(query)
+    @Post('lecturers/batch')
+    async createBatchLecturer(@Body() dtos: CreateBatchLecturerDto[]) {
+        return this.lecturerService.createManyLecturer(dtos)
+    }
+
+    @Get('/get-all-lecturers')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async getAllLecturers(@Query() query: RequestGetLecturerDto) {
+        const res = await this.lecturerService.getAllLecturers(query)
+        return plainToInstance(PaginatedTableLecturer, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     @Get('/get-all-lecturers/combobox')
@@ -152,9 +168,20 @@ export class UserController {
         return this.studentService.createStudentTransaction(createStudentDto)
     }
 
-    @Get('students')
-    async getStudents(@Query() query: PaginationQueryDto) {
-        return await this.studentService.getAllStudents(query)
+    @Post('students/batch')
+    async createBatchStudent(@Body() dtos: CreateBatchStudentDto[]) {
+        return this.studentService.createManyStudent(dtos)
+    }
+
+    @Get('/get-all-students')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async getAllStudents(@Query() query: RequestGetStudentDto) {
+        const res = await this.studentService.getAllStudents(query)
+        return plainToInstance(PaginatedStudentTable, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     @Patch('students/profile/:id')
