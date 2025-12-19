@@ -426,7 +426,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                         { $eq: ['$currentPhaseDetail.status', null] }
                                                                     ]
                                                                 },
-                                                                then: {
+                                                                then: [{
                                                                     title: 'Giai đoạn chưa được cấu hình',
                                                                     url: null,
                                                                     isDisabled: true,
@@ -434,7 +434,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                         text: 'Chưa config',
                                                                         variant: 'secondary'
                                                                     }
-                                                                },
+                                                                }],
                                                                 else: {
                                                                     $cond: {
                                                                         if: {
@@ -451,7 +451,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         '$$minRequired'
                                                                                     ]
                                                                                 },
-                                                                                then: {
+                                                                                then: [{
                                                                                     title: 'Đã nộp đủ đề tài',
                                                                                     url: {
                                                                                         $concat: [
@@ -478,8 +478,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         },
                                                                                         variant: 'success'
                                                                                     }
-                                                                                },
-                                                                                else: {
+                                                                                }],
+                                                                                else: [{
                                                                                     title: 'Nộp đề tài',
                                                                                     url: {
                                                                                         $concat: [
@@ -505,7 +505,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         },
                                                                                         variant: 'warning'
                                                                                     }
-                                                                                }
+                                                                                }]
                                                                             }
                                                                         },
                                                                         else: {
@@ -516,7 +516,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         'pending'
                                                                                     ]
                                                                                 },
-                                                                                then: {
+                                                                                then: [{
                                                                                     title: 'Chưa đến thời gian nộp',
                                                                                     url: null,
                                                                                     isDisabled: true,
@@ -542,8 +542,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                             ' đề tài. Hãy chuẩn bị nhé'
                                                                                         ]
                                                                                     }
-                                                                                },
-                                                                                else: {
+                                                                                }],
+                                                                                else: [{
                                                                                     title: {
                                                                                         $cond: {
                                                                                             if: {
@@ -580,7 +580,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                             else: ''
                                                                                         }
                                                                                     }
-                                                                                }
+                                                                                }]
                                                                             }
                                                                         }
                                                                     }
@@ -589,11 +589,11 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                         }
                                                     }
                                                 },
-                                                else: {
+                                                else: [{
                                                     title: 'Không được yêu cầu nộp',
                                                     url: null,
                                                     isDisabled: true
-                                                }
+                                                }]
                                             }
                                         }
                                     }
@@ -601,13 +601,13 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$currentPhase', PeriodPhaseName.OPEN_REGISTRATION] },
-                                        then: {
+                                        then: [{
                                             title: 'Đề tài của bạn đã mở đăng ký',
                                             url: {
                                                 $concat: [{ $toString: '$_id' }, '/manage-topics']
                                             },
                                             isDisabled: false
-                                        },
+                                        }],
                                         else: []
                                     }
                                 }
@@ -642,7 +642,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         navItem: {
                             $cond: {
                                 if: { $eq: ['$currentPhaseDetail.status', 'pending'] },
-                                then: {
+                                then: [{
                                     title: 'Đợt đăng ký đề tài chưa mở',
                                     url: null,
                                     isDisabled: true,
@@ -650,11 +650,11 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                         text: 'Chưa bắt đầu',
                                         variant: 'default'
                                     }
-                                },
+                                }],
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$currentPhaseDetail.status', 'active'] },
-                                        then: {
+                                        then: [{
                                             title: 'Khám phá các đề tài đã mở đăng ký',
                                             url: { $concat: ['/registration/', { $toString: '$_id' }] },
                                             isDisabled: false,
@@ -662,8 +662,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                 text: 'Đang mở',
                                                 variant: 'success'
                                             }
-                                        },
-                                        else: {
+                                        }],
+                                        else: [{
                                             title: 'Hết hạn đăng ký đề tài',
                                             url: null,
                                             isDisabled: true,
@@ -671,7 +671,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                 text: 'Hết hạn',
                                                 variant: 'danger'
                                             }
-                                        }
+                                        }]
                                     }
                                 }
                             }
@@ -708,6 +708,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
 
         return await this.periodModel.aggregate(pipelineSub).exec()
     }
+
     async deletePeriod(periodId: string): Promise<boolean> {
         console.log(periodId)
         const result = await this.periodModel.aggregate([
