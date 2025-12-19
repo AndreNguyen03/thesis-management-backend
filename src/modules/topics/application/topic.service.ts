@@ -1,11 +1,20 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
+import {
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+    RequestTimeoutException
+} from '@nestjs/common'
 import { StudentRepositoryInterface } from '../../../users/repository/student.repository.interface'
 import { LecturerRepositoryInterface } from '../../../users/repository/lecturer.repository.interface'
 import { TopicRepositoryInterface, UserSavedTopicRepositoryInterface } from '../repository'
 import {
     CreateTopicDto,
+    GetSubmittedTopic,
     GetTopicDetailResponseDto,
     GetTopicResponseDto,
+    PaginatedSubmittedTopics,
     PaginationTopicsQueryParams,
     PatchTopicDto
 } from '../dtos'
@@ -31,6 +40,8 @@ import { UserRole } from '../../../auth/enum/user-role.enum'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { Response } from 'express'
 import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import { plainToInstance } from 'class-transformer'
+import { PeriodsService } from '../../periods/application/periods.service'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -52,7 +63,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly notificationPublisherService: NotificationPublisherService,
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
         private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider,
-        private readonly downLoadFileProvider: DownLoadFileProvider
+        private readonly downLoadFileProvider: DownLoadFileProvider,
+        @Inject(forwardRef(() => PeriodsService))
+        private readonly periodsService: PeriodsService
     ) {
         super(topicRepository)
     }
@@ -138,8 +151,22 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
         return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
     }
-    public async getSubmittedTopics(lecturerId: string, query: SubmittedTopicParamsDto) {
-        return await this.topicRepository.findSubmittedTopicsByLecturerId(lecturerId, query)
+    public async getSubmittedTopics(
+        lecturerId: string,
+        query: SubmittedTopicParamsDto
+    ): Promise<PaginatedSubmittedTopics> {
+        const periodInfo = await this.periodsService.getPeriodById(query.periodId)
+        const paginatedTopics = await this.topicRepository.findSubmittedTopicsByLecturerId(lecturerId, query)
+        return {
+            data: plainToInstance(GetSubmittedTopic, paginatedTopics.data, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }),
+            meta: {
+                ...paginatedTopics.meta,
+                periodInfo: periodInfo
+            }
+        }
     }
     public async assignSaveTopic(userId: string, topicId: string) {
         return await this.userSavedTopicRepository.assignSaveTopic(userId, topicId)

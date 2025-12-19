@@ -14,6 +14,7 @@ import { BullModule } from '@nestjs/bull'
 import { TopicVectorModule } from '../topic_search/topic_search.module'
 import { NotificationsModule } from '../notifications/notifications.module'
 import { GetPeriodInfoProvider } from './providers/get-period-info.provider'
+import { GroupsModule } from '../groups/groups.module'
 
 @Module({
     controllers: [PeriodsController],
@@ -34,7 +35,8 @@ import { GetPeriodInfoProvider } from './providers/get-period-info.provider'
         forwardRef(() => TopicModule),
         BullModule.registerQueue({ name: 'period' }),
         TopicVectorModule,
-        NotificationsModule
+        NotificationsModule,
+        GroupsModule
     ],
     exports: [PeriodsService, GetPeriodInfoProvider]
 })

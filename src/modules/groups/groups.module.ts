@@ -10,18 +10,19 @@ import { ChatGateway } from './gateway/chat.gateway'
 import { OnlineService } from './application/online.service'
 import { ChatService } from './application/chat.service'
 import { Message, MessageSchema } from './schemas/messages.schemas'
+import { CreateBatchGroupsProvider } from './provider/create-batch-groups.provider'
+import { RegistrationsModule } from '../registrations/registrations.module'
 
 @Module({
     imports: [
-        
         MongooseModule.forFeature([
             { name: Group.name, schema: GroupSchema },
             { name: Message.name, schema: MessageSchema }
         ]),
-       
+
         PaginationAnModule,
-        forwardRef(() => UploadFilesModule)
-    
+        forwardRef(() => UploadFilesModule),
+        RegistrationsModule
     ],
     controllers: [GroupsController],
     providers: [
@@ -32,8 +33,9 @@ import { Message, MessageSchema } from './schemas/messages.schemas'
         },
         ChatGateway,
         OnlineService,
-        ChatService
+        ChatService,
+        CreateBatchGroupsProvider
     ],
-    exports: [OnlineService, ChatService, GroupsService]
+    exports: [OnlineService, ChatService, GroupsService, CreateBatchGroupsProvider]
 })
 export class GroupsModule {}

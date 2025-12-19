@@ -54,7 +54,7 @@ export class TopicSearchController {
     }
 
     @Get('/advance/registering-topics/:periodId')
-    async searchTopicsInLibraryWithDescription(
+    async searchTopicsOpenRegistrationWithDescription(
         @Param('periodId') periodId: string,
         @Query() query: RequestGetTopicsInAdvanceSearchParams
     ) {

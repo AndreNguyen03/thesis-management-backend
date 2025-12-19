@@ -256,69 +256,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     async getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
-        //hiển thị lịch sử các lượt đăng ký của user với topic
-        // if (role === UserRole.STUDENT) {
-        //     let student_reg_embedded_pl: any[] = []
-        //     student_reg_embedded_pl.push({
-        //         $match: {
-        //             $expr: {
-        //                 $and: [
-        //                     { $eq: ['$topicId', '$$topicId'] },
-        //                     { $eq: ['$studentId', new mongoose.Types.ObjectId(userId)] }
-        //                 ]
-        //             }
-        //         }
-        //     })
-        //     pipeline.push({
-        //         $lookup: {
-        //             from: 'ref_students_topics',
-        //             let: { topicId: '$_id' },
-        //             pipeline: student_reg_embedded_pl,
-        //             as: 'allRegistrationOfStudentRefs'
-        //         }
-        //     })
-        //     pipeline.push({
-        //         $addFields: {
-        //             allUserRegistrations: {
-        //                 $sortArray: {
-        //                     input: '$allRegistrationOfStudentRefs',
-        //                     sortBy: { updatedAt: -1 }
-        //                 }
-        //             }
-        //         }
-        //     })
-        // } else {
-        //     let lecturer_reg_embedded_pl: any[] = []
-        //     lecturer_reg_embedded_pl.push({
-        //         $match: {
-        //             $expr: {
-        //                 $and: [
-        //                     { $eq: ['$topicId', '$$topicId'] },
-        //                     { $eq: ['$lecturerId', new mongoose.Types.ObjectId(userId)] }
-        //                 ]
-        //             }
-        //         }
-        //     })
-        //     pipeline.push({
-        //         $lookup: {
-        //             from: 'ref_lecturers_topics',
-        //             let: { topicId: '$_id' },
-        //             pipeline: lecturer_reg_embedded_pl,
-        //             as: 'allRegistrationOfLecturerRefs'
-        //         }
-        //     })
-        //     pipeline.push({
-        //         $addFields: {
-        //             allUserRegistrations: {
-        //                 $sortArray: {
-        //                     input: '$allRegistrationOfLecturerRefs',
-        //                     sortBy: { updatedAt: -1 }
-        //                 }
-        //             }
-        //         }
-        //     })
-        // }
-
         // lấy thông tin file đính kèm với topic
         pipeline.push(
             ...[
@@ -1016,15 +953,22 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         }
         //if (query.rulesPagination === 0)
         //Nếu là phân trang bình thường
+        console.log('ownerId', ownerId)
         pipelineSub.push({
             $match: {
                 deleted_at: null,
-                periodId: new mongoose.Types.ObjectId(periodId),
-                //nếu owner là có tức là giảng viên đang gửi yêu cầu lấy đề tải của họ trong period
-                ...(ownerId ? { lecturerIds: { $eq: new mongoose.Types.ObjectId(ownerId) } } : {})
+                periodId: new mongoose.Types.ObjectId(periodId)
             }
         })
-
+        if (ownerId) {
+            pipelineSub.push({
+                $match: {
+                    $expr: {
+                        $in: [new mongoose.Types.ObjectId(ownerId), '$lecturerIds']
+                    }
+                }
+            })
+        }
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 

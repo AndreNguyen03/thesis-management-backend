@@ -26,6 +26,7 @@ import { ConfigModule } from '@nestjs/config'
 import { googleAIConfig } from '../../config/googleai.config'
 import { mongoConfig } from '../../config/database.config'
 import { PeriodsModule } from '../periods/periods.module'
+import { GroupsModule } from '../groups/groups.module'
 @Global() 
 @Module({
     controllers: [TopicController],
@@ -79,6 +80,7 @@ import { PeriodsModule } from '../periods/periods.module'
         forwardRef(() => UploadFilesModule),
         forwardRef(() => NotificationsModule),
         forwardRef(() => PeriodsModule),
+        forwardRef(() => GroupsModule),
     ]
 })
 export class TopicModule {}
