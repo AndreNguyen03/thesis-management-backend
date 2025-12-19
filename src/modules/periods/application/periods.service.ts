@@ -51,11 +51,12 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
         private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
-        private readonly notificationPublisherService: NotificationPublisherService,
+        private readonly notificationPublisherService: NotificationPublisherService
     ) {
         super(iPeriodRepository)
     }
 
+    //kiểm tra xem pha đã có thể đóng hay chưa
     async closePhase(
         periodId: string,
         phase: PeriodPhaseName
@@ -99,7 +100,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     ): Promise<Phase2Response> {
         let result: Phase2Response = {
             periodId: period._id.toString(),
-            phase: 'open_registration',
+            phase: PeriodPhaseName.OPEN_REGISTRATION,
             resolveTopics: { draft: [], executing: [] },
             canTriggerNextPhase: false
         }
@@ -126,6 +127,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
 
         // loop get missing topic count per lecturer
+        
         for (const lec of phaseDetail.requiredLecturers) {
             //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
 
@@ -317,7 +319,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     //     return period
     // }
 
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams) : Promise<PaginatedTopicsInPeriod> {
+    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
         const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
         return period
     }

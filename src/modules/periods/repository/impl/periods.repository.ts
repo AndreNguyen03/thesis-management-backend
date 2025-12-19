@@ -426,15 +426,17 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                         { $eq: ['$currentPhaseDetail.status', null] }
                                                                     ]
                                                                 },
-                                                                then: {
-                                                                    title: 'Giai đoạn chưa được cấu hình',
-                                                                    url: null,
-                                                                    isDisabled: true,
-                                                                    badge: {
-                                                                        text: 'Chưa config',
-                                                                        variant: 'secondary'
+                                                                then: [
+                                                                    {
+                                                                        title: 'Giai đoạn chưa được cấu hình',
+                                                                        url: null,
+                                                                        isDisabled: true,
+                                                                        badge: {
+                                                                            text: 'Chưa config',
+                                                                            variant: 'secondary'
+                                                                        }
                                                                     }
-                                                                },
+                                                                ],
                                                                 else: {
                                                                     $cond: {
                                                                         if: {
@@ -451,61 +453,66 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         '$$minRequired'
                                                                                     ]
                                                                                 },
-                                                                                then: {
-                                                                                    title: 'Đã nộp đủ đề tài',
-                                                                                    url: {
-                                                                                        $concat: [
-                                                                                            '/registration/',
-                                                                                            { $toString: '$_id' },
-                                                                                            '/submit-topics'
-                                                                                        ]
-                                                                                    },
-                                                                                    isDisabled: false,
-                                                                                    badge: {
-                                                                                        text: {
+                                                                                then: [
+                                                                                    {
+                                                                                        title: 'Đã nộp đủ đề tài',
+                                                                                        url: {
                                                                                             $concat: [
-                                                                                                'Số lượng nộp ',
-                                                                                                {
-                                                                                                    $toString:
-                                                                                                        '$$submitted'
-                                                                                                },
-                                                                                                '/',
-                                                                                                {
-                                                                                                    $toString:
-                                                                                                        '$$minRequired'
-                                                                                                }
+                                                                                                '/registration/',
+                                                                                                { $toString: '$_id' },
+                                                                                                '/submit-topics'
                                                                                             ]
                                                                                         },
-                                                                                        variant: 'success'
+                                                                                        isDisabled: false,
+                                                                                        badge: {
+                                                                                            text: {
+                                                                                                $concat: [
+                                                                                                    'Số lượng nộp ',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$submitted'
+                                                                                                    },
+                                                                                                    '/',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$minRequired'
+                                                                                                    }
+                                                                                                ]
+                                                                                            },
+                                                                                            variant: 'success'
+                                                                                        }
                                                                                     }
-                                                                                },
-                                                                                else: {
-                                                                                    title: 'Nộp đề tài',
-                                                                                    url: {
-                                                                                        $concat: [
-                                                                                            '/registration/',
-                                                                                            { $toString: '$_id' },
-                                                                                            '/submit-topics'
-                                                                                        ]
-                                                                                    },
-                                                                                    isDisabled: false,
-                                                                                    badge: {
-                                                                                        text: {
+                                                                                ],
+                                                                                else: [
+                                                                                    {
+                                                                                        title: 'Nộp đề tài',
+                                                                                        url: {
                                                                                             $concat: [
-                                                                                                {
-                                                                                                    $toString:
-                                                                                                        '$$submitted'
-                                                                                                },
-                                                                                                '/',
-                                                                                                {
-                                                                                                    $toString:
-                                                                                                        '$$minRequired'
-                                                                                                }
+                                                                                                '/registration/',
+                                                                                                { $toString: '$_id' },
+                                                                                                '/submit-topics'
                                                                                             ]
                                                                                         },
-                                                                                        variant: 'warning'
+                                                                                        isDisabled: false,
+                                                                                        badge: {
+                                                                                            text: {
+                                                                                                $concat: [
+                                                                                                    'Đã nộp ',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$submitted'
+                                                                                                    },
+                                                                                                    '/',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$minRequired'
+                                                                                                    }
+                                                                                                ]
+                                                                                            },
+                                                                                            variant: 'warning'
+                                                                                        }
                                                                                     }
-                                                                                }
+                                                                                ]
                                                                             }
                                                                         },
                                                                         else: {
@@ -516,71 +523,81 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         'pending'
                                                                                     ]
                                                                                 },
-                                                                                then: {
-                                                                                    title: 'Chưa đến thời gian nộp',
-                                                                                    url: null,
-                                                                                    isDisabled: true,
-                                                                                    badge: {
-                                                                                        text: {
+                                                                                then: [
+                                                                                    {
+                                                                                        title: 'Chưa đến thời gian nộp',
+                                                                                        url: null,
+                                                                                        isDisabled: true,
+                                                                                        badge: {
+                                                                                            text: {
+                                                                                                $concat: [
+                                                                                                    'Yêu cầu nộp ',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$minRequired'
+                                                                                                    },
+                                                                                                    ' đề tài'
+                                                                                                ]
+                                                                                            },
+                                                                                            variant: 'info'
+                                                                                        },
+                                                                                        note: {
                                                                                             $concat: [
                                                                                                 'Yêu cầu nộp ',
                                                                                                 {
                                                                                                     $toString:
                                                                                                         '$$minRequired'
-                                                                                                }
+                                                                                                },
+                                                                                                ' đề tài. Hãy chuẩn bị nhé'
+                                                                                            ]
+                                                                                        }
+                                                                                    },
+                                                                                    {
+                                                                                        title: 'Soạn đề tài',
+                                                                                        url: '/manage-topics',
+                                                                                        isDisabled: false
+                                                                                    }
+                                                                                ],
+                                                                                else: [
+                                                                                    {
+                                                                                        title: {
+                                                                                            $cond: {
+                                                                                                if: {
+                                                                                                    $lt: [
+                                                                                                        '$submittedCount',
+                                                                                                        '$$minRequired'
+                                                                                                    ]
+                                                                                                },
+                                                                                                then: 'Quá hạn nộp',
+                                                                                                else: 'Nộp đủ - Đã kết thúc'
+                                                                                            }
+                                                                                        },
+                                                                                        url: {
+                                                                                            $concat: [
+                                                                                                '/registration/',
+                                                                                                { $toString: '$_id' },
+                                                                                                '/submit-topics'
                                                                                             ]
                                                                                         },
-                                                                                        variant: 'info'
-                                                                                    },
-                                                                                    note: {
-                                                                                        $concat: [
-                                                                                            'Yêu cầu nộp ',
-                                                                                            {
-                                                                                                $toString:
-                                                                                                    '$$minRequired'
-                                                                                            },
-                                                                                            ' đề tài. Hãy chuẩn bị nhé'
-                                                                                        ]
-                                                                                    }
-                                                                                },
-                                                                                else: {
-                                                                                    title: {
-                                                                                        $cond: {
-                                                                                            if: {
-                                                                                                $lt: [
-                                                                                                    '$submittedCount',
-                                                                                                    '$$minRequired'
-                                                                                                ]
-                                                                                            },
-                                                                                            then: 'Quá hạn nộp',
-                                                                                            else: 'Nộp đủ - Đã kết thúc'
-                                                                                        }
-                                                                                    },
-                                                                                    url: {
-                                                                                        $concat: [
-                                                                                            '/registration/',
-                                                                                            { $toString: '$_id' },
-                                                                                            '/submit-topics'
-                                                                                        ]
-                                                                                    },
-                                                                                    isDisabled: false,
-                                                                                    badge: {
-                                                                                        text: 'Thời gian đã hết',
-                                                                                        variant: 'danger'
-                                                                                    },
-                                                                                    note: {
-                                                                                        $cond: {
-                                                                                            if: {
-                                                                                                $lt: [
-                                                                                                    '$submittedCount',
-                                                                                                    '$$minRequired'
-                                                                                                ]
-                                                                                            },
-                                                                                            then: 'Cố gắng hoàn thành',
-                                                                                            else: ''
+                                                                                        isDisabled: false,
+                                                                                        badge: {
+                                                                                            text: 'Thời gian đã hết',
+                                                                                            variant: 'danger'
+                                                                                        },
+                                                                                        note: {
+                                                                                            $cond: {
+                                                                                                if: {
+                                                                                                    $lt: [
+                                                                                                        '$submittedCount',
+                                                                                                        '$$minRequired'
+                                                                                                    ]
+                                                                                                },
+                                                                                                then: 'Cố gắng hoàn thành',
+                                                                                                else: ''
+                                                                                            }
                                                                                         }
                                                                                     }
-                                                                                }
+                                                                                ]
                                                                             }
                                                                         }
                                                                     }
@@ -589,11 +606,13 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                         }
                                                     }
                                                 },
-                                                else: {
-                                                    title: 'Không được yêu cầu nộp',
-                                                    url: null,
-                                                    isDisabled: true
-                                                }
+                                                else: [
+                                                    {
+                                                        title: 'Không được yêu cầu nộp',
+                                                        url: null,
+                                                        isDisabled: true
+                                                    }
+                                                ]
                                             }
                                         }
                                     }
@@ -601,14 +620,24 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$currentPhase', PeriodPhaseName.OPEN_REGISTRATION] },
-                                        then: {
-                                            title: 'Đề tài của bạn đã mở đăng ký',
-                                            url: {
-                                                $concat: [{ $toString: '$_id' }, '/manage-topics']
-                                            },
-                                            isDisabled: false
-                                        },
-                                        else: []
+                                        then: [
+                                            {
+                                                title: 'Đề tài của bạn đã mở đăng ký',
+                                                url: {
+                                                    $concat: [{ $toString: '$_id' }, '/manage-topics']
+                                                },
+                                                isDisabled: false
+                                            }
+                                        ],
+                                        else: [
+                                            {
+                                                title:"Xem đề tài của bạn",
+                                                url: {
+                                                    $concat: ["/registration/",{ $toString: '$_id' }, '/manage-topics']
+                                                },
+                                                isDisabled: false
+                                            }
+                                        ]
                                     }
                                 }
                             }
@@ -642,36 +671,42 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         navItem: {
                             $cond: {
                                 if: { $eq: ['$currentPhaseDetail.status', 'pending'] },
-                                then: {
-                                    title: 'Đợt đăng ký đề tài chưa mở',
-                                    url: null,
-                                    isDisabled: true,
-                                    badge: {
-                                        text: 'Chưa bắt đầu',
-                                        variant: 'default'
+                                then: [
+                                    {
+                                        title: 'Đợt đăng ký đề tài chưa mở',
+                                        url: null,
+                                        isDisabled: true,
+                                        badge: {
+                                            text: 'Chưa bắt đầu',
+                                            variant: 'default'
+                                        }
                                     }
-                                },
+                                ],
                                 else: {
                                     $cond: {
                                         if: { $eq: ['$currentPhaseDetail.status', 'active'] },
-                                        then: {
-                                            title: 'Khám phá các đề tài đã mở đăng ký',
-                                            url: { $concat: ['/registration/', { $toString: '$_id' }] },
-                                            isDisabled: false,
-                                            badge: {
-                                                text: 'Đang mở',
-                                                variant: 'success'
+                                        then: [
+                                            {
+                                                title: 'Khám phá các đề tài đã mở đăng ký',
+                                                url: { $concat: ['/registration/', { $toString: '$_id' }] },
+                                                isDisabled: false,
+                                                badge: {
+                                                    text: 'Đang mở',
+                                                    variant: 'success'
+                                                }
                                             }
-                                        },
-                                        else: {
-                                            title: 'Hết hạn đăng ký đề tài',
-                                            url: null,
-                                            isDisabled: true,
-                                            badge: {
-                                                text: 'Hết hạn',
-                                                variant: 'danger'
+                                        ],
+                                        else: [
+                                            {
+                                                title: 'Hết hạn đăng ký đề tài',
+                                                url: null,
+                                                isDisabled: true,
+                                                badge: {
+                                                    text: 'Hết hạn',
+                                                    variant: 'danger'
+                                                }
                                             }
-                                        }
+                                        ]
                                     }
                                 }
                             }
@@ -740,83 +775,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         )
         return res.modifiedCount > 0
     }
-    // async getSubmissionStatus(
-    //     lecturerId: string,
-    //     facultyId: string
-    // ): Promise<{
-    //     currentPeriod: string | null
-    //     currentPhase: string | null
-    //     isEligible: boolean
-    //     reason: string | null
-    //     minTopics: number
-    // }> {
-    //     console.log('facultyId in repo:', facultyId)
-    //     const period = await this.periodModel.findOne({
-    //         status: PeriodStatus.OnGoing,
-    //         facultyId: new mongoose.Types.ObjectId(facultyId),
-    //         deleted_at: null
-    //     })
 
-    //     if (!period)
-    //         return {
-    //             currentPeriod: null,
-    //             currentPhase: null,
-    //             isEligible: false,
-    //             reason: 'Không tìm thấy kì hiện tại',
-    //             minTopics: 0
-    //         }
-    //     if (period.currentPhase !== PeriodPhaseName.SUBMIT_TOPIC) {
-    //         return {
-    //             currentPeriod: period,
-    //             currentPhase: period.currentPhase,
-    //             isEligible: false,
-    //             reason: 'Kì hiện tại không ở giai đoạn nộp đề tài',
-    //             minTopics: 0
-    //         }
-    //     }
-
-    //     const currenPhaseDetail = period?.phases.filter((phase) => phase.phase === PeriodPhaseName.SUBMIT_TOPIC)
-
-    //     //Kiểm tra xem giảng viên có trong danh sách được nộp đề tài hay không
-    //     const isEligible = currenPhaseDetail[0]?.requiredLecturerIds.includes(lecturerId)
-    //     if (isEligible) {
-    //         if (currenPhaseDetail[0]?.endTime < new Date()) {
-    //             // Kiểm tra xem thời gian nộp đề tài đã kế thúc hay chưa
-    //             return {
-    //                 currentPeriod: period.name,
-    //                 currentPhase: period.currentPhase,
-    //                 isEligible: false,
-    //                 reason: 'Thời gian nộp đề tài đã kết thúc',
-    //                 minTopics: 0
-    //             }
-    //         }
-    //         if (currenPhaseDetail[0]?.startTime > new Date()) {
-    //             // Kiểm tra xem thời gian nộp đề tài đã bắt đầu hay chưa
-    //             return {
-    //                 currentPeriod: period.name,
-    //                 currentPhase: period.currentPhase,
-    //                 isEligible: false,
-    //                 reason: 'Chưa đến thời gian nộp đề tài',
-    //                 minTopics: 0
-    //             }
-    //         }
-    //     } else {
-    //         return {
-    //             currentPeriod: period.name,
-    //             currentPhase: period.currentPhase,
-    //             isEligible: false,
-    //             reason: 'Bạn không được yêu cầu nộp đề tài trong kỳ này',
-    //             minTopics: 0
-    //         }
-    //     }
-
-    //     return {
-    //         currentPeriod: period.name,
-    //         currentPhase: period.currentPhase,
-    //         isEligible: true,
-    //         reason: null,
-    //         minTopics: currenPhaseDetail[0]?.minTopicsPerLecturer || 0
-    //     }
     // }
 
     async getPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto> {
@@ -1111,6 +1070,72 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
     }
     async getPeriodById(periodId: string): Promise<GetPeriodDto> {
         let pipelineMain = await this.AbstractGetPeriodInfo(periodId)
+        pipelineMain.push({
+            $addFields: {
+                phases: {
+                    $map: {
+                        input: '$phases',
+                        as: 'phase',
+                        in: {
+                            $mergeObjects: [
+                                '$$phase',
+                                {
+                                    status: {
+                                        $switch: {
+                                            branches: [
+                                                {
+                                                    case: {
+                                                        $or: [
+                                                            { $not: '$$phase.startTime' },
+                                                            { $not: '$$phase.endTime' }
+                                                        ]
+                                                    },
+                                                    then: 'pending'
+                                                },
+                                                {
+                                                    case: { $lt: ['$$NOW', '$$phase.startTime'] },
+                                                    then: 'pending'
+                                                },
+                                                {
+                                                    case: {
+                                                        $and: [
+                                                            { $gte: ['$$NOW', '$$phase.startTime'] },
+                                                            { $lte: ['$$NOW', '$$phase.endTime'] }
+                                                        ]
+                                                    },
+                                                    then: 'active'
+                                                }
+                                            ],
+                                            default: 'timeout'
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        })
+        pipelineMain.push(
+            {
+                $addFields: {
+                    //lấy ra để kiểm tra để cho phép thực hiện hành động hay không
+                    currentPhaseDetail: {
+                        $filter: {
+                            input: '$phases',
+                            as: 'phase',
+                            cond: { $eq: ['$$phase.phase', '$currentPhase'] }
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$currentPhaseDetail',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
         const result = await this.periodModel.aggregate(pipelineMain)
         if (!result || result.length === 0) throw new NotFoundException('Không tìm thấy kỳ')
 

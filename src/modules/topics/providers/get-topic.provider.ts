@@ -23,7 +23,7 @@ export class GetTopicProvider {
         private readonly periodsService: PeriodsService
     ) {}
     async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
-        const currentPhase = await this.periodsService.getPeriodById(periodId)
+        const periodInfo = await this.periodsService.getPeriodById(periodId)
         const paginationResult = await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)
         return {
             data: plainToInstance(GetGeneralTopics, paginationResult.data, {
@@ -32,7 +32,7 @@ export class GetTopicProvider {
             }),
             meta: {
                 ...paginationResult.meta,
-                periodInfo: currentPhase
+                periodInfo: periodInfo
             }
         }
     }

@@ -287,6 +287,7 @@ export class PeriodsController {
         })
     }
 
+    //kierm tra xem hàm có thể đóng hay chưa
     @Post('/:periodId/phases/:phase/resolve')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)

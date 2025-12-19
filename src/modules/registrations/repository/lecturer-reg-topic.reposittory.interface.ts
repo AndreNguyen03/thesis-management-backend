@@ -13,4 +13,5 @@ export interface LecturerRegTopicRepositoryInterface extends BaseRepositoryInter
     deleteForceLecturerRegistrationsInTopics(topicId: string[]): Promise<void>
     getCoSupervisorsInTopic(topicId: string): Promise<User[] | null>
     getMainSupervisorInTopic(topicId: string): Promise<User | null>
+    getParticipantsInTopic(topicId: string): Promise<string[]>
 }
