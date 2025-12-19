@@ -45,6 +45,16 @@ export class StudentRegTopicRepository
     ) {
         super(studentRegTopicModel)
     }
+    async getParticipantsInTopic(topicId: string): Promise<string[]> {
+        const registrations = await this.studentRegTopicModel
+            .find({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                deleted_at: null,
+                status: StudentRegistrationStatus.APPROVED
+            })
+            .lean()
+        return registrations.map((reg) => reg.userId.toString())
+    }
     //Lấy những đề tài mà sinh viên tham gia tức trạng thía đăng ký là approval
     async getTopicIdsByStudentId(studentId: string): Promise<string[]> {
         const topic = await this.studentRegTopicModel.find(
@@ -401,15 +411,10 @@ export class StudentRegTopicRepository
             throw new RequestTimeoutException()
         }
 
-        //update topic to full registered
-        const res = await this.topicModel.findOneAndUpdate(
-            { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
-            {
-                currentStatus: (await this.checkSlot(topic.maxStudents, topicId))
-                    ? TopicStatus.Full
-                    : TopicStatus.Registered
-            }
-        )
+        const res = await this.topicModel.findOne({
+            _id: new mongoose.Types.ObjectId(topicId),
+            deleted_at: null
+        })
 
         return res
     }

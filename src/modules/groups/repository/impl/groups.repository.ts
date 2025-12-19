@@ -6,8 +6,8 @@ import { Group } from '../../schemas/groups.schemas'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
-import { NotFoundException } from '@nestjs/common'
-
+import { Injectable, NotFoundException } from '@nestjs/common'
+@Injectable()
 export class GroupRepository extends BaseRepositoryAbstract<Group> implements IGroupRepository {
     constructor(
         @InjectModel(Group.name) private readonly groupModel: Model<Group>,

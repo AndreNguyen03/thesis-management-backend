@@ -15,6 +15,7 @@ import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
+import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -23,7 +24,8 @@ export class CreatePhaseProvider {
         private readonly validatePeriodPhaseProvider: ValidatePeriodPhaseProvider,
         @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
         private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider,
-        private readonly notificationPublisherService: NotificationPublisherService
+        private readonly notificationPublisherService: NotificationPublisherService,
+        private readonly createBatchGroupsProvider: CreateBatchGroupsProvider
     ) {}
     //Khởi tạo sơ khai cho kì mới
     async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
@@ -53,7 +55,12 @@ export class CreatePhaseProvider {
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
         console.log('Cấu hình pha Submit Topic thành công!', newPeriodPhase)
         const res = await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
-        if (res) await this.notificationPublisherService.sendPhaseSubmitTopicNotification(dto.requiredLecturerIds, periodId, newPeriodPhase.endTime)
+        if (res)
+            await this.notificationPublisherService.sendPhaseSubmitTopicNotification(
+                dto.requiredLecturerIds,
+                periodId,
+                newPeriodPhase.endTime
+            )
     }
 
     //submit-topic -> open registration
@@ -105,7 +112,6 @@ export class CreatePhaseProvider {
         )
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
         await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
-        console.log('Chuyển pha thành công!')
         return {
             success: true,
             message: `Chuyển sang ${PeriodPhaseName.OPEN_REGISTRATION} thành công. ${approvedTopicsCount} đề tài được mở đăng ký.`
@@ -120,11 +126,7 @@ export class CreatePhaseProvider {
         force: boolean = false
     ): Promise<{ success: boolean; message: string }> {
         console.log('================= CONFIG PHASE EXECUTION =================')
-        console.log('[INPUT]', { actorId, periodId, dto, force })
-
         const period = await this.iPeriodRepository.findOneById(periodId)
-        console.log('[PERIOD FOUND]', period ? period._id : 'NOT FOUND')
-
         if (!period) throw new PeriodNotFoundException()
 
         // Kiểm tra chuyển pha theo đúng trình tự
@@ -136,15 +138,12 @@ export class CreatePhaseProvider {
             period.currentPhase,
             PeriodPhaseName.EXECUTION
         )
-        console.log('[RESULT] isValidTransition =', isValid)
-
         if (!isValid) {
             console.log('[ERROR] INVALID TRANSITION')
             throw new BadRequestException(
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.EXECUTION}`
             )
         }
-
         // Kiểm tra thời gian
         const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
         console.log('[CHECK] End time of current phase:', currentPeriodPhase?.endTime)
@@ -182,13 +181,20 @@ export class CreatePhaseProvider {
 
         // Update topics batch
         console.log('[ACTION] Updating topics batch to execution phase...')
-        const { registeredTopics, cleanedUpTopics } =
+        const { registeredTopics, registeredTopicsNum, cleanedUpTopics } =
             await this.updateTopicsBatchProvider.updateTopicsBatchToExecutionPhase(periodId, actorId)
 
         console.log('[RESULT] Batch update result:', {
-            registeredTopics,
+            registeredTopicsNum,
             cleanedUpTopics
         })
+
+        //Tạo nhóm cho các đề tài đã được đăng ký
+        console.log('\n----[TASK 3] Tạo nhóm chat cho đề tài đã đăng ký ----')
+        //GROUP MODULE
+        if (registeredTopics && registeredTopics.length > 0)
+            //có đề tài được đăng ký
+            await this.createBatchGroupsProvider.createBatchGroupsAfterOpeningRegistration(registeredTopics)
 
         // Cập nhật pha mới
         console.log('[ACTION] Updating phase config in DB...')
@@ -201,7 +207,7 @@ export class CreatePhaseProvider {
 
         return {
             success: true,
-            message: `Chuyển sang ${PeriodPhaseName.EXECUTION} thành công. ${registeredTopics} đề tài tiến hành thực hiện, dọn dẹp ${cleanedUpTopics} đề tài.`
+            message: `Chuyển sang ${PeriodPhaseName.EXECUTION} thành công. ${registeredTopicsNum} đề tài tiến hành thực hiện, dọn dẹp ${cleanedUpTopics} đề tài.`
         }
     }
 

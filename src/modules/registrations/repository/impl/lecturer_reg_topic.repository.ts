@@ -32,6 +32,16 @@ export class LecturerRegTopicRepository
     ) {
         super(lecturerRegTopicModel)
     }
+
+    async getParticipantsInTopic(topicId: string): Promise<string[]> {
+        const registrations = await this.lecturerRegTopicModel
+            .find({
+                topicId: new mongoose.Types.ObjectId(topicId),
+                deleted_at: null,
+            })
+            .lean()
+        return registrations.map((reg) => reg.userId.toString())
+    }
     async getTopicIdsByLecturerId(lecturerId: string): Promise<string[]> {
         const regs = await this.lecturerRegTopicModel.find(
             {

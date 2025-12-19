@@ -3,7 +3,8 @@ import { TopicRepositoryInterface } from '../repository'
 import { TopicStatus } from '../enum'
 import { register } from 'module'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
-import { PhaseHistory } from '../schemas/topic.schemas'
+import { PhaseHistory, Topic } from '../schemas/topic.schemas'
+import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
 
 @Injectable()
 export class UpdateTopicsPhaseBatchProvider {
@@ -12,7 +13,7 @@ export class UpdateTopicsPhaseBatchProvider {
     async updateTopicsBatchToExecutionPhase(
         periodId: string,
         actorId: string
-    ): Promise<{ registeredTopics: number; cleanedUpTopics: number }> {
+    ): Promise<{ registeredTopics: Topic[] | null; registeredTopicsNum: number; cleanedUpTopics: number }> {
         console.log('================= UPDATE TOPICS BATCH → EXECUTION PHASE =================')
         console.log('[INPUT]', { periodId, actorId })
 
@@ -23,7 +24,6 @@ export class UpdateTopicsPhaseBatchProvider {
             currentStatus: { $in: [TopicStatus.Registered, TopicStatus.Full] },
             deleted_at: null
         })
-
         console.log(`[RESULT] Số lượng đề tài chuyển sang EXECUTION: ${registeredTopics?.length ?? 0}`)
 
         // 1) Chuyển các đề tài có đăng ký sang EXECUTION
@@ -57,11 +57,11 @@ export class UpdateTopicsPhaseBatchProvider {
         // 2) Tự động chuyển về Draft
         for (const topic of unregisteredTopics ?? []) {
             const payload = {
-                currentPhase: PeriodPhaseName.OPEN_REGISTRATION, // vẫn giữ phase cũ
+                currentPhase: PeriodPhaseName.EMPTY, // auto chuyển về pha rỗng
                 currentStatus: TopicStatus.Draft, // auto chuyển về Draft
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory( PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Draft, actorId)
+                    this.createPhaseHistory(PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Draft, actorId)
                 ]
             }
 
@@ -73,7 +73,8 @@ export class UpdateTopicsPhaseBatchProvider {
         console.log('\n===== SUCCESS: Xử lý batch đề tài hoàn tất! =====')
 
         return {
-            registeredTopics: registeredTopics?.length ?? 0,
+            registeredTopics,
+            registeredTopicsNum: registeredTopics?.length ?? 0,
             cleanedUpTopics: unregisteredTopics?.length ?? 0
         }
     }

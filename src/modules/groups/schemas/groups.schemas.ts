@@ -32,7 +32,7 @@ export class Group extends BaseEntity {
     participants: Types.ObjectId[]
 
     // Pattern: Subset - Giúp render UI danh sách chat cực nhanh
-    @Prop({ type: LastMessage })
+    @Prop({ type: LastMessage, default: null })
     lastMessage: LastMessage
 
     // Pattern: Attribute Pattern - Lưu unread count dạng Map để truy xuất O(1)

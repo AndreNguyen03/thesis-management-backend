@@ -227,10 +227,12 @@ export class PaginatedTopicsInPeriod {
     @Expose()
     meta: TopicsInPeriodMeta
 }
-export class PaginatedSubmittedTopics extends GetPaginatedObjectDto {
+export class PaginatedSubmittedTopics {
     @Expose()
     @Type(() => GetSubmittedTopic)
     data: GetSubmittedTopic[]
+    @Expose()
+    meta: TopicsInPeriodMeta
 }
 export class GetTopicResponseDto {
     @Expose()
