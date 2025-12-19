@@ -97,6 +97,7 @@ export class AbstractTopic {
     @Expose()
     allowManualApproval: boolean
 }
+
 export class GetSubmittedTopic extends AbstractTopic {
     @Expose()
     submittedAt: Date

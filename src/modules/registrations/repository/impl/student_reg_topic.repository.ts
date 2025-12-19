@@ -198,45 +198,88 @@ export class StudentRegTopicRepository
     }
     //sinh viên hủy đăng ký
     async cancelRegistration(topicId: string, studentId: string): Promise<{ message: string }> {
-        //  console.log('Cancel registration called for student:', studentId, 'and topic:', topicId)
+        console.log('================ CANCEL REGISTRATION ================')
+        console.log('Input:')
+        console.log(' - topicId  :', topicId)
+        console.log(' - studentId:', studentId)
+
+        // 1️⃣ Find topic
         const topic = await this.topicModel
-            .findOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null })
+            .findOne({
+                _id: new mongoose.Types.ObjectId(topicId),
+                deleted_at: null
+            })
             .exec()
+
+        console.log('Found topic:', topic ? topic._id : null)
+
         if (!topic) {
+            console.error('❌ Topic not found')
             throw new TopicNotFoundException()
         }
+
+        console.log('Topic currentStatus:', topic.currentStatus)
+
+        // 2️⃣ Find registration
         const registration = await this.studentRegTopicModel.findOne({
             topicId: new mongoose.Types.ObjectId(topicId),
             userId: new mongoose.Types.ObjectId(studentId),
             status: { $in: [StudentRegistrationStatus.PENDING] },
             deleted_at: null
         })
+
+        console.log('Found registration:', registration ? registration._id : null)
+
         if (!registration) {
+            console.error('❌ Registration not found or not in PENDING status')
             throw new RegistrationNotFoundException()
         }
+
+        console.log('Registration status BEFORE:', registration.status)
+
+        // 3️⃣ Update registration
         registration.status = StudentRegistrationStatus.WITHDRAWN
         registration.processedBy = studentId
-        // Tính trạng thái mới cho topic
+
+        console.log('Registration status AFTER:', registration.status)
+
+        // 4️⃣ Calculate new topic status
         let newStatus: TopicStatus | undefined
 
         if (topic.currentStatus === TopicStatus.Full) {
             newStatus = TopicStatus.Registered
-        } else if (await this.checkSlot(1, topicId)) {
-            newStatus = TopicStatus.PendingRegistration
+            console.log('Topic was FULL → set to REGISTERED')
+        } else {
+            const hasSlot = await this.checkSlot(1, topicId)
+            console.log('Check slot result:', hasSlot)
+
+            if (hasSlot) {
+                newStatus = TopicStatus.PendingRegistration
+                console.log('Has slot → set to PENDING_REGISTRATION')
+            }
         }
 
-        // Cập nhật trạng thái topic nếu cần
+        // 5️⃣ Update topic if needed
         if (newStatus) {
+            console.log('Updating topic status to:', newStatus)
+
             await this.topicModel.findOneAndUpdate(
                 { _id: registration.topicId, deleted_at: null },
                 { currentStatus: newStatus }
             )
+        } else {
+            console.log('No topic status update needed')
         }
 
+        // 6️⃣ Save registration
         await registration.save()
+        console.log('Registration saved successfully')
+
+        console.log('================ END CANCEL REGISTRATION ================')
+
         return { message: 'Đã xóa thành công đăng ký' }
-        //giảng viên hd bỏ sinh viên ra khỏi đề tài
     }
+
     //giảng viên hd chính bỏ sinh viên ra khỏi đề tài
     async unassignStudentInTopic(
         user: ActiveUserData,

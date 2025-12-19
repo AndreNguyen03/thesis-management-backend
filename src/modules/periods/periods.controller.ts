@@ -179,6 +179,7 @@ export class PeriodsController {
             enableImplicitConversion: true
         })
     }
+    
     //Giảng viên lấy những đề tài mà mình hướng dẫn trong pha cụ thể của kì cụ thể
     @Get('/:periodId/lecturer/get-topics-in-phase')
     @Auth(AuthType.Bearer)
