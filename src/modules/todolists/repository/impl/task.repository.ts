@@ -6,36 +6,87 @@ import mongoose, { Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { RequestCreate } from '../../dtos/request-update.dtos'
 import { TaskColumnTitleEnum } from '../../enum/taskcolumn.enum'
-import { BadRequestException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { MoveInColumnQuery, MoveToColumnQuery } from '../../dtos/request-patch.dtos'
+import { pipe } from 'rxjs'
+import { Milestone } from '../../../milestones/schemas/milestones.schemas'
+import { Group } from '../../../groups/schemas/groups.schemas'
+
 export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITaskRepository {
-    constructor(@InjectModel(Task.name) private readonly taskModel: Model<Task>) {
+    constructor(
+        @InjectModel(Task.name) private readonly taskModel: Model<Task>,
+        @InjectModel(Milestone.name) private readonly milestoneModel: Model<Milestone>,
+        @InjectModel(Group.name) private readonly groupModel: Model<Group>
+    ) {
         super(taskModel)
     }
-    async getTaskByGroupId(groupId: string): Promise<Task[]> {
-        return await this.taskModel
-            .find({ groupId: new mongoose.Types.ObjectId(groupId), deleted_at: null })
-            .sort({ createdAt: 1 })
-            .exec()
+    async getTasks(groupId: string): Promise<Task[]> {
+        const pipeline: any[] = []
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'milestones',
+                    localField: 'milestoneId',
+                    foreignField: '_id',
+                    as: 'milestone'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$milestone',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+        pipeline.push(
+            {
+                $match: { groupId: new mongoose.Types.ObjectId(groupId), deleted_at: null }
+            },
+            { $sort: { createdAt: 1 } }
+        )
+
+        pipeline.push({
+            $project: {
+                _id: 1,
+                title: 1,
+                description: 1,
+                status: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                columns: 1,
+                milestone: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    dueDate: 1
+                }
+            }
+        })
+
+        const results = await this.taskModel.aggregate(pipeline).exec()
+        return results
     }
     async createTask(body: RequestCreate): Promise<Task> {
-        //console.log('body repo', body)
+        const { milestoneId, groupId, title, description } = body
         const defaultColumns = [
             TaskColumnTitleEnum.TO_DO,
             TaskColumnTitleEnum.IN_PROGRESS,
             TaskColumnTitleEnum.DONE
         ].map((title) => ({ title }))
         const newTask = new this.taskModel({
-            groupId: new mongoose.Types.ObjectId('6578f1a1e4b0d1c2a3b4c5f1'),
-            title: body.title,
-            description: body.description || '',
+            groupId: new mongoose.Types.ObjectId(groupId),
+            milestoneId: new mongoose.Types.ObjectId(milestoneId),
+            title: title,
+            description: description || '',
             columns: defaultColumns
         })
         return await newTask.save()
     }
     async deleteTask(id: string): Promise<string> {
-        const res = await this.taskModel.deleteOne({ _id: new mongoose.Types.ObjectId(id) }).exec()
-        if (res.deletedCount === 0) {
+        const res = await this.taskModel
+            .updateOne({ _id: new mongoose.Types.ObjectId(id), deleted_at: null }, { deleted_at: new Date() })
+            .exec()
+        if (res.modifiedCount === 0) {
             throw new Error('Task not found or could not be deleted')
         }
         return id
@@ -123,5 +174,50 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         const [subtask] = oldColumn.items.splice(subtaskIndex, 1)
         newColumn.items.splice(newPos, 0, subtask)
         await task.save()
+    }
+
+    async updateTaskMilestone(taskId: string, milestoneId: string | null, userId: string): Promise<Task> {
+        // 1. Tìm task
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        // 2. Kiểm tra quyền (task phải thuộc group của user)
+        const group = await this.groupModel.findById(task.groupId)
+        if (!group) {
+            throw new NotFoundException('Group not found')
+        }
+
+        const isUserInGroup = group.participants.some((participantId) => participantId.toString() === userId)
+        if (!isUserInGroup) {
+            throw new ForbiddenException('You are not a member of this group')
+        }
+
+        // 3. Nếu milestoneId = null → Bỏ liên kết
+        if (milestoneId === null) {
+            task.milestoneId = null
+            await task.save()
+            return task
+        }
+
+        // 4. Validate milestone tồn tại và thuộc cùng group
+        const milestone = await this.milestoneModel.findById(new mongoose.Types.ObjectId(milestoneId))
+        if (!milestone) {
+            throw new NotFoundException('Milestone not found')
+        }
+
+        if (milestone.groupId.toString() !== task.groupId.toString()) {
+            throw new BadRequestException('Milestone does not belong to the same group')
+        }
+
+        // 5. Cập nhật
+        task.milestoneId = milestoneId
+        await task.save()
+
+        // 6. Populate milestone info trước khi return
+        await task.populate('milestoneId')
+
+        return task
     }
 }

@@ -31,8 +31,9 @@ export class ManageMinioProvider {
         }
     }
     private generateFileName(file: Express.Multer.File): string {
+        const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
         // extract file name
-        let name = file.originalname.split('.')[0]
+        let name = originalName.split('.')[0]
         // Remove spaces in the file name
         name = name.replace(/\s/g, '').trim()
         // extract file extension

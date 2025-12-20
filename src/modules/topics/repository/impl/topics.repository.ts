@@ -3341,6 +3341,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         ])
-        return res[0].filesInfo
+        if (res.length > 0) return res[0].filesInfo
+        return res
     }
 }

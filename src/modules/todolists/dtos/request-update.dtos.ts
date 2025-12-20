@@ -5,6 +5,9 @@ export class RequestCreate {
     @IsNotEmpty()
     groupId: string
 
+    @IsOptional()
+    milestoneId: string
+    
     @IsNotEmpty()
     title: string
 
@@ -18,7 +21,7 @@ export class UpdateTaskColumn {
 }
 
 export class RequestUpdate {
-    @IsOptional()
+    @IsNotEmpty()
     title: string
 
     @IsOptional()

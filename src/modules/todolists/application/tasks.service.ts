@@ -2,20 +2,27 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { ITaskRepository } from '../repository/task.repository.interface'
 import { RequestGetTaskQuery } from '../dtos/request-get.dto'
 import { RequestCreate, RequestUpdate, UpdateTaskColumn } from '../dtos/request-update.dtos'
-import { MoveInColumnQuery, MoveToColumnQuery } from '../dtos/request-patch.dtos'
+import { MoveInColumnQuery, MoveToColumnQuery, UpdateStatus } from '../dtos/request-patch.dtos'
 
 @Injectable()
 export class TasksService {
     constructor(@Inject('ITaskRepository') private readonly taskInterface: ITaskRepository) {}
 
     async getTaskBody(query: RequestGetTaskQuery) {
-        return await this.taskInterface.getTaskByGroupId(query.groupId)
+        return await this.taskInterface.getTasks(query.groupId, query.milestoneId)
     }
     async createTask(body: RequestCreate) {
         return await this.taskInterface.createTask(body)
     }
     async updateTaskInfo(id: string, body: RequestUpdate) {
         const res = await this.taskInterface.update(id, body)
+        if (!res) {
+            throw new NotFoundException('Nhiệm vụ không tồn tại')
+        }
+        return res
+    }
+    async updateStatus(id: string, query: UpdateStatus) {
+        const res = await this.taskInterface.update(id, query)
         if (!res) {
             throw new NotFoundException('Nhiệm vụ không tồn tại')
         }
@@ -39,5 +46,9 @@ export class TasksService {
     }
     async moveToNewColumn(id: string, body: MoveToColumnQuery) {
         await this.taskInterface.moveToNewColumn(id, body)
+    }
+
+    async updateTaskMilestone(taskId: string, milestoneId: string | null, userId: string) {
+        return await this.taskInterface.updateTaskMilestone(taskId, milestoneId, userId)
     }
 }

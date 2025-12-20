@@ -4,8 +4,9 @@ import { RequestGetTaskQuery } from './dtos/request-get.dto'
 import { RequestCreate, RequestUpdate, UpdateTaskColumn } from './dtos/request-update.dtos'
 import { plainToInstance } from 'class-transformer'
 import { TaskDto } from './dtos/get.dtos'
-import mongoose, { mongo } from 'mongoose'
-import { MoveInColumnQuery, MoveToColumnQuery } from './dtos/request-patch.dtos'
+import { MoveInColumnQuery, MoveToColumnQuery, UpdateStatus, UpdateTaskMilestoneDto } from './dtos/request-patch.dtos'
+import { ActiveUser } from '../../auth/decorator/active-user.decorator'
+import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 
 @Controller('tasks')
 export class TodolistsController {
@@ -16,6 +17,12 @@ export class TodolistsController {
         console.log('Updating task with ID:', id, 'and body:', body)
         return await this.tasksService.updateTaskInfo(id, body)
     }
+
+    @Patch('updateStatus/:id')
+    async updateStatus(@Param('id') id: string, @Query() query: UpdateStatus) {
+        return await this.tasksService.updateStatus(id, query)
+    }
+
     @Patch('/:id/columns/:columnId/move')
     async moveInColumn(
         @Param('id') id: string,
@@ -30,16 +37,11 @@ export class TodolistsController {
     //lấy danh sách các task theo topicId
     @Get()
     async getTasks(@Query() query: RequestGetTaskQuery) {
-        const res = await this.tasksService.getTaskBody(query)
-        return plainToInstance(TaskDto, res, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
+        return await this.tasksService.getTaskBody(query)
     }
     //tạo task mới - tự động init ba cột mặc định
     @Post()
     async createTask(@Body() body: RequestCreate) {
-        body.groupId = '678f1a1e4b0d1c2a3b4c5f1'
         const res = await this.tasksService.createTask(body)
         return plainToInstance(TaskDto, res, {
             excludeExtraneousValues: true,
@@ -48,7 +50,6 @@ export class TodolistsController {
     }
     @Patch('/:id/move')
     async moveToNewColumn(@Param('id') id: string, @Body() body: MoveToColumnQuery) {
-        console.log('Updating task withmpove ID:', id, 'and body:', body)
         return await this.tasksService.moveToNewColumn(id, body)
     }
 
@@ -79,5 +80,15 @@ export class TodolistsController {
         @Param('subtaskId') subtaskId: string
     ) {
         return await this.tasksService.deleteSubtask(id, columnId, subtaskId)
+    }
+
+    //Cập nhật milestone cho task
+    @Patch('/:taskId/milestone')
+    async updateTaskMilestone(
+        @Param('taskId') taskId: string,
+        @Body() body: UpdateTaskMilestoneDto,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.updateTaskMilestone(taskId, body.milestoneId, userId)
     }
 }
