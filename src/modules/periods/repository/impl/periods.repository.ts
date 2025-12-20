@@ -565,25 +565,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         ]
                                                                                     }
                                                                                 }],
-                                                                                else: [{
-                                                                                    title: {
-                                                                                        $cond: {
-                                                                                            if: {
-                                                                                                $lt: [
-                                                                                                    '$submittedCount',
-                                                                                                    '$$minRequired'
-                                                                                                ]
-                                                                                            },
-                                                                                            then: 'Quá hạn nộp',
-                                                                                            else: 'Nộp đủ - Đã kết thúc'
-                                                                                        }
-                                                                                    },
-                                                                                    {
-                                                                                        title: 'Soạn đề tài',
-                                                                                        url: '/manage-topics',
-                                                                                        isDisabled: false
-                                                                                    }
-                                                                                ],
+                                                                                
                                                                                 else: [
                                                                                     {
                                                                                         title: {
