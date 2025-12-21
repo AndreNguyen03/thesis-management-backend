@@ -20,7 +20,6 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
         const group = await this.groupModel
             .findOne({
                 _id: new mongoose.Types.ObjectId(id),
-                type: 'group'
             })
             .populate({
                 path: 'participants',
@@ -31,81 +30,74 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
             throw new NotFoundException('Không tìm thấy group')
         }
 
-        return group
+        return group 
     }
 
     async getGroupsOfUser(userId: string, query: PaginationQueryDto): Promise<Paginated<Group>> {
-        const pipeline: any[] = [
-            {
-                $match: {
-                    type: 'group',
-                    participants: new mongoose.Types.ObjectId(userId)
-                }
-            },
-            {
-                $lookup: {
-                    from: 'topics',
-                    localField: 'topicId',
-                    foreignField: '_id',
-                    as: 'topic',
-                    pipeline: [{ $project: { titleVN: 1, type: 1 } }]
-                }
-            },
-            {
-                $addFields: {
-                    topic: { $arrayElemAt: ['$topic', 0] }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    let: { senderId: { $toObjectId: '$lastMessage.senderId' } },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ['$_id', '$$senderId'] }
-                            }
-                        },
-                        {
-                            $project: { _id: 0, fullName: 1 }
-                        }
-                    ],
-                    as: 'senderInfo'
-                }
-            },
-            {
-                $addFields: {
-                    lastMessage: {
-                        $cond: {
-                            if: { $gt: [{ $size: '$senderInfo' }, 0] },
-                            then: {
-                                $mergeObjects: ['$lastMessage', { $arrayElemAt: ['$senderInfo', 0] }]
-                            },
-                            else: '$lastMessage'
-                        }
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const pipeline: any[] = [
+        { $match: { type: 'group', participants: userObjectId } },
+
+        // lookup topic
+        {
+            $lookup: {
+                from: 'topics',
+                localField: 'topicId',
+                foreignField: '_id',
+                as: 'topic',
+                pipeline: [{ $project: { titleVN: 1, type: 1 } }]
+            }
+        },
+        { $addFields: { topic: { $arrayElemAt: ['$topic', 0] } } },
+
+        // lookup sender info for lastMessage
+        {
+            $lookup: {
+                from: 'users',
+                let: { senderId: { $toObjectId: '$lastMessage.senderId' } },
+                pipeline: [
+                    { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
+                    { $project: { _id: 0, fullName: 1, avatarUrl: 1 } }
+                ],
+                as: 'senderInfo'
+            }
+        },
+        {
+            $addFields: {
+                lastMessage: {
+                    $cond: {
+                        if: { $gt: [{ $size: '$senderInfo' }, 0] },
+                        then: { $mergeObjects: ['$lastMessage', { $arrayElemAt: ['$senderInfo', 0] }] },
+                        else: '$lastMessage'
                     }
                 }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    topicId: 1,
-                    titleVN: '$topic.titleVN',
-                    topicType: '$topic.type',
-                    type: 1,
-                    participants: 1,
-                    lastMessage: 1,
-                    seenBy: 1,
-                    unreadCounts: 1,
-                    createdAt: 1,
-                    updatedAt: 1,
-                    lastSeenAtByUser: 1
-                }
             }
-        ]
+        },
 
-        return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
-    }
+        // project final fields
+        {
+            $project: {
+                _id: 1,
+                topicId: 1,
+                titleVN: '$topic.titleVN',
+                topicType: '$topic.type',
+                type: 1,
+                participants: 1,
+                lastMessage: 1,
+                seenBy: 1,
+                unreadCounts: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                lastSeenAtByUser: 1
+            }
+        }
+    ];
+
+    // trả về plain object để controller convert DTO
+    return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline);
+}
+
 
     async createOrGetDirectGroup(currentUserId: string, targetUserId: string): Promise<Group> {
         const userA = new mongoose.Types.ObjectId(currentUserId)

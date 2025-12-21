@@ -228,6 +228,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         @MessageBody()
         data: {
             groupId: string
+            groupType: string
             content: string
             type?: 'text' | 'file' | 'image'
             attachments?: string[]
@@ -263,7 +264,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 status: 'delivered'
             }
 
+            console.log('group id ,' ,data.groupId)
+
+            const group = await this.groupService.getGroupDetail(data.groupId)
+
             this.server.to(`group:${data.groupId}`).emit('new_group_message', payload)
+
+            const eventToEmitByType = group.type === 'direct' ? 'direct:last_message' : 'group:last_message'
+
+            this.server.to(`group:${data.groupId}`).emit(eventToEmitByType, {
+                groupId: data.groupId,
+                lastMessage: {
+                    content: payload.content,
+                    senderId,
+                    createdAt: payload.createdAt
+                }
+            })
 
             return payload
         } catch (error) {

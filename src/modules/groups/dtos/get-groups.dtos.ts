@@ -1,60 +1,95 @@
 import { Expose, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 
-class LastMessage {
+export class LastMessageDTO {
     @Expose()
     content: string
+
     @Expose()
     senderId: string
+
+    @Expose()
+    fullName?: string
+
     @Expose()
     createdAt: Date
+}
+
+export class ParticipantDTO {
+    @Expose()
+    id: string
+
     @Expose()
     fullName: string
-}
-export class GetGroupsDto {
+
     @Expose()
-    _id: string
-    @Expose()
-    topicId: string
-    @Expose()
-    titleVN: string
-    @Expose()
-    type: string
-    @Expose()
-    @Type(() => String)
-    participants: string[]
-    @Expose()
-    @Type(() => LastMessage)
-    lastMessage: LastMessage
-    @Expose()
-    @Type(() => Map<string, Number>)
-    unreadCounts: Map<string, number>
-    @Expose()
-    createdAt: string
-    @Expose()
-    updatedAt: string
+    avatarUrl?: string
 }
 
 export class RequestPaginatedGroups extends GetPaginatedObjectDto {
     @Expose()
-    @Type(() => GetGroupsDto)
-    data: GetGroupsDto[]
+    @Type(() => GroupSidebarDTO)
+    data: GroupSidebarDTO[]
 }
 
-export interface GroupResponseDto {
+export class GroupDetailDto {
+    @Expose()
     id: string
+
+    @Expose()
     topicId: string
+
+    @Expose()
     type: 'direct' | 'group'
-    participants: {
-        id: string
-        fullName: string
-        avatarUrl: string
-    }[]
-    lastMessage?: {
-        content: string
-        senderId: string
-        createdAt: Date
-    }
-    unreadCounts: Record<string, number>
-    lastSeenAtByUser: Record<string, string | null>
+
+    @Expose()
+    @Type(() => ParticipantDTO)
+    participants: ParticipantDTO[]
+
+    @Expose()
+    @Type(() => LastMessageDTO)
+    lastMessage?: LastMessageDTO
+
+    @Expose()
+    unreadCounts?: Record<string, number>
+
+    @Expose()
+    lastSeenAtByUser?: Record<string, string | null>
+}
+
+export class GroupSidebarDTO {
+    @Expose()
+    _id: string
+
+    @Expose()
+    titleVN: string
+
+    @Expose()
+    topicId: string
+
+    @Expose()
+    topicType: string
+
+    @Expose()
+    type: string
+
+    @Expose()
+    @Type(() => ParticipantDTO)
+    participants: ParticipantDTO[]
+
+    @Expose()
+    @Type(() => LastMessageDTO)
+    lastMessage?: LastMessageDTO
+
+    @Expose()
+    createdAt: Date
+
+    @Expose()
+    updatedAt: Date
+
+    @Expose()
+    unreadCounts?: Record<string, number>
+
+    @Expose()
+    lastSeenAtByUser?: Record<string, Date>
 }
