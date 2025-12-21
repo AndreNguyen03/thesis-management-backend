@@ -69,12 +69,7 @@ export class GroupsController {
     @Post('direct')
     async createOrGetDirectGroup(@Req() req: { user: ActiveUserData }, @Body() dto: CreateDirectGroupDto) {
         const group = await this.groupsService.createOrGetDirectGroup(req.user.sub, dto.targetUserId, dto.topicId)
-
-        return {
-            id: group._id.toString(),
-            type: 'direct' as const,
-            topicId: group.topicId ? group.topicId.toString() : null
-        }
+        return group
     }
 
     @Get('user-directs')
