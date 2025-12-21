@@ -4,6 +4,8 @@ import { Paginated } from '../../../common/pagination-an/interfaces/paginated.in
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import { GetRegistrationDto } from '../../topics/dtos/registration/get-registration.dto'
 import { GetStudentsRegistrationsInTopic } from '../../topics/dtos/registration/get-students-in-topic'
+import { MetaCustom } from '../dtos/get-history-registration.dto'
+import { PaginationStudentGetHistoryQuery } from '../dtos/request.dto'
 import { StudentRegisterTopic } from '../schemas/ref_students_topics.schemas'
 
 export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterface<StudentRegisterTopic> {
@@ -13,8 +15,8 @@ export interface StudentRegTopicRepositoryInterface extends BaseRepositoryInterf
     unassignStudentInTopic(user: ActiveUserData, topicId: string, studentId: string): Promise<{ message: string }>
     getStudentRegistrationsHistory(
         studentId: string,
-        query: PaginationQueryDto
-    ): Promise<Paginated<StudentRegisterTopic>>
+        query: PaginationStudentGetHistoryQuery
+    ): Promise<{data: Paginated<StudentRegisterTopic>, meta: MetaCustom}>
 
     getApprovedAndPendingStudentRegistrationsInTopic(topicId: string): Promise<GetStudentsRegistrationsInTopic | null>
     approvalStudentRegistrationByLecturer(

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { Task } from '../../todolists/schemas/task.schema'
+import { Expose } from 'class-transformer'
 
 export enum MilestoneType {
     STANDARD = 'STANDARD',
@@ -17,11 +18,14 @@ export enum MilestoneStatus {
     OVERDUE = 'Overdue'
 }
 export class FileInfo {
-    @Prop()
+    @Expose()
+    @Prop({ default: '' })
     name: string
-    @Prop()
+    @Expose()
+    @Prop({ default: '' })
     url: string
-    @Prop()
+    @Expose()
+    @Prop({ default: '' })
     size: number
 }
 

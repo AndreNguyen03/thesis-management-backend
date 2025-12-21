@@ -13,6 +13,9 @@ import { NotificationType } from '../../notifications/schemas/notification.schem
 import { getRejectionReasonText } from '../../../common/utils/translate-code-to-semantic-text'
 import { GetMiniTopicInfoProvider } from '../../topics/providers/get-mini-topic-info.provider'
 import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
+import { PaginationStudentGetHistoryQuery } from '../dtos/request.dto'
+import { GetPaginatedStudentRegistrationsHistory } from '../dtos/get-history-registration.dto'
+import { plainToInstance } from 'class-transformer'
 
 @Injectable()
 export class StudentRegTopicService {
@@ -43,11 +46,25 @@ export class StudentRegTopicService {
     public cancelRegistration(topicId: string, studentId: string) {
         return this.studentRegTopicRepository.cancelRegistration(topicId, studentId)
     }
-    public getStudentHistoryRegistrations(
+    public async getStudentHistoryRegistrations(
         studentId: string,
-        query: PaginationQueryDto
-    ): Promise<Paginated<StudentRegisterTopic>> {
-        return this.studentRegTopicRepository.getStudentRegistrationsHistory(studentId, query)
+        query: PaginationStudentGetHistoryQuery
+    ): Promise<GetPaginatedStudentRegistrationsHistory> {
+        const result = await this.studentRegTopicRepository.getStudentRegistrationsHistory(studentId, query)
+        return plainToInstance(
+            GetPaginatedStudentRegistrationsHistory,
+            {
+                data: result.data.data,
+                meta: {
+                    ...result.data.meta,
+                    ...result.meta
+                }
+            },
+            {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }
+        )
     }
     public async replyStudentRegistrationByLecturer(
         userId: string,
@@ -94,8 +111,7 @@ export class StudentRegTopicService {
                 registration.userId,
                 lecturerInfo,
                 topicInfo,
-                body,
-                
+                body
             )
         }
     }

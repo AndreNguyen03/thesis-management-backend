@@ -14,6 +14,7 @@ import { GetPaginatedStudentRegistrationsHistory } from './dtos/get-history-regi
 import { GetStudentsRegistrationsInTopic } from '../topics/dtos/registration/get-students-in-topic'
 import { GetRegistrationInTopicProvider } from './provider/get-registration-in-topic.provider'
 import { BodyReplyRegistrationDto } from './dtos/query-reply-registration.dto'
+import { PaginationStudentGetHistoryQuery } from './dtos/request.dto'
 
 @Controller('registrations')
 export class RegistrationsController {
@@ -106,12 +107,11 @@ export class RegistrationsController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.STUDENT)
     @UseGuards(RolesGuard)
-    async getStudentHistoryRegistrations(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
-        const res = await this.studentRegTopicService.getStudentHistoryRegistrations(req.user.sub, query)
-        return plainToInstance(GetPaginatedStudentRegistrationsHistory, res, {
-            excludeExtraneousValues: true,
-            enableImplicitConversion: true
-        })
+    async getStudentHistoryRegistrations(
+        @Req() req: { user: ActiveUserData },
+        @Query() query: PaginationStudentGetHistoryQuery
+    ) {
+        return await this.studentRegTopicService.getStudentHistoryRegistrations(req.user.sub, query)
     }
 
     @Get('/students-registrations-in-topic/:topicId')
@@ -137,5 +137,4 @@ export class RegistrationsController {
         await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }
-
 }

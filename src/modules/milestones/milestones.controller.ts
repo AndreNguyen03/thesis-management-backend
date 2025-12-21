@@ -29,11 +29,10 @@ export class MilestonesController {
     @Get('/in-group/:groupId/')
     async getMilestonesOfGroup(@Param('groupId') groupId: string) {
         const res = await this.milestonesService.getMilestonesOfGroup(groupId)
-        return res
-        // return plainToInstance(ResponseMilestone, res, {
-        //     excludeExtraneousValues: true,
-        //     enableImplicitConversion: true
-        // })
+        return plainToInstance(ResponseMilestone, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
     @Post('/create-task')
     async createTaskInMineTones(@Body() body: RequestCreate) {

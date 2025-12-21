@@ -1,6 +1,8 @@
 import { Expose, Type } from 'class-transformer'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
-import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetPaginatedObjectDto, MetaDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { GetMiniPeriodDto } from '../../periods/dtos/period.dtos'
+import { T } from '@faker-js/faker/dist/airline-CLphikKp'
 
 class GetStudentRegistrationsHistoryDto {
     @Expose()
@@ -27,7 +29,8 @@ class GetStudentRegistrationsHistoryDto {
     @Expose()
     periodName: string
     @Expose()
-    periodId: string
+    @Type(() => GetMiniPeriodDto)
+    periodInfo: GetMiniPeriodDto
     @Expose()
     lecturerResponse: string
     @Expose()
@@ -36,8 +39,16 @@ class GetStudentRegistrationsHistoryDto {
     @Type(() => ResponseMiniLecturerDto)
     processedBy: ResponseMiniLecturerDto
 }
-export class GetPaginatedStudentRegistrationsHistory extends GetPaginatedObjectDto {
+export class MetaCustom extends MetaDto {
+    @Expose()
+    @Type(() => GetMiniPeriodDto)
+    periodOptions: GetMiniPeriodDto[]
+}
+export class GetPaginatedStudentRegistrationsHistory {
     @Type(() => GetStudentRegistrationsHistoryDto)
     @Expose()
     data: GetStudentRegistrationsHistoryDto[]
+    @Expose()
+    @Type(() => MetaCustom)
+    meta: MetaCustom
 }

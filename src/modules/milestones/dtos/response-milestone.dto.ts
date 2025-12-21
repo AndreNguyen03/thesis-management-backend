@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer'
-import { MilestoneStatus, MilestoneType, Submission } from '../schemas/milestones.schemas'
+import { FileInfo, MilestoneStatus, MilestoneType } from '../schemas/milestones.schemas'
+import { GetMiniUserDto } from '../../../users/dtos/user.dto'
 
 class TaskDto {
     @Expose()
@@ -15,7 +16,16 @@ class TaskDto {
     @Expose()
     isDeleted: boolean
 }
-
+export class Submission {
+    @Expose()
+    date: string
+    @Expose()
+    @Type(() => FileInfo)
+    files: FileInfo[]
+    @Expose()
+    @Type(() => GetMiniUserDto)
+    createdBy: GetMiniUserDto
+}
 export class ResponseMilestone {
     @Expose()
     _id: string

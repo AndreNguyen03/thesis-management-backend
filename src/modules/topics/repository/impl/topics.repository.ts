@@ -523,7 +523,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $expr: {
                     $and: [
                         { $eq: ['$topicId', '$$topicId'] },
-                        { $eq: ['$deleted_at', null] },
                         {
                             $not: {
                                 $in: [
@@ -1215,7 +1214,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         in: '$$lecturer._id'
                     }
                 },
-                studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
+                studentsNum: 1,
                 fields: `$fields`,
                 requirements: `$requirements`,
                 fieldIds: 1,

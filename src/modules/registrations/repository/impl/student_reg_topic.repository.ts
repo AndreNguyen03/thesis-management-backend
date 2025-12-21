@@ -29,6 +29,8 @@ import { RequestTimeoutException } from '@nestjs/common'
 import { UserRole } from '../../../../users/enums/user-role'
 import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
+import { PaginationStudentGetHistoryQuery } from '../../dtos/request.dto'
+import { MetaCustom } from '../../dtos/get-history-registration.dto'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -160,15 +162,27 @@ export class StudentRegTopicRepository
     //hoạt động tốt nhưng rất tiếc chưa tối ưu cho các thao tác phân trang
     async getStudentRegistrationsHistory(
         studentId: string,
-        query: PaginationQueryDto
-    ): Promise<Paginated<StudentRegisterTopic>> {
-        const pipelineSub: any[] = []
-        pipelineSub.push(this.BaseGetStudentRegistrationsHistory(studentId))
-        return await this.paginationProvider.paginateQuery<StudentRegisterTopic>(
+        query: PaginationStudentGetHistoryQuery
+    ): Promise<{ data: Paginated<StudentRegisterTopic>; meta: MetaCustom }> {
+        const pipeline: any[] = this.BaseGetStudentRegistrationsHistory(studentId)
+        if (query.periodId) {
+            pipeline.push({
+                $match: {
+                    periodId: new mongoose.Types.ObjectId(query.periodId)
+                }
+            })
+        }
+        const data = await this.paginationProvider.paginateQuery<StudentRegisterTopic>(
             query,
             this.studentRegTopicModel,
-            pipelineSub
+            pipeline
         )
+        pipeline.push({ $group: { _id: null, periodOptions: { $addToSet: '$periodInfo' } } })
+        const metaAggregation = await this.studentRegTopicModel.aggregate(pipeline).exec()
+        return {
+            data,
+            meta: metaAggregation[0] || {}
+        }
     }
     async checkSlot(checkValue: number, topicId: string): Promise<boolean> {
         const registeredCount = await this.studentRegTopicModel.countDocuments({
@@ -436,89 +450,109 @@ export class StudentRegTopicRepository
             enableImplicitConversion: true
         })
     }
-    private async BaseGetStudentRegistrationsHistory(studentId: string) {
+    private BaseGetStudentRegistrationsHistory(studentId: string) {
         let pipelineMain: any[] = []
         //basecase
         pipelineMain.push({
             $match: {
-                userId: new mongoose.Types.ObjectId(studentId),
-                deleted_at: null
+                userId: new mongoose.Types.ObjectId(studentId)
             }
         })
         //lookup topic
         pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'topics',
-                        localField: 'topicId',
-                        foreignField: '_id',
-                        as: 'topicInfo'
-                    }
-                },
-                {
-                    $unwind: '$topicInfo'
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: 'topicId',
+                    foreignField: '_id',
+                    as: 'topicInfo'
                 }
-            ]
+            },
+            {
+                $unwind: '$topicInfo'
+            }
         )
         // lookup major
         pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'majors',
-                        localField: 'topicInfo.majorId',
-                        foreignField: '_id',
-                        as: 'majorInfo'
-                    }
-                },
-                {
-                    $unwind: '$majorInfo'
+            {
+                $lookup: {
+                    from: 'majors',
+                    localField: 'topicInfo.majorId',
+                    foreignField: '_id',
+                    as: 'majorInfo'
                 }
-            ]
+            },
+            {
+                $unwind: {
+                    path: '$majorInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+
+        // lookup period
+        pipelineMain.push(
+            {
+                $lookup: {
+                    from: 'periods',
+                    localField: 'topicInfo.periodId',
+                    foreignField: '_id',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$periodInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
         )
         // lookup period
         pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'periods',
-                        localField: 'topicInfo.periodId',
-                        foreignField: '_id',
-                        as: 'periodInfo'
-                    }
-                },
-                { $unwind: '$periodInfo' }
-            ]
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            { $unwind: { path: '$facultyInfo', preserveNullAndEmptyArrays: true } }
         )
+
+        pipelineMain.push({
+            $addFields: {
+                periodInfo: {
+                    $mergeObjects: ['$periodInfo', { faculty: '$facultyInfo' }]
+                }
+            }
+        })
         // lookup lecturer
         pipelineMain.push(
-            ...[
-                {
-                    $lookup: {
-                        from: 'ref_lecturers_topics',
-                        localField: 'topicId',
-                        foreignField: 'topicId',
-                        as: 'refLecturer'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'refLecturer.userId',
-                        foreignField: '_id',
-                        as: 'lecturerInfo'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'lecturers',
-                        localField: 'refLecturer.userId',
-                        foreignField: 'userId',
-                        as: 'lecturerDetails'
-                    }
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    localField: 'topicId',
+                    foreignField: 'topicId',
+                    as: 'refLecturer'
                 }
-            ]
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'refLecturer.userId',
+                    foreignField: '_id',
+                    as: 'lecturerInfo'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'refLecturer.userId',
+                    foreignField: 'userId',
+                    as: 'lecturerDetails'
+                }
+            }
         )
 
         // merge để có lectuer với titel
@@ -573,7 +607,8 @@ export class StudentRegTopicRepository
                 _id: 1,
                 topicId: '$topicInfo._id',
                 periodId: '$periodInfo._id',
-                periodName: '$periodInfo.name',
+                topicInfo: '$topicInfo',
+                periodInfo: 1,
                 titleVN: '$topicInfo.titleVN',
                 titleEng: '$topicInfo.titleEng',
                 lecturers: 1,
