@@ -776,8 +776,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         return res.modifiedCount > 0
     }
 
-    // }
-
     async getPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto> {
         const currentPeriod = await this.periodModel
             .findOne({

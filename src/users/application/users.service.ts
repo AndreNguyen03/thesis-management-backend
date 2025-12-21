@@ -4,6 +4,7 @@ import { BaseServiceAbstract } from '../../shared/base/service/base.service.abst
 import { User } from '../schemas/users.schema'
 import { ConfigService } from '@nestjs/config'
 import { UploadAvatarProvider } from '../../modules/upload-files/providers/upload-avatar.provider'
+import { PaginatedSearchUserDto, SearchUserQueryDto } from '../dtos/search-user.dto'
 
 @Injectable()
 export class UserService extends BaseServiceAbstract<User> {
@@ -16,6 +17,10 @@ export class UserService extends BaseServiceAbstract<User> {
     ) {
         super(userRepository)
         this.minioDownloadUrlBase = this.configService.get<string>('MINIO_DOWNLOAD_URL_BASE')!
+    }
+
+    async searchUsers(queryDto: SearchUserQueryDto): Promise<PaginatedSearchUserDto> {
+        return this.userRepository.searchUsers(queryDto)
     }
 
     async findByEmail(email: string): Promise<User | null> {

@@ -4,6 +4,7 @@ import { CreateLecturerDto } from '../dtos/lecturer.dto'
 import { User } from '../schemas/users.schema'
 import { CreateStudentDto } from '../dtos/student.dto'
 import { CreateUserDto } from '../dtos/create-user.dto'
+import { PaginatedSearchUserDto, SearchUserQueryDto } from '../dtos/search-user.dto'
 
 export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     findByEmail(email: string): Promise<User | null>
@@ -15,4 +16,5 @@ export interface UserRepositoryInterface extends BaseRepositoryInterface<User> {
     getEmailListFromStudentInFaculty(facultyId: string): Promise<string[]>
     getUsersByFacultyId(facultyId: string): Promise<User[]>
     getUsersByUserIds(userIds: string[]): Promise<User[]>
+    searchUsers(queryDto: SearchUserQueryDto): Promise<PaginatedSearchUserDto>
 }

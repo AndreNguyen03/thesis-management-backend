@@ -49,6 +49,7 @@ import { ActiveUserData } from '../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
 import { RolesGuard } from '../auth/guards/roles/roles.guard'
 import { RequestGetLecturerDto, RequestGetStudentDto } from './dtos/request-get.dto'
+import { PaginatedSearchUserDto, SearchUserQueryDto } from './dtos/search-user.dto'
 
 @Controller('users')
 @ApiTags('Users')
@@ -216,5 +217,18 @@ export class UserController {
     async uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: { user: ActiveUserData }) {
         const avatarUrl = await this.userService.uploadAvatar(req.user.sub, file)
         return { message: 'File uploaded successfully', avatarUrl }
+    }
+
+    @Get('search')
+    async search(@Query() query: SearchUserQueryDto): Promise<PaginatedSearchUserDto> {
+        return this.userService.searchUsers(query)
+    }
+
+    @Get(':id')
+    async getUserById(@Param('id') id: string, @Query('role') role: string) {
+        if (!role) {
+            throw new Error('Role is required in query param')
+        }
+        return this.getUserByRoleAndId(role, id)
     }
 }
