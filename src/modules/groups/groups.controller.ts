@@ -1,11 +1,12 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { GroupsService } from './application/groups.service'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { plainToInstance } from 'class-transformer'
-import { RequestPaginatedGroups } from './dtos/get-groups.dtos'
+import { RequestPaginatedGroups, GroupDetailDto } from './dtos/get-groups.dtos'
 import { ChatService } from './application/chat.service'
+import { CreateDirectGroupDto } from './dtos/create-direct.dto'
 
 @Controller('groups')
 export class GroupsController {
@@ -48,6 +49,7 @@ export class GroupsController {
     @Get()
     async getGroups(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
         const res = await this.groupsService.getGroupsOfUser(req.user.sub, query)
+
         return plainToInstance(RequestPaginatedGroups, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -56,7 +58,22 @@ export class GroupsController {
 
     @Get('/detail/:id')
     async getGroupDetail(@Param('id') id: string) {
-        console.log('group detail id', id)
-        return await this.groupsService.getGroupDetail(id)
+        const group = await this.groupsService.getGroupDetail(id)
+
+        return plainToInstance(GroupDetailDto, group, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Post('direct')
+    async createOrGetDirectGroup(@Req() req: { user: ActiveUserData }, @Body() dto: CreateDirectGroupDto) {
+        const group = await this.groupsService.createOrGetDirectGroup(req.user.sub, dto.targetUserId, dto.topicId)
+        return group
+    }
+
+    @Get('user-directs')
+    async getUserDirectGroups(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        return this.groupsService.getUserDirectGroups(req.user.sub, query)
     }
 }

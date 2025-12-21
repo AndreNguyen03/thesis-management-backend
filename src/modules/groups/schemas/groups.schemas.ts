@@ -22,7 +22,14 @@ class LastMessage {
 
 @Schema({ timestamps: true, collection: 'groups' })
 export class Group extends BaseEntity {
-    @Prop({ type: Types.ObjectId, ref: 'Topic', required: true, index: true })
+    @Prop({
+        type: Types.ObjectId,
+        ref: 'Topic',
+        required: function (this: GroupDocument) {
+            return this.type === 'group'
+        },
+        index: true
+    })
     topicId: Types.ObjectId
 
     @Prop({ enum: ['direct', 'group'], required: true })
@@ -50,4 +57,4 @@ export class Group extends BaseEntity {
 
 export const GroupSchema = SchemaFactory.createForClass(Group)
 // Index tối ưu cho việc sort conversation theo tin nhắn mới nhất
-GroupSchema.index({ topicId: 1, 'lastMessage.createdAt': -1 })
+GroupSchema.index({ topicId: 1, 'lastMessage.createdAt': -1, type: 1 })

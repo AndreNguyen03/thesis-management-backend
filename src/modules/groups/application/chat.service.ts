@@ -39,15 +39,13 @@ export class ChatService {
     }) {
         const { groupId, senderId, content, type = 'text', attachments = [], replyTo } = params
 
-        console.log('🔥 [saveMessage] params:', params)
-
-        // 2.1 Check quyền
+        // 1. Check quyền
         const isMember = await this.isUserInGroup(groupId, senderId)
         if (!isMember) {
             throw new ForbiddenException('User is not in this group')
         }
 
-        // 2.2 Tạo message
+        // 2. Tạo message
         const message = await this.messageModel.create({
             groupId,
             senderId,
@@ -57,21 +55,22 @@ export class ChatService {
             replyTo: replyTo ?? null
         })
 
-        // 2.3 Update lastMessage + unreadCounts
-        const group = await this.groupModel.findById(groupId).select('participants unreadCounts')
+        // 3. Lấy participants
+        const group = await this.groupModel.findById(groupId).select('participants')
+
         if (!group) throw new NotFoundException('Group not found')
 
-        const unreadUpdates: Record<string, number> = {}
+        // 4. Build $inc unreadCounts
+        const unreadInc: Record<string, number> = {}
 
         group.participants.forEach((uid) => {
             const uidStr = uid.toString()
-
             if (uidStr !== senderId) {
-                const current = group.unreadCounts.get(uidStr) ?? 0
-                unreadUpdates[`unreadCounts.${uidStr}`] = current + 1
+                unreadInc[`unreadCounts.${uidStr}`] = 1
             }
         })
 
+        // 5. Update group (ATOMIC – AN TOÀN)
         await this.groupModel.updateOne(
             { _id: groupId },
             {
@@ -81,8 +80,9 @@ export class ChatService {
                         senderId,
                         createdAt: message.createdAt
                     },
-                    ...unreadUpdates
-                }
+                    updatedAt: new Date()
+                },
+                $inc: unreadInc
             }
         )
 
