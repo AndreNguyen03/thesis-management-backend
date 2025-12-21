@@ -2,7 +2,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { IGroupRepository } from '../groups.repository.interface'
 import mongoose, { Model } from 'mongoose'
-import { Group } from '../../schemas/groups.schemas'
+import { Group, GroupDocument } from '../../schemas/groups.schemas'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
@@ -19,7 +19,8 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
     async getGroupDetail(id: string): Promise<Group> {
         const group = await this.groupModel
             .findOne({
-                _id: new mongoose.Types.ObjectId(id)
+                _id: new mongoose.Types.ObjectId(id),
+                type: 'group'
             })
             .populate({
                 path: 'participants',
@@ -32,11 +33,12 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
 
         return group
     }
+
     async getGroupsOfUser(userId: string, query: PaginationQueryDto): Promise<Paginated<Group>> {
-        let pipeline: any[] = []
-        pipeline.push(
+        const pipeline: any[] = [
             {
                 $match: {
+                    type: 'group',
                     participants: new mongoose.Types.ObjectId(userId)
                 }
             },
@@ -51,11 +53,9 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
             },
             {
                 $addFields: {
-                    // Chuyển array thành object (vì lookup trả array)
-                    topics: { $arrayElemAt: ['$topic', 0] }
+                    topic: { $arrayElemAt: ['$topic', 0] }
                 }
             },
-            // Thêm stage $lookup riêng cho sender (nested lookup đúng cách)
             {
                 $lookup: {
                     from: 'users',
@@ -73,7 +73,6 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     as: 'senderInfo'
                 }
             },
-            // Merge senderInfo vào lastMessage nếu lastMessage tồn tại
             {
                 $addFields: {
                     lastMessage: {
@@ -91,8 +90,8 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                 $project: {
                     _id: 1,
                     topicId: 1,
-                    titleVN: '$topics.titleVN',
-                    topicType: '$topics.type',
+                    titleVN: '$topic.titleVN',
+                    topicType: '$topic.type',
                     type: 1,
                     participants: 1,
                     lastMessage: 1,
@@ -103,7 +102,150 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     lastSeenAtByUser: 1
                 }
             }
-        )
-        return await this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
+        ]
+
+        return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
+    }
+
+    async createOrGetDirectGroup(currentUserId: string, targetUserId: string): Promise<Group> {
+        const userA = new mongoose.Types.ObjectId(currentUserId)
+        const userB = new mongoose.Types.ObjectId(targetUserId)
+
+        let group = await this.groupModel.findOne({
+            type: 'direct',
+            participants: { $all: [userA, userB] },
+            $expr: { $eq: [{ $size: '$participants' }, 2] }
+        })
+
+        if (!group) {
+            try {
+                group = await this.groupModel.create({
+                    type: 'direct',
+                    participants: [userA, userB],
+                    topicId: null,
+                    unreadCounts: {},
+                    lastSeenAtByUser: {}
+                })
+            } catch {
+                // tránh race condition: nếu đã được tạo song song
+                group = await this.groupModel.findOne({
+                    type: 'direct',
+                    participants: { $all: [userA, userB] },
+                    $expr: { $eq: [{ $size: '$participants' }, 2] }
+                })
+            }
+        }
+
+        if (!group) {
+            throw new Error('Failed to create or get direct group')
+        }
+
+        return group
+    }
+
+    async getUserDirectGroups(userId: string, query: PaginationQueryDto) {
+        const currentUserObjectId = new mongoose.Types.ObjectId(userId)
+
+        const pipeline = [
+            {
+                $match: {
+                    type: 'direct',
+                    participants: currentUserObjectId
+                }
+            },
+
+            // Populate participants
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'participants',
+                    foreignField: '_id',
+                    as: 'participants'
+                }
+            },
+
+            // Xác định otherUser + unreadCount
+            {
+                $addFields: {
+                    otherUser: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: '$participants',
+                                    as: 'p',
+                                    cond: { $ne: ['$$p._id', currentUserObjectId] }
+                                }
+                            },
+                            0
+                        ]
+                    },
+                    unreadCount: {
+                        $ifNull: [`$unreadCounts.${userId}`, 0]
+                    }
+                }
+            },
+
+            // Populate sender của lastMessage
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { senderId: '$lastMessage.senderId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ['$_id', '$$senderId'] }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                fullName: 1,
+                                avatarUrl: 1
+                            }
+                        }
+                    ],
+                    as: 'sender'
+                }
+            },
+
+            {
+                $addFields: {
+                    lastMessage: {
+                        $cond: {
+                            if: { $gt: [{ $size: '$sender' }, 0] },
+                            then: {
+                                $mergeObjects: ['$lastMessage', { sender: { $arrayElemAt: ['$sender', 0] } }]
+                            },
+                            else: '$lastMessage'
+                        }
+                    }
+                }
+            },
+
+            {
+                $project: {
+                    _id: 1,
+                    type: 1,
+                    otherUser: {
+                        _id: 1,
+                        fullName: 1,
+                        avatarUrl: 1
+                    },
+                    lastMessage: 1,
+                    unreadCount: 1,
+                    updatedAt: 1
+                }
+            },
+
+            // Sort theo message mới nhất
+            {
+                $sort: {
+                    'lastMessage.createdAt': -1,
+                    updatedAt: -1
+                }
+            }
+        ]
+
+        return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
     }
 }

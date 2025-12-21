@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { GroupsService } from './application/groups.service'
@@ -6,6 +6,7 @@ import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-q
 import { plainToInstance } from 'class-transformer'
 import { RequestPaginatedGroups } from './dtos/get-groups.dtos'
 import { ChatService } from './application/chat.service'
+import { CreateDirectGroupDto } from './dtos/create-direct.dto'
 
 @Controller('groups')
 export class GroupsController {
@@ -58,5 +59,21 @@ export class GroupsController {
     async getGroupDetail(@Param('id') id: string) {
         console.log('group detail id', id)
         return await this.groupsService.getGroupDetail(id)
+    }
+
+    @Post('direct')
+    async createOrGetDirectGroup(@Req() req: { user: ActiveUserData }, @Body() dto: CreateDirectGroupDto) {
+        const group = await this.groupsService.createOrGetDirectGroup(req.user.sub, dto.targetUserId, dto.topicId)
+
+        return {
+            id: group._id.toString(),
+            type: 'direct' as const,
+            topicId: group.topicId ? group.topicId.toString() : null
+        }
+    }
+
+    @Get('user-directs')
+    async getUserDirectGroups(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+        return this.groupsService.getUserDirectGroups(req.user.sub, query)
     }
 }

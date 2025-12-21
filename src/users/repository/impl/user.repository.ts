@@ -9,12 +9,15 @@ import { UserRole } from '../../enums/user-role'
 import { CreateUserDto } from '../../dtos/create-user.dto'
 import { from } from 'form-data'
 import { de } from '@faker-js/faker/.'
+import { PaginatedSearchUserDto, SearchUserItemDto, SearchUserQueryDto } from '../../dtos/search-user.dto'
+import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 
 @Injectable()
 export class UserRepository extends BaseRepositoryAbstract<User> implements UserRepositoryInterface {
     constructor(
         @InjectModel(User.name) private readonly userModel: Model<User>,
-        private readonly hashingProvider: HashingProvider
+        private readonly hashingProvider: HashingProvider,
+        private readonly paginationProvider: PaginationProvider
     ) {
         super(userModel)
     }
@@ -272,5 +275,78 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
             }
         )
         return await this.userModel.aggregate(pipeline)
+    }
+
+    // repositories/user-search.repository.ts
+    async searchUsers(queryDto: SearchUserQueryDto): Promise<PaginatedSearchUserDto> {
+        const { query, page = 1, limit = 10 } = queryDto
+
+        const pipeline: any[] = []
+
+        // Join student info
+        pipeline.push({
+            $lookup: {
+                from: 'students',
+                localField: '_id',
+                foreignField: 'userId',
+                as: 'student'
+            }
+        })
+        pipeline.push({
+            $unwind: { path: '$student', preserveNullAndEmptyArrays: true }
+        })
+
+        // Join lecturer info
+        pipeline.push({
+            $lookup: {
+                from: 'lecturers',
+                localField: '_id',
+                foreignField: 'userId',
+                as: 'lecturer'
+            }
+        })
+        pipeline.push({
+            $unwind: { path: '$lecturer', preserveNullAndEmptyArrays: true }
+        })
+
+        // Search theo tên, email, mssv
+        if (query) {
+            pipeline.push({
+                $match: {
+                    $or: [
+                        { fullName: { $regex: query, $options: 'i' } },
+                        { email: { $regex: query, $options: 'i' } },
+                        { 'student.studentCode': { $regex: query, $options: 'i' } }
+                    ]
+                }
+            })
+        }
+
+        // Project fields cho frontend
+        pipeline.push({
+            $project: {
+                id: '$_id',
+                fullName: 1,
+                email: 1,
+                role: 1,
+                studentCode: '$student.studentCode',
+                title: '$lecturer.title',
+                avatarUrl: 1
+            }
+        })
+
+        const result = await this.paginationProvider.paginateQuery<User>({ limit, page }, this.userModel, pipeline)
+
+        const data: SearchUserItemDto[] = result.data.map((u: any) => ({
+            id: u._id.toString(),
+            fullName: u.fullName,
+            email: u.email,
+            role: u.role,
+            studentCode: u.studentCode,
+            title: u.title,
+            avatarUrl: u.avatarUrl
+        }))
+
+        return { data, meta: result.meta }
     }
 }
