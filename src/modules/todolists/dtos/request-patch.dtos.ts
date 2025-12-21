@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator'
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator'
+import { Status } from '../schemas/task.schema'
 
 export class MoveInColumnQuery {
     @IsNotEmpty()
@@ -19,4 +20,13 @@ export class MoveToColumnQuery {
     @IsNotEmpty()
     @Min(0)
     newPos: number
+}
+export class UpdateStatus {
+    @IsNotEmpty()
+    status: Status
+}
+
+export class UpdateTaskMilestoneDto {
+    @IsOptional()
+    milestoneId: string | null
 }

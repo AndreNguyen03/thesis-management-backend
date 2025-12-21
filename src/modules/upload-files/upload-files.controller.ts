@@ -43,6 +43,4 @@ export class UploadFilesController {
             message: `Đổi tên file thành công`
         }
     }
-    @Get('/group/:groupId/files')
-    async getFilesOfGroup(@Param('groupId') groupId: string) {}
 }

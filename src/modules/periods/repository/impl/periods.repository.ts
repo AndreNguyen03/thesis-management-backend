@@ -467,32 +467,19 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         badge: {
                                                                                             text: {
                                                                                                 $concat: [
-                                                                                                    '/registration/',
+                                                                                                    'Số lượng nộp ',
                                                                                                     {
                                                                                                         $toString:
-                                                                                                            '$_id'
+                                                                                                            '$$submitted'
                                                                                                     },
-                                                                                                    '/submit-topics'
+                                                                                                    '/',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$minRequired'
+                                                                                                    }
                                                                                                 ]
                                                                                             },
-                                                                                            isDisabled: false,
-                                                                                            badge: {
-                                                                                                text: {
-                                                                                                    $concat: [
-                                                                                                        'Số lượng nộp ',
-                                                                                                        {
-                                                                                                            $toString:
-                                                                                                                '$$submitted'
-                                                                                                        },
-                                                                                                        '/',
-                                                                                                        {
-                                                                                                            $toString:
-                                                                                                                '$$minRequired'
-                                                                                                        }
-                                                                                                    ]
-                                                                                                },
-                                                                                                variant: 'success'
-                                                                                            }
+                                                                                            variant: 'success'
                                                                                         }
                                                                                     }
                                                                                 ],
@@ -510,32 +497,19 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                         badge: {
                                                                                             text: {
                                                                                                 $concat: [
-                                                                                                    '/registration/',
+                                                                                                    'Đã nộp ',
                                                                                                     {
                                                                                                         $toString:
-                                                                                                            '$_id'
+                                                                                                            '$$submitted'
                                                                                                     },
-                                                                                                    '/submit-topics'
+                                                                                                    '/',
+                                                                                                    {
+                                                                                                        $toString:
+                                                                                                            '$$minRequired'
+                                                                                                    }
                                                                                                 ]
                                                                                             },
-                                                                                            isDisabled: false,
-                                                                                            badge: {
-                                                                                                text: {
-                                                                                                    $concat: [
-                                                                                                        'Đã nộp ',
-                                                                                                        {
-                                                                                                            $toString:
-                                                                                                                '$$submitted'
-                                                                                                        },
-                                                                                                        '/',
-                                                                                                        {
-                                                                                                            $toString:
-                                                                                                                '$$minRequired'
-                                                                                                        }
-                                                                                                    ]
-                                                                                                },
-                                                                                                variant: 'warning'
-                                                                                            }
+                                                                                            variant: 'warning'
                                                                                         }
                                                                                     }
                                                                                 ]
@@ -562,7 +536,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                                         $toString:
                                                                                                             '$$minRequired'
                                                                                                     },
-                                                                                                    ' đề tài. Hãy chuẩn bị nhé'
+                                                                                                    ' đề tài'
                                                                                                 ]
                                                                                             },
                                                                                             variant: 'info'
@@ -577,9 +551,13 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                                                                 ' đề tài. Hãy chuẩn bị nhé'
                                                                                             ]
                                                                                         }
+                                                                                    },
+                                                                                    {
+                                                                                        title: 'Soạn đề tài',
+                                                                                        url: '/manage-topics',
+                                                                                        isDisabled: false
                                                                                     }
                                                                                 ],
-                                                                            
                                                                                 else: [
                                                                                     {
                                                                                         title: {
@@ -627,32 +605,40 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                             }
                                                         }
                                                     }
-                                                }
-                                            },
-                                            else: [
-                                                {
-                                                    title: 'Không được yêu cầu nộp',
-                                                    url: null,
-                                                    isDisabled: true
-                                                }
-                                            ]
+                                                },
+                                                else: [
+                                                    {
+                                                        title: 'Không được yêu cầu nộp',
+                                                        url: null,
+                                                        isDisabled: true
+                                                    }
+                                                ]
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            else: {
-                                $cond: {
-                                    if: { $eq: ['$currentPhase', PeriodPhaseName.OPEN_REGISTRATION] },
-                                    then: [
-                                        {
-                                            title: 'Đề tài của bạn đã mở đăng ký',
-                                            url: {
-                                                $concat: [{ $toString: '$_id' }, '/manage-topics']
-                                            },
-                                            isDisabled: false
-                                        }
-                                    ],
-                                    else: []
+                                },
+                                else: {
+                                    $cond: {
+                                        if: { $eq: ['$currentPhase', PeriodPhaseName.OPEN_REGISTRATION] },
+                                        then: [
+                                            {
+                                                title: 'Đề tài của bạn đã mở đăng ký',
+                                                url: {
+                                                    $concat: [{ $toString: '$_id' }, '/manage-topics']
+                                                },
+                                                isDisabled: false
+                                            }
+                                        ],
+                                        else: [
+                                            {
+                                                title: 'Xem đề tài của bạn',
+                                                url: {
+                                                    $concat: ['/registration/', { $toString: '$_id' }, '/manage-topics']
+                                                },
+                                                isDisabled: false
+                                            }
+                                        ]
+                                    }
                                 }
                             }
                         }
@@ -757,7 +743,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
 
         return await this.periodModel.aggregate(pipelineSub).exec()
     }
-
     async deletePeriod(periodId: string): Promise<boolean> {
         console.log(periodId)
         const result = await this.periodModel.aggregate([

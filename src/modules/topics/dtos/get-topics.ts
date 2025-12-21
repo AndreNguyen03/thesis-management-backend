@@ -120,6 +120,9 @@ export class GetGeneralTopics extends AbstractTopic {
     @Expose()
     @Type(() => GetMiniPeriodDto)
     periodInfo: GetMiniPeriodDto
+
+    @Expose()
+    original_id?: string
     //file đính kèm
 }
 

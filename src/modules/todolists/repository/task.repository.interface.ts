@@ -5,7 +5,7 @@ import { RequestCreate } from '../dtos/request-update.dtos'
 import { MoveInColumnQuery, MoveToColumnQuery } from '../dtos/request-patch.dtos'
 
 export interface ITaskRepository extends BaseRepositoryInterface<Task> {
-    getTaskByGroupId(groupId: string): Promise<Task[]>
+    getTasks(groupId: string, milestoneId?: string): Promise<Task[]>
     createTask(body: RequestCreate): Promise<Task>
     deleteTask(id: string): Promise<string>
     createNewSubtask(id: string, columnId: string, title: string): Promise<Subtask>
@@ -13,4 +13,5 @@ export interface ITaskRepository extends BaseRepositoryInterface<Task> {
     // updateColumnsInTask(taskId: string, columns: TaskColumn[]): Promise<Task>
     moveInColumn(id: string, columnId: string, query: MoveInColumnQuery): Promise<void>
     moveToNewColumn(id: string, body: MoveToColumnQuery): Promise<void>
+    updateTaskMilestone(taskId: string, milestoneId: string | null, userId: string): Promise<Task>
 }

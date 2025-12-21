@@ -103,12 +103,12 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             topicId = await this.topicRepository.createTopic(topicData)
             // upload files
             if (files && files.length > 0) {
-                const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(
+                const filesId = await this.uploadManyFilesProvider.uploadManyFiles(
                     userId,
                     files,
                     UploadFileTypes.DOCUMENT
-                )
-                await this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
+                ).then((res) => res.map((file) => file._id.toString()))
+                await this.topicRepository.storedFilesIn4ToTopic(topicId, filesId)
             }
         } catch (error) {
             console.error('Lỗi khi tạo đề tài:', error)
@@ -391,35 +391,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
     //service tải file lên đề tài
     public async uploadManyFiles(userId: string, topicId: string, files: Express.Multer.File[]) {
-        // Validate file types
-        const allowedMimeTypes = [
-            'application/pdf', // PDF
-            'application/msword', // DOC
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
-            'image/png', // PNG
-            'image/jpeg', // JPG/JPEG
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation' // PPTX
-        ]
+        const filesId = await this.uploadManyFilesProvider
+            .uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
+            .then((res) => res.map((file) => file._id.toString()))
 
-        for (const file of files) {
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                throw new BadRequestException(
-                    `File "${file.originalname}" không hỗ trợ. Chỉ chấp nhận: PDF, DOC, DOCX, PNG, JPG, XLSX, PPTX`
-                )
-            }
-            if (file.size > 20 * 1024 * 1024) {
-                throw new BadRequestException(`File "${file.originalname}" vượt quá giới hạn 20MB`)
-            }
-        }
-
-        const totalSize = files.reduce((acc, file) => acc + file.size, 0)
-        if (totalSize > 50 * 1024 * 1024) {
-            throw new BadRequestException('Tổng dung lượng file tải lên vượt quá giới hạn cho phép (50MB)')
-        }
-
-        const idFiles = await this.uploadManyFilesProvider.uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
-        return await this.topicRepository.storedFilesIn4ToTopic(topicId, idFiles)
+        return await this.topicRepository.storedFilesIn4ToTopic(topicId, filesId)
     }
     public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {
         let neededDeleteFileIds: string[] = []

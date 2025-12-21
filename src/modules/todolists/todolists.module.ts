@@ -4,6 +4,8 @@ import { TasksService } from './application/tasks.service'
 import { TaskRepository } from './repository/impl/task.repository'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Task, TaskSchema } from './schemas/task.schema'
+import { Milestone, MilestoneSchema } from '../milestones/schemas/milestones.schemas'
+import { Group, GroupSchema } from '../groups/schemas/groups.schemas'
 
 @Module({
     providers: [
@@ -14,6 +16,13 @@ import { Task, TaskSchema } from './schemas/task.schema'
         }
     ],
     controllers: [TodolistsController],
-    imports: [MongooseModule.forFeature([{ name: Task.name, schema: TaskSchema   }])]
+    imports: [
+        MongooseModule.forFeature([
+            { name: Task.name, schema: TaskSchema },
+            { name: Milestone.name, schema: MilestoneSchema },
+            { name: Group.name, schema: GroupSchema }
+        ])
+    ],
+    exports: [TasksService]
 })
 export class TodolistsModule {}

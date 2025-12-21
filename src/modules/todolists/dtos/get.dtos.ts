@@ -1,4 +1,5 @@
 import { Expose, Type } from 'class-transformer'
+import { MilestoneDto } from '../../milestones/dtos/response-milestone.dto'
 class SubtaskDto {
     @Expose()
     _id: string
@@ -32,4 +33,7 @@ export class TaskDto {
     @Expose()
     @Type(() => TaskColumnDto)
     columns: TaskColumnDto[]
+    @Expose()
+    @Type(() => MilestoneDto)
+    milestone: MilestoneDto
 }

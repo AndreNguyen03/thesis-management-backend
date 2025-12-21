@@ -43,6 +43,7 @@ export class TopicSearchController {
         @Body() searchTopicsDto: SearchRegisteringTopicsDto
     ) {
         const ré = await this.searchService.recommendRegisteringTopics(req.user.facultyId!, searchTopicsDto)
+        return ré
     }
 
     //tìm kiếm trong tập dữ liệu đề tài đã duyệt
@@ -58,14 +59,6 @@ export class TopicSearchController {
         @Param('periodId') periodId: string,
         @Query() query: RequestGetTopicsInAdvanceSearchParams
     ) {
-        //query.search_by = 'titleVN,titleEng'
-        if (query.lecturerIds && typeof query.lecturerIds === 'string') {
-            query.lecturerIds = [query.lecturerIds] // Single ID → array
-        }
-        if (query.fieldIds && typeof query.fieldIds === 'string') {
-            query.fieldIds = [query.fieldIds] // Single ID → array
-        }
-        console.log('query topic search', query)
         let topics
         if (query.rulesPagination === 100)
             topics = await this.searchService.semanticSearchRegisteringTopic(periodId, query)

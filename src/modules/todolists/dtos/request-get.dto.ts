@@ -4,6 +4,8 @@ import { TaskColumn } from '../schemas/task.schema'
 export class RequestGetTaskQuery {
     @IsNotEmpty()
     groupId: string
+    @IsOptional()
+    milestoneId: string
 }
 
 export class SubtaskDto {
@@ -22,5 +24,3 @@ export class TaskColumnDto {
     @ValidateNested({ each: true })
     items: SubtaskDto[]
 }
-
-
