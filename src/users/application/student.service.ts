@@ -4,6 +4,7 @@ import {
     CreateBatchStudentDto,
     CreateStudentDto,
     ResponseStudentProfileDto,
+    StudentProfileDto,
     UpdateStudentProfileDto,
     UpdateStudentTableDto
 } from '../dtos/student.dto'
@@ -53,6 +54,10 @@ export class StudentService extends BaseServiceAbstract<Student> {
             class: doc.class,
             major: doc.major
         }
+    }
+
+    async getStudentProfile(studentId: string): Promise<StudentProfileDto | null> {
+        return await this.studentRepository.getProfile(studentId)
     }
 
     async createManyStudent(dtos: CreateBatchStudentDto[]) {

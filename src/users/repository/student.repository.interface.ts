@@ -1,6 +1,12 @@
 import { ClientSession } from 'mongoose'
 import { BaseRepositoryInterface } from '../../shared/base/repository/base.repository.interface'
-import { CreateBatchStudentDto, CreateStudentDto, UpdateStudentProfileDto, UpdateStudentTableDto } from '../dtos/student.dto'
+import {
+    CreateBatchStudentDto,
+    CreateStudentDto,
+    StudentProfileDto,
+    UpdateStudentProfileDto,
+    UpdateStudentTableDto
+} from '../dtos/student.dto'
 import { Student, StudentDocument } from '../schemas/student.schema'
 import { PaginationQueryDto } from '../../common/pagination/dtos/pagination-query.dto'
 import { PaginationQueryDto as Pagination_An } from '../../common/pagination-an/dtos/pagination-query.dto'
@@ -34,4 +40,6 @@ export interface StudentRepositoryInterface extends BaseRepositoryInterface<Stud
             reason: string
         }[]
     }>
+
+    getProfile(id: string): Promise<StudentProfileDto | null>
 }
