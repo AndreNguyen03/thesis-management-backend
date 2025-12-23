@@ -41,6 +41,6 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         BullModule.registerQueue({ name: 'knowledge-processing' }),
         PaginationAnModule
     ],
-    exports: [ChatBotService]
+    exports: [ChatBotService, GetEmbeddingProvider]
 })
 export class ChatBotModule {}

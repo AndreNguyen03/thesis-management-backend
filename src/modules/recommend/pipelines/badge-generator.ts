@@ -64,22 +64,28 @@ export class BadgeGenerator {
 
         const overlappingInterests = interestIntersection.length > 0 ? interestIntersection.join(', ') : 'Không có'
 
+        // ✅ New: Overlapping skills (tương tự interests)
+        const overlappingSkills = skillIntersection.length > 0 ? skillIntersection.join(', ') : 'Không có'
+
         /**
          * ========= 3. BADGE RULES =========
          * Rule-based, dễ chỉnh threshold
          */
         const badges: string[] = []
 
-        // Skill badges
+        // Skill badges (thêm fallback)
         if (skillMatch >= 80) badges.push('Kỹ Năng Rất Phù Hợp')
         else if (skillMatch >= 60) badges.push('Kỹ Năng Phù Hợp')
         else if (skillMatch >= 40) badges.push('Khớp Kỹ Năng Trung Bình')
+        else if (skillMatch >= 20) badges.push('Có Kỹ Năng Liên Quan') // ✅ New fallback
 
-        // Interest badge
+        // Interest badge (thêm fallback)
         if (interestMatch >= 50) badges.push('Phù Hợp Sở Thích')
+        else if (interestMatch >= 20) badges.push('Có Sở Thích Liên Quan') // ✅ New fallback
 
-        // Top recommendation badge (semantic score)
+        // Top recommendation badge (semantic score, thêm fallback)
         if (score >= 0.8) badges.push('Khuyến Nghị Hàng Đầu')
+        else if (score >= 0.6) badges.push('Khuyến Nghị Tốt') // ✅ New fallback
 
         /**
          * ========= 4. EXPLANATION =========
@@ -89,6 +95,7 @@ export class BadgeGenerator {
             khopKyNang: Math.round(skillMatch),
             phuHopSoThich: Math.round(interestMatch),
             soThichChung: overlappingInterests,
+            kyNangChung: overlappingSkills, // ✅ New: Overlaps skills
             diemTongThe: Math.round(score * 100)
         }
 

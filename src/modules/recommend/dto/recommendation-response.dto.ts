@@ -5,12 +5,8 @@ export class RecommendationResponseDtoe {}
 
 export class EnrichedRecommendation extends CandidateTopicDto {
     initialScore?: number
-
     rerankScore?: number
-
     finalScore?: number
-
     badges: string[]
-
     explanations: Record<string, number | string>
 }

@@ -44,7 +44,7 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         const pipeline = [
             {
                 $match: {
-                    _id: new Types.ObjectId(studentId)
+                    userId: new Types.ObjectId(studentId)
                 }
             },
             {
