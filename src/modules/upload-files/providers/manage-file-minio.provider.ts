@@ -17,14 +17,17 @@ export class ManageMinioProvider {
     ) {
         this.bucketName = this.configService.get<string>('MINIO_BUCKET_NAME')!
     }
-    async uploadFileToMinio(file: Express.Multer.File): Promise<string> {
+    async uploadFileToMinio(file: Express.Multer.File, folderName?: string): Promise<string> {
         const metaData = {
             'Content-Type': file.mimetype
         }
         try {
-            const fileName = this.generateFileName(file)
-            await this.minioClient.putObject(this.bucketName, fileName, file.buffer, file.size, metaData)
-            return fileName
+            let finalUrl = ''
+            if (folderName) {
+                finalUrl = `${folderName}/${this.generateFileName(file)}`
+            } else finalUrl = this.generateFileName(file)
+            await this.minioClient.putObject(this.bucketName, finalUrl, file.buffer, file.size, metaData)
+            return finalUrl
         } catch (error) {
             console.log('Error uploading file to MinIO:', error)
             throw new BadRequestException('Lỗi khi tải file lên hệ thống')
@@ -79,6 +82,30 @@ export class ManageMinioProvider {
             if (error.code === 'NoSuchKey') {
                 res.status(400).json({ message: 'Một hoặc nhiều file không tồn tại trong hệ thống' })
             }
+        } finally {
+            await archive.finalize()
+        }
+    }
+    async createZipStreamWithFolders(prefixes: string[], res: Response, zipName = 'Tai-lieu'): Promise<void> {
+        const archive = archiver('zip', { zlib: { level: 9 } })
+        const zipFileName = `${zipName}-${Date.now()}.zip`
+        res.setHeader('Content-Type', 'application/zip')
+        res.setHeader('Content-Disposition', `attachment; filename="${zipFileName}"`)
+        archive.pipe(res)
+
+        try {
+            for (const prefix of prefixes) {
+                const objectsStream = this.minioClient.listObjects(this.bucketName, prefix, true)
+                for await (const obj of objectsStream) {
+                    if (obj.name) {
+                        const fileStream = await this.minioClient.getObject(this.bucketName, obj.name)
+                        // Đảm bảo giữ nguyên cấu trúc folder trong zip
+                        archive.append(fileStream, { name: obj.name })
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('Error fetching files from MinIO for zipping:', error)
         } finally {
             await archive.finalize()
         }

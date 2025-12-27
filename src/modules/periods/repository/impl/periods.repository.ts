@@ -984,13 +984,17 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         const now = new Date()
 
         period.phases = (period.phases || []).map((phase: any) => {
-            let status = 'not_started'
-            if (now < new Date(phase.startTime)) {
-                status = 'not_started'
-            } else if (now >= new Date(phase.startTime) && now <= new Date(phase.endTime)) {
-                status = 'ongoing'
-            } else if (now > new Date(phase.endTime)) {
+            let status = 'pending'
+            if (phase.status === 'completed') {
                 status = 'completed'
+            } else if (!phase.startTime || !phase.endTime) {
+                status = 'pending'
+            } else if (now < new Date(phase.startTime)) {
+                status = 'pending'
+            } else if (now >= new Date(phase.startTime) && now <= new Date(phase.endTime)) {
+                status = 'active'
+            } else if (now > new Date(phase.endTime)) {
+                status = 'timeout'
             }
             return { ...phase, status }
         })
@@ -1138,7 +1142,19 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         if (!result || result.length === 0) throw new NotFoundException('Không tìm thấy kỳ')
 
         const period = result[0]
-        console.log('period detail:', period)
         return period
+    }
+    async updateCurrentPhaseToCompleted(periodId: string): Promise<void> {
+        const period = await this.periodModel.findOne({ _id: new mongoose.Types.ObjectId(periodId), deleted_at: null })
+        if (!period) {
+            throw new BadRequestException('Kỳ không tồn tại')
+        }
+        const currentPhase = period.currentPhase
+        const phaseIndex = period.phases.findIndex((phase) => phase.phase === currentPhase)
+        if (phaseIndex === -1) {
+            throw new BadRequestException('Giai đoạn hiện tại không tồn tại trong kỳ')
+        }
+        period.phases[phaseIndex].status = 'completed'
+        await period.save()
     }
 }

@@ -50,8 +50,8 @@ export class Lecturer extends BaseEntity {
     @Prop({ type: [Publication], default: [] })
     publications: Publication[]
 
-    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Topic', default: [] })
-    supervisedThesisIds: Types.ObjectId[]
+    // @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Topic', default: [] })
+    // supervisedThesisIds: Types.ObjectId[]
 }
 
 export const LecturerSchema = SchemaFactory.createForClass(Lecturer)

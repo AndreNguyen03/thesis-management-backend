@@ -45,6 +45,7 @@ import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
 import path from 'path'
 import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
+import { MilestoneStatus } from '../../../milestones/schemas/milestones.schemas'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -821,10 +822,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         query: RequestGetTopicsInPhaseParams,
         ownerId?: string
     ): Promise<Paginated<Topic>> {
-        console.log('query', query, periodId)
         const pipelineSub: any = []
+        console.log('query', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        // // Thêm trường lastPhaseHistory là phần tử cuối cùng thỏa điều kiện (là trạng thái cuối cùng của pha đầu vào) trong phaseHistories
         pipelineSub.push(
             {
                 $addFields: {
@@ -837,7 +837,11 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                     cond: {
                                         $and: [
                                             ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
-                                            ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
+                                            ...(query.status
+                                                ? [{ $eq: ['$$ph.status', query.status] }]
+                                                : query.phase === PeriodPhaseName.EXECUTION
+                                                  ? [{ $ne: ['$$ph.status', TopicStatus.Draft] }]
+                                                  : [])
                                         ]
                                     }
                                 }
@@ -849,7 +853,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             },
             {
                 $unwind: {
-                    path: '$lastStatusInPhaseHistory'
+                    path: '$lastStatusInPhaseHistory',
+                    //preserveNullAndEmptyArrays: true
                 }
             }
         )
@@ -870,6 +875,54 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
+        if (query.phase === PeriodPhaseName.EXECUTION) {
+            pipelineSub.push(
+                {
+                    $lookup: {
+                        from: 'groups',
+                        localField: '_id',
+                        foreignField: 'topicId',
+                        as: 'groupsInfo'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$groupsInfo',
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'milestones',
+                        localField: 'groupsInfo._id',
+                        foreignField: 'groupId',
+                        as: 'milestonesInfo'
+                    }
+                },
+                {
+                    $addFields: {
+                        completedMilestoneNumber: {
+                            $size: {
+                                $filter: {
+                                    input: { $ifNull: ['$milestonesInfo', []] },
+                                    as: 'milestone',
+                                    cond: { $eq: ['$$milestone.status', MilestoneStatus.COMPLETED] }
+                                }
+                            }
+                        },
+                        uncompletedMilestoneNumber: {
+                            $size: {
+                                $filter: {
+                                    input: '$milestonesInfo',
+                                    as: 'milestone',
+                                    cond: { $ne: ['$$milestone.status', MilestoneStatus.COMPLETED] }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
         pipelineSub.push({
             $project: {
                 titleEng: 1,
@@ -910,7 +963,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
                 //Không thì thôi vì phải plainToInstance
                 submittedAt: '$submittedPhaseHistory.createdAt',
-                periodInfo: 1
+                periodInfo: 1,
+                progress: {
+                    $cond: [
+                        { $eq: [{ $add: ['$completedMilestoneNumber', '$uncompletedMilestoneNumber'] }, 0] },
+                        0,
+                        {
+                            $multiply: [
+                                {
+                                    $divide: [
+                                        '$completedMilestoneNumber',
+                                        { $add: ['$completedMilestoneNumber', '$uncompletedMilestoneNumber'] }
+                                    ]
+                                },
+                                100
+                            ]
+                        }
+                    ]
+                }
+                // ...(query.phase === PeriodPhaseName.EXECUTION && { progress: 1 })
             }
         })
         //Phân trang phụ

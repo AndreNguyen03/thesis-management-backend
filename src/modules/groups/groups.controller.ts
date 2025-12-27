@@ -59,7 +59,6 @@ export class GroupsController {
     @Get('/detail/:id')
     async getGroupDetail(@Param('id') id: string) {
         const group = await this.groupsService.getGroupDetail(id)
-
         return plainToInstance(GroupDetailDto, group, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

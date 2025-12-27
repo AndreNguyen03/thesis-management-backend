@@ -6,6 +6,8 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Milestone, MilestoneSchema } from './schemas/milestones.schemas'
 import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { TodolistsModule } from '../todolists/todolists.module'
+import { GroupsModule } from '../groups/groups.module'
+import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 
 @Module({
     controllers: [MilestonesController],
@@ -21,7 +23,9 @@ import { TodolistsModule } from '../todolists/todolists.module'
             { name: Milestone.name, schema: MilestoneSchema }
         ]),
         UploadFilesModule,
-        TodolistsModule
+        TodolistsModule,
+        GroupsModule,
+        PaginationAnModule
     ]
 })
 export class MilestonesModule {}

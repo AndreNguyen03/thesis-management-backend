@@ -4,6 +4,7 @@ import { Period } from '../schemas/period.schemas'
 
 @Injectable()
 export class ValidatePeriodPhaseProvider {
+    // Validation nghiêm ngặt cho submit_topic và open_registration (phải tuần tự)
     async validateStatusManualTransition(currentPhase: string, newPhase: string): Promise<boolean> {
         console.log('Validating transition from', currentPhase, 'to', newPhase)
         const validTransitions = {
@@ -11,9 +12,17 @@ export class ValidatePeriodPhaseProvider {
             submit_topic: [PeriodPhaseName.OPEN_REGISTRATION],
             open_registration: [PeriodPhaseName.EXECUTION],
             execution: [PeriodPhaseName.COMPLETION],
-            completion: []  
+            completion: []
         }
         return validTransitions[currentPhase]?.includes(newPhase) ?? false
+    }
+
+    // Validation linh hoạt cho execution và completion (có thể config cùng lúc)
+    async validateFlexiblePhaseConfig(phaseName: string): Promise<boolean> {
+        console.log('Validating flexible phase config for', phaseName)
+        // Chỉ cho phép execution và completion được config linh hoạt
+        const flexiblePhases = [PeriodPhaseName.EXECUTION, PeriodPhaseName.COMPLETION]
+        return flexiblePhases.includes(phaseName as PeriodPhaseName)
     }
 
     async validatePhaseDates(

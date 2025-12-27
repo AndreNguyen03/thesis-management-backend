@@ -103,11 +103,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             topicId = await this.topicRepository.createTopic(topicData)
             // upload files
             if (files && files.length > 0) {
-                const filesId = await this.uploadManyFilesProvider.uploadManyFiles(
-                    userId,
-                    files,
-                    UploadFileTypes.DOCUMENT
-                ).then((res) => res.map((file) => file._id.toString()))
+                const filesId = await this.uploadManyFilesProvider
+                    .uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
+                    .then((res) => res.map((file) => file._id.toString()))
                 await this.topicRepository.storedFilesIn4ToTopic(topicId, filesId)
             }
         } catch (error) {

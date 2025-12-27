@@ -24,6 +24,4 @@ export enum TopicStatus {
     Reviewed = 'reviewed', //BCN
     Archived = 'archived', //System
     RejectedFinal = 'rejected_final' // Hội đồng bảo vệ
-}   
-
-
+}

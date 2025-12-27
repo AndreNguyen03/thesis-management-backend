@@ -124,6 +124,10 @@ export class GetGeneralTopics extends AbstractTopic {
     @Expose()
     original_id?: string
     //file đính kèm
+
+    @Expose()
+    //dùng trong pha thực hiện đề tài
+    progress?: number
 }
 
 class TopicStatsDto {

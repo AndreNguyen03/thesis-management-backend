@@ -41,6 +41,7 @@ import { GetDocumentsDto, GetUploadedFileDto } from '../upload-files/dtos/upload
 import { DownloadFileDto } from '../upload-files/dtos/download-file.dtos'
 import { Response } from 'express'
 import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 
 @Controller('topics')
 export class TopicController {
