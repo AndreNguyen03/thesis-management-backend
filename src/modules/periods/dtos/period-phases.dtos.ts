@@ -3,6 +3,7 @@ import { PeriodPhaseName, PeriodPhaseStatus } from '../enums/period-phases.enum'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { Expose, Type } from 'class-transformer'
 import mongoose from 'mongoose'
+import { PeriodStatus } from '../enums/periods.enum'
 
 export class GetPeriodPhaseDto {
     @Expose()
@@ -33,9 +34,6 @@ export class CreatePhase {
     @IsNotEmpty()
     @IsDate()
     endTime: Date
-    @IsOptional()
-    @IsDate()
-    deleted_at?: Date | null = null
 }
 
 export class ConfigPhaseSubmitTopicDto extends CreatePhase {

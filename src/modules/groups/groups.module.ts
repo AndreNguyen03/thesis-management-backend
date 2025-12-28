@@ -12,6 +12,7 @@ import { ChatService } from './application/chat.service'
 import { Message, MessageSchema } from './schemas/messages.schemas'
 import { CreateBatchGroupsProvider } from './provider/create-batch-groups.provider'
 import { RegistrationsModule } from '../registrations/registrations.module'
+import { GetGroupProvider } from './provider/get-group.provider'
 
 @Module({
     imports: [
@@ -34,8 +35,9 @@ import { RegistrationsModule } from '../registrations/registrations.module'
         ChatGateway,
         OnlineService,
         ChatService,
-        CreateBatchGroupsProvider
+        CreateBatchGroupsProvider,
+        GetGroupProvider
     ],
-    exports: [OnlineService, ChatService, GroupsService, CreateBatchGroupsProvider]
+    exports: [OnlineService, ChatService, GroupsService, CreateBatchGroupsProvider, GetGroupProvider]
 })
 export class GroupsModule {}

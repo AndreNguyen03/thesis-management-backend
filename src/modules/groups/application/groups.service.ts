@@ -5,13 +5,11 @@ import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
 import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
 import { Group, GroupDocument } from '../schemas/groups.schemas'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { GroupDetailDto } from '../dtos/get-groups.dtos'
 
 @Injectable()
 export class GroupsService {
-    constructor(
-        @Inject('IGroupRepository') private readonly groupRepository: IGroupRepository,
-        private readonly uploadManyFilesProvider: UploadManyFilesProvider
-    ) {}
+    constructor(@Inject('IGroupRepository') private readonly groupRepository: IGroupRepository) {}
     async getGroupsOfUser(userId: string, query: PaginationQueryDto) {
         return this.groupRepository.getGroupsOfUser(userId, query)
     }
@@ -22,7 +20,6 @@ export class GroupsService {
         if (!group) {
             throw new NotFoundException('Không tìm thấy group')
         }
-
         return group
     }
 

@@ -15,18 +15,19 @@ export class UploadManyFilesProvider {
     private async uploadFile(
         userId: string,
         file: Express.Multer.File,
-        type: string = UploadFileTypes.AVATAR
+        type: string = UploadFileTypes.AVATAR,
+        folderName?: string
     ): Promise<File> {
         // Fix encoding cho filename tiếng Việt
         const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
         //upload file to minio storage
-        const fileName = await this.manageMinioProvider.uploadFileToMinio(file)
+        const fileUrl = await this.manageMinioProvider.uploadFileToMinio(file, folderName)
 
         //store file information to database
         const fileData: UploadFileDto = {
             fileNameBase: originalName,
-            fileUrl: fileName,
+            fileUrl: fileUrl,
             mimeType: file.mimetype,
             fileType: type,
             size: file.size,
@@ -39,7 +40,8 @@ export class UploadManyFilesProvider {
     async uploadManyFiles(
         userId: string,
         files: Express.Multer.File[],
-        type: string = UploadFileTypes.DOCUMENT
+        type: string = UploadFileTypes.DOCUMENT,
+        folderName?: string
     ): Promise<File[]> {
         // Validate file types
         const allowedMimeTypes = [
@@ -67,7 +69,7 @@ export class UploadManyFilesProvider {
         }
         let filesData: File[] = []
         for (const file of files) {
-            const fileData = await this.uploadFile(userId, file, type)
+            const fileData = await this.uploadFile(userId, file, type, folderName)
             filesData.push(fileData)
         }
         return filesData

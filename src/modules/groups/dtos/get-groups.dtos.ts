@@ -88,6 +88,9 @@ export class GroupDetailDto {
 
     @Expose()
     lastSeenAtByUser?: Record<string, string | null>
+
+    @Expose() 
+    isAbleGoToDefense: boolean
 }
 
 /* =======================
@@ -128,6 +131,9 @@ export class GroupSidebarDTO {
 
     @Expose()
     lastSeenAtByUser?: Record<string, Date>
+
+    @Expose()
+    isAbleGotoDefense: boolean
 }
 
 /* =======================

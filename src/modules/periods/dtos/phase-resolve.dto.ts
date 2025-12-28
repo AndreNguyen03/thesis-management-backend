@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongoose'
 import { PeriodPhaseName } from '../enums/period-phases.enum'
-import { PeriodPhase } from '../schemas/period.schemas'
+import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 export class MissingTopicRecord {
     lecturerId: string
     lecturerName: string
@@ -26,19 +27,55 @@ export interface Phase2Response {
     }
     canTriggerNextPhase: boolean
 }
-
 export interface Phase3Response {
     periodId: string
     phase: 'execution'
-    overdueTopics: {
-        topicId: string
-        title: string
-        lecturerId: string
-        lecturerEmail: string
-        studentIds: string[]
-        studentEmails: string[]
-    }
+    // 1. Đề tài chưa nộp báo cáo cuối kỳ (đã có)
+    overdueTopics: OverdueTopicInfo[]
+    // 2. Đề tài đang tạm dừng/bị delay
+    pausedOrDelayedTopics: PausedOrDelayedTopicInfo[]
+    // 3. Đề tài chờ giảng viên đánh giá
+    pendingLecturerReview: PendingLecturerReview[]
     canTriggerNextPhase: boolean
+}
+
+export interface Phase4Response {
+    periodId: string
+    // phase: 'execution'
+    // // 1. Đề tài chưa nộp báo cáo cuối kỳ (đã có)
+    // overdueTopics: OverdueTopicInfo[]
+    // // 2. Đề tài đang tạm dừng/bị delay
+    // pausedOrDelayedTopics: PausedOrDelayedTopicInfo[]
+    // // 3. Đề tài chờ giảng viên đánh giá
+    // pendingLecturerReview: PendingLecturerReview[]
+    canTriggerNextPhase: boolean
+}
+
+export interface PausedOrDelayedTopicInfo {
+    topicId: string
+    titleVN: string
+    titleEng: string
+    status: 'paused' | 'delayed'
+    lecturers: ResponseMiniLecturerDto[]
+    students: ResponseMiniStudentDto[]
+    reason?: string
+}
+//quá hạn là nộp rồi
+export interface OverdueTopicInfo {
+    topicId: string
+    titleVN: string
+    titleEng: string
+    lecturers: ResponseMiniLecturerDto[]
+    students: ResponseMiniStudentDto[]
+}
+export interface PendingLecturerReview {
+    topicId: string
+    titleVN: string
+    titleEng: string
+    lecturers: ResponseMiniLecturerDto[]
+    students: ResponseMiniStudentDto[]
+    submittedAt: Date
+    daysPending: number
 }
 
 export interface LecturerInfo {
@@ -62,7 +99,7 @@ export interface PeriodPhaseDetail {
     requiredLecturerIds: string[]
     requiredLecturers: LecturerInfo[]
     allowManualApproval: boolean
-    status: 'not_started' | 'ongoing' | 'completed'
+    status: 'pending' | 'active' | 'completed' | 'timeout'
 }
 
 // Chi tiết period

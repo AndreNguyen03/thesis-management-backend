@@ -2,6 +2,7 @@ import { PaginationQueryDto } from '../../../common/pagination-an/dtos/paginatio
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
 import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
+import { OverdueTopicInfo, PausedOrDelayedTopicInfo, PendingLecturerReview } from '../../periods/dtos/phase-resolve.dto'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
 import {
     CreateTopicDto,
@@ -92,6 +93,11 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getYearsOfTopicInLibrary(): Promise<string[]>
     //: Promise<GetMiniMiniMajorDto[]>
     getDocumentsOfTopic(topicId: string): Promise<GetUploadedFileDto[]>
+    findTopicsByStatusInPeriod(status: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    //get TOpic
+    getOverDueTopics(periodId: string): Promise<OverdueTopicInfo[]>
+    getPendingReviewTopics(periodId: string): Promise<PendingLecturerReview[]>
+    getPausedOrDelayedTopics(periodId: string): Promise<PausedOrDelayedTopicInfo[]>
 
     getCandidateTopics(): Promise<CandidateTopicDto[]>
     getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]>

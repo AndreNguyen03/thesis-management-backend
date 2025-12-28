@@ -222,7 +222,7 @@ export class TopicSearchService implements OnModuleInit {
         }
         return await this.topicVectorRepoInterface.semanticSearchTopicsInLibrary(queryVector, queries)
     }
-    // async searchTopicsInLibrary(query: RequestGetTopicsInLibraryParams): Promise<Paginated<Topic>> {
+    // async searchTopicsInLibrary(query: RequestG etTopicsInLibraryParams): Promise<Paginated<Topic>> {
     //     return await this.getTopicProvider.getTopicsInLibrary(query)
     // }
     async getPendingRegistrationTopics(periodId: string) {
