@@ -33,6 +33,7 @@ export class AuthService {
     public async signIn(signInDto: SignInDto, ipAddress: string) {
         // find user if exists
         const user = await this.usersService.findByEmail(signInDto.email)
+        console.log(user?._id)
         if (!user) throw new UserNotFoundException()
         // compare password hash
         let isEqual: boolean = false

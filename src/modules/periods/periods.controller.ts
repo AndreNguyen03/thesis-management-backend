@@ -281,7 +281,25 @@ export class PeriodsController {
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async getCurrentPeriods(@Req() req: { user: ActiveUserData }) {
+        console.log(' user :::', req.user)
         const res = await this.periodsService.getCurrentPeriods(req.user.facultyId!, req.user.role, req.user.sub)
+        console.log('get current period data ::: ', res)
+        return plainToInstance(GetCurrentPeriod, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+       //Lấy thông tin của kỳ hiện tại
+    @Get('/dashboard-current-periods')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async getDashboardCurrentPeriods(@Req() req: { user: ActiveUserData }) {
+        console.log(' user :::', req.user)
+        const res = await this.periodsService.getDashboardCurrentPeriod(req.user.facultyId!)
+        console.log('get current period data ::: ', res)
+        return res
         return plainToInstance(GetCurrentPeriod, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

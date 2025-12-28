@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common'
 import Redis from 'ioredis'
 
+
 @Injectable()
 export class CacheService {
     constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
@@ -21,4 +22,5 @@ export class CacheService {
     async del(key: string): Promise<void> {
         await this.redis.del(key)
     }
+
 }

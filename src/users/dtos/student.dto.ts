@@ -195,6 +195,19 @@ export class ResponseStudentProfileDto {
     updatedAt?: Date
 }
 
+export class StudentProfileDto {
+    _id: string
+    class: string
+    major: string
+    facultyId: string
+    skills: string[]
+    interests: string[]
+    bio: string
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+}
+
 export class ResponseMiniStudent {
     @Expose()
     _id: string
@@ -224,12 +237,12 @@ export class PaginatedStudentTable extends GetPaginatedObjectDto {
 }
 
 export interface CreateBatchStudentDto {
-	fullName: string;
-	studentCode: string;
-	class: string;
-	major: string;
-	facultyName: string;
-	phone?: string;
-	email?: string;
-	isActive?: boolean;
+    fullName: string
+    studentCode: string
+    class: string
+    major: string
+    facultyName: string
+    phone?: string
+    email?: string
+    isActive?: boolean
 }

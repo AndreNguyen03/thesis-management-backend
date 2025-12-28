@@ -43,6 +43,8 @@ import { TopicVectorModule } from './modules/topic_search/topic_search.module'
 import { GroupsModule } from './modules/groups/groups.module'
 import { MilestonesModule } from './modules/milestones/milestones.module'
 import { TodolistsModule } from './modules/todolists/todolists.module'
+import { TopicInteractionModule } from './modules/topic_interaction/topic_interaction.module'
+import { RecommendModule } from './modules/recommend/recommend.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -118,7 +120,9 @@ const ENV = process.env.NODE_ENV
         TopicVectorModule,
         GroupsModule,
         MilestonesModule,
-        TodolistsModule
+        TodolistsModule,
+        TopicInteractionModule,
+        RecommendModule
     ],
     controllers: [AppController],
     providers: [
@@ -133,7 +137,7 @@ const ENV = process.env.NODE_ENV
         },
         AccessTokenGuard,
         PaginationProvider,
-        GetTopicStatusProvider
+        GetTopicStatusProvider,
     ]
 })
 // export class AppModule {}

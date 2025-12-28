@@ -27,7 +27,8 @@ import { googleAIConfig } from '../../config/googleai.config'
 import { mongoConfig } from '../../config/database.config'
 import { PeriodsModule } from '../periods/periods.module'
 import { GroupsModule } from '../groups/groups.module'
-@Global() 
+import { TopicInteractionModule } from '../topic_interaction/topic_interaction.module'
+@Global()
 @Module({
     controllers: [TopicController],
     providers: [
@@ -63,7 +64,7 @@ import { GroupsModule } from '../groups/groups.module'
         UpdateTopicsPhaseBatchProvider,
         GetStatisticsTopicsProvider,
         ValidateTopicStatusProvider,
-        GetMiniTopicInfoProvider,
+        GetMiniTopicInfoProvider
     ],
     imports: [
         MongooseModule.forFeature([
@@ -81,6 +82,7 @@ import { GroupsModule } from '../groups/groups.module'
         forwardRef(() => NotificationsModule),
         forwardRef(() => PeriodsModule),
         forwardRef(() => GroupsModule),
+        TopicInteractionModule
     ]
 })
 export class TopicModule {}

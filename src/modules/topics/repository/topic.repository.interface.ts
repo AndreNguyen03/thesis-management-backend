@@ -16,6 +16,7 @@ import {
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseParams
 } from '../dtos'
+import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
 import {
     GetTopicsStatisticInCompletionPhaseDto,
     GetTopicsStatisticInExecutionPhaseDto,
@@ -97,4 +98,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getOverDueTopics(periodId: string): Promise<OverdueTopicInfo[]>
     getPendingReviewTopics(periodId: string): Promise<PendingLecturerReview[]>
     getPausedOrDelayedTopics(periodId: string): Promise<PausedOrDelayedTopicInfo[]>
+
+    getCandidateTopics(): Promise<CandidateTopicDto[]>
+    getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]>
 }

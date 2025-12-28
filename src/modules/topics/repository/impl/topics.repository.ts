@@ -13,11 +13,11 @@ import {
     RequestGetTopicsInPhaseParams
 } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
-import mongoose, { Model } from 'mongoose'
+import mongoose, { Model, Types } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
-import { BadRequestException, RequestTimeoutException } from '@nestjs/common'
+import { BadRequestException, Inject, RequestTimeoutException } from '@nestjs/common'
 import { RequestGradeTopicDto } from '../../dtos/request-grade-topic.dtos'
 import {
     GetTopicsStatisticInCompletionPhaseDto,
@@ -45,6 +45,8 @@ import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
 import path from 'path'
 import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
+import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
+import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
 import { MilestoneCreator, MilestoneStatus, MilestoneType } from '../../../milestones/schemas/milestones.schemas'
 import { Period, PeriodPhase } from '../../../periods/schemas/period.schemas'
 import {
@@ -58,10 +60,206 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     public constructor(
         @InjectModel(Topic.name)
         private readonly topicRepository: Model<Topic>,
-        private readonly paginationProvider: PaginationProvider
+        private readonly paginationProvider: PaginationProvider,
+        @Inject('TOPIC_INTERACTION_REPOSITORY')
+        private readonly topicInteraction: TopicInteractionRepositoryInterface
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+
+    async getCandidateTopics(): Promise<CandidateTopicDto[]> {
+        const pipeline = [
+            // Match candidate topics: those in open registration phase, with status pending_registration or registered (not full yet)
+            {
+                $match: {
+                    currentStatus: { $in: ['pending_registration', 'registered'] },
+                    currentPhase: 'open_registration' // Ensure it's in the open registration phase
+                    // Add other filters if needed, e.g., { periodId: somePeriodId } or by major
+                }
+            },
+            // Lookup creator (User) via createBy
+            {
+                $lookup: {
+                    from: 'users', // User collection
+                    localField: 'createBy',
+                    foreignField: '_id',
+                    as: 'creator'
+                }
+            },
+            // Unwind creator (one-to-one)
+            {
+                $unwind: {
+                    path: '$creator',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            // Lookup Lecturer via creator's _id matching lecturer.userId
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'creator._id',
+                    foreignField: 'userId',
+                    as: 'lecturer',
+                    pipeline: [
+                        {
+                            $project: {
+                                areaInterest: 1,
+                                researchInterests: 1
+                                // Exclude other lecturer fields if not needed
+                            }
+                        }
+                    ]
+                }
+            },
+            // Unwind lecturer (one-to-one)
+            {
+                $unwind: {
+                    path: '$lecturer',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            // Lookup Fields via fieldIds
+            {
+                $lookup: {
+                    from: 'fields',
+                    localField: 'fieldIds',
+                    foreignField: '_id',
+                    as: 'fields'
+                }
+            },
+            // Lookup Requirements via requirementIds
+            {
+                $lookup: {
+                    from: 'requirements',
+                    localField: 'requirementIds',
+                    foreignField: '_id',
+                    as: 'requirements'
+                }
+            },
+            // Project final fields (include topic fields, lecturer interests, fields, requirements; exclude sensitive/unneeded like phaseHistories, fileIds if large)
+            {
+                $project: {
+                    _id: 1,
+                    titleVN: 1,
+                    titleEng: 1,
+                    description: 1,
+                    type: 1,
+                    majorId: 1,
+                    maxStudents: 1,
+                    currentStatus: 1,
+                    currentPhase: 1,
+                    allowManualApproval: 1,
+                    // Merge lecturer interests
+                    areaInterest: '$lecturer.areaInterest',
+                    researchInterests: '$lecturer.researchInterests',
+                    // Populated arrays
+                    fields: 1,
+                    requirements: 1,
+                    // Timestamps
+                    createdAt: 1,
+                    updatedAt: 1
+                    // Exclude: creator, lecturer (full docs), referenceDocs, finalProduct, etc., if not needed
+                }
+            }
+        ]
+
+        const results = await this.topicRepository.aggregate(pipeline).exec()
+        return results as CandidateTopicDto[]
+    }
+
+    async getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]> {
+        const pipeline = [
+            // Match registrable topics
+            {
+                $match: {
+                    currentStatus: { $in: ['pending_registration', 'registered'] },
+                    currentPhase: 'open_registration'
+                }
+            },
+            // Lookup creator (User)
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createBy',
+                    foreignField: '_id',
+                    as: 'creator'
+                }
+            },
+            { $unwind: { path: '$creator', preserveNullAndEmptyArrays: false } },
+            // Lookup Lecturer để lấy facultyId
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'creator._id',
+                    foreignField: 'userId',
+                    as: 'lecturer',
+                    pipeline: [
+                        { $match: { facultyId: new Types.ObjectId(facultyId) } }, // Filter lecturer by faculty
+                        { $project: { facultyId: 1, areaInterest: 1, researchInterests: 1 } }
+                    ]
+                }
+            },
+            { $unwind: { path: '$lecturer', preserveNullAndEmptyArrays: false } },
+            // Lookup Fields và Requirements
+            {
+                $lookup: {
+                    from: 'fields',
+                    localField: 'fieldIds',
+                    foreignField: '_id',
+                    as: 'fields'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'requirements',
+                    localField: 'requirementIds',
+                    foreignField: '_id',
+                    as: 'requirements'
+                }
+            },
+            // Project fields
+            {
+                $project: {
+                    _id: 1,
+                    titleVN: 1,
+                    titleEng: 1,
+                    description: 1,
+                    type: 1,
+                    majorId: 1,
+                    maxStudents: 1,
+                    currentStatus: 1,
+                    currentPhase: 1,
+                    allowManualApproval: 1,
+                    areaInterest: '$lecturer.areaInterest',
+                    researchInterests: '$lecturer.researchInterests',
+                    fields: 1,
+                    requirements: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    stats: 1
+                    // Exclude lookups
+                }
+            }
+        ]
+
+        const topics = await this.topicRepository.aggregate(pipeline).exec()
+        const topicIds = topics.map((t) => t._id)
+
+        // Gọi interaction service để enrich popularity
+        const interactions = await this.topicInteraction.getAggregatedInteractions(topicIds) // Inject service nếu cần, hoặc pass
+
+        // Merge interactions vào topics
+        const enrichedTopics = topics.map((topic) => {
+            const inter = interactions.find((i) => i.topicId.toString() === topic._id.toString()) || {
+                interactionCount: 0,
+                weightedScore: 0
+            }
+            const popularityScore = inter.weightedScore + topic.stats.views * 0.5 + topic.stats.reviewCount * 2
+            return { ...topic, popularityScore, interactionCount: inter.interactionCount }
+        })
+
+        return enrichedTopics.sort((a, b) => b.popularityScore - a.popularityScore).slice(0, 20)
     }
 
     async getMiniTopicInfo(topicId: string): Promise<GetMiniTopicInfo> {

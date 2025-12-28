@@ -42,6 +42,7 @@ import { Response } from 'express'
 import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PeriodsService } from '../../periods/application/periods.service'
+import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -68,6 +69,13 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly periodsService: PeriodsService
     ) {
         super(topicRepository)
+    }
+    async getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]> {
+        return this.topicRepository.getFacultyTopicsWithPopularity(facultyId)
+    }
+
+    async getCandidateTopics(): Promise<CandidateTopicDto[]> {
+        return await this.topicRepository.getCandidateTopics()
     }
     public async getAllTopics(userId: string): Promise<Paginated<Topic>> {
         return await this.topicRepository.getAllTopics(userId)

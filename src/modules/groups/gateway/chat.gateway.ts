@@ -264,8 +264,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 status: 'delivered'
             }
 
-            console.log('group id ,' ,data.groupId)
-
             const group = await this.groupService.getGroupDetail(data.groupId)
 
             this.server.to(`group:${data.groupId}`).emit('new_group_message', payload)

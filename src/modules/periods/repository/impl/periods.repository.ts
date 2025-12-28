@@ -726,7 +726,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         currentPhase: PeriodPhaseName.OPEN_REGISTRATION
                     }
                 })
-
                 break
         }
         pipelineSub.push({
@@ -749,6 +748,176 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
 
         return await this.periodModel.aggregate(pipelineSub).exec()
     }
+
+    // lay dasboard period info
+    async getDashboardCurrentPeriod(facultyId: string): Promise<any> {
+        let pipelineSub: any[] = []
+        //Tìm kiếm những period trong khoa
+        pipelineSub.push(
+            {
+                $addFields: {
+                    status: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: { $lt: ['$$NOW', '$startTime'] },
+                                    then: 'pending'
+                                },
+                                {
+                                    case: {
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                    },
+                                    then: 'active'
+                                },
+                                {
+                                    case: {
+                                        $eq: ['status', PeriodStatus.Completed]
+                                    },
+                                    then: PeriodStatus.Completed
+                                }
+                            ],
+                            default: 'timeout'
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    phases: {
+                        $map: {
+                            input: '$phases',
+                            as: 'phase',
+                            in: {
+                                $mergeObjects: [
+                                    '$$phase',
+                                    {
+                                        status: {
+                                            $switch: {
+                                                branches: [
+                                                    {
+                                                        case: {
+                                                            $or: [
+                                                                { $not: '$$phase.startTime' },
+                                                                { $not: '$$phase.endTime' }
+                                                            ]
+                                                        },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: { $lt: ['$$NOW', '$$phase.startTime'] },
+                                                        then: 'pending'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $and: [
+                                                                { $gte: ['$$NOW', '$$phase.startTime'] },
+                                                                { $lte: ['$$NOW', '$$phase.endTime'] }
+                                                            ]
+                                                        },
+                                                        then: 'active'
+                                                    }
+                                                ],
+                                                default: 'timeout'
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    //lấy ra để kiểm tra để cho phép thực hiện hành động hay không
+                    currentPhaseDetail: {
+                        $filter: {
+                            input: '$phases',
+                            as: 'phase',
+                            cond: { $eq: ['$$phase.phase', '$currentPhase'] }
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$currentPhaseDetail',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+        //Tìm kiếm những period trong khoa
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$facultyInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        )
+
+        pipelineSub.push(
+            { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
+            { $sort: { startTime: 1 } }
+        )
+
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                year: 1,
+                semester: 1,
+                type: 1,
+                facultyName: '$facultyInfo.name',
+                status: 1,
+                startTime: 1,
+                endTime: 1,
+                currentPhase: 1,
+                currentPhaseDetail: 1,
+                isActiveAction: 1,
+                navItem: 1,
+                submittedCount: 1,
+                phases: 1
+            }
+        })
+
+        let pipelineMain: any = []
+        pipelineMain.push({
+            $facet: {
+                thesisPipeline: [
+                    ...pipelineSub,
+                    {
+                        $match: {
+                            type: 'thesis'
+                        }
+                    }
+                ],
+                researchPipeline: [
+                    ...pipelineSub,
+                    {
+                        $match: {
+                            type: 'scientific_research'
+                        }
+                    }
+                ]
+            }
+        })
+
+        const [result] = await this.periodModel.aggregate(pipelineMain).exec()
+        return { thesisDashboard: result.thesisPipeline[0], researchDashboard: result.researchPipeline[0] }
+    }
+
     async deletePeriod(periodId: string): Promise<boolean> {
         console.log(periodId)
         const result = await this.periodModel.aggregate([

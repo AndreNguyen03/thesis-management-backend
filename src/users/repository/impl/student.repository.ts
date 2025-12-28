@@ -12,6 +12,7 @@ import { Paginated as Paginated_An } from '../../../common/pagination-an/interfa
 import {
     CreateBatchStudentDto,
     CreateStudentDto,
+    StudentProfileDto,
     UpdateStudentProfileDto,
     UpdateStudentTableDto
 } from '../../dtos/student.dto'
@@ -37,6 +38,62 @@ export class StudentRepository extends BaseRepositoryAbstract<Student> implement
         private readonly paginationProvider: PaginationProvider
     ) {
         super(studentModel)
+    }
+
+    async getProfile(studentId: string): Promise<StudentProfileDto | null> {
+        const pipeline = [
+            {
+                $match: {
+                    userId: new Types.ObjectId(studentId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 0, // Exclude _id from user projection, but we'll merge later
+                                bio: 1,
+                                isActive: 1,
+                                createdAt: 1,
+                                updatedAt: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: '$user',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            {
+                $project: {
+                    _id: '$_id',
+                    class: '$class',
+                    major: '$major',
+                    facultyId: '$facultyId',
+                    skills: '$skills',
+                    interests: '$interests',
+                    bio: '$user.bio',
+                    isActive: '$user.isActive',
+                    createdAt: {
+                        $ifNull: ['$createdAt', '$user.createdAt']
+                    },
+                    updatedAt: {
+                        $ifNull: ['$updatedAt', '$user.updatedAt']
+                    }
+                }
+            }
+        ]
+
+        const result = await this.studentModel.aggregate(pipeline).exec()
+        return result[0] || null
     }
 
     // Updated bulk create method in StudentRepository (add checks for studentCode and phone)
