@@ -6,7 +6,8 @@ import {
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
     PayloadUpdateMilestone,
-    RequestLecturerReview
+    RequestLecturerReview,
+    ManageTopicsInDefenseMilestoneDto
 } from '../dtos/request-milestone.dto'
 import { FileInfo, Milestone } from '../schemas/milestones.schemas'
 
@@ -24,4 +25,6 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
         query: PaginationRequestTopicInMilestoneQuery
     ): Promise<Paginated<Milestone>>
     reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview): Promise<boolean>
+    facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]>
+    manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void>
 }

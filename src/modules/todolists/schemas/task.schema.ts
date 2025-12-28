@@ -23,7 +23,6 @@ export class Subtask extends BaseEntity {
     title: string
     @Prop({ default: false })
     isCompleted: boolean
-    newSubTask: Types.ObjectId
 }
 const SubtaskSchema = SchemaFactory.createForClass(Subtask)
 

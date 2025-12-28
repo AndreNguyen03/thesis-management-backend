@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { FileInfo, Milestone, MilestoneStatus, MilestoneType } from '../../schemas/milestones.schemas'
-import { BaseRepositoryInterface } from '../../../../shared/base/repository/base.repository.interface'
 import { IMilestoneRepository } from '../miletones.repository.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
@@ -10,21 +9,28 @@ import {
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
     PayloadUpdateMilestone,
-    RequestLecturerReview
+    RequestLecturerReview,
+    ManageTopicsInDefenseMilestoneDto,
+    DefenseAction
 } from '../../dtos/request-milestone.dto'
-import { v4 as uuidv4 } from 'uuid'
 import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { LecturerReviewDecision } from '../../enums/lecturer-decision.enum'
-import { title } from 'process'
+import { MilestoneTemplate } from '../../schemas/milestones-templates.schema'
+import { Topic } from '../../../topics/schemas/topic.schemas'
+import { TopicStatus } from '../../../topics/enum/topic-status.enum'
+import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
 
 @Injectable()
 export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> implements IMilestoneRepository {
     constructor(
         @InjectModel(Milestone.name) private readonly milestoneModel: Model<Milestone>,
-        private readonly paginationProvider: PaginationProvider
+        @InjectModel(MilestoneTemplate.name) private readonly milestoneTemplateModel: Model<MilestoneTemplate>,
+        @InjectModel(Topic.name) private readonly topicModel: Model<Topic>,
+        private readonly paginationProvider: PaginationProvider,
+        private readonly transferStatusAndAddPhaseHistoryProvider: TranferStatusAndAddPhaseHistoryProvider
     ) {
         super(milestoneModel)
     }
@@ -120,7 +126,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     }
                 }
             },
-            // Tính % progress
             {
                 $addFields: {
                     progress: {
@@ -132,7 +137,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     }
                 }
             },
-            // Lookup User nộp bài
             {
                 $lookup: {
                     from: 'users',
@@ -141,7 +145,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     as: 'submissionUserTmp'
                 }
             },
-            // Lookup Lecturer Info (Gộp User và Lecturer profile)
             {
                 $lookup: {
                     from: 'users',
@@ -154,18 +157,17 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 $lookup: {
                     from: 'lecturers',
                     localField: 'submission.lecturerId',
-                    foreignField: 'userId', // Giả sử lecturerId trong submission là userId
+                    foreignField: 'userId',
                     as: 'lecturerProfileTmp'
                 }
             },
-            // Lookup tất cả User có trong history cùng 1 lúc
             {
                 $lookup: {
                     from: 'users',
                     let: { historyUserIds: '$submissionHistory.createdBy' },
                     pipeline: [
                         { $match: { $expr: { $in: ['$_id', { $ifNull: ['$$historyUserIds', []] }] } } },
-                        { $project: { _id: 1, fullName: 1, email: 1, avatarUrl: 1 } } // Chỉ lấy field cần thiết
+                        { $project: { _id: 1, fullName: 1, email: 1, avatarUrl: 1 } }
                     ],
                     as: 'historyUsersMap'
                 }
@@ -179,30 +181,25 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 }
             },
             {
-                $unwind: { path: '$group', preserveNullAndEmptyArrays: false }
+                $unwind: { path: '$group', preserveNullAndEmptyArrays: true }
             },
-            // ---------------------------------------------------------
             {
                 $addFields: {
                     'submission.lecturerDecision': '$submission.decision',
                     'submission.createdBy': { $arrayElemAt: ['$submissionUserTmp', 0] },
-
-                    // Merge thông tin Lecturer
                     'submission.lecturerInfo': {
                         $mergeObjects: [
-                            { $arrayElemAt: ['$lecturerUserTmp', 0] }, // Thông tin user cơ bản
+                            { $arrayElemAt: ['$lecturerUserTmp', 0] },
                             {
                                 title: {
                                     $let: {
                                         vars: { profile: { $arrayElemAt: ['$lecturerProfileTmp', 0] } },
-                                        in: '$$profile.title' // Chỉ lấy field title từ lecturer profile
+                                        in: '$$profile.title'
                                     }
                                 }
                             }
                         ]
                     },
-
-                    // Map User vào History array (Thay thế ID bằng Object User)
                     submissionHistory: {
                         $map: {
                             input: '$submissionHistory',
@@ -232,19 +229,57 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 }
             },
             {
+                $lookup: {
+                    from: 'milestones_templates',
+                    localField: 'parentId',
+                    foreignField: '_id',
+                    as: 'template'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$template',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    title: {
+                        $cond: [{ $ifNull: ['$parentId', false] }, '$template.title', '$title']
+                    },
+                    description: {
+                        $cond: [{ $ifNull: ['$parentId', false] }, '$template.description', '$description']
+                    },
+                    dueDate: {
+                        $cond: [{ $ifNull: ['$parentId', false] }, '$template.dueDate', '$dueDate']
+                    },
+                    type: {
+                        $cond: [{ $ifNull: ['$parentId', false] }, '$template.type', '$type']
+                    }
+                }
+            }
+        ]
+        pipeline.push(
+            {
                 $project: {
-                    submissionUserTmp: 0,
-                    lecturerUserTmp: 0,
-                    lecturerProfileTmp: 0,
-                    historyUsersMap: 0,
-                    taskIds: 0 // Ẩn mảng ID gốc nếu không cần
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    dueDate: 1,
+                    type: 1,
+                    progress: 1,
+                    totalTasks: 1,
+                    tasksCompleted: 1,
+                    submission: 1,
+                    submissionHistory: 1,
+                    topicId: 1,
+                    group: 1
                 }
             },
             {
                 $sort: { dueDate: -1 }
             }
-        ]
-
+        )
         const results = await this.milestoneModel.aggregate(pipeline).exec()
         return results
     }
@@ -257,14 +292,20 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             throw new NotFoundException('Chưa có đề tài nào tiến hành cả')
         }
         const { phaseName, ...payloadFinal } = body
-        //tạo payload mẫu
-        const batchId = uuidv4()
+        //tạo template
+        const template = await this.milestoneTemplateModel.create({
+            periodId: body.periodId,
+            title: body.title,
+            description: body.description,
+            dueDate: body.dueDate,
+            type: body.type
+        })
+
         const milestonesToInsert = groupIds.map((groupId) => ({
             ...payloadFinal,
             groupId: groupId,
-            refId: batchId,
+            parentId: template._id,
             creatorType: user.role,
-            batchId: batchId,
             createdBy: user.sub
         }))
         //kiểm tra xem trong group có milestone của ban chu nhiệm trước đó hay không
@@ -310,11 +351,10 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         return updateMilestone
     }
     async facultyGetMilestonesInPeriod(periodId: string): Promise<Milestone[]> {
-        return await this.milestoneModel.aggregate([
+        return await this.milestoneTemplateModel.aggregate([
             {
                 $match: {
                     periodId: new mongoose.Types.ObjectId(periodId),
-                    refId: { $ne: null },
                     deleted_at: null
                 }
             },
@@ -322,24 +362,89 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 $sort: { dueDate: -1 }
             },
             {
-                $group: {
-                    _id: {
-                        refId: '$refId',
-                        periodId: '$periodId'
-                    },
-                    title: { $first: '$title' },
-                    type: { $first: '$type' },
-                    description: { $first: '$description' },
-                    dueDate: { $first: '$dueDate' },
-                    //milestones: { $push: '$$ROOT' },
-                    count: { $sum: 1 },
-                    uncompleteNum: {
-                        $sum: {
-                            $cond: [{ $eq: ['$submission', null] }, 1, 0]
+                $lookup: {
+                    from: 'milestones',
+                    localField: '_id',
+                    foreignField: 'parentId',
+                    as: 'milestones'
+                }
+            },
+
+            {
+                $addFields: {
+                    status: {
+                        $switch: {
+                            branches: [
+                                {
+                                    case: { $lt: ['$$NOW', '$dueDate'] },
+                                    then: 'active'
+                                },
+                                {
+                                    case: { $gt: ['$$NOW', '$dueDate'] },
+                                    then: 'timeout'
+                                }
+                            ],
+                            default: 'timeout'
                         }
+                    },
+                    count: { $size: '$milestones' },
+                    uncompleteNum: {
+                        $size: {
+                            $filter: {
+                                input: '$milestones',
+                                as: 'ms',
+                                cond: { $ne: ['$$ms.status', MilestoneStatus.COMPLETED] }
+                            }
+                        }
+                    },
+                    isDownload: {
+                        $cond: [
+                            { $gt: [{ $size: '$milestones' }, 0] },
+                            {
+                                $anyElementTrue: {
+                                    $map: {
+                                        input: '$milestones',
+                                        as: 'm',
+                                        in: { $ne: ['$$m.submission', null] }
+                                    }
+                                }
+                            },
+                            false
+                        ]
                     }
                 }
             },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    dueDate: 1,
+                    type: 1,
+                    count: 1,
+                    status: 1,
+                    periodId: 1,
+                    uncompleteNum: 1,
+                    isDownload: 1
+                }
+            }
+        ])
+    }
+
+    async facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]> {
+        return await this.milestoneTemplateModel.aggregate([
+            {
+                $sort: { dueDate: -1 }
+            },
+            {
+                $lookup: {
+                    from: 'milestones',
+                    localField: '_id',
+                    foreignField: 'parentId',
+                    as: 'milestones'
+                }
+            },
+
             {
                 $addFields: {
                     status: {
@@ -358,19 +463,50 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                         }
                     }
                 }
+            },
+            {
+                $match: {
+                    periodId: new mongoose.Types.ObjectId(periodId),
+                    type: MilestoneType.DEFENSE,
+                    deleted_at: null
+                }
+            },
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: 'topicIds',
+                    foreignField: '_id',
+                    as: 'topics'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    description: 1,
+                    dueDate: 1,
+                    type: 1,
+                    count: 1,
+                    isActive: {
+                        $cond: [{ $eq: ['$status', 'active'] }, true, false]
+                    },
+                    periodId: 1,
+                    defenseCouncil: 1,
+                    topicSnaps: 1
+                }
             }
         ])
     }
 
     async facultyGetTopicInBatchMilestone(
-        batchId: string,
+        parentId: string,
         paginationQuery: PaginationRequestTopicInMilestoneQuery
     ): Promise<Paginated<Milestone>> {
         let pipeline: any[] = []
         pipeline.push(
             {
                 $match: {
-                    refId: batchId,
+                    parentId: new mongoose.Types.ObjectId(parentId),
                     deleted_at: null
                 }
             },
@@ -584,5 +720,48 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             return 'Không tìm thấy đề tài'
         }
         return result[0].titleVN || 'Không tìm thấy đề tài'
+    }
+
+    async manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void> {
+        const { milestoneTemplateId, action, topicSnapshots } = body
+        // Tìm milestone template
+        const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
+        if (!milestoneTemplate) {
+            throw new NotFoundException('Không tìm thấy mốc deadline template')
+        }
+
+        // Lấy danh sách topicIds từ topicSnapshots
+        const topicIds = topicSnapshots.map((snap) => snap._id)
+
+        if (action === DefenseAction.ADD) {
+            // Thêm topics vào milestone template
+            // Lọc ra các topicId chưa có trong mảng
+            const newTopicSnapshots = topicSnapshots.filter(
+                (snap) => !milestoneTemplate.topicSnaps.some((existingSnap) => existingSnap._id === snap._id)
+            )
+            milestoneTemplate.topicSnaps.push(...newTopicSnapshots)
+
+            await milestoneTemplate.save()
+
+            for (const snap of newTopicSnapshots) {
+                await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    snap._id,
+                    TopicStatus.AssignedDefense,
+                    userId,
+                    `Chuyển đề tài vào mốc bảo vệ: ${milestoneTemplate.title}`
+                )
+            }
+        } else if (action === DefenseAction.DELETE) {
+            milestoneTemplate.topicSnaps = milestoneTemplate.topicSnaps.filter((snap) => !topicIds.includes(snap._id))
+            await milestoneTemplate.save()
+            for (const topicId of topicIds) {
+                await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    topicId,
+                    TopicStatus.AwaitingEvaluation,
+                    userId,
+                    `Chuyển đề tài ra khỏi mốc bảo vệ: ${milestoneTemplate.title}`
+                )
+            }
+        }
     }
 }

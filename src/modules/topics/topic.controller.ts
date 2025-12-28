@@ -463,4 +463,13 @@ export class TopicController {
     async downloadZip(@Res() res: Response, @Param('topicId') topicId: string) {
         return this.topicService.downloadZip(topicId, res)
     }
+
+    @Get('/awaiting-evaluation/in-period/:periodId')
+    async getTopicsAwaitingEvaluationInPeriod(@Param('periodId') periodId: string, @Query() query: PaginationQueryDto) {
+        const res = await this.topicService.getTopicsAwaitingEvaluationInPeriod(periodId, query)
+        return plainToInstance(PaginatedTopicInBatchMilestone, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
 }

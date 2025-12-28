@@ -8,6 +8,9 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { TodolistsModule } from '../todolists/todolists.module'
 import { GroupsModule } from '../groups/groups.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { MilestoneTemplate, MilestoneTemplateSchema } from './schemas/milestones-templates.schema'
+import { Topic, TopicSchema } from '../topics/schemas/topic.schemas'
+import { TopicModule } from '../topics/topic.module'
 
 @Module({
     controllers: [MilestonesController],
@@ -16,16 +19,20 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         {
             provide: 'IMilestoneRepository',
             useClass: MilestoneRepository
-        }
+        },
+        
     ],
     imports: [
         MongooseModule.forFeature([
-            { name: Milestone.name, schema: MilestoneSchema }
+            { name: Milestone.name, schema: MilestoneSchema },
+            { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
+            { name: Topic.name, schema: TopicSchema }
         ]),
         UploadFilesModule,
         TodolistsModule,
         GroupsModule,
-        PaginationAnModule
+        PaginationAnModule,
+        TopicModule
     ]
 })
 export class MilestonesModule {}

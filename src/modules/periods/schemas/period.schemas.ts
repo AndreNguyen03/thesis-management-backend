@@ -16,7 +16,7 @@ export class PeriodPhase extends BaseEntity {
     @Prop({ required: false, type: Date })
     endTime: Date
     //Option fields for Submit Topic phase
-    @Prop({ type: Number, enum: PeriodPhaseStatus, required: false, default: PeriodPhaseStatus.ONGOING })
+    @Prop({ type: String, enum: PeriodPhaseStatus, required: false, default: PeriodPhaseStatus.ONGOING })
     status: string
     @Prop({ type: Number, required: false })
     minTopicsPerLecturer: number

@@ -4,6 +4,7 @@ import { GetMiniUserDto } from '../../../users/dtos/user.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 import { LecturerReviewDecision } from '../enums/lecturer-decision.enum'
+import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 
 class TaskDto {
     @Expose()
@@ -65,7 +66,7 @@ export class ResponseMilestone {
     @Expose()
     progress: number
     @Expose()
-    topicId:string
+    topicId: string
 }
 
 export class MilestoneDto {
@@ -97,6 +98,9 @@ export class GetTopicsInBatchMilestoneDto {
     @Expose()
     @Type(() => ResponseMiniLecturerDto)
     lecturers: ResponseMiniLecturerDto[]
+    @Expose()
+    @Type(() => ResponseMiniStudentDto)
+    students: ResponseMiniStudentDto[]
     @Expose()
     status: string
     @Expose()

@@ -5,7 +5,8 @@ import {
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
     PayloadUpdateMilestone,
-    RequestLecturerReview
+    RequestLecturerReview,
+    ManageTopicsInDefenseMilestoneDto
 } from '../dtos/request-milestone.dto'
 import type { Response } from 'express'
 import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
@@ -105,5 +106,12 @@ export class MilestonesService {
     }
     async facultyGetTopicInBatchMilestone(batchId: string, query: PaginationRequestTopicInMilestoneQuery) {
         return await this.milestoneRepository.facultyGetTopicInBatchMilestone(batchId, query)
+    }
+    async facultyGetMilestonesInManageDefenseAssignment(periodId: string) {
+        return await this.milestoneRepository.facultyGetMilestonesInManageDefenseAssignment(periodId)
+    }
+
+    async manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string) {
+        return await this.milestoneRepository.manageTopicsInDefenseMilestone(body, userId)
     }
 }

@@ -5,6 +5,7 @@ import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { IntersectionType } from '@nestjs/mapped-types'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { LecturerReviewDecision } from '../enums/lecturer-decision.enum'
+import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 
 export class PayloadCreateMilestone {
     @IsNotEmpty()
@@ -35,6 +36,19 @@ export class PayloadFacultyCreateMilestone {
     dueDate: string
     @IsNotEmpty()
     type: MilestoneType = MilestoneType.SUBMISSION
+    @IsOptional()
+    location?: string
+}
+
+export class PayloadFacultyUpdateMilestone {
+    @IsOptional()
+    title: string
+    @IsOptional()
+    description: string
+    @IsOptional()
+    dueDate: Date
+    @IsOptional()
+    type: string
 }
 
 export class PayloadCreateStrictMilestone {
@@ -71,18 +85,13 @@ export class UploadReportPayload {
     dueDate: string
 }
 
-export class RequestTopicInMilestoneBatchQuery {
-
-}
+export class RequestTopicInMilestoneBatchQuery {}
 export class PaginationRequestTopicInMilestoneQuery extends IntersectionType(
     RequestTopicInMilestoneBatchQuery,
     PaginationQueryDto
 ) {}
 
-
-
-export class RequestLecturerReview 
-{
+export class RequestLecturerReview {
     @IsOptional()
     @IsString()
     comment: string
@@ -90,4 +99,43 @@ export class RequestLecturerReview
     @IsNotEmpty()
     @IsEnum(LecturerReviewDecision)
     decision: LecturerReviewDecision
+}
+
+export enum DefenseAction {
+    ADD = 'add',
+    DELETE = 'delete'
+}
+
+export class TopicSnapshotDto {
+    @IsNotEmpty()
+    @IsString()
+    _id: string
+
+    @IsNotEmpty()
+    @IsString()
+    titleVN: string
+
+    @IsNotEmpty()
+    @IsString()
+    titleEng: string
+
+    @IsNotEmpty()
+    studentName: string[]
+
+    @IsNotEmpty()
+    lecturers: ResponseMiniLecturerDto[]
+}
+
+export class ManageTopicsInDefenseMilestoneDto {
+
+    @IsNotEmpty()
+    @IsString()
+    milestoneTemplateId: string
+
+    @IsNotEmpty()
+    @IsEnum(DefenseAction)
+    action: DefenseAction
+
+    @IsNotEmpty()
+    topicSnapshots: TopicSnapshotDto[]
 }

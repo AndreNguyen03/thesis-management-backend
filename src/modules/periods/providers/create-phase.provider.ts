@@ -141,11 +141,11 @@ export class CreatePhaseProvider {
         }
 
         // Cho phép config linh hoạt cho execution và completion
-        console.log('[INFO] Allowing flexible phase configuration for execution')
-        const isFlexible = await this.validatePeriodPhaseProvider.validateFlexiblePhaseConfig(PeriodPhaseName.EXECUTION)
-        if (!isFlexible) {
-            throw new BadRequestException('Phase execution không được phép config linh hoạt')
-        }
+        // console.log('[INFO] Allowing flexible phase configuration for execution')
+        // const isFlexible = await this.validatePeriodPhaseProvider.validateFlexiblePhaseConfig(PeriodPhaseName.EXECUTION)
+        // if (!isFlexible) {
+        //     throw new BadRequestException('Phase execution không được phép config linh hoạt')
+        // }
 
         // Kiểm tra toàn vẹn dữ liệu
         console.log('[CHECK] Checking topics with invalid statuses...')
@@ -221,13 +221,13 @@ export class CreatePhaseProvider {
             throw new BadRequestException('Phase completion chưa được khởi tạo trong period')
         }
 
-        // Cho phép config linh hoạt cho execution và completion
-        const isFlexible = await this.validatePeriodPhaseProvider.validateFlexiblePhaseConfig(
-            PeriodPhaseName.COMPLETION
-        )
-        if (!isFlexible) {
-            throw new BadRequestException('Phase completion không được phép config linh hoạt')
-        }
+        // // Cho phép config linh hoạt cho execution và completion
+        // const isFlexible = await this.validatePeriodPhaseProvider.validateFlexiblePhaseConfig(
+        //     PeriodPhaseName.COMPLETION
+        // )
+        // if (!isFlexible) {
+        //     throw new BadRequestException('Phase completion không được phép config linh hoạt')
+        // }
 
         const evaluationTopics = await this.updateTopicsBatchProvider.updateTopicsBatchToCompletionPhase(
             periodId,
@@ -235,6 +235,7 @@ export class CreatePhaseProvider {
         )
 
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
+
         await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         return {
             success: true,

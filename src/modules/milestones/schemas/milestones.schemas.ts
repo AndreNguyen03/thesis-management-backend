@@ -7,6 +7,7 @@ import { User } from '../../../users/schemas/users.schema'
 import { Group } from '../../groups/schemas/groups.schemas'
 import { Period } from '../../periods/schemas/period.schemas'
 import { LecturerReviewDecision } from '../enums/lecturer-decision.enum'
+import { MilestoneTemplate } from './milestones-templates.schema'
 
 export enum MilestoneCreator {
     LECTURER = 'lecturer', // Giảng viên tạo riêng cho nhóm
@@ -62,30 +63,21 @@ export class Submission {
     decision: LecturerReviewDecision
 }
 
-@Schema({ _id: false })
-export class DefenseCouncilMember {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
-    memberId: string
-    @Prop({ type: String, required: true })
-    role: string
-    @Prop({ type: String, required: true })
-    title: string
-    @Prop({ type: String, required: true })
-    fullName: string
-}
-
 @Schema({ timestamps: true, collection: 'milestones' })
 export class Milestone extends BaseEntity {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Group.name, required: true, index: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Group.name, default: null })
     groupId: string
 
-    @Prop({ required: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: MilestoneTemplate.name, default: null })
+    parentId: string
+
+    @Prop({ required: false })
     title: string
 
-    @Prop()
+    @Prop({ required: false })
     description: string
 
-    @Prop({ required: true })
+    @Prop({ required: false })
     dueDate: Date
 
     @Prop({
@@ -110,22 +102,14 @@ export class Milestone extends BaseEntity {
     @Prop({ enum: MilestoneCreator, default: MilestoneCreator.LECTURER })
     creatorType: MilestoneCreator
 
-    @Prop({ default: null, type: String })
-    refId: string
-
     @Prop({ default: true, type: Boolean })
     isActive: boolean
 
-    @Prop({ default: MilestoneType.SUBMISSION, enum: MilestoneType })
+    @Prop({ default: MilestoneType.SUBMISSION, enum: MilestoneType, required: false })
     type: MilestoneType
 
-    @Prop({ type: [DefenseCouncilMember], default: [] , required: false})
-    defenseCouncil: DefenseCouncilMember[]
-
-    @Prop({ type: String, required: false })
-    room: string
-    @Prop({ type: [mongoose.], required: false })
-    topicDefenses: []
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Period.name, default: null })
+    periodId: string
 }
 
 export const MilestoneSchema = SchemaFactory.createForClass(Milestone)

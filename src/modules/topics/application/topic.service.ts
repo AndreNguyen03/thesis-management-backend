@@ -464,4 +464,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const documentNames = (await this.topicRepository.getDocumentsOfTopic(topicId)).map((doc) => doc.fileUrl)
         return this.downLoadFileProvider.downloadZip(documentNames, res)
     }
+
+    async getTopicsAwaitingEvaluationInPeriod(periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+        return await this.topicRepository.findTopicsByStatusInPeriod(TopicStatus.AwaitingEvaluation, periodId, query)
+    }
 }

@@ -17,4 +17,5 @@ export interface IPeriodRepository extends BaseRepositoryInterface<Period> {
     getPeriodById(periodId: string): Promise<GetPeriodDto>
     checkCurrentPeriod(periodId: string): Promise<boolean>
     updateCurrentPhaseToCompleted(periodId: string): Promise<void>
+    completePeriod(periodId: string): Promise<void>
 }

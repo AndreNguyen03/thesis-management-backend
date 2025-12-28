@@ -45,7 +45,14 @@ import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
 import path from 'path'
 import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
-import { MilestoneStatus } from '../../../milestones/schemas/milestones.schemas'
+import { MilestoneCreator, MilestoneStatus, MilestoneType } from '../../../milestones/schemas/milestones.schemas'
+import { Period, PeriodPhase } from '../../../periods/schemas/period.schemas'
+import {
+    OverdueTopicInfo,
+    PausedOrDelayedTopicInfo,
+    PendingLecturerReview
+} from '../../../periods/dtos/phase-resolve.dto'
+import { ParseDay } from '../../utils/transfer-function'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -853,7 +860,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             },
             {
                 $unwind: {
-                    path: '$lastStatusInPhaseHistory',
+                    path: '$lastStatusInPhaseHistory'
                     //preserveNullAndEmptyArrays: true
                 }
             }
@@ -3413,5 +3420,646 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         ])
         if (res.length > 0) return res[0].filesInfo
         return res
+    }
+    async findTopicsByStatusInPeriod(
+        status: string,
+        periodId: string,
+        query: PaginationQueryDto
+    ): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                currentStatus: status,
+                deleted_at: null
+            }
+        })
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                titleEng: 1,
+                titleVN: 1,
+                description: 1,
+                lecturers: 1,
+                students: '$studentsRegistered'
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+    //quá hạn nọp thì dựa vào trạng thái PENDING_REVIEW
+    async getOverDueTopics(periodId: string): Promise<OverdueTopicInfo[]> {
+        let pipelineSub: any[] = []
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                currentPhase: PeriodPhaseName.EXECUTION
+            }
+        })
+        let lecturer_reg_embedded_pl: any[] = []
+        lecturer_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
+                }
+            }
+        })
+
+        //lấy thông tin giảng viên liên quan đến đề tài
+        pipelineSub.push(
+            // Join lecturerIds qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'lecturerRef'
+                }
+            },
+            // Join users qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'lecturerRef.userId',
+                    foreignField: '_id',
+                    as: 'lecUserInfo'
+                }
+            },
+            // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'lecturerRef.userId',
+                    foreignField: 'userId',
+                    as: 'lectInfos'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecUserInfo',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
+                                    '$$userInfo'
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy roleIntopic của giảng viên
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lect',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lect',
+                                    {
+                                        roleInTopic: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$lecturerRef',
+                                                                as: 'ref',
+                                                                cond: { $eq: ['$$ref.userId', '$$lect._id'] }
+                                                            }
+                                                        },
+                                                        as: 'filteredRef',
+                                                        in: '$$filteredRef.role'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy facultyName của giảng viên
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'lecturers.facultyId',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lecturer',
+
+                                    {
+                                        facultyName: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$facultyInfo',
+                                                                as: 'faculty',
+                                                                cond: { $eq: ['$$faculty._id', '$$lecturer.facultyId'] }
+                                                            }
+                                                        },
+                                                        as: 'fac',
+                                                        in: '$$fac.name'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'groups',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'groupInfo'
+                }
+            },
+            {
+                $unwind: { path: '$groupInfo', preserveNullAndEmptyArrays: true }
+            }
+        )
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones',
+                    let: { groupId: '$groupInfo._id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$groupId', '$$groupId'] },
+                                        { $eq: ['creatorType', MilestoneCreator.FACULTY] },
+                                        { $eq: ['type', MilestoneType.SUBMISSION] },
+                                        { $lt: ['dueDate', new Date()] },
+                                        { $eq: ['submission', null] },
+                                        { $ne: ['parentId', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$milestonesInfo' }
+            }
+        )
+        pipelineSub.push({
+            $project: {
+                topicId: '$_id',
+                titleEng: 1,
+                titleVN: 1,
+                lecturers: 1,
+                students: 1,
+                reason: 1,
+                submittedAt: {
+                    $cond: [
+                        { $ifNull: ['$milestonesInfo.submission.date', false] },
+                        '$milestonesInfo.submission.date',
+                        null
+                    ]
+                }
+            }
+        })
+        console.log('Pipeline for overdue topics:', pipelineSub)
+        const res = await this.topicRepository.aggregate(pipelineSub).exec()
+        return res.map((item) => ({
+            ...item,
+            daysPending: item.submittedAt ? ParseDay(item.submittedAt) : null
+        }))
+    }
+    async getPausedOrDelayedTopics(periodId: string): Promise<PausedOrDelayedTopicInfo[]> {
+        let pipelineSub: any[] = []
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                currentPhase: PeriodPhaseName.EXECUTION,
+                currentStatus: { $in: [TopicStatus.Paused, TopicStatus.Delayed] }
+            }
+        })
+        let lecturer_reg_embedded_pl: any[] = []
+        lecturer_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
+                }
+            }
+        })
+
+        //lấy thông tin giảng viên liên quan đến đề tài
+        pipelineSub.push(
+            // Join lecturerIds qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'lecturerRef'
+                }
+            },
+            // Join users qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'lecturerRef.userId',
+                    foreignField: '_id',
+                    as: 'lecUserInfo'
+                }
+            },
+            // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'lecturerRef.userId',
+                    foreignField: 'userId',
+                    as: 'lectInfos'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecUserInfo',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
+                                    '$$userInfo'
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy roleIntopic của giảng viên
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lect',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lect',
+                                    {
+                                        roleInTopic: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$lecturerRef',
+                                                                as: 'ref',
+                                                                cond: { $eq: ['$$ref.userId', '$$lect._id'] }
+                                                            }
+                                                        },
+                                                        as: 'filteredRef',
+                                                        in: '$$filteredRef.role'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy facultyName của giảng viên
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'lecturers.facultyId',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lecturer',
+
+                                    {
+                                        facultyName: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$facultyInfo',
+                                                                as: 'faculty',
+                                                                cond: { $eq: ['$$faculty._id', '$$lecturer.facultyId'] }
+                                                            }
+                                                        },
+                                                        as: 'fac',
+                                                        in: '$$fac.name'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+        pipelineSub.push({
+            $project: {
+                topicId: '$_id',
+                titleEng: 1,
+                titleVN: 1,
+                status: 1,
+                lecturers: 1,
+                students: 1,
+                reason: 1
+            }
+        })
+        return await this.topicRepository.aggregate(pipelineSub).exec()
+    }
+    async getPendingReviewTopics(periodId: string): Promise<PendingLecturerReview[]> {
+        let pipelineSub: any[] = []
+        pipelineSub.push({
+            $match: {
+                periodId: new mongoose.Types.ObjectId(periodId),
+                currentPhase: PeriodPhaseName.EXECUTION
+            }
+        })
+        let lecturer_reg_embedded_pl: any[] = []
+        lecturer_reg_embedded_pl.push({
+            $match: {
+                $expr: {
+                    $and: [{ $eq: ['$topicId', '$$topicId'] }, { $eq: ['$deleted_at', null] }]
+                }
+            }
+        })
+
+        //lấy thông tin giảng viên liên quan đến đề tài
+        pipelineSub.push(
+            // Join lecturerIds qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'ref_lecturers_topics',
+                    let: { topicId: '$_id' },
+                    pipeline: lecturer_reg_embedded_pl,
+                    as: 'lecturerRef'
+                }
+            },
+            // Join users qua ref_lecturers_topics
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'lecturerRef.userId',
+                    foreignField: '_id',
+                    as: 'lecUserInfo'
+                }
+            },
+            // Join lecturers qua ref_lecturers_topics để lấy thông tin giảng viên
+            {
+                $lookup: {
+                    from: 'lecturers',
+                    localField: 'lecturerRef.userId',
+                    foreignField: 'userId',
+                    as: 'lectInfos'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecUserInfo',
+                            as: 'userInfo',
+                            in: {
+                                $mergeObjects: [
+                                    {
+                                        $arrayElemAt: [
+                                            {
+                                                $filter: {
+                                                    input: '$lectInfos',
+                                                    as: 'lecInfo',
+                                                    cond: { $eq: ['$$lecInfo.userId', '$$userInfo._id'] }
+                                                }
+                                            },
+                                            0
+                                        ]
+                                    },
+                                    '$$userInfo'
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy roleIntopic của giảng viên
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lect',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lect',
+                                    {
+                                        roleInTopic: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$lecturerRef',
+                                                                as: 'ref',
+                                                                cond: { $eq: ['$$ref.userId', '$$lect._id'] }
+                                                            }
+                                                        },
+                                                        as: 'filteredRef',
+                                                        in: '$$filteredRef.role'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            //Lấy facultyName của giảng viên
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'lecturers.facultyId',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    lecturers: {
+                        $map: {
+                            input: '$lecturers',
+                            as: 'lecturer',
+                            in: {
+                                $mergeObjects: [
+                                    '$$lecturer',
+
+                                    {
+                                        facultyName: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $map: {
+                                                        input: {
+                                                            $filter: {
+                                                                input: '$facultyInfo',
+                                                                as: 'faculty',
+                                                                cond: { $eq: ['$$faculty._id', '$$lecturer.facultyId'] }
+                                                            }
+                                                        },
+                                                        as: 'fac',
+                                                        in: '$$fac.name'
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'groups',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'groupInfo'
+                }
+            },
+            {
+                $unwind: { path: '$groupInfo', preserveNullAndEmptyArrays: true }
+            }
+        )
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones',
+                    let: { groupId: '$groupInfo._id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$groupId', '$$groupId'] },
+                                        { $eq: ['submission.type', MilestoneType.SUBMISSION] },
+                                        { $eq: ['status', MilestoneStatus.PENDING_REVIEW] },
+                                        { $ne: ['parentId', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$milestonesInfo' }
+            }
+        )
+        pipelineSub.push({
+            $project: {
+                topicId: '$_id',
+                titleEng: 1,
+                titleVN: 1,
+                lecturers: 1,
+                students: 1,
+                reason: 1,
+                submittedAt: {
+                    $cond: [
+                        { $ifNull: ['$milestonesInfo.submission.date', false] },
+                        '$milestonesInfo.submission.date',
+                        null
+                    ]
+                }
+            }
+        })
+        const res = await this.topicRepository.aggregate(pipelineSub).exec()
+        return res.map((item) => ({
+            ...item,
+            daysPending: item.submittedAt ? ParseDay(item.submittedAt) : null
+        }))
     }
 }

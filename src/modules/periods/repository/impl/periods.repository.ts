@@ -9,7 +9,7 @@ import { BadRequestException, NotFoundException, RequestTimeoutException } from 
 import { plainToClass, plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PeriodStatus } from '../../enums/periods.enum'
-import { PeriodPhaseName } from '../../enums/period-phases.enum'
+import { getPrevAndNextPhaseName, PeriodPhaseName, PeriodPhaseStatus } from '../../enums/period-phases.enum'
 import { ConfigPhaseSubmitTopicDto } from '../../dtos/period-phases.dtos'
 import { PeriodDetail } from '../../dtos/phase-resolve.dto'
 import { GetCurrentPeriod, GetPeriodDto } from '../../dtos/period.dtos'
@@ -39,8 +39,14 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             if (!res) {
                 throw new BadRequestException('Không tìm thấy kỳ để thêm giai đoạn')
             }
+            //phase previous
+            const { prev } = getPrevAndNextPhaseName(updatedPhase.phase)
             res.currentPhase = updatedPhase.phase
             res.phases = res.phases.map((phase) => {
+                if (phase.phase === prev) {
+                    phase.status = PeriodPhaseStatus.COMPLETED
+                    return phase
+                }
                 if (phase.phase === updatedPhase.phase) {
                     return { ...phase, ...updatedPhase }
                 }
@@ -1155,6 +1161,18 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             throw new BadRequestException('Giai đoạn hiện tại không tồn tại trong kỳ')
         }
         period.phases[phaseIndex].status = 'completed'
+        await period.save()
+    }
+    async completePeriod(periodId: string): Promise<void> {
+        const period = await this.periodModel.findOne({ _id: new mongoose.Types.ObjectId(periodId), deleted_at: null })
+        if (!period) {
+            throw new BadRequestException('Kỳ không tồn tại')
+        }
+        period.phases= period.phases.map((phase) => {
+            if (phase.phase === PeriodPhaseName.COMPLETION) return { ...phase, status: PeriodPhaseStatus.COMPLETED }
+            return phase
+        })
+        period.status = PeriodStatus.Completed
         await period.save()
     }
 }

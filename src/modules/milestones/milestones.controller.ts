@@ -19,7 +19,8 @@ import {
     PaginationRequestTopicInMilestoneQuery,
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
-    RequestLecturerReview
+    RequestLecturerReview,
+    ManageTopicsInDefenseMilestoneDto
 } from './dtos/request-milestone.dto'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
@@ -71,8 +72,9 @@ export class MilestonesController {
             enableImplicitConversion: true
         })
     }
+
     @Post('')
-    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
+    @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
     async createMilestone(@Req() req: { user: ActiveUserData }, @Body() body: PayloadCreateMilestone) {
         return plainToInstance(ResponseMilestone, await this.milestonesService.createMilestone(body, req.user), {
@@ -114,15 +116,50 @@ export class MilestonesController {
         return this.milestonesService.facultyDownloadZipWithMilestoneId(milestoneId, res)
     }
 
-    @Get('/topic-in-batch/:batchId')
+    @Get('/topics-in-parent-milestone/:parentId')
     async facultyGetTopicInBatch(
-        @Param('batchId') batchId: string,
+        @Param('parentId') parentId: string,
         @Query() query: PaginationRequestTopicInMilestoneQuery
     ) {
-        const res = await this.milestonesService.facultyGetTopicInBatchMilestone(batchId, query)
+        const res = await this.milestonesService.facultyGetTopicInBatchMilestone(parentId, query)
         return plainToInstance(PaginatedTopicInBatchMilestone, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+
+    @Get('/in-period/manage-defense-assignment/:periodId')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyGetMilestonesInManageDefenseAssignment(@Param('periodId') periodId: string) {
+        return await this.milestonesService.facultyGetMilestonesInManageDefenseAssignment(periodId)
+    }
+
+    @Patch('/defense-milestone/manage-topics')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async manageTopicsInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
+        console.log('Received manage topics request:', body)
+        await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
+        return {
+            message:
+                body.action === 'add'
+                    ? 'Thêm đề tài vào hội đồng bảo vệ thành công'
+                    : 'Xóa đề tài khỏi hội đồng bảo vệ thành công'
+        }
+    }
+
+    @Patch('/defense-milestone/manage-lecturers')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async manageLecturersInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
+        console.log('Received manage topics request:', body)
+        await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
+        return {
+            message:
+                body.action === 'add'
+                    ? 'Thêm đề tài vào hội đồng bảo vệ thành công'
+                    : 'Xóa đề tài khỏi hội đồng bảo vệ thành công'
+        }
     }
 }

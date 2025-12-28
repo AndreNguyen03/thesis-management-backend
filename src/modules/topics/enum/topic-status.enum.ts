@@ -18,6 +18,7 @@ export enum TopicStatus {
     Paused = 'paused', // SV BCN GV Đề tài bị tạm ngưng
     SubmittedForReview = 'submitted_for_review', //sv báo cáo hoàn thành / đã nộp vào milestone cuối
     AwaitingEvaluation = 'awaiting_evaluation', //GV vừa duyệt xong và chờ hội đồng chấm điểm
+    AssignedDefense = 'assigned_defense', //GV vừa duyệt xong và chờ hội đồng chấm điểm
 
     // Pha 4 - Hoàn tất
     Graded = 'graded', // Gv // Hội đồng bảo vệ

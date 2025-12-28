@@ -17,13 +17,13 @@ export class ValidatePeriodPhaseProvider {
         return validTransitions[currentPhase]?.includes(newPhase) ?? false
     }
 
-    // Validation linh hoạt cho execution và completion (có thể config cùng lúc)
-    async validateFlexiblePhaseConfig(phaseName: string): Promise<boolean> {
-        console.log('Validating flexible phase config for', phaseName)
-        // Chỉ cho phép execution và completion được config linh hoạt
-        const flexiblePhases = [PeriodPhaseName.EXECUTION, PeriodPhaseName.COMPLETION]
-        return flexiblePhases.includes(phaseName as PeriodPhaseName)
-    }
+    // // Validation linh hoạt cho execution và completion (có thể config cùng lúc)
+    // async validateFlexiblePhaseConfig(phaseName: string): Promise<boolean> {
+    //     console.log('Validating flexible phase config for', phaseName)
+    //     // Chỉ cho phép execution và completion được config linh hoạt
+    //     const flexiblePhases = [PeriodPhaseName.EXECUTION, PeriodPhaseName.COMPLETION]
+    //     return flexiblePhases.includes(phaseName as PeriodPhaseName)
+    // }
 
     async validatePhaseDates(
         periodId: string,
