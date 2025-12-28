@@ -11,6 +11,9 @@ import { RerankerService } from '../services/reranker.service'
 import { AdaptiveWeightsService } from '../services/adaptive-weights.service'
 import { DynamicThresholdService } from '../services/dynamic-threshold.service'
 import { BadgeGeneratorService } from '../services/bagde-generator.service'
+import { MemCacheService } from '../../../redis/providers/mem-cache.service'
+import { CACHE_TTL } from '../../../redis/constants/cache.constants'
+import { TopicSearchService } from '../../topic_search/application/search.service'
 
 @Injectable()
 export class ContentBasedPipeline {
@@ -25,22 +28,30 @@ export class ContentBasedPipeline {
         private readonly reranker: RerankerService,
         private readonly badgeGenerator: BadgeGeneratorService,
         private readonly adaptiveWeights: AdaptiveWeightsService,
-        private readonly dynamicThreshold: DynamicThresholdService
+        private readonly dynamicThreshold: DynamicThresholdService,
+        private readonly memCache: MemCacheService,
+        private readonly topicSearchService: TopicSearchService
     ) {}
 
     /**
      * Main pipeline - 8 bước
      */
-    async runPipeline(studentId: string): Promise<any[]> {
-        this.logger.log(`🚀 Starting pipeline for student ${studentId}`)
+    async runPipeline(studentId: string, periodId: string): Promise<any[]> {
+        this.logger.log(`[PIPELINE START] studentId=${studentId}, periodId=${periodId}`)
 
+        const startTime = Date.now()
         // BƯỚC 1: Lấy dữ liệu VÀ VALIDATE PROFILE
-        const [studentProfile, candidateTopics] = await this.loadData(studentId)
+        const [studentProfile, candidateTopics] = await this.loadData(studentId, periodId)
+
+        this.logger.debug(
+            `[STEP 1] Loaded data: profile=${!!studentProfile}, topicsCount=${candidateTopics?.length ?? 0}`
+        )
 
         // VALIDATION: Kiểm tra profile có đủ thông tin không
         if (!this.isProfileValidForRecommendation(studentProfile)) {
             this.logger.warn(`Student ${studentId} has incomplete profile, using fallback`)
-            return this.getFallbackRecommendations(candidateTopics || [])
+            const fallbackResults = this.getFallbackRecommendations(candidateTopics || [])
+            return fallbackResults
         }
 
         if (!studentProfile || !candidateTopics || candidateTopics.length === 0) {
@@ -51,13 +62,22 @@ export class ContentBasedPipeline {
         const profileCompleteness = this.adaptiveWeights.calculateProfileCompleteness(studentProfile)
         const adaptiveWeights = this.adaptiveWeights.calculateAdaptiveWeights(profileCompleteness)
 
+        this.logger.debug(`[STEP 2] profileCompleteness=${profileCompleteness.toFixed(2)}`)
+
+        this.logger.debug(`[STEP 2] adaptiveWeights=${JSON.stringify(adaptiveWeights)}`)
+
         // BƯỚC 3: Tạo summaries (chỉ khi có đủ data)
         const studentSemanticSummary = this.studentSummaryBuilder.buildSemanticSummary(studentProfile)
         const studentLexicalSummary = this.studentSummaryBuilder.buildLexicalSummary(studentProfile)
 
+        this.logger.debug(
+            `[STEP 3] semanticSummaryLength=${studentSemanticSummary.length}, lexicalSummaryLength=${studentLexicalSummary.length}`
+        )
+
         // VALIDATION: Kiểm tra summaries có đủ nội dung
         if (!this.isSummaryValid(studentSemanticSummary) || !this.isSummaryValid(studentLexicalSummary)) {
             this.logger.warn(`Student ${studentId} has insufficient summary content, using fallback`)
+            this.logger.warn(`[STEP 3] Invalid summary detected → fallback`)
             return this.getFallbackRecommendations(candidateTopics)
         }
 
@@ -71,10 +91,23 @@ export class ContentBasedPipeline {
             25 // max candidates
         )
 
+        this.logger.debug(`[STEP 5] semanticScoredTopics=${semanticScoredTopics.length}`)
+
+        this.logger.debug(`[STEP 5] rerankCandidates=${rerankCandidates.length}`)
+
         // BƯỚC 6: Lexical reranking
         const rerankScores = await this.reranker.rerank(
             rerankCandidates.map((c) => c.topicSummary),
             studentLexicalSummary
+        )
+
+        this.logger.debug(`[STEP 6] Reranking candidates=${rerankCandidates.length}`)
+
+        this.logger.debug(
+            `[STEP 6] Rerank scores sample=${rerankScores.scores
+                .slice(0, 5)
+                .map((s) => s.toFixed(3))
+                .join(', ')}`
         )
 
         // BƯỚC 7: Kết hợp scores
@@ -92,26 +125,46 @@ export class ContentBasedPipeline {
         const topResults = combinedResults.slice(0, 10)
         const finalResults = await this.enrichWithBadges(topResults, studentProfile)
 
+        this.logger.debug(`[STEP 8] Generating badges for ${topResults.length} topics`)
+
+        this.logger.log(`[PIPELINE END] studentId=${studentId}, duration=${Date.now() - startTime}ms`)
         // Assign ranks
-        return finalResults.map((result, index) => ({
-            ...result,
-            rank: index + 1
-        }))
+        return finalResults.map((result, index) => {
+            const { embedding, ...topicWithoutEmbbeding } = result.topic as any
+
+            return {
+                ...result,
+                topic: topicWithoutEmbbeding,
+                rank: index + 1
+            }
+        })
     }
 
     /**
      * BƯỚC 1: Load data với validation
      */
-    private async loadData(studentId: string): Promise<[StudentProfileDto | null, CandidateTopicDto[]]> {
+    private async loadData(
+        studentId: string,
+        periodId: string
+    ): Promise<[StudentProfileDto | null, CandidateTopicDto[]]> {
         try {
+            this.logger.debug(`[LOAD DATA] Fetching studentProfile & candidateTopics`)
+
             const [studentProfile, candidateTopics] = await Promise.all([
                 this.studentService.getStudentProfile(studentId),
-                this.topicService.getCandidateTopics()
+                // this.topicService.getCandidateTopics()
+                this.topicSearchService.getPendingRegistrationTopics(periodId)
             ])
 
+            console.log(studentProfile)
+
+            this.logger.debug(
+                `[LOAD DATA RESULT] studentProfile=${!!studentProfile}, candidateTopics=${candidateTopics?.length ?? 0}`
+            )
             // VALIDATION: Kiểm tra profile có tồn tại không
             if (!studentProfile) {
                 this.logger.error(`Student ${studentId} not found`)
+
                 return [null, candidateTopics || []]
             }
 
@@ -135,7 +188,6 @@ export class ContentBasedPipeline {
 
         // Cần ít nhất 2 trong 3 field trên
         const validFieldsCount = [hasSkills, hasInterests, hasBio].filter(Boolean).length
-
         if (validFieldsCount < 2) {
             this.logger.debug(
                 `Profile validation failed: skills=${hasSkills}, interests=${hasInterests}, bio=${hasBio}`
@@ -170,6 +222,8 @@ export class ContentBasedPipeline {
         studentSemanticSummary: string
     ): Promise<Array<{ topic: CandidateTopicDto; topicSummary: string; semanticScore: number }>> {
         try {
+            this.logger.debug(`[STEP 4] Semantic scoring started, topics=${topics.length}`)
+
             // Get student embedding
             const studentEmbedding = await this.embeddingProvider.getEmbedding(studentSemanticSummary)
 
@@ -177,8 +231,7 @@ export class ContentBasedPipeline {
 
             for (const topic of topics) {
                 // Get topic embedding
-                const topicSummary = this.topicEnhancer.buildTopicSummary(topic)
-                const topicEmbedding = await this.embeddingProvider.getEmbedding(topicSummary)
+                const topicEmbedding = topic.embedding
 
                 // Calculate cosine similarity
                 const semanticScore = this.cosineSimilarity(studentEmbedding, topicEmbedding)
@@ -189,7 +242,12 @@ export class ContentBasedPipeline {
                     semanticScore
                 })
             }
-
+            this.logger.debug(
+                `[STEP 4] Top semantic scores: ${scoredTopics
+                    .slice(0, 5)
+                    .map((t) => `${t.topic.titleVN}:${t.semanticScore.toFixed(3)}`)
+                    .join(' | ')}`
+            )
             return scoredTopics
         } catch (error) {
             this.logger.error(`Semantic scoring failed: ${error.message}`)
@@ -224,14 +282,24 @@ export class ContentBasedPipeline {
         adaptiveWeights: { semanticWeight: number; lexicalWeight: number; reasoning: string },
         profileCompleteness: number
     ) {
+        this.logger.debug(`[STEP 7] Combining scores, candidates=${candidates.length}`)
+
         return candidates.map((candidate, index) => {
             const semanticScore = candidate.semanticScore
             const lexicalScore = rerankScores[index] || 0
 
             // Apply adaptive weights
-            const finalScore =
-                semanticScore * adaptiveWeights.semanticWeight + lexicalScore * adaptiveWeights.lexicalWeight
 
+            // Điều chỉnh khi lexical score quá thấp:
+            let finalScore =
+                semanticScore * adaptiveWeights.semanticWeight +
+                Math.max(lexicalScore, 0.3) * adaptiveWeights.lexicalWeight
+                
+            // Hoặc boost semantic khi lexical thấp
+            if (lexicalScore < 0.1 && semanticScore > 0.6) {
+                const boostFactor = 1.1 // Tăng 10%
+                finalScore = Math.min(semanticScore * adaptiveWeights.semanticWeight * boostFactor, 1.0)
+            }
             // Calculate confidence
             const confidence = this.calculateConfidence(semanticScore, lexicalScore, profileCompleteness)
 
@@ -264,7 +332,7 @@ export class ContentBasedPipeline {
                     result.metrics.semanticScore,
                     result.metrics.lexicalScore
                 )
-
+                this.logger.debug(`[BADGES] topic=${result.topic._id}, badges=${badgeResult.displayBadges.length}`)
                 return {
                     ...result,
                     badges: badgeResult.displayBadges,
@@ -304,10 +372,11 @@ export class ContentBasedPipeline {
         lexicalScore: number,
         profileCompleteness: number
     ): 'high' | 'medium' | 'low' {
-        const combined = semanticScore * 0.6 + lexicalScore * 0.4
+        const combined = semanticScore * 0.7 + lexicalScore * 0.3
 
-        if (profileCompleteness > 0.7 && combined > 0.7) return 'high'
-        if (combined > 0.5) return 'medium'
+        // Adjust thresholds
+        if (profileCompleteness > 0.7 && combined > 0.65) return 'high'
+        if (combined > 0.45) return 'medium'
         return 'low'
     }
 
@@ -368,71 +437,5 @@ export class ContentBasedPipeline {
                 allBadges: [],
                 rank: index + 1
             }))
-    }
-
-    /**
-     * Method để kiểm tra profile completeness (cho frontend/test)
-     */
-    async checkProfileCompleteness(studentId: string): Promise<{
-        isValid: boolean
-        completeness: number
-        missingFields: string[]
-        suggestions: string[]
-    }> {
-        try {
-            const studentProfile = await this.studentService.getStudentProfile(studentId)
-
-            if (!studentProfile) {
-                return {
-                    isValid: false,
-                    completeness: 0,
-                    missingFields: ['profile_not_found'],
-                    suggestions: ['Tạo profile sinh viên']
-                }
-            }
-
-            const missingFields: string[] = []
-            const suggestions: string[] = []
-
-            // Kiểm tra skills
-            if (!studentProfile.skills || studentProfile.skills.length === 0) {
-                missingFields.push('skills')
-                suggestions.push('Thêm ít nhất 3 kỹ năng (ví dụ: React, Python, AI)')
-            } else if (studentProfile.skills.length < 3) {
-                suggestions.push('Thêm nhiều kỹ năng hơn để có đề xuất tốt hơn')
-            }
-
-            // Kiểm tra interests
-            if (!studentProfile.interests || studentProfile.interests.length === 0) {
-                missingFields.push('interests')
-                suggestions.push('Thêm ít nhất 2 sở thích (ví dụ: Machine Learning, Web Development)')
-            } else if (studentProfile.interests.length < 2) {
-                suggestions.push('Thêm nhiều sở thích hơn để có đề xuất tốt hơn')
-            }
-
-            // Kiểm tra bio
-            if (!studentProfile.bio || studentProfile.bio.trim().length < 20) {
-                missingFields.push('bio')
-                suggestions.push('Thêm mô tả bản thân (ít nhất 20 ký tự)')
-            }
-
-            const completeness = this.adaptiveWeights.calculateProfileCompleteness(studentProfile)
-            const isValid = this.isProfileValidForRecommendation(studentProfile)
-
-            return {
-                isValid,
-                completeness,
-                missingFields,
-                suggestions: suggestions.length > 0 ? suggestions : ['Profile đã đầy đủ!']
-            }
-        } catch (error) {
-            this.logger.error(`Failed to check profile completeness: ${error.message}`)
-            return {
-                isValid: false,
-                completeness: 0,
-                missingFields: ['error'],
-                suggestions: ['Không thể kiểm tra profile']
-            }
-        }
     }
 }

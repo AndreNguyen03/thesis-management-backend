@@ -29,7 +29,7 @@ export class TopicSearchService implements OnModuleInit {
         private readonly googleAIConfiguration: ConfigType<typeof googleAIConfig>,
         private readonly periodsService: PeriodsService,
         @Inject('TopicVectorRepositoryInterface')
-        private readonly topicVectorRepoInterface: TopicVectorRepositoryInterface,
+        private readonly topicVectorRepoInterface: TopicVectorRepositoryInterface
     ) {}
 
     async onModuleInit() {
@@ -211,11 +211,7 @@ export class TopicSearchService implements OnModuleInit {
         if (query && query.trim()) {
             queryVector = await this.queryEmbeddings.embedQuery(query.trim())
         }
-        return await this.topicVectorRepoInterface.semanticSearchRegisteringTopics(
-            queryVector,
-            queries,
-            periodId
-        )
+        return await this.topicVectorRepoInterface.semanticSearchRegisteringTopics(queryVector, queries, periodId)
     }
 
     async semanticSearchLibraryTopic(queries: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<TopicVector>> {
@@ -224,13 +220,12 @@ export class TopicSearchService implements OnModuleInit {
         if (query && query.trim()) {
             queryVector = await this.queryEmbeddings.embedQuery(query.trim())
         }
-        return await this.topicVectorRepoInterface.semanticSearchTopicsInLibrary(
-            queryVector,
-            queries
-        )
+        return await this.topicVectorRepoInterface.semanticSearchTopicsInLibrary(queryVector, queries)
     }
     // async searchTopicsInLibrary(query: RequestGetTopicsInLibraryParams): Promise<Paginated<Topic>> {
     //     return await this.getTopicProvider.getTopicsInLibrary(query)
     // }
-    
+    async getPendingRegistrationTopics(periodId: string) {
+        return await this.topicVectorRepoInterface.getPendingRegistrationTopics(periodId)
+    }
 }

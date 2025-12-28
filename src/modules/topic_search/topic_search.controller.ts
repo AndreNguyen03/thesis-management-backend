@@ -24,6 +24,12 @@ export class TopicSearchController {
         private readonly vectorSyncProvider: VectorSyncProvider,
         private readonly getTopicProvider: GetTopicProvider
     ) {}
+
+    @Get('/advance/topics-in-open-registration/:periodId')
+    async getTopicsInOpenRegistration(@Param('periodId') periodId: string) {
+        return await this.searchService.getPendingRegistrationTopics(periodId)
+    }
+
     @Get('/sync-topics/in-period-on-phase/:periodId')
     //trước mắt là ban chủ nhiệm
     @Auth(AuthType.Bearer)

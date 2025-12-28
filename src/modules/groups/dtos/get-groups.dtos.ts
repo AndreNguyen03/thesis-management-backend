@@ -1,6 +1,9 @@
 import { Expose, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
 
+/* =======================
+ * Last Message
+ * ======================= */
 export class LastMessageDTO {
     @Expose()
     content: string
@@ -15,7 +18,10 @@ export class LastMessageDTO {
     createdAt: Date
 }
 
-export class ParticipantDTO {
+/* =======================
+ * Participant (Base)
+ * ======================= */
+export class BaseParticipantDTO {
     @Expose()
     id: string
 
@@ -24,14 +30,41 @@ export class ParticipantDTO {
 
     @Expose()
     avatarUrl?: string
-}
 
-export class RequestPaginatedGroups extends GetPaginatedObjectDto {
     @Expose()
-    @Type(() => GroupSidebarDTO)
-    data: GroupSidebarDTO[]
+    role: 'student' | 'lecturer'
 }
 
+/* =======================
+ * Student Participant
+ * ======================= */
+export class StudentParticipantDTO extends BaseParticipantDTO {
+    @Expose()
+    declare role: 'student'
+
+    @Expose()
+    studentCode: string
+}
+
+/* =======================
+ * Lecturer Participant
+ * ======================= */
+export class LecturerParticipantDTO extends BaseParticipantDTO {
+    @Expose()
+    declare role: 'lecturer'
+
+    @Expose()
+    title: string
+}
+
+/* =======================
+ * Union type (for TS only)
+ * ======================= */
+export type ParticipantDTO = StudentParticipantDTO | LecturerParticipantDTO
+
+/* =======================
+ * Group Detail
+ * ======================= */
 export class GroupDetailDto {
     @Expose()
     id: string
@@ -43,7 +76,7 @@ export class GroupDetailDto {
     type: 'direct' | 'group'
 
     @Expose()
-    @Type(() => ParticipantDTO)
+    @Type(() => BaseParticipantDTO)
     participants: ParticipantDTO[]
 
     @Expose()
@@ -57,24 +90,27 @@ export class GroupDetailDto {
     lastSeenAtByUser?: Record<string, string | null>
 }
 
+/* =======================
+ * Sidebar Item
+ * ======================= */
 export class GroupSidebarDTO {
     @Expose()
     _id: string
 
     @Expose()
-    titleVN: string
+    titleVN: string | null
 
     @Expose()
     topicId: string
 
     @Expose()
-    topicType: string
+    topicType: string | null
 
     @Expose()
-    type: string
+    type: 'direct' | 'group'
 
     @Expose()
-    @Type(() => ParticipantDTO)
+    @Type(() => BaseParticipantDTO)
     participants: ParticipantDTO[]
 
     @Expose()
@@ -92,4 +128,13 @@ export class GroupSidebarDTO {
 
     @Expose()
     lastSeenAtByUser?: Record<string, Date>
+}
+
+/* =======================
+ * Paginated Response
+ * ======================= */
+export class RequestPaginatedGroups extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GroupSidebarDTO)
+    data: GroupSidebarDTO[]
 }

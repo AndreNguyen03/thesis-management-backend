@@ -1,23 +1,26 @@
 import { Module } from '@nestjs/common'
 import { RecommendController } from './recommend.controller'
-import { TopicService } from '../topics/application/topic.service'
-import { FieldsService } from '../fields/application/fields.service'
 import { GetEmbeddingProvider } from '../chatbot/application/get-embedding.provider'
-import { RequirementsService } from '../requirements/application/requirements.service'
-import { StudentService } from '../../users/application/student.service'
 import { UsersModule } from '../../users/users.module'
 import { TopicModule } from '../topics/topic.module'
 import { FieldsModule } from '../fields/fields.module'
 import { ChatBotModule } from '../chatbot/chatbot.module'
 import { RequirementsModule } from '../requirements/requirements.module'
 import { TopicInteractionModule } from '../topic_interaction/topic_interaction.module'
-import { RecommendService } from './application/recommend.service'
-import { ContentBasedPipeline } from './pipelines/content-based.pipeline'
+import { RecommendationService } from './application/recommend.service'
+import { ContentBasedPipeline } from './pipelines/content-based-v2.pipeline'
 import { PopularityBasedPipeline } from './pipelines/popularity.pipeline'
-import { BadgeGenerator } from './pipelines/badge-generator'
 import { Reranker } from './pipelines/rerank.pipeline'
 import { ConfigModule } from '@nestjs/config'
 import { googleAIConfig } from '../../config/googleai.config'
+import { RedisModule } from '../../redis/redis.module'
+import { StudentSummaryBuilderService } from './services/student-summary-builder.service'
+import { AdaptiveWeightsService } from './services/adaptive-weights.service'
+import { TopicEnhancerService } from './services/topic-enhancer.service'
+import { DynamicThresholdService } from './services/dynamic-threshold.service'
+import { BadgeGeneratorService } from './services/bagde-generator.service'
+import { RerankerService } from './services/reranker.service'
+import { TopicVectorModule } from '../topic_search/topic_search.module'
 
 @Module({
     imports: [
@@ -27,15 +30,22 @@ import { googleAIConfig } from '../../config/googleai.config'
         ChatBotModule,
         RequirementsModule,
         TopicInteractionModule,
-        ConfigModule.forFeature(googleAIConfig)
+        ConfigModule.forFeature(googleAIConfig),
+        RedisModule,
+        TopicVectorModule
     ],
     providers: [
-        RecommendService,
+        RecommendationService,
         ContentBasedPipeline, // ✅ Add this
         PopularityBasedPipeline,
         GetEmbeddingProvider,
         Reranker,
-        BadgeGenerator
+        BadgeGeneratorService,
+        StudentSummaryBuilderService,
+        AdaptiveWeightsService,
+        RerankerService,
+        TopicEnhancerService,
+        DynamicThresholdService
     ],
     controllers: [RecommendController]
 })

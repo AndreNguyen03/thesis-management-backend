@@ -44,9 +44,7 @@ import { GroupsModule } from './modules/groups/groups.module'
 import { MilestonesModule } from './modules/milestones/milestones.module'
 import { TodolistsModule } from './modules/todolists/todolists.module'
 import { TopicInteractionModule } from './modules/topic_interaction/topic_interaction.module'
-import { TopicInteractionService } from './modules/topic_interaction/application/topic_interaction.service'
 import { RecommendModule } from './modules/recommend/recommend.module'
-import { RecommendService } from './modules/recommend/application/recommend.service'
 
 const ENV = process.env.NODE_ENV
 

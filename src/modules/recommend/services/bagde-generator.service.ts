@@ -339,44 +339,68 @@ export class BadgeGeneratorService {
     private generateStatusBadge(topic: CandidateTopicDto): Badge {
         const status = topic.currentStatus?.toLowerCase() || 'unknown'
 
-        switch (status) {
-            case 'open':
-                return {
-                    type: 'status_open',
-                    label: 'Mở ĐK',
-                    color: 'green',
-                    icon: this.ICONS.CHECK_CIRCLE,
-                    tooltip: 'Đang mở đăng ký',
-                    priority: 1
-                }
-            case 'closed':
-                return {
-                    type: 'status_closed',
-                    label: 'Đã đóng',
-                    color: 'red',
-                    icon: this.ICONS.X_CIRCLE,
-                    tooltip: 'Đã đóng đăng ký',
-                    priority: 1
-                }
-            case 'pending':
-                return {
-                    type: 'status_pending',
-                    label: 'Chờ duyệt',
-                    color: 'yellow',
-                    icon: this.ICONS.CLOCK,
-                    tooltip: 'Đang chờ phê duyệt',
-                    priority: 1
-                }
-            default:
-                return {
-                    type: 'status_unknown',
-                    label: 'Chưa rõ',
-                    color: 'gray',
-                    icon: this.ICONS.INFO,
-                    tooltip: 'Trạng thái chưa xác định',
-                    priority: 1
-                }
+        // Map các status từ database sang badge
+        const statusMapping: Record<string, Badge> = {
+            open: {
+                type: 'status_open',
+                label: 'Mở ĐK',
+                color: 'green',
+                icon: this.ICONS.CHECK_CIRCLE,
+                tooltip: 'Đang mở đăng ký',
+                priority: 1
+            },
+            pending_registration: {
+                type: 'status_pending',
+                label: 'Chờ đăng ký',
+                color: 'yellow',
+                icon: this.ICONS.CLOCK,
+                tooltip: 'Đang chờ mở đăng ký',
+                priority: 1
+            },
+            pending: {
+                type: 'status_pending',
+                label: 'Chờ duyệt',
+                color: 'yellow',
+                icon: this.ICONS.CLOCK,
+                tooltip: 'Đang chờ phê duyệt',
+                priority: 1
+            },
+            registered: {
+                type: 'status_registered',
+                label: 'Đã đăng ký',
+                color: 'blue',
+                icon: this.ICONS.USER_CHECK,
+                tooltip: 'Đã có sinh viên đăng ký',
+                priority: 1
+            },
+            full: {
+                type: 'status_full',
+                label: 'Đã đầy',
+                color: 'red',
+                icon: this.ICONS.X_CIRCLE,
+                tooltip: 'Đã đủ số lượng sinh viên',
+                priority: 1
+            },
+            closed: {
+                type: 'status_closed',
+                label: 'Đã đóng',
+                color: 'red',
+                icon: this.ICONS.X_CIRCLE,
+                tooltip: 'Đã đóng đăng ký',
+                priority: 1
+            }
         }
+
+        return (
+            statusMapping[status] || {
+                type: 'status_unknown',
+                label: 'Chưa rõ',
+                color: 'gray',
+                icon: this.ICONS.INFO,
+                tooltip: `Trạng thái: ${status}`,
+                priority: 1
+            }
+        )
     }
 
     private checkMajorMatch(

@@ -25,6 +25,7 @@ export class CandidateTopicDto {
     // Lecturer interests (populated)
     areaInterest: string[]
     researchInterests: string[]
+    embedding: number[]
     // Populated arrays
     fields: FieldDto[] // Assuming FieldDto mirrors Field schema
     requirements: RequirementDto[] // Assuming RequirementDto mirrors Requirement schema (e.g., { _id: ObjectId, name: string, description: string })

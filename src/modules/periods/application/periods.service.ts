@@ -376,6 +376,11 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     async getCurrentPeriodInfo(facultyId: string, type: string): Promise<GetPeriodDto | null> {
         return await this.iPeriodRepository.getPeriodInfo(facultyId, type)
     }
+
+    async getDashboardCurrentPeriod(facultyId: string) : Promise<any> {
+        return await this.iPeriodRepository.getDashboardCurrentPeriod(facultyId)
+    }
+ 
     async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {
         return await this.iPeriodRepository.getCurrentPeriods(facultyId, role, userId)
     }

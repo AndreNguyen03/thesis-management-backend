@@ -1,37 +1,53 @@
-import { Controller, Get, Param, Req } from '@nestjs/common'
+import { Controller, Get, HttpException, HttpStatus, Param, Query, Req } from '@nestjs/common'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
-import { RecommendService } from './application/recommend.service'
-import { ApiOperation, ApiResponse } from '@nestjs/swagger'
-import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
-import { EnrichedRecommendation } from './dto/recommendation-response.dto'
-import { StudentService } from '../../users/application/student.service'
-import { TopicService } from '../topics/application/topic.service'
+import { RecommendationService } from './application/recommend.service'
 
 @Controller('recommend')
 @Auth(AuthType.Bearer)
 export class RecommendController {
-    constructor(
-        private readonly recommendService: RecommendService,
+    constructor(private readonly recommendationService: RecommendationService) {}
 
-        private readonly studentService: StudentService,
-        private readonly topicService: TopicService
-    ) {}
+    @Get('/:studentId/period/:periodId')
+    async getRecommendations(
+        @Param('studentId') studentId: string,
+        @Param('periodId') periodId: string,
+        @Query('limit') limit?: number
+    ) {
+        try {
+            const result = await this.recommendationService.getRecommendationsForStudent(studentId, periodId, {
+                limit: limit ? parseInt(limit.toString()) : undefined
+            })
 
-    @Get()
-    @ApiOperation({ summary: 'Get personalized topic recommendations for current user' })
-    @ApiResponse({ status: 200, description: 'List of recommended topics', type: [EnrichedRecommendation] })
-    async getMyRecommendations(@Req() req: { user: ActiveUserData }): Promise<EnrichedRecommendation[]> {
-        const currentUserId = req.user.sub
-        return await this.recommendService.getRecommendations(currentUserId)
-    }
+            if (!result.success) {
+                throw new HttpException(
+                    {
+                        statusCode: HttpStatus.BAD_REQUEST,
+                        message: result.message || 'Không thể tạo đề xuất',
+                        data: result
+                    },
+                    HttpStatus.BAD_REQUEST
+                )
+            }
 
-    @Get('/debug/recommend/:studentId')
-    async debug(@Param('studentId') id: string) {
-        console.log('student Id: ::', id)
-        return {
-            student: await this.studentService.getStudentProfile(id),
-            topics: await this.topicService.getCandidateTopics()
+            return {
+                statusCode: HttpStatus.OK,
+                message: 'Lấy đề xuất thành công',
+                data: result.data,
+                metadata: result.metadata
+            }
+        } catch (error) {
+            if (error instanceof HttpException) {
+                throw error
+            }
+
+            throw new HttpException(
+                {
+                    statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+                    message: 'Lỗi hệ thống khi tạo đề xuất'
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
         }
     }
 }
