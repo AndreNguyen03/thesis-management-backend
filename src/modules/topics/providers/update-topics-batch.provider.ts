@@ -5,6 +5,7 @@ import { register } from 'module'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PhaseHistory, Topic } from '../schemas/topic.schemas'
 import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
+import mongoose from 'mongoose'
 
 @Injectable()
 export class UpdateTopicsPhaseBatchProvider {
@@ -46,7 +47,7 @@ export class UpdateTopicsPhaseBatchProvider {
 
         // Tìm các đề tài không có ai đăng ký
         const unregisteredTopics = await this.topicRepository.findByCondition({
-            periodId: periodId,
+            periodId: new mongoose.Types.ObjectId(periodId),
             currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
             currentStatus: { $in: [TopicStatus.PendingRegistration, TopicStatus.Cancelled] },
             deleted_at: null

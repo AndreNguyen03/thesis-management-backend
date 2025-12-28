@@ -27,21 +27,21 @@ import { GetTopicStatusProvider } from '../../topics/providers/get-status-topic.
 import { GetPeriodInfoProvider } from '../providers/get-period-info.provider'
 import { GetStatisticsTopicsProvider } from '../../topics/providers/get-statistics-topics.provider'
 
-import { PeriodPhaseName } from '../enums/period-phases.enum'
+import { PeriodPhaseName, PeriodPhaseStatus } from '../enums/period-phases.enum'
 import {
     PeriodDetail,
     PeriodPhaseDetail,
     Phase1Response,
     Phase2Response,
-    Phase3Response
+    Phase3Response,
+    Phase4Response
 } from '../dtos/phase-resolve.dto'
 import {
     GetTopicStatisticInSubmitPhaseDto,
     LecGetTopicStatisticInSubmitPhaseDto
 } from '../../topics/dtos/get-statistics-topics.dtos'
-import { TopicService } from '../../topics/application/topic.service'
-import { TopicStatus } from '../../topics/enum'
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
+import mongoose from 'mongoose'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -61,10 +61,10 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         periodId: string,
         phase: PeriodPhaseName
         // user: ActiveUserData
-    ): Promise<Phase1Response | Phase2Response | Phase3Response> {
+    ): Promise<Phase1Response | Phase2Response | Phase3Response | Phase4Response> {
         const period = await this.iPeriodRepository.getDetailPeriod(periodId)
-        const phaseDetail = period?.phases.find((p) => p.phase === phase && p.status === 'completed')
-        const canTriggerNextPhase = phaseDetail?.endTime
+        const phaseDetail = period?.phases.find((p) => p.phase === phase && p.status === 'timeout')
+        //const canTriggerNextPhase = phaseDetail?.endTime
         if (!period) throw new NotFoundException('Không tìm thấy đợt')
         if (!phaseDetail) throw new NotFoundException('Không tìm thấy pha')
         switch (phase) {
@@ -74,26 +74,35 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 return await this.handleCloseOpenRegistrationPhase(phaseDetail, period)
             case PeriodPhaseName.EXECUTION:
                 return await this.handleCloseExecutionPhase(phaseDetail, period)
-            // case PeriodPhaseName.COMPLETION:
-            //     return await this.handleCloseCompletionPhase(phaseDetail)
+            case PeriodPhaseName.COMPLETION:
+                return await this.handleCloseCompletionPhase(phaseDetail)
             default:
                 throw new BadRequestException('Pha không hợp lệ!')
         }
     }
-    // async handleCloseCompletionPhase(phaseDetail: PeriodPhaseDetail) {
-    //     throw new Error('Method not implemented.')
-    // }
-    async handleCloseExecutionPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail): Promise<Phase3Response> {
-        throw new Error('Method not implemented.')
+    async handleCloseCompletionPhase(phaseDetail: PeriodPhaseDetail): Promise<Phase4Response> {
+        return {
+            periodId: phaseDetail._id.toString(),
+            canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, undefined, false)
+        }
     }
-    //     export interface Phase2Response {
-    //     periodId: string
-    //     phase: 'open_registration'
-    //     resolveTopics: {
-    //         draft: { topicId: string; title: string }[]
-    //         executing: { topicId: string; title: string }[]
-    //     }
-    // }
+    async handleCloseExecutionPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail): Promise<Phase3Response> {
+        const getOverDueTopics = await this.getTopicProvider.getOverDueTopics(period._id.toString())
+        //Lấy các đề tài đã tạm dừng hoặc deleyed
+        const getDelayed = await this.getTopicProvider.getPausedOrDelayedTopics(period._id.toString())
+        //lấy các đề tài chờ GV đánh giá
+        const pendingReview = await this.getTopicProvider.getPendingReviewTopics(period._id.toString())
+
+        return {
+            periodId: period._id.toString(),
+            phase: PeriodPhaseName.EXECUTION,
+            overdueTopics: getOverDueTopics,
+            pausedOrDelayedTopics: getDelayed,
+            pendingLecturerReview: pendingReview,
+            canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, undefined, false)
+        }
+    }
+
     async handleCloseOpenRegistrationPhase(
         phaseDetail: PeriodPhaseDetail,
         period: PeriodDetail
@@ -127,7 +136,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
 
         // loop get missing topic count per lecturer
-        
+
         for (const lec of phaseDetail.requiredLecturers) {
             //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
 
@@ -137,11 +146,6 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             )) as LecGetTopicStatisticInSubmitPhaseDto
 
             console.log(lecStatsPhase1)
-
-            // console.log(
-            //     '[handleCloseSubmitTopicPhase] Lecturer submitted topics:',
-            //     lecStatsPhase1.submittedTopicsNumber
-            // )
 
             const submited = lecStatsPhase1.submittedTopicsNumber
 
@@ -388,5 +392,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+    async completePeriod(periodId: string): Promise<void> {
+        const period = await this.getPeriodById(periodId)
+        if (!period) {
+            throw new NotFoundException('Kỳ không tồn tại')
+        }
+        if (period.status === PeriodStatus.Completed) {
+            throw new BadRequestException('Kỳ đã được hoàn thành')
+        }
+        await this.iPeriodRepository.completePeriod(periodId)
     }
 }

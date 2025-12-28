@@ -34,7 +34,7 @@ import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Period } from './schemas/period.schemas'
 import { GetStatiticInPeriod } from './dtos/statistic.dtos'
 import { PeriodPhaseName } from './enums/period-phases.enum'
-import { Phase1Response, Phase2Response, Phase3Response } from './dtos/phase-resolve.dto'
+import { Phase1Response, Phase2Response, Phase3Response, Phase4Response } from './dtos/phase-resolve.dto'
 import { TopicSearchService } from '../topic_search/application/search.service'
 import { GetTopicProvider } from '../topics/providers/get-topic.provider'
 
@@ -179,7 +179,7 @@ export class PeriodsController {
             enableImplicitConversion: true
         })
     }
-    
+
     //Giảng viên lấy những đề tài mà mình hướng dẫn trong pha cụ thể của kì cụ thể
     @Get('/:periodId/lecturer/get-topics-in-phase')
     @Auth(AuthType.Bearer)
@@ -296,11 +296,17 @@ export class PeriodsController {
     async closePhase(
         @Param('periodId') periodId: string,
         @Param('phase') phase: PeriodPhaseName
-    ): Promise<Phase1Response | Phase2Response | Phase3Response> {
+    ): Promise<Phase1Response | Phase2Response | Phase3Response | Phase4Response> {
         return this.periodsService.closePhase(
             periodId,
             phase
             //    , req.user
         )
+    }
+
+    @Patch("/:period/period-complete")
+    async completePeriod(@Param('period') periodId: string) {
+        await this.periodsService.completePeriod(periodId);
+        return { message: "Kỳ đã được hoàn thành thành công" }
     }
 }

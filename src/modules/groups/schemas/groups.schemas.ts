@@ -23,11 +23,8 @@ class LastMessage {
 @Schema({ timestamps: true, collection: 'groups' })
 export class Group extends BaseEntity {
     @Prop({
-        type: Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Topic',
-        required: function (this: GroupDocument) {
-            return this.type === 'group'
-        },
         index: true
     })
     topicId: Types.ObjectId

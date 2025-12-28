@@ -1,3 +1,18 @@
+// Hàm lấy tên pha trước và sau dựa vào tên pha hiện tại
+export function getPrevAndNextPhaseName(phase: PeriodPhaseName): { prev?: PeriodPhaseName; next?: PeriodPhaseName } {
+    const phaseOrder: PeriodPhaseName[] = [
+        PeriodPhaseName.EMPTY,
+        PeriodPhaseName.SUBMIT_TOPIC,
+        PeriodPhaseName.OPEN_REGISTRATION,
+        PeriodPhaseName.EXECUTION,
+        PeriodPhaseName.COMPLETION
+    ]
+    const idx = phaseOrder.indexOf(phase)
+    return {
+        prev: idx > 0 ? phaseOrder[idx - 1] : undefined,
+        next: idx >= 0 && idx < phaseOrder.length - 1 ? phaseOrder[idx + 1] : undefined
+    }
+}
 import { EMPTY } from 'rxjs'
 
 export enum PeriodPhaseName {

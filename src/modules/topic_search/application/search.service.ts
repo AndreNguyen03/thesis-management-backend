@@ -229,8 +229,9 @@ export class TopicSearchService implements OnModuleInit {
             queries
         )
     }
-    // async searchTopicsInLibrary(query: RequestGetTopicsInLibraryParams): Promise<Paginated<Topic>> {
+    // async searchTopicsInLibrary(query: RequestG etTopicsInLibraryParams): Promise<Paginated<Topic>> {
     //     return await this.getTopicProvider.getTopicsInLibrary(query)
     // }
+    
     
 }

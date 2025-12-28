@@ -51,7 +51,7 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             areaInterest: doc.areaInterest,
             researchInterests: doc.researchInterests,
             publications: doc.publications,
-            supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
+           // supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
         }
     }
 

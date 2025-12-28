@@ -7,6 +7,9 @@ import { Paginated } from '../../../../common/pagination-an/interfaces/paginated
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 import { Injectable, NotFoundException } from '@nestjs/common'
+import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
+import { GroupDetailDto } from '../../dtos/get-groups.dtos'
+import { de } from '@faker-js/faker/.'
 @Injectable()
 export class GroupRepository extends BaseRepositoryAbstract<Group> implements IGroupRepository {
     constructor(
@@ -17,87 +20,138 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
     }
     //lấy tin nhắn và milestone của cuộc trò chuyện
     async getGroupDetail(id: string): Promise<Group> {
-        const group = await this.groupModel
-            .findOne({
-                _id: new mongoose.Types.ObjectId(id),
-            })
-            .populate({
-                path: 'participants',
-                select: '_id fullName avatarUrl'
-            })
-
+        let pipeline: any[] = []
+        pipeline.push(
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(id),
+                    deleted_at: null
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'participants',
+                    foreignField: '_id',
+                    as: 'participants'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'milestones',
+                    let: { groupId: '_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$groupId', '$$groupId'] },
+                                        { $ne: ['$refId', null] },
+                                        { $eq: ['$isActive', true] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $sort: { dueDate: 1 }
+                        }
+                    ],
+                    as: 'milestones'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    topicId: 1,
+                    type: 1,
+                    participants: {
+                        _id: 1,
+                        fullName: 1,
+                        avatarUrl: 1
+                    },
+                    lastMessage: 1,
+                    lastSeenAtByUser: 1,
+                    unreadCounts: 1,
+                    isAbleGoToDefense: {
+                        $cond: [{ $gt: [{ $size: '$milestones' }, 0] }, false, true]
+                    }
+                }
+            }
+        )
+        const results = await this.groupModel.aggregate(pipeline)
+        const group = results[0]
         if (!group) {
             throw new NotFoundException('Không tìm thấy group')
         }
 
-        return group 
+        return group
     }
 
     async getGroupsOfUser(userId: string, query: PaginationQueryDto): Promise<Paginated<Group>> {
-    const userObjectId = new mongoose.Types.ObjectId(userId);
+        const userObjectId = new mongoose.Types.ObjectId(userId)
 
-    const pipeline: any[] = [
-        { $match: { type: 'group', participants: userObjectId } },
+        const pipeline: any[] = [
+            { $match: { type: 'group', participants: userObjectId } },
 
-        // lookup topic
-        {
-            $lookup: {
-                from: 'topics',
-                localField: 'topicId',
-                foreignField: '_id',
-                as: 'topic',
-                pipeline: [{ $project: { titleVN: 1, type: 1 } }]
-            }
-        },
-        { $addFields: { topic: { $arrayElemAt: ['$topic', 0] } } },
+            // lookup topic
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: 'topicId',
+                    foreignField: '_id',
+                    as: 'topic',
+                    pipeline: [{ $project: { titleVN: 1, type: 1 } }]
+                }
+            },
+            { $addFields: { topic: { $arrayElemAt: ['$topic', 0] } } },
 
-        // lookup sender info for lastMessage
-        {
-            $lookup: {
-                from: 'users',
-                let: { senderId: { $toObjectId: '$lastMessage.senderId' } },
-                pipeline: [
-                    { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
-                    { $project: { _id: 0, fullName: 1, avatarUrl: 1 } }
-                ],
-                as: 'senderInfo'
-            }
-        },
-        {
-            $addFields: {
-                lastMessage: {
-                    $cond: {
-                        if: { $gt: [{ $size: '$senderInfo' }, 0] },
-                        then: { $mergeObjects: ['$lastMessage', { $arrayElemAt: ['$senderInfo', 0] }] },
-                        else: '$lastMessage'
+            // lookup sender info for lastMessage
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { senderId: { $toObjectId: '$lastMessage.senderId' } },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
+                        { $project: { _id: 0, fullName: 1, avatarUrl: 1 } }
+                    ],
+                    as: 'senderInfo'
+                }
+            },
+            {
+                $addFields: {
+                    lastMessage: {
+                        $cond: {
+                            if: { $gt: [{ $size: '$senderInfo' }, 0] },
+                            then: { $mergeObjects: ['$lastMessage', { $arrayElemAt: ['$senderInfo', 0] }] },
+                            else: '$lastMessage'
+                        }
                     }
                 }
+            },
+
+            // project final fields
+            {
+                $project: {
+                    _id: 1,
+                    topicId: 1,
+                    titleVN: '$topic.titleVN',
+                    topicType: '$topic.type',
+                    type: 1,
+                    participants: 1,
+                    lastMessage: 1,
+                    seenBy: 1,
+                    unreadCounts: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    lastSeenAtByUser: 1
+                }
             }
-        },
+        ]
 
-        // project final fields
-        {
-            $project: {
-                _id: 1,
-                topicId: 1,
-                titleVN: '$topic.titleVN',
-                topicType: '$topic.type',
-                type: 1,
-                participants: 1,
-                lastMessage: 1,
-                seenBy: 1,
-                unreadCounts: 1,
-                createdAt: 1,
-                updatedAt: 1,
-                lastSeenAtByUser: 1
-            }
-        }
-    ];
-
-    // trả về plain object để controller convert DTO
-    return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline);
-}
-
+        // trả về plain object để controller convert DTO
+        return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
+    }
 
     async createOrGetDirectGroup(currentUserId: string, targetUserId: string): Promise<Group> {
         const userA = new mongoose.Types.ObjectId(currentUserId)
@@ -239,5 +293,40 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
         ]
 
         return this.pagination.paginateQuery<Group>(query, this.groupModel, pipeline)
+    }
+
+    async getGroupIdsByPeriodId(periodId: string, phaseName: PeriodPhaseName): Promise<string[]> {
+        //exuction//in_progress
+        const pipeline: any[] = []
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'topics',
+                    let: { phaseName: phaseName, periodId: new mongoose.Types.ObjectId(periodId) },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$periodId', '$$periodId'] },
+                                        { $eq: ['$currentPhase', '$$phaseName'] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'topicIds'
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $and: [{ $in: ['$topicId', '$topicIds._id'] }, { $eq: ['$deleted_at', null] }]
+                    }
+                }
+            }
+        )
+        return await this.groupModel.aggregate(pipeline).then((results) => results.map((group) => group._id.toString()))
     }
 }

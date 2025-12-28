@@ -207,9 +207,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
             throw new NotFoundException('Milestone not found')
         }
 
-        if (milestone.groupId.toString() !== task.groupId.toString()) {
-            throw new BadRequestException('Milestone does not belong to the same group')
-        }
+        // if (milestone.groupIds.toString() !== task.groupId.toString()) {
+        //     throw new BadRequestException('Milestone does not belong to the same group')
+        // }
 
         // 5. Cập nhật
         task.milestoneId = milestoneId

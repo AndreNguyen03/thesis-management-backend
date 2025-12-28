@@ -41,6 +41,7 @@ import { GetDocumentsDto, GetUploadedFileDto } from '../upload-files/dtos/upload
 import { DownloadFileDto } from '../upload-files/dtos/download-file.dtos'
 import { Response } from 'express'
 import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 
 @Controller('topics')
 export class TopicController {
@@ -461,5 +462,14 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async downloadZip(@Res() res: Response, @Param('topicId') topicId: string) {
         return this.topicService.downloadZip(topicId, res)
+    }
+
+    @Get('/awaiting-evaluation/in-period/:periodId')
+    async getTopicsAwaitingEvaluationInPeriod(@Param('periodId') periodId: string, @Query() query: PaginationQueryDto) {
+        const res = await this.topicService.getTopicsAwaitingEvaluationInPeriod(periodId, query)
+        return plainToInstance(PaginatedTopicInBatchMilestone, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 }
