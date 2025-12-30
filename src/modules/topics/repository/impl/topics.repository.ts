@@ -55,6 +55,7 @@ import {
     PendingLecturerReview
 } from '../../../periods/dtos/phase-resolve.dto'
 import { ParseDay } from '../../utils/transfer-function'
+import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -673,7 +674,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         periodId: string,
         query: PaginationTopicsQueryParams
     ): Promise<Paginated<Topic>> {
-        console.log('query', query, periodId)
         let pipelineSub: any[] = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract(userId))
         pipelineSub.push(...this.pipelineSubmittedTopics())
@@ -1028,7 +1028,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         ownerId?: string
     ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        console.log('query', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(
             {
@@ -1042,11 +1041,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                     cond: {
                                         $and: [
                                             ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
-                                            ...(query.status
-                                                ? [{ $eq: ['$$ph.status', query.status] }]
-                                                : query.phase === PeriodPhaseName.EXECUTION
-                                                  ? [{ $ne: ['$$ph.status', TopicStatus.Draft] }]
-                                                  : [])
+                                            ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
                                         ]
                                     }
                                 }
@@ -1228,11 +1223,27 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         }
         //if (query.rulesPagination === 0)
         //Nếu là phân trang bình thường
-        console.log('ownerId', ownerId)
         pipelineSub.push({
             $match: {
-                deleted_at: null,
-                periodId: new mongoose.Types.ObjectId(periodId)
+                $expr: {
+                    $and: [
+                        { $eq: ['$periodId', new mongoose.Types.ObjectId(periodId)] },
+                        {
+                            ...(query.phase && query.status
+                                ? {
+                                      $cond: {
+                                          if: {
+                                              $and: [{ $eq: [query.phase, '$periodInfo.currentPhase'] }]
+                                          },
+                                          then: { $eq: ['$currentStatus', query.status] },
+                                          else: {}
+                                      }
+                                  }
+                                : {})
+                        }
+                        //  { $eq: ['$deleted_at', null] },
+                    ]
+                }
             }
         })
         if (ownerId) {
@@ -1249,7 +1260,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
 
     async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
         const { lecturerIds, fieldIds, majorIds, year } = query
-        console.log('query', query)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
@@ -1440,6 +1450,192 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             }
         ]
     }
+
+    async getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    let: { templateId: new mongoose.Types.ObjectId(templateMilestoneId) },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$_id', '$$templateId'] }, { $eq: ['$deleted_at', null] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestones_templates'
+                }
+            },
+            { $unwind: { path: '$milestones_templates' } },
+            {
+                $addFields: {
+                    topicSnaps: '$milestones_templates.topicSnaps'
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $in: ['$_id', '$topicSnaps._id']
+                    }
+                }
+            },
+            {
+                $project: {
+                    milestoneInfo: {
+                        _id: '$milestones_templates._id',
+                        title: '$milestones_templates.title',
+                        description: '$milestones_templates.description',
+                        dueDate: '$milestones_templates.dueDate',
+                        defenseCouncil: '$milestones_templates.defenseCouncil',
+                        topicSnaps: '$milestones_templates.topicSnaps',
+                        status: {
+                            $switch: {
+                                branches: [
+                                    {
+                                        case: {
+                                            $lt: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: 'pending'
+                                    },
+                                    {
+                                        case: {
+                                            $eq: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: 'active'
+                                    }
+                                ],
+                                default: 'timeout'
+                            }
+                        },
+                        isScorable: {
+                            $switch: {
+                                branches: [
+                                    {
+                                        case: {
+                                            $lt: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: false
+                                    }
+                                ],
+                                default: true
+                            }
+                        },
+                        location: '$milestones_templates.location'
+                    },
+                    _id: 1,
+                    titleVN: 1,
+                    titleEng: 1,
+                    description: 1,
+                    type: 1,
+                    majorId: 1,
+                    finalProduct: 1,
+                    isPublishedToLibrary: 1,
+                    allowManualApproval: 1,
+                    updatedAt: 1,
+                    currentStatus: 1,
+                    milestones_templates: 1,
+                    defenseResult: 1,
+                    lecturers: 1,
+                    students: {
+                        $map: {
+                            input: '$studentsRegistered',
+                            as: 'student',
+                            in: {
+                                _id: '$$student._id',
+                                fullName: '$$student.fullName',
+                                email: '$$student.email',
+                                phone: '$$student.phone',
+                                studentCode: '$$student.studentCode',
+                                avatarUrl: '$$student.avatarUrl',
+                                avatarName: '$$student.avatarName'
+                                // Thêm thuộc tính khác nếu cần
+                            }
+                        }
+                    },
+                    periodInfo: {
+                        _id: 1,
+                        deleted_at: 1,
+                        year: 1,
+                        semester: 1,
+                        type: 1,
+                        faculty: 1,
+                        currentPhase: 1
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: '$milestones_templates._id',
+                    milestoneInfo: {
+                        $first: {
+                            _id: '$milestones_templates._id',
+                            title: '$milestones_templates.title',
+                            description: '$milestones_templates.description',
+                            dueDate: '$milestones_templates.dueDate',
+                            topicSnaps: '$milestones_templates.topicSnaps',
+                            defenseCouncil: '$milestones_templates.defenseCouncil',
+                            status: '$milestoneInfo.status',
+                            isScorable: '$milestoneInfo.isScorable',
+                            location: '$milestoneInfo.location'
+                        }
+                    },
+                    periodInfo: {
+                        $first: '$periodInfo'
+                    },
+                    topics: {
+                        $push: {
+                            _id: '$_id',
+                            titleVN: '$titleVN',
+                            titleEng: '$titleEng',
+                            description: '$description',
+                            type: '$type',
+                            majorId: '$majorId',
+                            finalProduct: '$finalProduct',
+                            isPublishedToLibrary: '$isPublishedToLibrary',
+                            allowManualApproval: '$allowManualApproval',
+                            updatedAt: '$updatedAt',
+                            currentStatus: '$currentStatus',
+                            defenseResult: '$defenseResult',
+                            lecturers: '$lecturers',
+                            students: '$students'
+                        }
+                    }
+                }
+            }
+        )
+        const result = await this.topicRepository.aggregate(pipelineSub).exec()
+        return result[0] || null
+    }
     async getRegisteringTopics(
         periodId: string,
         query: RequestGetTopicsInAdvanceSearchParams
@@ -1550,6 +1746,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 deleted_at: null
             }
         })
+
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     // lấy thống kê
@@ -2056,6 +2253,34 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $count: 'count'
                         }
+                    ],
+                    assignedTopics: [
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $match: {
+                                periodId: new mongoose.Types.ObjectId(periodId),
+                                'lastStatusInPhaseHistory.status': TopicStatus.AssignedDefense,
+                                deleted_at: null
+                            }
+                        },
+                        {
+                            $count: 'count'
+                        }
                     ]
                 }
             }
@@ -2063,6 +2288,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return {
             periodId: periodId,
             currentPhase: currentPhase,
+            assignedTopicsNumber: topicsFigures[0]?.assignedTopics[0]?.count || 0,
             readyForEvaluationNumber: topicsFigures[0]?.readyForEvaluation[0]?.count || 0,
             gradedTopicsNumber: topicsFigures[0]?.gradedTopics[0]?.count || 0,
             achivedTopicsNumber: topicsFigures[0]?.archivedTopics[0]?.count || 0,
@@ -3652,7 +3878,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
-                currentPhase: PeriodPhaseName.EXECUTION
+                currentPhase: PeriodPhaseName.EXECUTION,
+                currentStatus: TopicStatus.InProgress
             }
         })
         let lecturer_reg_embedded_pl: any[] = []
@@ -3829,11 +4056,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $expr: {
                                     $and: [
                                         { $eq: ['$groupId', '$$groupId'] },
-                                        { $eq: ['creatorType', MilestoneCreator.FACULTY] },
-                                        { $eq: ['type', MilestoneType.SUBMISSION] },
-                                        { $lt: ['dueDate', new Date()] },
-                                        { $eq: ['submission', null] },
-                                        { $ne: ['parentId', null] }
+                                        { $eq: ['$creatorType', MilestoneCreator.FACULTY] },
+                                        { $eq: ['$submission', null] },
+                                        { $ne: ['$parentId', null] }
                                     ]
                                 }
                             }
@@ -3846,6 +4071,29 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $unwind: { path: '$milestonesInfo' }
             }
         )
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    let: { parentId: '$milestonesInfo.parentId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$type', MilestoneType.SUBMISSION] }, { $lt: ['$dueDate', '$$NOW'] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestones-templates'
+                }
+            },
+            {
+                $unwind: { path: '$milestones-templates' }
+            }
+        )
+
         pipelineSub.push({
             $project: {
                 topicId: '$_id',
@@ -4222,9 +4470,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $expr: {
                                     $and: [
                                         { $eq: ['$groupId', '$$groupId'] },
-                                        { $eq: ['submission.type', MilestoneType.SUBMISSION] },
-                                        { $eq: ['status', MilestoneStatus.PENDING_REVIEW] },
-                                        { $ne: ['parentId', null] }
+                                        { $eq: ['$type', 'submission'] },
+                                        { $eq: ['$status', 'Pending Review'] },
+                                        { $ne: ['$parentId', null] }
                                     ]
                                 }
                             }
@@ -4254,10 +4502,22 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
+        console.log('Pipeline for pending review topics:', pipelineSub)
         const res = await this.topicRepository.aggregate(pipelineSub).exec()
         return res.map((item) => ({
             ...item,
             daysPending: item.submittedAt ? ParseDay(item.submittedAt) : null
         }))
+    }
+    async updateTopicsToCompletion(topicIds: string[]): Promise<number> {
+        const result = await this.topicRepository.updateMany(
+            { _id: { $in: topicIds.map((id) => new mongoose.Types.ObjectId(id)) } },
+            {
+                $set: {
+                    currentPhase: PeriodPhaseName.COMPLETION
+                }
+            }
+        )
+        return result.modifiedCount
     }
 }

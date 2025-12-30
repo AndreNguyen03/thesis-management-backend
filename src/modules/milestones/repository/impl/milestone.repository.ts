@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
-import { FileInfo, Milestone, MilestoneStatus, MilestoneType } from '../../schemas/milestones.schemas'
+import { FileInfo, Milestone, MilestoneCreator, MilestoneStatus, MilestoneType } from '../../schemas/milestones.schemas'
 import { IMilestoneRepository } from '../miletones.repository.interface'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model } from 'mongoose'
@@ -11,14 +11,15 @@ import {
     PayloadUpdateMilestone,
     RequestLecturerReview,
     ManageTopicsInDefenseMilestoneDto,
-    DefenseAction
+    DefenseAction,
+    ManageLecturersInDefenseMilestoneDto
 } from '../../dtos/request-milestone.dto'
 import { ActiveUserData } from '../../../../auth/interface/active-user-data.interface'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { LecturerReviewDecision } from '../../enums/lecturer-decision.enum'
-import { MilestoneTemplate } from '../../schemas/milestones-templates.schema'
+import { DefenseCouncilMember, MilestoneTemplate } from '../../schemas/milestones-templates.schema'
 import { Topic } from '../../../topics/schemas/topic.schemas'
 import { TopicStatus } from '../../../topics/enum/topic-status.enum'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
@@ -87,7 +88,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         }
         return updateMilestone
     }
-    async getMilestonesOfGroup(groupId: string): Promise<Milestone[]> {
+    async getMilestonesOfGroup(groupId: string, role: string): Promise<Milestone[]> {
         const groupObjectId = new mongoose.Types.ObjectId(groupId)
 
         const pipeline: any[] = [
@@ -188,15 +189,21 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     'submission.lecturerDecision': '$submission.decision',
                     'submission.createdBy': { $arrayElemAt: ['$submissionUserTmp', 0] },
                     'submission.lecturerInfo': {
-                        $mergeObjects: [
-                            { $arrayElemAt: ['$lecturerUserTmp', 0] },
+                        $ifNull: [
+                            '$submissionUserTmp',
+                            null,
                             {
-                                title: {
-                                    $let: {
-                                        vars: { profile: { $arrayElemAt: ['$lecturerProfileTmp', 0] } },
-                                        in: '$$profile.title'
+                                $mergeObjects: [
+                                    { $arrayElemAt: ['$lecturerUserTmp', 0] },
+                                    {
+                                        title: {
+                                            $let: {
+                                                vars: { profile: { $arrayElemAt: ['$lecturerProfileTmp', 0] } },
+                                                in: '$$profile.title'
+                                            }
+                                        }
                                     }
-                                }
+                                ]
                             }
                         ]
                     },
@@ -273,7 +280,10 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     submission: 1,
                     submissionHistory: 1,
                     topicId: 1,
-                    group: 1
+                    group: 1,
+                    status: 1,
+                    creatorType: 1,
+                    isAbleEdit: { $cond: [{ $eq: ['$creatorType', role] }, true, false] }
                 }
             },
             {
@@ -318,24 +328,14 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         if (!existingMilestone) {
             throw new NotFoundException('Mốc deadline không tồn tại')
         }
-        const updateMilestone = await this.milestoneModel
-            .findOneAndUpdate(
-                { _id: new mongoose.Types.ObjectId(miletoneId), deleted_at: null },
-
-                {
-                    status: MilestoneStatus.PENDING_REVIEW,
-                    $push: {
-                        submissionHistory: existingMilestone.submission
-                    },
-                    $set: { submission: { date: new Date(), files, createdBy: new mongoose.Types.ObjectId(userId) } }
-                },
-                { new: true }
-            )
-            .exec()
-        if (!updateMilestone) {
+        if (existingMilestone.submission) existingMilestone.submissionHistory.push(existingMilestone.submission)
+        existingMilestone.submission = { date: new Date(), files, createdBy: userId }
+        existingMilestone.status = MilestoneStatus.PENDING_REVIEW
+        await existingMilestone.save()
+        if (!existingMilestone) {
             throw new NotFoundException('Mốc deadline không tồn tại')
         }
-        return updateMilestone
+        return existingMilestone
     }
     async createTaskInMinesTone(milestoneId: string, taskId: string): Promise<Milestone> {
         const updateMilestone = await this.milestoneModel
@@ -434,9 +434,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
     async facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]> {
         return await this.milestoneTemplateModel.aggregate([
             {
-                $sort: { dueDate: -1 }
-            },
-            {
                 $lookup: {
                     from: 'milestones',
                     localField: '_id',
@@ -492,7 +489,10 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     },
                     periodId: 1,
                     defenseCouncil: 1,
-                    topicSnaps: 1
+                    topicSnaps: 1,
+                    isScorable: {
+                        $cond: [{ $lt: ['$dueDate', '$$NOW'] }, true, false]
+                    }
                 }
             }
         ])
@@ -763,5 +763,33 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 )
             }
         }
+    }
+
+    async manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string): Promise<void> {
+        const { milestoneTemplateId, action, defenseCouncil } = body
+        // Tìm milestone template
+        const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
+        if (!milestoneTemplate) {
+            throw new NotFoundException('Không tìm thấy mốc deadline template')
+        }
+
+        if (action === DefenseAction.ADD) {
+            // Thêm giảng viên vào hội đồng - lọc ra những người chưa có
+            const newMembers = defenseCouncil.filter(
+                (newMember: DefenseCouncilMember) =>
+                    !milestoneTemplate.defenseCouncil.some(
+                        (existingMember) => existingMember.memberId === newMember.memberId
+                    )
+            )
+            milestoneTemplate.defenseCouncil.push(...newMembers)
+        } else if (action === DefenseAction.DELETE) {
+            // Xóa giảng viên khỏi hội đồng
+            const memberIdsToRemove = defenseCouncil.map((member: DefenseCouncilMember) => member.memberId)
+            milestoneTemplate.defenseCouncil = milestoneTemplate.defenseCouncil.filter(
+                (member) => !memberIdsToRemove.includes(member.memberId.toString())
+            )
+        }
+
+        await milestoneTemplate.save()
     }
 }

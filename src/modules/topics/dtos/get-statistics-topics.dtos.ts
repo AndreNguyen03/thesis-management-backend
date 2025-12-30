@@ -35,6 +35,7 @@ export class GetTopicsStatisticInCompletionPhaseDto {
     gradedTopicsNumber: number
     achivedTopicsNumber: number
     rejectedFinalTopicsNumber: number
+    assignedTopicsNumber: number
 }
 
 export class LecGetTopicStatisticInSubmitPhaseDto {

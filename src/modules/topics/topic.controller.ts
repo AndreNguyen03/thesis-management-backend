@@ -36,9 +36,8 @@ import { FilesInterceptor } from '@nestjs/platform-express'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { RejectTopicDto } from './dtos/action-with-topic.dtos'
 import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
-import { GetMajorLibraryCombox, GetMiniMiniMajorDto } from '../majors/dtos/get-major.dto'
-import { GetDocumentsDto, GetUploadedFileDto } from '../upload-files/dtos/upload-file.dtos'
-import { DownloadFileDto } from '../upload-files/dtos/download-file.dtos'
+import { GetMajorLibraryCombox } from '../majors/dtos/get-major.dto'
+import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
 import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
@@ -55,6 +54,14 @@ export class TopicController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+    @Patch('/mark-paused-topic')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async markPausedTopic(@Req() req: { user: ActiveUserData }, @Body() body: { topicIds: string[] }) {
+        await this.topicService.markPausedTopic(body.topicIds, req.user.sub)
+        return { message: 'Đề tài đã được đánh dấu là tạm dừng' }
     }
 
     @Get('/saved-topics')
@@ -289,15 +296,6 @@ export class TopicController {
         return { message: 'Đề tài bị đánh dấu là trễ hạn' }
     }
 
-    @Patch('/:topicId/mark-paused-topic')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
-    @UseGuards(RolesGuard)
-    async markPausedTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        await this.topicService.markPausedTopic(topicId, req.user.sub)
-        return { message: 'Đề tài đã được đánh dấu là tạm dừng' }
-    }
-
     @Patch('/:topicId/sumit-topic/completed-processing')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.STUDENT)
@@ -471,5 +469,13 @@ export class TopicController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+
+    @Get('/in-defense-template/:templateMilestoneId')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getDetailTopicsInDefenseMilestones(@Param('templateMilestoneId') templateMilestoneId: string) {
+        //console.log("templateMilestoneId in controller", templateMilestoneId);
+        return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId)
     }
 }

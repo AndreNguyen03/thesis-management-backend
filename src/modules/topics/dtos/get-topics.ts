@@ -128,6 +128,7 @@ export class GetGeneralTopics extends AbstractTopic {
     @Expose()
     //dùng trong pha thực hiện đề tài
     progress?: number
+
 }
 
 class TopicStatsDto {
@@ -173,7 +174,7 @@ class CouncilMemberSnapshot {
     note: string
 }
 
-class DefenseResult {
+export class DefenseResult {
     @Expose()
     defenseDate: Date // Dùng để lọc theo "Năm bảo vệ"
     @Expose()

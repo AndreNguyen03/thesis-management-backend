@@ -51,8 +51,8 @@ export class MilestonesController {
     }
 
     @Get('/in-group/:groupId/')
-    async getMilestonesOfGroup(@Param('groupId') groupId: string) {
-        const res = await this.milestonesService.getMilestonesOfGroup(groupId)
+    async getMilestonesOfGroup(@Param('groupId') groupId: string, @Req() req: { user: ActiveUserData }) {
+        const res = await this.milestonesService.getMilestonesOfGroup(groupId, req.user.role)
         return plainToInstance(ResponseMilestone, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -107,8 +107,8 @@ export class MilestonesController {
         return await this.milestonesService.updateActiveState(milestoneId, isActive)
     }
     @Get('/:batchId/faculty-download-zip')
-    async downloadZipByBatchId(@Res() res: Response, @Param('batchId') batchId: string) {
-        return this.milestonesService.facultyDownloadZipWithBatch(batchId, res)
+    async downloadZipByBatchId(@Res() res: Response, @Param('batchId') milestoneTemplate: string) {
+        return this.milestonesService.facultyDownloadZipWithBatch(milestoneTemplate, res)
     }
 
     @Get('/:milestoneId/milestone-download-zip')
@@ -139,7 +139,6 @@ export class MilestonesController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async manageTopicsInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
-        console.log('Received manage topics request:', body)
         await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
         return {
             message:
@@ -153,13 +152,12 @@ export class MilestonesController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async manageLecturersInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
-        console.log('Received manage topics request:', body)
-        await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
+        await this.milestonesService.manageLecturersInDefenseMilestone(body, req.user.sub)
         return {
             message:
                 body.action === 'add'
-                    ? 'Thêm đề tài vào hội đồng bảo vệ thành công'
-                    : 'Xóa đề tài khỏi hội đồng bảo vệ thành công'
+                    ? 'Thêm giảng viên vào hội đồng bảo vệ thành công'
+                    : 'Xóa giảng viên khỏi hội đồng bảo vệ thành công'
         }
     }
 }

@@ -315,13 +315,15 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         )
     }
 
-    public async markPausedTopic(topicId: string, actorId: string) {
-        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-            topicId,
-            TopicStatus.Paused,
-            actorId,
-            PhaseHistoryNote.TOPIC_PAUSED
-        )
+    public async markPausedTopic(topicIds: string[], actorId: string) {
+        for (const id of topicIds) {
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                id,
+                TopicStatus.Paused,
+                actorId,
+                PhaseHistoryNote.TOPIC_PAUSED
+            )
+        }
     }
     public async setAwaitingEvaluation(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
@@ -475,5 +477,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
 
     async getTopicsAwaitingEvaluationInPeriod(periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         return await this.topicRepository.findTopicsByStatusInPeriod(TopicStatus.AwaitingEvaluation, periodId, query)
+    }
+    async getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]> {
+        return this.topicRepository.getDetailTopicsInDefenseMilestones(templateMilestoneId)
     }
 }

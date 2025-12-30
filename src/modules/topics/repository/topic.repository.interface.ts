@@ -101,4 +101,6 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
 
     getCandidateTopics(): Promise<CandidateTopicDto[]>
     getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]>
+    updateTopicsToCompletion(topicIds: string[]): Promise<number>
+    getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]>
 }

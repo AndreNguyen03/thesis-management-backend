@@ -1,5 +1,5 @@
 export enum KnowledgeStatus {
-    ENABLED = 'ENABLED',
-    DISABLED = 'DISABLED'
+    ENABLED = 'enabled',
+    DISABLED = 'disabled'
 }
 //Trạng thái người dùng có dùng Knowledge Source hay không

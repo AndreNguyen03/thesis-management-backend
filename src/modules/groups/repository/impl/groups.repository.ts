@@ -38,6 +38,20 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
             },
             {
                 $lookup: {
+                    from: 'topics',
+                    localField: 'topicId',
+                    foreignField: '_id',
+                    as: 'topic'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$topic',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
                     from: 'milestones',
                     let: { groupId: '_id' },
                     pipeline: [
@@ -65,6 +79,9 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     _id: 1,
                     topicId: 1,
                     type: 1,
+                    topicStatus: '$topic.currentStatus',
+                    topicTitleVN: '$topic.titleVN',
+                    topicTitleEng: '$topic.titleEng',
                     participants: {
                         _id: 1,
                         fullName: 1,

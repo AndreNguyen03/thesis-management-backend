@@ -16,16 +16,6 @@ import { Field } from '../../fields/schemas/fields.schemas'
         createdAt: 'created_at'
     }
 })
-//Điểm chấm chi tiết
-// @Schema({ timestamps: true })
-// export class DetailGrade extends BaseEntity {
-//     @Prop({ type: Number, required: true })
-//     score: number
-//     @Prop({ type: String, required: false })
-//     note: string
-//     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-//     actorId: string
-// }
 
 @Schema({ _id: false })
 class CouncilMemberSnapshot {
@@ -92,7 +82,7 @@ class FileSnapshot {
     size: number // Kích thước file (bytes) - để hiện UI (VD: 5MB)
 
     // Quyền truy cập tài liệu này
-    @Prop({ type: String, enum: ['PUBLIC', 'INTERNAL', 'PRIVATE'], default: 'INTERNAL' })
+    @Prop({ type: String, enum: ['public', 'internal', 'private'], default: 'internal' })
     accessLevel: string
 }
 
@@ -103,12 +93,12 @@ class FinalProduct {
     @Prop({ type: FileSnapshot, required: true })
     thesisReport: FileSnapshot
 
-    // Source code (Có thể là Link Git hoặc File Zip)
-    @Prop({ type: String })
-    sourceCodeUrl: string // Link GitHub/GitLab (Ưu tiên link repo cho ngành IT)
+    // // Source code (Có thể là Link Git hoặc File Zip)
+    // @Prop({ type: String })
+    // sourceCodeUrl: string // Link GitHub/GitLab (Ưu tiên link repo cho ngành IT)
 
-    @Prop({ type: [FileSnapshot] })
-    sourceCodeZip: [FileSnapshot] // Hoặc file Zip backup nếu trường yêu cầu đóng gói
+    // @Prop({ type: [FileSnapshot] })
+    // sourceCodeZip: [FileSnapshot] // Hoặc file Zip backup nếu trường yêu cầu đóng gói
 }
 
 @Schema({ collection: 'topics', timestamps: true })
@@ -131,8 +121,8 @@ export class Topic extends BaseEntity {
     @Prop({ default: 1 })
     maxStudents: number
 
-    @Prop({ type: [String], default: [] })
-    referenceDocs: string[]
+    // @Prop({ type: [String], default: [] })
+    // referenceDocs: string[]
 
     //Sinh viên nộp báo cáo cuois cùng về cho khoa - cuối pha execution
     @Prop({ type: FinalProduct, default: null })
@@ -168,7 +158,6 @@ export class Topic extends BaseEntity {
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: Field.name }], default: [], index: true })
     fieldIds: Field[]
 
-    //Chỉ có dữ liệu khi status = 'ARCHIVED'
     //Hội đồng
     @Prop({ type: DefenseResult, required: false })
     defenseResult: DefenseResult
@@ -176,7 +165,6 @@ export class Topic extends BaseEntity {
     @Prop({ type: Boolean, default: false, index: true })
     isPublishedToLibrary: boolean
 
-    // === NHÓM Thống kê (Cho Thu viên) ===
     @Prop({ type: TopicStats, default: { views: 0, downloads: 0, averageRating: 0, reviewCount: 0 } })
     stats: TopicStats
 }
