@@ -16,7 +16,8 @@ import {
     GetTopicResponseDto,
     PaginatedSubmittedTopics,
     PaginationTopicsQueryParams,
-    PatchTopicDto
+    PatchTopicDto,
+    RequestGetTopicsApprovalRegistrationPagination
 } from '../dtos'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
@@ -70,6 +71,10 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     ) {
         super(topicRepository)
     }
+    async getTopicRegistartionApprovals(userId: string, query: RequestGetTopicsApprovalRegistrationPagination) {
+        return this.topicRepository.getTopicRegistrationApprovalsOfLecturer(userId, query)
+    }
+
     async getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]> {
         return this.topicRepository.getFacultyTopicsWithPopularity(facultyId)
     }

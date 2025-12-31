@@ -3,6 +3,7 @@ import { PeriodsService } from './application/periods.service'
 import {
     CreatePeriodDto,
     GetCurrentPeriod,
+    GetPaginatedMiniPeriod,
     GetPaginatedPeriodDto,
     GetPeriodDto,
     PeriodStatsQueryParams,
@@ -62,6 +63,15 @@ export class PeriodsController {
     async getAllPeriods(@Req() req: { user: ActiveUserData }, @Query() query: RequestGetPeriodsDto) {
         const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
         return plainToInstance(GetPaginatedPeriodDto, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/get-all-mini')
+    async getAllPeriodsMini(@Req() req: { user: ActiveUserData }, @Query() query: RequestGetPeriodsDto) {
+        const res = await this.periodsService.getAllPeriods(req.user.facultyId!, query)
+        return plainToInstance(GetPaginatedMiniPeriod, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -290,14 +300,14 @@ export class PeriodsController {
         })
     }
 
-       //Lấy thông tin của kỳ hiện tại
+    //Lấy thông tin của kỳ hiện tại
     @Get('/dashboard-current-periods')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD, UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async getDashboardCurrentPeriods(@Req() req: { user: ActiveUserData }) {
         console.log(' user :::', req.user)
-        const res = await this.periodsService.getDashboardCurrentPeriod(req.user.facultyId!)
+        const res = await this.periodsService.getDashboardCurrentPeriod(req.user.facultyId!, req.user.sub)
         console.log('get current period data ::: ', res)
         return res
         return plainToInstance(GetCurrentPeriod, res, {
@@ -322,9 +332,9 @@ export class PeriodsController {
         )
     }
 
-    @Patch("/:period/period-complete")
+    @Patch('/:period/period-complete')
     async completePeriod(@Param('period') periodId: string) {
-        await this.periodsService.completePeriod(periodId);
-        return { message: "Kỳ đã được hoàn thành thành công" }
+        await this.periodsService.completePeriod(periodId)
+        return { message: 'Kỳ đã được hoàn thành thành công' }
     }
 }

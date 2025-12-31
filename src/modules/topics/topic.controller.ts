@@ -25,7 +25,8 @@ import {
     GetPaginatedTopicsDto,
     GetTopicDetailResponseDto,
     PaginatedSubmittedTopics,
-    PatchTopicDto
+    PatchTopicDto,
+    RequestGetTopicsApprovalRegistrationPagination
 } from './dtos'
 import { plainToInstance } from 'class-transformer'
 import { Roles } from '../../auth/decorator/roles.decorator'
@@ -71,6 +72,21 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
         const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
+        return plainToInstance(GetPaginatedTopicsDto, topics, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/registration-approvals')
+    @Auth(AuthType.Bearer)
+    async getRegistrationApprovals(
+        @Req() req: { user: ActiveUserData },
+        @Query() query: RequestGetTopicsApprovalRegistrationPagination
+    ) {
+        console.log('query param get registration approvals :::', query)
+        const topics = await this.topicService.getTopicRegistartionApprovals(req.user.sub, query)
+        return topics
         return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

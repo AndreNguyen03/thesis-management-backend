@@ -12,6 +12,7 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    RequestGetTopicsApprovalRegistrationPagination,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseParams
@@ -101,4 +102,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
 
     getCandidateTopics(): Promise<CandidateTopicDto[]>
     getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]>
+
+    
+    getTopicRegistrationApprovalsOfLecturer(userId: string, query: RequestGetTopicsApprovalRegistrationPagination): Promise<Paginated<any>>
 }

@@ -27,4 +27,5 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview): Promise<boolean>
     facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]>
     manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void>
+    getAllMilestones(userId: string) : Promise<any>
 }

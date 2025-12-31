@@ -28,7 +28,7 @@ import { Roles } from '../../auth/decorator/roles.decorator'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
-import { PaginatedTopicInBatchMilestone, ResponseMilestone } from './dtos/response-milestone.dto'
+import { MilestoneDto, PaginatedTopicInBatchMilestone, ResponseMilestone } from './dtos/response-milestone.dto'
 import { FileInfo } from './schemas/milestones.schemas'
 import { RequestCreate } from '../todolists/dtos/request-update.dtos'
 import { Response } from 'express'
@@ -54,6 +54,15 @@ export class MilestonesController {
     async getMilestonesOfGroup(@Param('groupId') groupId: string) {
         const res = await this.milestonesService.getMilestonesOfGroup(groupId)
         return plainToInstance(ResponseMilestone, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Get('/all-users-milestones')
+    async getAllUserMilestones(@Req() req: { user: ActiveUserData }) {
+        const res = await this.milestonesService.getAllMilestones(req.user.sub)
+        return plainToInstance(MilestoneDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })

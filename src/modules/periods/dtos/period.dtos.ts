@@ -141,3 +141,20 @@ export class GetCurrentPeriod {
     @Type(() => NavItem)
     navItem: NavItem[]
 }
+
+export class GetMiniPeriod {
+    @Expose()
+    _id: string
+    @Expose()
+    year: string
+    @Expose()
+    semester: number
+    @Expose()
+    type: PeriodType
+}
+
+export class GetPaginatedMiniPeriod extends GetPaginatedObjectDto {
+    @Expose()
+    @Type(() => GetMiniPeriod)
+    data: GetMiniPeriod[]
+}

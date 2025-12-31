@@ -80,6 +80,8 @@ export class MilestoneDto {
     description: string
     @Expose()
     dueDate: Date
+    @Expose()
+    type: string
 }
 
 export class GetTopicsInBatchMilestoneDto {

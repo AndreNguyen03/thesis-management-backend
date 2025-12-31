@@ -26,6 +26,11 @@ export class StudentRegTopicService {
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
         private readonly checkUserInfoProvider: CheckUserInfoProvider
     ) {}
+
+    async getStudentTopicStateInPeriod(userId:string) {
+        return this.studentRegTopicRepository.getStudentTopicStateInPeriod(userId)
+    }
+
     //cả studentSignleRegistration và lecAssignStudent đều dùng hàm này createSingleRegistration
     public async studentSingleRegistration(actionRole: string, studentId: string, topicId: string) {
         return this.studentRegTopicRepository.createSingleRegistration(actionRole, studentId, topicId)
@@ -73,6 +78,7 @@ export class StudentRegTopicService {
     ) {
         //lấy meta data
         //Lấy thông tin của người nhận thông báo từ registrationId
+        console.log('registration Id:::', registrationId)
         const registration = await this.studentRegTopicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(registrationId),
             status: StudentRegistrationStatus.PENDING,
