@@ -503,8 +503,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     async getTopicsAwaitingEvaluationInPeriod(periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         return await this.topicRepository.findTopicsByStatusInPeriod(TopicStatus.AwaitingEvaluation, periodId, query)
     }
-    async getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]> {
-        return this.topicRepository.getDetailTopicsInDefenseMilestones(templateMilestoneId)
+    async getDetailTopicsInDefenseMilestones(
+        templateMilestoneId: string,
+        query?: PaginationQueryDto
+    ): Promise<Paginated<Topic>> {
+        return this.topicRepository.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
     async batchUpdateDefenseResults(results: any[], userId: string): Promise<{ success: number; failed: number }> {

@@ -474,10 +474,13 @@ export class TopicController {
     }
 
     @Get('/in-defense-template/:templateMilestoneId')
-    @Roles(UserRole.FACULTY_BOARD)
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async getDetailTopicsInDefenseMilestones(@Param('templateMilestoneId') templateMilestoneId: string) {
-        return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId)
+    async getDetailTopicsInDefenseMilestones(
+        @Param('templateMilestoneId') templateMilestoneId: string,
+        @Query() query: PaginationQueryDto
+    ) {
+        return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
     @Patch('/batch-update-defense-results')

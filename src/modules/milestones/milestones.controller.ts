@@ -186,4 +186,14 @@ export class MilestonesController {
             message: bool ? 'Xóa file thành công' : 'Xóa file thất bại'
         }
     }
+
+    @Patch('/:milestoneId/block-grade')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async blockGrade(@Param('milestoneId') milestoneId: string) {
+        await this.milestonesService.blockGrade(milestoneId)
+        return {
+            message: 'Khóa bảng điểm thành công'
+        }
+    }
 }

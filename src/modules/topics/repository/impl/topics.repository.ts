@@ -49,6 +49,7 @@ import { ParseDay } from '../../utils/transfer-function'
 import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
+import { min } from 'class-validator'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -1455,7 +1456,10 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         ]
     }
 
-    async getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]> {
+    async getDetailTopicsInDefenseMilestones(
+        templateMilestoneId: string,
+        query: PaginationQueryDto = new PaginationQueryDto()
+    ): Promise<Paginated<Topic>> {
         const pipelineSub: any[] = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
@@ -1481,7 +1485,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             {
                 $lookup: {
                     from: 'files',
-                    localField: 'milestones_templates.sampleScoringTemplate',
+                    localField: 'milestones_templates.resultScoringTemplate',
                     foreignField: '_id',
                     as: 'templateFile'
                 }
@@ -1613,7 +1617,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                             }
                         },
                         location: '$milestones_templates.location',
-                        sampleScoringTemplate: {
+                        resultScoringTemplate: {
                             $cond: [
                                 { $ifNull: ['$templateFile._id', false] },
                                 {
@@ -1623,12 +1627,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                     size: '$templateFile.size',
                                     mimeType: '$templateFile.mimeType',
                                     created_at: '$templateFile.created_at',
-                                    actor: '$actor'
+                                    actor: '$actor',
                                 },
                                 null
                             ]
                         },
-                        isBlock: '$milestones_templates.isBlock'
+                        isBlock: '$milestones_templates.isBlock',
+                        isPublished: '$milestones_templates.isPublished'
                     },
                     _id: 1,
                     titleVN: 1,
@@ -1671,52 +1676,69 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     },
                     isPublished: 1
                 }
-            },
-            {
-                $group: {
-                    _id: '$milestones_templates._id',
-                    milestoneInfo: {
-                        $first: {
-                            _id: '$milestones_templates._id',
-                            title: '$milestones_templates.title',
-                            description: '$milestones_templates.description',
-                            dueDate: '$milestones_templates.dueDate',
-                            topicSnaps: '$milestones_templates.topicSnaps',
-                            defenseCouncil: '$milestones_templates.defenseCouncil',
-                            status: '$milestoneInfo.status',
-                            isScorable: '$milestoneInfo.isScorable',
-                            location: '$milestoneInfo.location',
-                            sampleScoringTemplate: '$milestoneInfo.sampleScoringTemplate',
-                            isBlock: '$milestoneInfo.isBlock'
-                        }
-                    },
-                    periodInfo: {
-                        $first: '$periodInfo'
-                    },
-                    topics: {
-                        $push: {
-                            _id: '$_id',
-                            titleVN: '$titleVN',
-                            titleEng: '$titleEng',
-                            description: '$description',
-                            type: '$type',
-                            majorId: '$majorId',
-                            finalProduct: '$finalProduct',
-                            isPublishedToLibrary: '$isPublishedToLibrary',
-                            allowManualApproval: '$allowManualApproval',
-                            updatedAt: '$updatedAt',
-                            currentStatus: '$currentStatus',
-                            defenseResult: '$defenseResult',
-                            lecturers: '$lecturers',
-                            students: '$students',
-                            isPublished: '$isPublished'
-                        }
-                    }
-                }
             }
         )
-        const result = await this.topicRepository.aggregate(pipelineSub).exec()
-        return result[0] || null
+
+        // Lưu thông tin milestone và period vào meta thông qua facet
+        const pipelineWithMeta: any[] = [
+            ...pipelineSub,
+            {
+                $facet: {
+                    topics: [{ $match: {} }],
+                    metadata: [
+                        {
+                            $limit: 1
+                        },
+                        {
+                            $project: {
+                                milestoneInfo: 1,
+                                periodInfo: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: '$metadata'
+            }
+        ]
+
+        const aggregateResult = await this.topicRepository.aggregate(pipelineWithMeta).exec()
+        const result = aggregateResult[0]
+
+        if (!result || !result.topics || result.topics.length === 0) {
+            return {
+                items: [],
+                meta: {
+                    totalItems: 0,
+                    itemCount: 0,
+                    itemsPerPage: query.limit || 10,
+                    totalPages: 0,
+                    currentPage: query.page || 1
+                },
+                milestoneInfo: null,
+                periodInfo: null
+            } as any
+        }
+
+        // Tạo pipeline để phân trang topics
+        const topicsPipeline: any[] = [
+            ...pipelineSub,
+            { $match: {} } // Match all topics từ kết quả trên
+        ]
+
+        const paginatedResult = await this.paginationProvider.paginateQuery<Topic>(
+            query,
+            this.topicRepository,
+            topicsPipeline
+        )
+
+        // Gắn thêm milestoneInfo và periodInfo vào meta
+        return {
+            ...paginatedResult,
+            milestoneInfo: result.metadata?.milestoneInfo || null,
+            periodInfo: result.metadata?.periodInfo || null
+        } as any
     }
     async getRegisteringTopics(
         periodId: string,

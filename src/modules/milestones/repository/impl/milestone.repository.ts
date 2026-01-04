@@ -779,7 +779,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
 
     async manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void> {
         const { milestoneTemplateId, action, topicSnapshots } = body
-        console.log('body', body)
         // Tìm milestone template
         const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
         if (!milestoneTemplate) {
@@ -872,6 +871,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         await existingMilestone.save()
         return existingMilestone
     }
+
     async updateMilestoneTemplatePublishState(
         milestoneTemplateId: string,
         isPublished: boolean
@@ -883,6 +883,18 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             throw new NotFoundException('Không tìm thấy mốc deadline template')
         }
         existingMilestone.isPublished = isPublished
+        await existingMilestone.save()
+        return existingMilestone
+    }
+
+    async blockGrade(milestoneId: string): Promise<MilestoneTemplate> {
+        const existingMilestone = await this.milestoneTemplateModel
+            .findOne({ _id: new mongoose.Types.ObjectId(milestoneId), deleted_at: null })
+            .exec()
+        if (!existingMilestone) {
+            throw new NotFoundException('Không tìm thấy mốc bảo vệ')
+        }
+        existingMilestone.isBlock = true
         await existingMilestone.save()
         return existingMilestone
     }

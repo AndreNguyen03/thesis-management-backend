@@ -147,4 +147,7 @@ export class MilestonesService {
             isPublished
         )
     }
+    async blockGrade(milestoneId: string) {
+        return await this.milestoneRepository.blockGrade(milestoneId)
+    }
 }
