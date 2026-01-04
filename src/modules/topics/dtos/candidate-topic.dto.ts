@@ -1,3 +1,5 @@
+import { OmitType } from '@nestjs/mapped-types'
+
 export class FieldDto {
     _id: string
     name: string
@@ -32,3 +34,5 @@ export class CandidateTopicDto {
     createdAt: Date
     updatedAt: Date
 }
+
+export class TopicRecommendResponse extends OmitType(CandidateTopicDto, ['embedding']) {}

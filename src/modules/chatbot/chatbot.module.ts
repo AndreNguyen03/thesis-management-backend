@@ -35,7 +35,8 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         MongooseModule.forFeature([
             { name: ChatBot.name, schema: ChatBotSchema },
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
-            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
+            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
+            
         ]),
         forwardRef(() => KnowledgeSourceModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),

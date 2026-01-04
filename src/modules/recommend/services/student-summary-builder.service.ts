@@ -6,11 +6,10 @@ import { StudentProfileDto } from '../../../users/dtos/student.dto'
 export class StudentSummaryBuilderService {
     buildSemanticSummary(profile: StudentProfileDto): string {
         return `
-      STUDENT PROFILE:
-      Skills: ${profile.skills?.join(', ') || 'Chưa có'}
-      Interests: ${profile.interests?.join(', ') || 'Chưa có'}
-      Bio: ${profile.bio || 'Chưa có'}
-    `
+            Sinh viên có các kỹ năng gồm ${profile.skills?.join(', ') || 'chưa có thông tin'}.
+            Sinh viên quan tâm đến các lĩnh vực như ${profile.interests?.join(', ') || 'chưa xác định'}.
+            Mô tả thêm về nền tảng và định hướng: ${profile.bio || 'không có mô tả'}.
+            `
     }
 
     buildLexicalSummary(profile: StudentProfileDto): string {

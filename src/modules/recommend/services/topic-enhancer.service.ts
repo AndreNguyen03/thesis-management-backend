@@ -32,27 +32,15 @@ export class TopicEnhancerService {
         const requirements = topic.requirements?.map((r) => r.name).join(', ') || 'No requirements'
 
         return `
-            TOPIC: ${topic.titleVN} (${topic.titleEng || 'No English title'})
-            
-            DESCRIPTION:
-            ${topic.description || 'No description provided'}
-            
-            TECHNICAL REQUIREMENTS:
-            ${requirements}
-            
-            FIELDS AND DOMAINS:
-            ${fields}
-            
-            LECTURER INTERESTS:
-            ${topic.areaInterest?.join(', ') || 'No area interests'}
-            ${topic.researchInterests?.join(', ') || 'No research interests'}
-            
-            TOPIC METADATA:
-            Type: ${topic.type}
-            Max Students: ${topic.maxStudents}
-            Status: ${topic.currentStatus}
-            Phase: ${topic.currentPhase}
-        `
+            Đề tài "${topic.titleVN}"${topic.titleEng ? `, còn được gọi là "${topic.titleEng}"` : ''}.
+            Nội dung chính của đề tài là ${topic.description || 'chưa có mô tả chi tiết'}.
+            Đề tài yêu cầu kiến thức liên quan đến ${requirements}.
+            Các lĩnh vực nghiên cứu bao gồm ${fields}.
+            Hướng quan tâm của giảng viên tập trung vào ${
+                [...(topic.areaInterest || []), ...(topic.researchInterests || [])].join(', ') ||
+                'các lĩnh vực liên quan'
+            }.
+            `
     }
 
     /**

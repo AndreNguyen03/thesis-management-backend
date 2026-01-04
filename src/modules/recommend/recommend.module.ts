@@ -18,9 +18,9 @@ import { StudentSummaryBuilderService } from './services/student-summary-builder
 import { AdaptiveWeightsService } from './services/adaptive-weights.service'
 import { TopicEnhancerService } from './services/topic-enhancer.service'
 import { DynamicThresholdService } from './services/dynamic-threshold.service'
-import { BadgeGeneratorService } from './services/bagde-generator.service'
 import { RerankerService } from './services/reranker.service'
 import { TopicVectorModule } from '../topic_search/topic_search.module'
+import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.module'
 
 @Module({
     imports: [
@@ -32,7 +32,8 @@ import { TopicVectorModule } from '../topic_search/topic_search.module'
         TopicInteractionModule,
         ConfigModule.forFeature(googleAIConfig),
         RedisModule,
-        TopicVectorModule
+        TopicVectorModule,
+        KnowledgeSourceModule
     ],
     providers: [
         RecommendationService,
@@ -40,7 +41,6 @@ import { TopicVectorModule } from '../topic_search/topic_search.module'
         PopularityBasedPipeline,
         GetEmbeddingProvider,
         Reranker,
-        BadgeGeneratorService,
         StudentSummaryBuilderService,
         AdaptiveWeightsService,
         RerankerService,

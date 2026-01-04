@@ -107,7 +107,6 @@ export class RerankerService {
         'ta',
         'họ',
         'mình',
-        'ai',
         'gì',
         'nào',
         'sao',
@@ -119,17 +118,6 @@ export class RerankerService {
         'nào',
         'tại',
         'sao',
-
-        // Pronouns
-        'nó',
-        'bà',
-        'ông',
-        'cô',
-        'chú',
-        'bác',
-        'dì',
-        'cậu',
-        'mợ',
 
         // Articles
         'một',

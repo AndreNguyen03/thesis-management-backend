@@ -8,9 +8,9 @@ import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/we
 import { GetEmbeddingProvider } from './get-embedding.provider'
 import { CreateKnowledgeChunksProvider } from '../../knowledge-source/application/create-knowledge-chunks.provider'
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
-import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider'
 import { KnowledgeChunk } from '../../knowledge-source/schemas/knowledge-chunk.schema'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
+import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
 
 @Injectable()
 export class RetrievalProvider {

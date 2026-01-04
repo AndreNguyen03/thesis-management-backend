@@ -4,3 +4,4 @@ export function cosineSimilarity(a: number[], b: number[]): number {
     const magB = Math.sqrt(b.reduce((s, v) => s + v * v, 0))
     return dot / (magA * magB)
 }
+

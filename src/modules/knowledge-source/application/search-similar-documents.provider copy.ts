@@ -5,6 +5,8 @@ import { KnowledgeChunk } from '../schemas/knowledge-chunk.schema'
 import { ChatBotService } from '../../chatbot/application/chatbot.service'
 import { KnowledgeSource } from '../schemas/knowledge-source.schema'
 import { KnowledgeStatus } from '../enums/knowledge-status.enum'
+import { CandidateTopicDto } from '../../topics/dtos/candidate-topic.dto'
+import { TopicVector } from '../../topic_search/schemas/topic-vector.schemas'
 
 @Injectable()
 export class SearchSimilarDocumentsProvider {
@@ -12,7 +14,8 @@ export class SearchSimilarDocumentsProvider {
         @InjectModel(KnowledgeChunk.name) private readonly knowledgeChunkModel: Model<KnowledgeChunk>,
         @InjectModel(KnowledgeSource.name) private readonly knowledgeSourceModel: Model<KnowledgeSource>,
         @Inject(forwardRef(() => ChatBotService))
-        private readonly chatbotService: ChatBotService
+        private readonly chatbotService: ChatBotService,
+        @InjectModel(TopicVector.name) private readonly topicVectorModel: Model<TopicVector>
     ) {}
     public async searchSimilarDocuments(queryVector: number[]): Promise<KnowledgeChunk[]> {
         const chatversion = await this.chatbotService.getChatBotEnabledVersion()
@@ -33,7 +36,7 @@ export class SearchSimilarDocumentsProvider {
                     queryVector: queryVector,
                     exact: true,
                     limit: 10,
-                    skip:0
+                    skip: 0
                 }
             },
             {
@@ -48,7 +51,7 @@ export class SearchSimilarDocumentsProvider {
                     sourceId: 1,
                     score: {
                         $meta: 'vectorSearchScore'
-                    }   
+                    }
                 }
             }
         ]
