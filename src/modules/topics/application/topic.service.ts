@@ -16,7 +16,8 @@ import {
     GetTopicResponseDto,
     PaginatedSubmittedTopics,
     PaginationTopicsQueryParams,
-    PatchTopicDto
+    PatchTopicDto,
+    PublishTopic
 } from '../dtos'
 import { LecturerRegTopicService } from '../../registrations/application/lecturer-reg-topic.service'
 import { StudentRegTopicService } from '../../registrations/application/student-reg-topic.service'
@@ -43,6 +44,7 @@ import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
+import { MilestonesService } from '../../milestones/application/milestones.service'
 
 @Injectable()
 export class TopicService extends BaseServiceAbstract<Topic> {
@@ -65,10 +67,33 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
         private readonly getFacultyByUserIdProvider: GetFacultyByUserIdProvider,
         private readonly downLoadFileProvider: DownLoadFileProvider,
+        @Inject(forwardRef(() => MilestonesService))
+        private readonly milestonesService: MilestonesService,
         @Inject(forwardRef(() => PeriodsService))
         private readonly periodsService: PeriodsService
     ) {
         super(topicRepository)
+    }
+    async batchPublishOrNotDefenseResults(topics: PublishTopic[], actorId: string, templateMilestoneId: string) {
+        const bol = await this.topicRepository.batchPublishOrNotDefenseResults(topics)
+        let i = 0
+        if (bol) {
+            for (const topic of topics) {
+                await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    topic.topicId,
+                    TopicStatus.Graded,
+                    actorId,
+                    'Đề tài đã được chấm điểm và công bố kết quả.'
+                )
+                i++
+            }
+        }
+        //cập nhật cờ isPublish của milestone thành true
+        await this.milestonesService.updateMilestoneTemplatePublishState(templateMilestoneId, topics[0].isPublished)
+        return {
+            success: i,
+            total: topics.length
+        }
     }
     async getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]> {
         return this.topicRepository.getFacultyTopicsWithPopularity(facultyId)
@@ -315,13 +340,15 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         )
     }
 
-    public async markPausedTopic(topicId: string, actorId: string) {
-        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-            topicId,
-            TopicStatus.Paused,
-            actorId,
-            PhaseHistoryNote.TOPIC_PAUSED
-        )
+    public async markPausedTopic(topicIds: string[], actorId: string) {
+        for (const id of topicIds) {
+            await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                id,
+                TopicStatus.Paused,
+                actorId,
+                PhaseHistoryNote.TOPIC_PAUSED
+            )
+        }
     }
     public async setAwaitingEvaluation(topicId: string, actorId: string) {
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
@@ -475,5 +502,46 @@ export class TopicService extends BaseServiceAbstract<Topic> {
 
     async getTopicsAwaitingEvaluationInPeriod(periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
         return await this.topicRepository.findTopicsByStatusInPeriod(TopicStatus.AwaitingEvaluation, periodId, query)
+    }
+    async getDetailTopicsInDefenseMilestones(
+        templateMilestoneId: string,
+        query?: PaginationQueryDto
+    ): Promise<Paginated<Topic>> {
+        return this.topicRepository.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
+    }
+
+    async batchUpdateDefenseResults(results: any[], userId: string): Promise<{ success: number; failed: number }> {
+        let success = 0
+        let failed = 0
+
+        for (const result of results) {
+            try {
+                const topic = await this.topicRepository.findOneById(result.topicId)
+                if (!topic) {
+                    failed++
+                    continue
+                }
+
+                // Update defenseResult
+                await this.topicRepository.update(result.topicId, {
+                    defenseResult: {
+                        defenseDate: result.defenseDate,
+                        periodName: result.periodName,
+                        finalScore: result.finalScore,
+                        gradeText: result.gradeText,
+                        councilMembers: result.councilMembers,
+                        councilName: result.councilName,
+                        isPublished: result.isPublished || false
+                    }
+                })
+
+                success++
+            } catch (error) {
+                console.error(`Failed to update defense result for topic ${result.topicId}:`, error)
+                failed++
+            }
+        }
+
+        return { success, failed }
     }
 }

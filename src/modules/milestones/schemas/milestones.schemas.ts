@@ -51,16 +51,16 @@ export class Submission {
     createdBy: string
 
     @Prop({ default: '' })
-    lecturerFeedback: string
+    lecturerFeedback?: string
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
-    lecturerId: string
+    lecturerId?: string
 
     @Prop({ type: Date })
-    feedbackAt: Date
+    feedbackAt?: Date
 
     @Prop({ type: String, enum: LecturerReviewDecision })
-    decision: LecturerReviewDecision
+    decision?: LecturerReviewDecision
 }
 
 @Schema({ timestamps: true, collection: 'milestones' })

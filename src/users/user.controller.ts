@@ -8,7 +8,6 @@ import {
     Post,
     Query,
     Delete,
-    Put,
     UseInterceptors,
     UploadedFile,
     UseGuards
@@ -33,12 +32,10 @@ import {
     CreateLecturerDto,
     PaginatedMiniLecturer,
     PaginatedTableLecturer,
-    ResponseMiniLecturerDto,
     UpdateLecturerProfileDto,
     UpdateLecturerTableDto
 } from './dtos/lecturer.dto'
 import { UserService } from './application/users.service'
-import { PaginationQueryDto } from '../common/pagination/dtos/pagination-query.dto'
 import { PaginationQueryDto as PaginationAn } from '../common/pagination-an/dtos/pagination-query.dto'
 import { CreateFacultyBoardDto } from './dtos/faculty-board.dto'
 import { FacultyBoardService } from './application/faculty-board.service'

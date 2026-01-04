@@ -119,8 +119,15 @@ export class UpdateTopicsPhaseBatchProvider {
             currentStatus: TopicStatus.AwaitingEvaluation,
             deleted_at: null
         })
+        let updated = 0
+        //chuyển pha của đề tài từ awaitingEvaluation sang completion
+        if (awaitingEvaluationTopics && awaitingEvaluationTopics.length > 0) {
+            updated = await this.topicRepository.updateTopicsToCompletion(
+                awaitingEvaluationTopics.map((topic) => topic._id.toString())
+            )
+        }
         console.log(`----Tìm thấy ${awaitingEvaluationTopics?.length ?? 0} đề tài đang chờ đánh giá ${periodId}`)
-        return awaitingEvaluationTopics?.length ?? 0
+        return updated
     }
     public createPhaseHistory(currentPhase: string, currentStatus: string, actor?: string) {
         const newPhaseHistory = new PhaseHistory()

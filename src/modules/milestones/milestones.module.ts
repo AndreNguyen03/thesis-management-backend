@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { MilestonesController } from './milestones.controller'
 import { MilestonesService } from './application/milestones.service'
 import { MilestoneRepository } from './repository/impl/milestone.repository'
@@ -22,6 +22,10 @@ import { TopicModule } from '../topics/topic.module'
         },
         
     ],
+    exports: [
+        MilestonesService,
+        'IMilestoneRepository'
+    ],
     imports: [
         MongooseModule.forFeature([
             { name: Milestone.name, schema: MilestoneSchema },
@@ -32,7 +36,7 @@ import { TopicModule } from '../topics/topic.module'
         TodolistsModule,
         GroupsModule,
         PaginationAnModule,
-        TopicModule
+        forwardRef(() => TopicModule)
     ]
 })
 export class MilestonesModule {}

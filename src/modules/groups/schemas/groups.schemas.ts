@@ -26,7 +26,7 @@ export class Group extends BaseEntity {
         ref: 'Topic',
         index: true
     })
-    topicId: Types.ObjectId
+    topicId: string
 
     @Prop({ enum: ['direct', 'group'], required: true })
     type: string

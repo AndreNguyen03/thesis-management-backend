@@ -89,8 +89,16 @@ export class GroupDetailDto {
     @Expose()
     lastSeenAtByUser?: Record<string, string | null>
 
-    @Expose() 
+    @Expose()
     isAbleGoToDefense: boolean
+
+    @Expose()
+    topicTitleVN: string
+
+    @Expose()
+    topicTitleEng: string
+    @Expose()
+    topicStatus: string
 }
 
 /* =======================

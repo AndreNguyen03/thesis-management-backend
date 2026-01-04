@@ -67,6 +67,10 @@ export class ResponseMilestone {
     progress: number
     @Expose()
     topicId: string
+    @Expose()
+    isAbleEdit: boolean
+    @Expose()
+    creatorType: string
 }
 
 export class MilestoneDto {

@@ -28,6 +28,8 @@ import { mongoConfig } from '../../config/database.config'
 import { PeriodsModule } from '../periods/periods.module'
 import { GroupsModule } from '../groups/groups.module'
 import { TopicInteractionModule } from '../topic_interaction/topic_interaction.module'
+import { MilestoneTemplate, MilestoneTemplateSchema } from '../milestones/schemas/milestones-templates.schema'
+import { MilestonesModule } from '../milestones/milestones.module'
 @Global()
 @Module({
     controllers: [TopicController],
@@ -71,7 +73,7 @@ import { TopicInteractionModule } from '../topic_interaction/topic_interaction.m
             { name: Topic.name, schema: TopicSchema },
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
             { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
-            { name: UserSavedTopics.name, schema: UserSavedTopicsSchema }
+            { name: UserSavedTopics.name, schema: UserSavedTopicsSchema },
         ]),
         ConfigModule.forFeature(googleAIConfig),
         ConfigModule.forFeature(mongoConfig),
@@ -82,6 +84,7 @@ import { TopicInteractionModule } from '../topic_interaction/topic_interaction.m
         forwardRef(() => NotificationsModule),
         forwardRef(() => PeriodsModule),
         forwardRef(() => GroupsModule),
+        forwardRef(() => MilestonesModule),
         TopicInteractionModule
     ]
 })

@@ -7,12 +7,14 @@ import {
     PayloadFacultyCreateMilestone,
     PayloadUpdateMilestone,
     RequestLecturerReview,
-    ManageTopicsInDefenseMilestoneDto
+    ManageTopicsInDefenseMilestoneDto,
+    ManageLecturersInDefenseMilestoneDto
 } from '../dtos/request-milestone.dto'
+import { MilestoneTemplate } from '../schemas/milestones-templates.schema'
 import { FileInfo, Milestone } from '../schemas/milestones.schemas'
 
 export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone> {
-    getMilestonesOfGroup(groupId: string): Promise<Milestone[]>
+    getMilestonesOfGroup(groupId: string, role: string): Promise<Milestone[]>
     createMilestone(body: PayloadCreateMilestone, user: ActiveUserData)
     facultyCreateMilestone(body: PayloadFacultyCreateMilestone, user: ActiveUserData, groupIds: string[])
     updateMilestone(milestoneId: string, body: PayloadUpdateMilestone): Promise<Milestone>
@@ -27,4 +29,9 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview): Promise<boolean>
     facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]>
     manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void>
+    manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string): Promise<void>
+    saveScoringResult(templateId: string, fileId: string): Promise<MilestoneTemplate>
+    deleteScoringResultFile(milestoneTemplateId: string): Promise<MilestoneTemplate | null>
+    updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean): Promise<MilestoneTemplate>
+    blockGrade(milestoneId: string): Promise<MilestoneTemplate>
 }

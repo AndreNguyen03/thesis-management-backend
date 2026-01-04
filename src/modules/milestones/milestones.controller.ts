@@ -1,6 +1,8 @@
 import {
+    BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
     Inject,
     Param,
@@ -10,6 +12,7 @@ import {
     Query,
     Req,
     Res,
+    UploadedFile,
     UploadedFiles,
     UseGuards,
     UseInterceptors
@@ -19,13 +22,12 @@ import {
     PaginationRequestTopicInMilestoneQuery,
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
-    RequestLecturerReview,
-    ManageTopicsInDefenseMilestoneDto
+    RequestLecturerReview
 } from './dtos/request-milestone.dto'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
-import { FilesInterceptor } from '@nestjs/platform-express'
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
 import { PaginatedTopicInBatchMilestone, ResponseMilestone } from './dtos/response-milestone.dto'
@@ -51,8 +53,8 @@ export class MilestonesController {
     }
 
     @Get('/in-group/:groupId/')
-    async getMilestonesOfGroup(@Param('groupId') groupId: string) {
-        const res = await this.milestonesService.getMilestonesOfGroup(groupId)
+    async getMilestonesOfGroup(@Param('groupId') groupId: string, @Req() req: { user: ActiveUserData }) {
+        const res = await this.milestonesService.getMilestonesOfGroup(groupId, req.user.role)
         return plainToInstance(ResponseMilestone, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -107,8 +109,8 @@ export class MilestonesController {
         return await this.milestonesService.updateActiveState(milestoneId, isActive)
     }
     @Get('/:batchId/faculty-download-zip')
-    async downloadZipByBatchId(@Res() res: Response, @Param('batchId') batchId: string) {
-        return this.milestonesService.facultyDownloadZipWithBatch(batchId, res)
+    async downloadZipByBatchId(@Res() res: Response, @Param('batchId') milestoneTemplate: string) {
+        return this.milestonesService.facultyDownloadZipWithBatch(milestoneTemplate, res)
     }
 
     @Get('/:milestoneId/milestone-download-zip')
@@ -139,7 +141,6 @@ export class MilestonesController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async manageTopicsInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
-        console.log('Received manage topics request:', body)
         await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
         return {
             message:
@@ -153,13 +154,46 @@ export class MilestonesController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async manageLecturersInDefenseMilestone(@Req() req: { user: ActiveUserData }, @Body() body: any) {
-        console.log('Received manage topics request:', body)
-        await this.milestonesService.manageTopicsInDefenseMilestone(body, req.user.sub)
+        await this.milestonesService.manageLecturersInDefenseMilestone(body, req.user.sub)
         return {
             message:
                 body.action === 'add'
-                    ? 'Thêm đề tài vào hội đồng bảo vệ thành công'
-                    : 'Xóa đề tài khỏi hội đồng bảo vệ thành công'
+                    ? 'Thêm giảng viên vào hội đồng bảo vệ thành công'
+                    : 'Xóa giảng viên khỏi hội đồng bảo vệ thành công'
+        }
+    }
+
+    @Post('/:templateId/upload-files/scoring-result')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadScoringFileTemplate(
+        @UploadedFile() file: Express.Multer.File,
+        @Param('templateId') templateId: string,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        if (!file) {
+            throw new BadRequestException('Vui lòng chọn file để tải lên')
+        }
+        const bool = await this.milestonesService.upload(req.user.sub, templateId, file)
+        return {
+            message: bool ? 'Tải file lên thành công' : 'Tải file lên thất bại'
+        }
+    }
+
+    @Delete('/:milestoneTemplateId/delete-scoring-result')
+    async deleteScoringResultFile(@Param('milestoneTemplateId') milestoneTemplateId: string) {
+        const bool = await this.milestonesService.deleteScoringResultFile(milestoneTemplateId)
+        return {
+            message: bool ? 'Xóa file thành công' : 'Xóa file thất bại'
+        }
+    }
+
+    @Patch('/:milestoneId/block-grade')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async blockGrade(@Param('milestoneId') milestoneId: string) {
+        await this.milestonesService.blockGrade(milestoneId)
+        return {
+            message: 'Khóa bảng điểm thành công'
         }
     }
 }

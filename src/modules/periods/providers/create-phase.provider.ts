@@ -221,14 +221,6 @@ export class CreatePhaseProvider {
             throw new BadRequestException('Phase completion chưa được khởi tạo trong period')
         }
 
-        // // Cho phép config linh hoạt cho execution và completion
-        // const isFlexible = await this.validatePeriodPhaseProvider.validateFlexiblePhaseConfig(
-        //     PeriodPhaseName.COMPLETION
-        // )
-        // if (!isFlexible) {
-        //     throw new BadRequestException('Phase completion không được phép config linh hoạt')
-        // }
-
         const evaluationTopics = await this.updateTopicsBatchProvider.updateTopicsBatchToCompletionPhase(
             periodId,
             actorId

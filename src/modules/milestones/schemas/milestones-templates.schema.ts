@@ -1,13 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { Period } from '../../periods/schemas/period.schemas'
-
+import { BaseEntity } from '../../../shared/base/entity/base.entity'
+import { FileInfo } from './milestones.schemas'
+export enum CouncilMemberRole {
+    CHAIRPERSON = 'chairperson',
+    SECRETARY = 'secretary',
+    MEMBER = 'member'
+}
 @Schema({ _id: false })
 export class DefenseCouncilMember {
-    @Prop({ type: String, required: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
     memberId: string
 
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: true, enum: CouncilMemberRole })
     role: string
 
     @Prop({ type: String, required: true })
@@ -19,7 +25,7 @@ export class DefenseCouncilMember {
 
 @Schema({ _id: false })
 export class TopicSnapshot {
-    @Prop({ type: String, required: true })
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: true })
     _id: string
     @Prop({ type: String, required: true })
     titleVN: string
@@ -30,7 +36,7 @@ export class TopicSnapshot {
 }
 
 @Schema({ collection: 'milestones_templates', timestamps: true })
-export class MilestoneTemplate {
+export class MilestoneTemplate extends BaseEntity {
     @Prop({ required: true })
     title: string
 
@@ -52,8 +58,17 @@ export class MilestoneTemplate {
     @Prop({ type: [TopicSnapshot], default: [] })
     topicSnaps: TopicSnapshot[]
 
-    @Prop({ type: [String], required: false })
+    @Prop({ type: String, required: false })
     location: string
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+    resultScoringTemplate: string | null
+
+    @Prop({ type: Boolean, default: false })
+    isBlock: boolean
+
+    @Prop({ type: Boolean, default: false })
+    isPublished: boolean
 }
 
 export const MilestoneTemplateSchema = SchemaFactory.createForClass(MilestoneTemplate)

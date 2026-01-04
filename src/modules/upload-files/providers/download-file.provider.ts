@@ -12,4 +12,8 @@ export class DownLoadFileProvider {
     async downloadZipWithPrefix(prefixes: string[], res: Response, topicName?: string) {
         await this.manageMinioProvider.createZipStreamWithFolders(prefixes, res, topicName)
     }
+
+    async downloadSingleFile(fileName:string, res: Response){
+        await this.manageMinioProvider.downloadSingleFile(fileName, res)
+    }
 }

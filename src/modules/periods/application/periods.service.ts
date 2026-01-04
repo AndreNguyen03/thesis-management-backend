@@ -92,14 +92,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         const getDelayed = await this.getTopicProvider.getPausedOrDelayedTopics(period._id.toString())
         //lấy các đề tài chờ GV đánh giá
         const pendingReview = await this.getTopicProvider.getPendingReviewTopics(period._id.toString())
-
+        const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
+        const nextPhase = period.phases[currentIndex + 1]
         return {
             periodId: period._id.toString(),
             phase: PeriodPhaseName.EXECUTION,
             overdueTopics: getOverDueTopics,
             pausedOrDelayedTopics: getDelayed,
             pendingLecturerReview: pendingReview,
-            canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, undefined, false)
+            canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, nextPhase, getOverDueTopics.length > 0)
         }
     }
 
@@ -381,10 +382,10 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return await this.iPeriodRepository.getPeriodInfo(facultyId, type)
     }
 
-    async getDashboardCurrentPeriod(facultyId: string) : Promise<any> {
+    async getDashboardCurrentPeriod(facultyId: string): Promise<any> {
         return await this.iPeriodRepository.getDashboardCurrentPeriod(facultyId)
     }
- 
+
     async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {
         return await this.iPeriodRepository.getCurrentPeriods(facultyId, role, userId)
     }
