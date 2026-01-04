@@ -12,8 +12,6 @@ export class PayloadCreateMilestone {
     @IsNotEmpty()
     groupId: string
     @IsNotEmpty()
-    periodId: string
-    @IsNotEmpty()
     title: string
     @IsNotEmpty()
     description: string

@@ -16,7 +16,6 @@ import { Field } from '../../fields/schemas/fields.schemas'
         createdAt: 'created_at'
     }
 })
-
 @Schema({ _id: false })
 class CouncilMemberSnapshot {
     @Prop({ required: true }) fullName: string
@@ -46,8 +45,10 @@ class DefenseResult {
 
     @Prop()
     councilName: string // VD: "Hội đồng CNPM 01"
-}
 
+    @Prop({ type: Boolean, default: false })
+    isPublished: boolean
+}
 @Schema({ _id: false })
 class TopicStats {
     @Prop({ default: 0 }) views: number // Số lượt xem

@@ -9,6 +9,7 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    PublishTopic,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPhaseParams
 } from '../../dtos'
@@ -31,19 +32,9 @@ import {
 } from '../../dtos/get-statistics-topics.dtos'
 import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
 import { TopicStatus } from '../../enum'
-import { TopicNotFoundException } from '../../../../common/exceptions'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
-import { de } from '@faker-js/faker/.'
-import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
-import { allow } from 'joi'
-import { pipe } from 'rxjs'
 import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
-import { title } from 'process'
-import { GetMiniMiniMajorDto } from '../../../majors/dtos/get-major.dto'
-import { pipeline } from 'stream'
-import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
-import path from 'path'
 import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
 import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
 import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
@@ -56,6 +47,8 @@ import {
 } from '../../../periods/dtos/phase-resolve.dto'
 import { ParseDay } from '../../utils/transfer-function'
 import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
+import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
+import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -67,6 +60,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+
+    async batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean> {
+        const bulkOps = topics.map((topic) => ({
+            updateOne: {
+                filter: { _id: new mongoose.Types.ObjectId(topic.topicId), deleted_at: null } as any,
+                update: { $set: { 'defenseResult.isPublished': topic.isPublished } }
+            }
+        }))
+        const result = await this.topicRepository.bulkWrite(bulkOps)
+        return result.modifiedCount === topics.length
     }
 
     async getCandidateTopics(): Promise<CandidateTopicDto[]> {
@@ -1472,10 +1476,53 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     as: 'milestones_templates'
                 }
             },
-            { $unwind: { path: '$milestones_templates' } },
+            { $unwind: { path: '$milestones_templates', preserveNullAndEmptyArrays: true } },
+            //lấy mẫu chấm điểm
+            {
+                $lookup: {
+                    from: 'files',
+                    localField: 'milestones_templates.sampleScoringTemplate',
+                    foreignField: '_id',
+                    as: 'templateFile'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$templateFile',
+                    preserveNullAndEmptyArrays: true
+                }
+            }, //Tìm người đã đăng mẫu chấm điểm đó
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'templateFile.actorId',
+                    foreignField: '_id',
+                    as: 'templateFileActor'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$templateFileActor',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $addFields: {
-                    topicSnaps: '$milestones_templates.topicSnaps'
+                    actor: {
+                        _id: '$templateFileActor._id',
+                        fullName: '$templateFileActor.fullName',
+                        email: '$templateFileActor.email',
+                        phone: '$templateFileActor.phone',
+                        avatarUrl: '$templateFileActor.avatarUrl',
+                        avatarName: '$templateFileActor.avatarName'
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    topicSnaps: {
+                        $ifNull: ['$milestones_templates.topicSnaps', []]
+                    }
                 }
             },
             {
@@ -1483,6 +1530,21 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     $expr: {
                         $in: ['$_id', '$topicSnaps._id']
                     }
+                }
+            },
+            //Tìm kiếm khoa của kì học đó
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$facultyInfo',
+                    preserveNullAndEmptyArrays: true
                 }
             },
             {
@@ -1550,7 +1612,23 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 default: true
                             }
                         },
-                        location: '$milestones_templates.location'
+                        location: '$milestones_templates.location',
+                        sampleScoringTemplate: {
+                            $cond: [
+                                { $ifNull: ['$templateFile._id', false] },
+                                {
+                                    _id: '$templateFile._id',
+                                    fileNameBase: '$templateFile.fileNameBase',
+                                    fileUrl: '$templateFile.fileUrl',
+                                    size: '$templateFile.size',
+                                    mimeType: '$templateFile.mimeType',
+                                    created_at: '$templateFile.created_at',
+                                    actor: '$actor'
+                                },
+                                null
+                            ]
+                        },
+                        isBlock: '$milestones_templates.isBlock'
                     },
                     _id: 1,
                     titleVN: 1,
@@ -1588,9 +1666,10 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         year: 1,
                         semester: 1,
                         type: 1,
-                        faculty: 1,
+                        faculty: '$facultyInfo',
                         currentPhase: 1
-                    }
+                    },
+                    isPublished: 1
                 }
             },
             {
@@ -1606,7 +1685,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                             defenseCouncil: '$milestones_templates.defenseCouncil',
                             status: '$milestoneInfo.status',
                             isScorable: '$milestoneInfo.isScorable',
-                            location: '$milestoneInfo.location'
+                            location: '$milestoneInfo.location',
+                            sampleScoringTemplate: '$milestoneInfo.sampleScoringTemplate',
+                            isBlock: '$milestoneInfo.isBlock'
                         }
                     },
                     periodInfo: {
@@ -1627,7 +1708,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                             currentStatus: '$currentStatus',
                             defenseResult: '$defenseResult',
                             lecturers: '$lecturers',
-                            students: '$students'
+                            students: '$students',
+                            isPublished: '$isPublished'
                         }
                     }
                 }
@@ -3545,18 +3627,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         query: SubmittedTopicParamsDto
     ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        console.log('Finding submitted topics for lecturer ID:', lecturerId, 'with query:', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.pipelineSubmittedTopics())
         pipelineSub.push({
             $match: {
                 ...(query.periodId ? { periodId: new mongoose.Types.ObjectId(query.periodId) } : {}),
-                createBy: new mongoose.Types.ObjectId(lecturerId),
-                currentStatus: { $ne: TopicStatus.Draft },
-                deleted_at: null
+                createBy: new mongoose.Types.ObjectId(lecturerId)
+                //currentStatus: { $ne: TopicStatus.Draft },
+                //  deleted_at: null
             }
         })
-
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     private pipelineSubmittedTopics() {
@@ -4502,7 +4582,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
-        console.log('Pipeline for pending review topics:', pipelineSub)
         const res = await this.topicRepository.aggregate(pipelineSub).exec()
         return res.map((item) => ({
             ...item,

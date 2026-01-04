@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { Period } from '../../periods/schemas/period.schemas'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
+import { FileInfo } from './milestones.schemas'
 export enum CouncilMemberRole {
     CHAIRPERSON = 'chairperson',
     SECRETARY = 'secretary',
@@ -59,6 +60,15 @@ export class MilestoneTemplate extends BaseEntity {
 
     @Prop({ type: String, required: false })
     location: string
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, required: false })
+    resultScoringTemplate: string | null
+
+    @Prop({ type: Boolean, default: false })
+    isBlock: boolean
+
+    @Prop({ type: Boolean, default: false })
+    isPublished: boolean
 }
 
 export const MilestoneTemplateSchema = SchemaFactory.createForClass(MilestoneTemplate)

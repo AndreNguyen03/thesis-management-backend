@@ -30,4 +30,7 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     facultyGetMilestonesInManageDefenseAssignment(periodId: string): Promise<Milestone[]>
     manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void>
     manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string): Promise<void>
+    saveScoringResult(templateId: string, fileId: string): Promise<MilestoneTemplate>
+    deleteScoringResultFile(milestoneTemplateId: string): Promise<MilestoneTemplate | null>
+    updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean): Promise<MilestoneTemplate>
 }

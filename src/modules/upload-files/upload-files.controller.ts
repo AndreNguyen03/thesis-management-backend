@@ -43,4 +43,10 @@ export class UploadFilesController {
             message: `Đổi tên file thành công`
         }
     }
+
+    @Get('/download-single-file')
+    @Auth(AuthType.Bearer)
+    async downloadSingleFile(@Res() res: Response, @Query('fileName') fileName: string) {
+        return this.downLoadFileProvider.downloadSingleFile(fileName, res)
+    }
 }

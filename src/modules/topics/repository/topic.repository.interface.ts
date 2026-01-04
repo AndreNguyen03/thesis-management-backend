@@ -12,6 +12,7 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    PublishTopic,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPeriodDto,
     RequestGetTopicsInPhaseParams
@@ -103,4 +104,5 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     getFacultyTopicsWithPopularity(facultyId: string): Promise<any[]>
     updateTopicsToCompletion(topicIds: string[]): Promise<number>
     getDetailTopicsInDefenseMilestones(templateMilestoneId: string): Promise<Topic[]>
+    batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
 }

@@ -1,6 +1,8 @@
 import {
+    BadRequestException,
     Body,
     Controller,
+    Delete,
     Get,
     Inject,
     Param,
@@ -10,6 +12,7 @@ import {
     Query,
     Req,
     Res,
+    UploadedFile,
     UploadedFiles,
     UseGuards,
     UseInterceptors
@@ -19,13 +22,12 @@ import {
     PaginationRequestTopicInMilestoneQuery,
     PayloadCreateMilestone,
     PayloadFacultyCreateMilestone,
-    RequestLecturerReview,
-    ManageTopicsInDefenseMilestoneDto
+    RequestLecturerReview
 } from './dtos/request-milestone.dto'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
-import { FilesInterceptor } from '@nestjs/platform-express'
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { plainToInstance } from 'class-transformer'
 import { PaginatedTopicInBatchMilestone, ResponseMilestone } from './dtos/response-milestone.dto'
@@ -158,6 +160,30 @@ export class MilestonesController {
                 body.action === 'add'
                     ? 'Thêm giảng viên vào hội đồng bảo vệ thành công'
                     : 'Xóa giảng viên khỏi hội đồng bảo vệ thành công'
+        }
+    }
+
+    @Post('/:templateId/upload-files/scoring-result')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadScoringFileTemplate(
+        @UploadedFile() file: Express.Multer.File,
+        @Param('templateId') templateId: string,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        if (!file) {
+            throw new BadRequestException('Vui lòng chọn file để tải lên')
+        }
+        const bool = await this.milestonesService.upload(req.user.sub, templateId, file)
+        return {
+            message: bool ? 'Tải file lên thành công' : 'Tải file lên thất bại'
+        }
+    }
+
+    @Delete('/:milestoneTemplateId/delete-scoring-result')
+    async deleteScoringResultFile(@Param('milestoneTemplateId') milestoneTemplateId: string) {
+        const bool = await this.milestonesService.deleteScoringResultFile(milestoneTemplateId)
+        return {
+            message: bool ? 'Xóa file thành công' : 'Xóa file thất bại'
         }
     }
 }

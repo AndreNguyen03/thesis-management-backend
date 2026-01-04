@@ -34,7 +34,7 @@ export class MilestonesService {
         return await this.milestoneRepository.reviewMilestone(milestoneId, lecturerId, body)
     }
     async getMilestonesOfGroup(groupId: string, role: string) {
-        return await this.milestoneRepository.getMilestonesOfGroup(groupId, role    )
+        return await this.milestoneRepository.getMilestonesOfGroup(groupId, role)
     }
     async createMilestone(body: PayloadCreateMilestone, user: ActiveUserData) {
         return await this.milestoneRepository.createMilestone(body, user)
@@ -83,7 +83,10 @@ export class MilestonesService {
     async facultyDownloadZipWithBatch(milestoneTemplate: string, res: Response) {
         //cầm batchDI đi tìm milestone lấy được list fileUrl
         //1. Lấy toàn bộ milestone liên quan với batchId
-        const milestoneList = await this.milestoneRepository.findByCondition({ parentId: new mongoose.Types.ObjectId(milestoneTemplate), deleted_at: null })
+        const milestoneList = await this.milestoneRepository.findByCondition({
+            parentId: new mongoose.Types.ObjectId(milestoneTemplate),
+            deleted_at: null
+        })
         if (!milestoneList || milestoneList.length === 0) {
             throw new Error('Không tìm thấy mốc nào liên quan đến batchId này')
         }
@@ -119,5 +122,29 @@ export class MilestonesService {
 
     async manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string) {
         return await this.milestoneRepository.manageLecturersInDefenseMilestone(body, userId)
+    }
+    async upload(userId: string, milestoneId: string, files: Express.Multer.File) {
+        const res = await this.uploadManyFilesProvider.uploadManyFiles(
+            userId,
+            [files],
+            UploadFileTypes.DOCUMENT,
+            'mlml' + milestoneId
+        )
+
+        if (res && res.length > 0) {
+            await this.milestoneRepository.saveScoringResult(milestoneId, res[0]._id.toString())
+            return
+        }
+        return false
+    }
+    async deleteScoringResultFile(milestoneTemplateId: string) {
+        const res = await this.milestoneRepository.deleteScoringResultFile(milestoneTemplateId)
+        return res ? true : false
+    }
+    async updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean) {
+        return await this.milestoneRepository.updateMilestoneTemplatePublishState(
+            milestoneTemplateId,
+            isPublished
+        )
     }
 }

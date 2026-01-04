@@ -1314,8 +1314,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
             }
         )
         const result = await this.periodModel.aggregate(pipelineMain)
-        if (!result || result.length === 0) throw new NotFoundException('Không tìm thấy kỳ')
-
         const period = result[0]
         return period
     }
