@@ -18,6 +18,7 @@ export class EnrichedRecommendation extends CandidateTopicDto {
 
 export interface RecommendationResult {
     topic: TopicVectorSearch | TopicRecommendResponse
+    type: 'fallback' | 'recommend',
     badges?: Badge[]
     badgeSummary?: string
     rank?: number

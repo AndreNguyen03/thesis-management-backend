@@ -74,6 +74,7 @@ export class ContentBasedPipeline {
         return semanticScoredTopics.map((result, index) => {
             return {
                 topic: result,
+                type: 'recommend',
                 rank: index + 1
             }
         })
@@ -94,7 +95,6 @@ export class ContentBasedPipeline {
                 // this.topicService.getCandidateTopics()
                 this.topicSearchService.getPendingRegistrationTopics(periodId)
             ])
-
 
             this.logger.debug(
                 `[LOAD DATA RESULT] studentProfile=${!!studentProfile}, candidateTopics=${candidateTopics?.length ?? 0}`
@@ -204,6 +204,7 @@ export class ContentBasedPipeline {
                 const { embedding, ...topicWithoutEmbedding } = topic
                 return {
                     topic: topicWithoutEmbedding,
+                    type: 'fallback',
                     semanticScore: 0.4, // neutral score
                     badges: [
                         {

@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 @Injectable()
 export class Reranker {
     constructor() {}
-
+    
     /**
      * Rerank dựa trên lexical overlap (Jaccard)
      * Dùng như signal phụ, KHÔNG thay thế semantic score

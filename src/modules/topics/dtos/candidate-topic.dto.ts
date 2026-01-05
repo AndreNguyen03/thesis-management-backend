@@ -21,6 +21,7 @@ export class CandidateTopicDto {
     type: string // TopicType
     majorId: string
     maxStudents: number
+    studentsNum: number
     currentStatus: string // TopicStatus
     currentPhase: string // PeriodPhaseName
     allowManualApproval: boolean

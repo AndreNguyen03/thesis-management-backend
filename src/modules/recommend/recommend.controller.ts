@@ -2,20 +2,21 @@ import { Controller, Get, HttpException, HttpStatus, Param, Query, Req } from '@
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { RecommendationService } from './application/recommend.service'
+import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 
 @Controller('recommend')
 @Auth(AuthType.Bearer)
 export class RecommendController {
     constructor(private readonly recommendationService: RecommendationService) {}
 
-    @Get('/:studentId/period/:periodId')
+    @Get('/period/:periodId')
     async getRecommendations(
-        @Param('studentId') studentId: string,
+        @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
         @Query('limit') limit?: number
     ) {
         try {
-            const result = await this.recommendationService.getRecommendationsForStudent(studentId, periodId, {
+            const result = await this.recommendationService.getRecommendationsForStudent(req.user.sub, periodId, {
                 limit: limit ? parseInt(limit.toString()) : undefined
             })
 
