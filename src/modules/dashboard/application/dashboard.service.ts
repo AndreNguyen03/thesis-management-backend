@@ -67,6 +67,16 @@ export class DashboardService {
         }
     }
 
+    async getFacultyDashboard(facultyId: string) {
+        const { latestThesisPeriod, latestResearchPeriod } =
+            await this.getPeriodInfoProvider.getCurrentPeriodInfo(facultyId)
+
+        return {
+            thesis: latestThesisPeriod,
+            scientificResearch: latestResearchPeriod
+        }
+    }
+
     /**
      * 
              pipelineSub.push({
