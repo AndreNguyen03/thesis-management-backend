@@ -29,6 +29,7 @@ export class GetTopicProvider extends BaseServiceAbstract<Topic> {
     async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
         const periodInfo = await this.periodsService.getPeriodById(periodId)
         const paginationResult = await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)
+        console.log('paginationResult', paginationResult)
         return {
             data: plainToInstance(GetGeneralTopics, paginationResult.data, {
                 excludeExtraneousValues: true,

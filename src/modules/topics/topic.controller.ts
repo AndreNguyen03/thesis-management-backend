@@ -483,6 +483,7 @@ export class TopicController {
         return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
+    //cập nhật kết quả
     @Patch('/batch-update-defense-results')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
@@ -501,5 +502,32 @@ export class TopicController {
         @Query('templateMilestoneId') templateMilestoneId: string
     ) {
         return await this.topicService.batchPublishOrNotDefenseResults(body.topics, req.user.sub, templateMilestoneId)
+    }
+
+    //Lưu đề tài vào thư viện số
+    @Patch('/batch-archive')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async batchArchiveTopics(@Req() req: { user: ActiveUserData }, @Body() body: { topicIds: string[] }) {
+        const { topicIds } = body
+        let success = 0
+        let failed = 0
+
+        for (const topicId of topicIds) {
+            try {
+                await this.topicService.archiveTopic(topicId, req.user.sub)
+                success++
+            } catch (error) {
+                failed++
+                console.error(`Failed to archive topic ${topicId}: ${error.message}`)
+            }
+        }
+
+        return {
+            success,
+            failed,
+            message: `Đã lưu ${success} đề tài vào thư viện, ${failed} đề tài thất bại`
+        }
     }
 }

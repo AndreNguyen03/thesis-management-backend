@@ -142,12 +142,15 @@ export class MilestonesService {
         return res ? true : false
     }
     async updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean) {
-        return await this.milestoneRepository.updateMilestoneTemplatePublishState(
-            milestoneTemplateId,
-            isPublished
-        )
+        return await this.milestoneRepository.updateMilestoneTemplatePublishState(milestoneTemplateId, isPublished)
     }
     async blockGrade(milestoneId: string) {
         return await this.milestoneRepository.blockGrade(milestoneId)
+    }
+    async getAllDefenseMilestonesForFaculty(facultyId: string) {
+        return await this.milestoneRepository.getAllDefenseMilestonesForFaculty(facultyId)
+    }
+    async getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string) {
+        return await this.milestoneRepository.getAssignedDefenseMilestonesForLecturer(lecturerId, facultyId)
     }
 }

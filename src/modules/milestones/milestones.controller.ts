@@ -196,4 +196,18 @@ export class MilestonesController {
             message: 'Khóa bảng điểm thành công'
         }
     }
+
+    @Get('/faculty/all')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getAllDefenseMilestonesForFaculty(@Req() req: { user: ActiveUserData }) {
+        return await this.milestonesService.getAllDefenseMilestonesForFaculty(req.user.facultyId!)
+    }
+
+    @Get('/lecturer/assigned')
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getAssignedDefenseMilestonesForLecturer(@Req() req: { user: ActiveUserData }) {
+        return await this.milestonesService.getAssignedDefenseMilestonesForLecturer(req.user.sub, req.user.facultyId!)
+    }
 }

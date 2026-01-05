@@ -129,6 +129,11 @@ export class GetGeneralTopics extends AbstractTopic {
     //dùng trong pha thực hiện đề tài
     progress?: number
 
+    @Expose()
+    finalGrade?: number
+
+    @Expose()
+    defenseMilestoneDate?: Date
 }
 
 class TopicStatsDto {

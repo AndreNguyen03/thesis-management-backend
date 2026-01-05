@@ -71,6 +71,7 @@ import { MilestonesModule } from '../milestones/milestones.module'
     imports: [
         MongooseModule.forFeature([
             { name: Topic.name, schema: TopicSchema },
+            { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
             { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
             { name: UserSavedTopics.name, schema: UserSavedTopicsSchema },

@@ -898,4 +898,139 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         await existingMilestone.save()
         return existingMilestone
     }
+
+    async getAllDefenseMilestonesForFaculty(facultyId: string): Promise<any[]> {
+
+        const pipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'periods',
+                    let: { periodId: '$periodId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$_id', '$$periodId'] },
+                                        { $eq: ['$faculty', new mongoose.Types.ObjectId(facultyId)] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'periodInfo'
+                }
+            },
+            { $unwind: { path: '$periodInfo' } },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            { $unwind: { path: '$facultyInfo', preserveNullAndEmptyArrays: true } },
+            // Lookup topics để đếm
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: '_id',
+                    foreignField: 'defenseResult.milestoneId',
+                    as: 'topics'
+                }
+            },
+            // Count topics và lecturers
+            {
+                $addFields: {
+                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } }
+                }
+            },
+            // Project
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    location: 1,
+                    dueDate: 1,
+                    isPublished: 1,
+                    isBlock: 1,
+                    councilMembers: 1,
+                    topicsCount: 1,
+                    periodInfo: {
+                        _id: 1,
+                        year: 1,
+                        semester: 1,
+                        faculty: {
+                            name: '$facultyInfo.name',
+                            email: '$facultyInfo.email',
+                            urlDirection: '$facultyInfo.urlDirection'
+                        },
+                        type: 1,
+                        currentPhase: 1
+                    }
+                }
+            },
+            // Sort theo dueDate mới nhất
+            { $sort: { dueDate: -1 } }
+        ]
+
+        return await this.milestoneTemplateModel.aggregate(pipeline).exec()
+    }
+
+    async getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]> {
+        const matchStage: any = {
+            'defenseCouncil.memberId': new mongoose.Types.ObjectId(lecturerId)
+        }
+
+        const pipeline: any[] = [
+            { $match: matchStage },
+            // Lookup period
+            {
+                $lookup: {
+                    from: 'periods',
+                    localField: 'periodId',
+                    foreignField: '_id',
+                    as: 'periodInfo'
+                }
+            },
+            { $unwind: { path: '$periodInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            { $unwind: { path: '$facultyInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    location: 1,
+                    dueDate: 1,
+                    isPublished: 1,
+                    isBlock: 1,
+                    defenseCouncil: 1,
+                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } },
+                    periodInfo: {
+                        _id: 1,
+                        year: 1,
+                        semester: 1,
+                        faculty: {
+                            name: '$facultyInfo.name',
+                            email: '$facultyInfo.email',
+                            urlDirection: '$facultyInfo.urlDirection'
+                        },
+                        type: 1,
+                        currentPhase: 1
+                    }
+                }
+            },
+            { $sort: { dueDate: -1 } }
+        ]
+
+        return await this.milestoneTemplateModel.aggregate(pipeline).exec()
+    }
 }

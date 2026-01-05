@@ -34,4 +34,6 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     deleteScoringResultFile(milestoneTemplateId: string): Promise<MilestoneTemplate | null>
     updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean): Promise<MilestoneTemplate>
     blockGrade(milestoneId: string): Promise<MilestoneTemplate>
+    getAllDefenseMilestonesForFaculty(facultyId: string): Promise<any[]>
+    getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]>
 }
