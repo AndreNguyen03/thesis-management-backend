@@ -6,12 +6,11 @@ import { IntersectionType } from '@nestjs/mapped-types'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { LecturerReviewDecision } from '../enums/lecturer-decision.enum'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { DefenseCouncilMember } from '../schemas/milestones-templates.schema'
 
 export class PayloadCreateMilestone {
     @IsNotEmpty()
     groupId: string
-    @IsNotEmpty()
-    periodId: string
     @IsNotEmpty()
     title: string
     @IsNotEmpty()
@@ -138,4 +137,18 @@ export class ManageTopicsInDefenseMilestoneDto {
 
     @IsNotEmpty()
     topicSnapshots: TopicSnapshotDto[]
+}
+
+export class ManageLecturersInDefenseMilestoneDto {
+
+    @IsNotEmpty()
+    @IsString()
+    milestoneTemplateId: string
+
+    @IsNotEmpty()
+    @IsEnum(DefenseAction)
+    action: DefenseAction
+
+    @IsNotEmpty()
+    defenseCouncil: DefenseCouncilMember[]
 }

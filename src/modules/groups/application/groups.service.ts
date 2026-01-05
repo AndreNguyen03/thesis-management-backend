@@ -1,11 +1,8 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { IGroupRepository } from '../repository/groups.repository.interface'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
-import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
-import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
 import { Group, GroupDocument } from '../schemas/groups.schemas'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
-import { GroupDetailDto } from '../dtos/get-groups.dtos'
 
 @Injectable()
 export class GroupsService {

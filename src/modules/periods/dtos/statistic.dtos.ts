@@ -42,6 +42,8 @@ export class GetStatiticInPeriod {
     //config for completion phase
     // readyForEvaluationNumber: number
     @Expose()
+    assignedTopicsNumber: number
+    @Expose()
     gradedTopicsNumber: number
     @Expose()
     achivedTopicsNumber: number

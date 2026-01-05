@@ -49,7 +49,6 @@ export class GroupsController {
     @Get()
     async getGroups(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
         const res = await this.groupsService.getGroupsOfUser(req.user.sub, query)
-        return res
         return plainToInstance(RequestPaginatedGroups, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

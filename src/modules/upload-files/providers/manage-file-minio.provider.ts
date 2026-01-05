@@ -110,4 +110,16 @@ export class ManageMinioProvider {
             await archive.finalize()
         }
     }
+
+    async downloadSingleFile(fileName: string, res: Response) {
+        try {
+            const fileStream = await this.minioClient.getObject(this.bucketName, fileName)
+            res.setHeader('Content-Type', 'application/octet-stream')
+            res.setHeader('Content-Disposition', `attachment; filename="${path.basename(fileName)}"`)
+            fileStream.pipe(res)
+        } catch (error) {
+            console.log('Error downloading file from MinIO:', error)
+            res.status(404).json({ message: 'Không tìm thấy file trong hệ thống' })
+        }
+    }
 }

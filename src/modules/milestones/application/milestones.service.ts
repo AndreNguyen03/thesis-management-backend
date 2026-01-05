@@ -6,7 +6,8 @@ import {
     PayloadFacultyCreateMilestone,
     PayloadUpdateMilestone,
     RequestLecturerReview,
-    ManageTopicsInDefenseMilestoneDto
+    ManageTopicsInDefenseMilestoneDto,
+    ManageLecturersInDefenseMilestoneDto
 } from '../dtos/request-milestone.dto'
 import type { Response } from 'express'
 import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
@@ -36,8 +37,8 @@ export class MilestonesService {
     async reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview) {
         return await this.milestoneRepository.reviewMilestone(milestoneId, lecturerId, body)
     }
-    async getMilestonesOfGroup(groupId: string) {
-        return await this.milestoneRepository.getMilestonesOfGroup(groupId)
+    async getMilestonesOfGroup(groupId: string, role: string) {
+        return await this.milestoneRepository.getMilestonesOfGroup(groupId, role)
     }
     async createMilestone(body: PayloadCreateMilestone, user: ActiveUserData) {
         return await this.milestoneRepository.createMilestone(body, user)
@@ -83,10 +84,13 @@ export class MilestonesService {
     async facultyGetMilestonesInPeriod(periodId: string) {
         return await this.milestoneRepository.facultyGetMilestonesInPeriod(periodId)
     }
-    async facultyDownloadZipWithBatch(batchId: string, res: Response) {
+    async facultyDownloadZipWithBatch(milestoneTemplate: string, res: Response) {
         //cầm batchDI đi tìm milestone lấy được list fileUrl
         //1. Lấy toàn bộ milestone liên quan với batchId
-        const milestoneList = await this.milestoneRepository.findByCondition({ refId: batchId, deleted_at: null })
+        const milestoneList = await this.milestoneRepository.findByCondition({
+            parentId: new mongoose.Types.ObjectId(milestoneTemplate),
+            deleted_at: null
+        })
         if (!milestoneList || milestoneList.length === 0) {
             throw new Error('Không tìm thấy mốc nào liên quan đến batchId này')
         }
@@ -118,5 +122,36 @@ export class MilestonesService {
 
     async manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string) {
         return await this.milestoneRepository.manageTopicsInDefenseMilestone(body, userId)
+    }
+
+    async manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string) {
+        return await this.milestoneRepository.manageLecturersInDefenseMilestone(body, userId)
+    }
+    async upload(userId: string, milestoneId: string, files: Express.Multer.File) {
+        const res = await this.uploadManyFilesProvider.uploadManyFiles(
+            userId,
+            [files],
+            UploadFileTypes.DOCUMENT,
+            'mlml' + milestoneId
+        )
+
+        if (res && res.length > 0) {
+            await this.milestoneRepository.saveScoringResult(milestoneId, res[0]._id.toString())
+            return
+        }
+        return false
+    }
+    async deleteScoringResultFile(milestoneTemplateId: string) {
+        const res = await this.milestoneRepository.deleteScoringResultFile(milestoneTemplateId)
+        return res ? true : false
+    }
+    async updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean) {
+        return await this.milestoneRepository.updateMilestoneTemplatePublishState(
+            milestoneTemplateId,
+            isPublished
+        )
+    }
+    async blockGrade(milestoneId: string) {
+        return await this.milestoneRepository.blockGrade(milestoneId)
     }
 }

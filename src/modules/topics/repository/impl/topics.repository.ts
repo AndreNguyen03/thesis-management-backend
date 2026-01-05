@@ -10,6 +10,7 @@ import {
     PaginationTopicsQueryParams,
     PatchTopicDto,
     RequestGetTopicsApprovalRegistrationPagination,
+    PublishTopic,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPhaseParams
 } from '../../dtos'
@@ -32,19 +33,9 @@ import {
 } from '../../dtos/get-statistics-topics.dtos'
 import { PeriodPhaseName } from '../../../periods/enums/period-phases.enum'
 import { TopicStatus } from '../../enum'
-import { TopicNotFoundException } from '../../../../common/exceptions'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
-import { de } from '@faker-js/faker/.'
-import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
-import { allow } from 'joi'
-import { pipe } from 'rxjs'
 import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
-import { title } from 'process'
-import { GetMiniMiniMajorDto } from '../../../majors/dtos/get-major.dto'
-import { pipeline } from 'stream'
-import { IsArray } from 'class-validator'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
-import path from 'path'
 import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
 import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
 import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
@@ -57,6 +48,10 @@ import {
 } from '../../../periods/dtos/phase-resolve.dto'
 import { ParseDay } from '../../utils/transfer-function'
 import { promiseHooks } from 'v8'
+import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
+import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
+import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
+import { min } from 'class-validator'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -68,6 +63,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+
+    async batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean> {
+        const bulkOps = topics.map((topic) => ({
+            updateOne: {
+                filter: { _id: new mongoose.Types.ObjectId(topic.topicId), deleted_at: null } as any,
+                update: { $set: { 'defenseResult.isPublished': topic.isPublished } }
+            }
+        }))
+        const result = await this.topicRepository.bulkWrite(bulkOps)
+        return result.modifiedCount === topics.length
     }
 
     async getCandidateTopics(): Promise<CandidateTopicDto[]> {
@@ -675,7 +681,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         periodId: string,
         query: PaginationTopicsQueryParams
     ): Promise<Paginated<Topic>> {
-        console.log('query', query, periodId)
         let pipelineSub: any[] = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract(userId))
         pipelineSub.push(...this.pipelineSubmittedTopics())
@@ -1030,7 +1035,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         ownerId?: string
     ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        console.log('query', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(
             {
@@ -1044,11 +1048,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                     cond: {
                                         $and: [
                                             ...(query.phase ? [{ $eq: ['$$ph.phaseName', query.phase] }] : []),
-                                            ...(query.status
-                                                ? [{ $eq: ['$$ph.status', query.status] }]
-                                                : query.phase === PeriodPhaseName.EXECUTION
-                                                  ? [{ $ne: ['$$ph.status', TopicStatus.Draft] }]
-                                                  : [])
+                                            ...(query.status ? [{ $eq: ['$$ph.status', query.status] }] : [])
                                         ]
                                     }
                                 }
@@ -1230,11 +1230,27 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         }
         //if (query.rulesPagination === 0)
         //Nếu là phân trang bình thường
-        console.log('ownerId', ownerId)
         pipelineSub.push({
             $match: {
-                deleted_at: null,
-                periodId: new mongoose.Types.ObjectId(periodId)
+                $expr: {
+                    $and: [
+                        { $eq: ['$periodId', new mongoose.Types.ObjectId(periodId)] },
+                        {
+                            ...(query.phase && query.status
+                                ? {
+                                      $cond: {
+                                          if: {
+                                              $and: [{ $eq: [query.phase, '$periodInfo.currentPhase'] }]
+                                          },
+                                          then: { $eq: ['$currentStatus', query.status] },
+                                          else: {}
+                                      }
+                                  }
+                                : {})
+                        }
+                        //  { $eq: ['$deleted_at', null] },
+                    ]
+                }
             }
         })
         if (ownerId) {
@@ -1251,7 +1267,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
 
     async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
         const { lecturerIds, fieldIds, majorIds, year } = query
-        console.log('query', query)
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
@@ -1550,6 +1565,291 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             }
         ]
     }
+
+    async getDetailTopicsInDefenseMilestones(
+        templateMilestoneId: string,
+        query: PaginationQueryDto = new PaginationQueryDto()
+    ): Promise<Paginated<Topic>> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    let: { templateId: new mongoose.Types.ObjectId(templateMilestoneId) },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$_id', '$$templateId'] }, { $eq: ['$deleted_at', null] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestones_templates'
+                }
+            },
+            { $unwind: { path: '$milestones_templates', preserveNullAndEmptyArrays: true } },
+            //lấy mẫu chấm điểm
+            {
+                $lookup: {
+                    from: 'files',
+                    localField: 'milestones_templates.resultScoringTemplate',
+                    foreignField: '_id',
+                    as: 'templateFile'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$templateFile',
+                    preserveNullAndEmptyArrays: true
+                }
+            }, //Tìm người đã đăng mẫu chấm điểm đó
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'templateFile.actorId',
+                    foreignField: '_id',
+                    as: 'templateFileActor'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$templateFileActor',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    actor: {
+                        _id: '$templateFileActor._id',
+                        fullName: '$templateFileActor.fullName',
+                        email: '$templateFileActor.email',
+                        phone: '$templateFileActor.phone',
+                        avatarUrl: '$templateFileActor.avatarUrl',
+                        avatarName: '$templateFileActor.avatarName'
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    topicSnaps: {
+                        $ifNull: ['$milestones_templates.topicSnaps', []]
+                    }
+                }
+            },
+            {
+                $match: {
+                    $expr: {
+                        $in: ['$_id', '$topicSnaps._id']
+                    }
+                }
+            },
+            //Tìm kiếm khoa của kì học đó
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$facultyInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    milestoneInfo: {
+                        _id: '$milestones_templates._id',
+                        title: '$milestones_templates.title',
+                        description: '$milestones_templates.description',
+                        dueDate: '$milestones_templates.dueDate',
+                        defenseCouncil: '$milestones_templates.defenseCouncil',
+                        topicSnaps: '$milestones_templates.topicSnaps',
+                        status: {
+                            $switch: {
+                                branches: [
+                                    {
+                                        case: {
+                                            $lt: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: 'pending'
+                                    },
+                                    {
+                                        case: {
+                                            $eq: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: 'active'
+                                    }
+                                ],
+                                default: 'timeout'
+                            }
+                        },
+                        isScorable: {
+                            $switch: {
+                                branches: [
+                                    {
+                                        case: {
+                                            $lt: [
+                                                { $dateToString: { format: '%Y-%m-%d', date: '$$NOW' } },
+                                                {
+                                                    $dateToString: {
+                                                        format: '%Y-%m-%d',
+                                                        date: '$milestones_templates.dueDate'
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        then: false
+                                    }
+                                ],
+                                default: true
+                            }
+                        },
+                        location: '$milestones_templates.location',
+                        resultScoringTemplate: {
+                            $cond: [
+                                { $ifNull: ['$templateFile._id', false] },
+                                {
+                                    _id: '$templateFile._id',
+                                    fileNameBase: '$templateFile.fileNameBase',
+                                    fileUrl: '$templateFile.fileUrl',
+                                    size: '$templateFile.size',
+                                    mimeType: '$templateFile.mimeType',
+                                    created_at: '$templateFile.created_at',
+                                    actor: '$actor',
+                                },
+                                null
+                            ]
+                        },
+                        isBlock: '$milestones_templates.isBlock',
+                        isPublished: '$milestones_templates.isPublished'
+                    },
+                    _id: 1,
+                    titleVN: 1,
+                    titleEng: 1,
+                    description: 1,
+                    type: 1,
+                    majorId: 1,
+                    finalProduct: 1,
+                    isPublishedToLibrary: 1,
+                    allowManualApproval: 1,
+                    updatedAt: 1,
+                    currentStatus: 1,
+                    milestones_templates: 1,
+                    defenseResult: 1,
+                    lecturers: 1,
+                    students: {
+                        $map: {
+                            input: '$studentsRegistered',
+                            as: 'student',
+                            in: {
+                                _id: '$$student._id',
+                                fullName: '$$student.fullName',
+                                email: '$$student.email',
+                                phone: '$$student.phone',
+                                studentCode: '$$student.studentCode',
+                                avatarUrl: '$$student.avatarUrl',
+                                avatarName: '$$student.avatarName'
+                                // Thêm thuộc tính khác nếu cần
+                            }
+                        }
+                    },
+                    periodInfo: {
+                        _id: 1,
+                        deleted_at: 1,
+                        year: 1,
+                        semester: 1,
+                        type: 1,
+                        faculty: '$facultyInfo',
+                        currentPhase: 1
+                    },
+                    isPublished: 1
+                }
+            }
+        )
+
+        // Lưu thông tin milestone và period vào meta thông qua facet
+        const pipelineWithMeta: any[] = [
+            ...pipelineSub,
+            {
+                $facet: {
+                    topics: [{ $match: {} }],
+                    metadata: [
+                        {
+                            $limit: 1
+                        },
+                        {
+                            $project: {
+                                milestoneInfo: 1,
+                                periodInfo: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: '$metadata'
+            }
+        ]
+
+        const aggregateResult = await this.topicRepository.aggregate(pipelineWithMeta).exec()
+        const result = aggregateResult[0]
+
+        if (!result || !result.topics || result.topics.length === 0) {
+            return {
+                items: [],
+                meta: {
+                    totalItems: 0,
+                    itemCount: 0,
+                    itemsPerPage: query.limit || 10,
+                    totalPages: 0,
+                    currentPage: query.page || 1
+                },
+                milestoneInfo: null,
+                periodInfo: null
+            } as any
+        }
+
+        // Tạo pipeline để phân trang topics
+        const topicsPipeline: any[] = [
+            ...pipelineSub,
+            { $match: {} } // Match all topics từ kết quả trên
+        ]
+
+        const paginatedResult = await this.paginationProvider.paginateQuery<Topic>(
+            query,
+            this.topicRepository,
+            topicsPipeline
+        )
+
+        // Gắn thêm milestoneInfo và periodInfo vào meta
+        return {
+            ...paginatedResult,
+            milestoneInfo: result.metadata?.milestoneInfo || null,
+            periodInfo: result.metadata?.periodInfo || null
+        } as any
+    }
     async getRegisteringTopics(
         periodId: string,
         query: RequestGetTopicsInAdvanceSearchParams
@@ -1660,6 +1960,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 deleted_at: null
             }
         })
+
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     // lấy thống kê
@@ -2166,6 +2467,34 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $count: 'count'
                         }
+                    ],
+                    assignedTopics: [
+                        {
+                            $addFields: {
+                                lastStatusInPhaseHistory: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$phaseHistories',
+                                                as: 'ph',
+                                                cond: { $eq: ['$$ph.phaseName', currentPhase] }
+                                            }
+                                        },
+                                        -1
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $match: {
+                                periodId: new mongoose.Types.ObjectId(periodId),
+                                'lastStatusInPhaseHistory.status': TopicStatus.AssignedDefense,
+                                deleted_at: null
+                            }
+                        },
+                        {
+                            $count: 'count'
+                        }
                     ]
                 }
             }
@@ -2173,6 +2502,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return {
             periodId: periodId,
             currentPhase: currentPhase,
+            assignedTopicsNumber: topicsFigures[0]?.assignedTopics[0]?.count || 0,
             readyForEvaluationNumber: topicsFigures[0]?.readyForEvaluation[0]?.count || 0,
             gradedTopicsNumber: topicsFigures[0]?.gradedTopics[0]?.count || 0,
             achivedTopicsNumber: topicsFigures[0]?.archivedTopics[0]?.count || 0,
@@ -3429,18 +3759,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         query: SubmittedTopicParamsDto
     ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        console.log('Finding submitted topics for lecturer ID:', lecturerId, 'with query:', query)
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.pipelineSubmittedTopics())
         pipelineSub.push({
             $match: {
                 ...(query.periodId ? { periodId: new mongoose.Types.ObjectId(query.periodId) } : {}),
-                createBy: new mongoose.Types.ObjectId(lecturerId),
-                currentStatus: { $ne: TopicStatus.Draft },
-                deleted_at: null
+                createBy: new mongoose.Types.ObjectId(lecturerId)
+                //currentStatus: { $ne: TopicStatus.Draft },
+                //  deleted_at: null
             }
         })
-
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     private pipelineSubmittedTopics() {
@@ -3762,7 +4090,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         pipelineSub.push({
             $match: {
                 periodId: new mongoose.Types.ObjectId(periodId),
-                currentPhase: PeriodPhaseName.EXECUTION
+                currentPhase: PeriodPhaseName.EXECUTION,
+                currentStatus: TopicStatus.InProgress
             }
         })
         let lecturer_reg_embedded_pl: any[] = []
@@ -3939,11 +4268,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $expr: {
                                     $and: [
                                         { $eq: ['$groupId', '$$groupId'] },
-                                        { $eq: ['creatorType', MilestoneCreator.FACULTY] },
-                                        { $eq: ['type', MilestoneType.SUBMISSION] },
-                                        { $lt: ['dueDate', new Date()] },
-                                        { $eq: ['submission', null] },
-                                        { $ne: ['parentId', null] }
+                                        { $eq: ['$creatorType', MilestoneCreator.FACULTY] },
+                                        { $eq: ['$submission', null] },
+                                        { $ne: ['$parentId', null] }
                                     ]
                                 }
                             }
@@ -3956,6 +4283,29 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $unwind: { path: '$milestonesInfo' }
             }
         )
+
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    let: { parentId: '$milestonesInfo.parentId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$type', MilestoneType.SUBMISSION] }, { $lt: ['$dueDate', '$$NOW'] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'milestones-templates'
+                }
+            },
+            {
+                $unwind: { path: '$milestones-templates' }
+            }
+        )
+
         pipelineSub.push({
             $project: {
                 topicId: '$_id',
@@ -4332,9 +4682,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                 $expr: {
                                     $and: [
                                         { $eq: ['$groupId', '$$groupId'] },
-                                        { $eq: ['submission.type', MilestoneType.SUBMISSION] },
-                                        { $eq: ['status', MilestoneStatus.PENDING_REVIEW] },
-                                        { $ne: ['parentId', null] }
+                                        { $eq: ['$type', 'submission'] },
+                                        { $eq: ['$status', 'Pending Review'] },
+                                        { $ne: ['$parentId', null] }
                                     ]
                                 }
                             }
@@ -4369,5 +4719,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             ...item,
             daysPending: item.submittedAt ? ParseDay(item.submittedAt) : null
         }))
+    }
+    async updateTopicsToCompletion(topicIds: string[]): Promise<number> {
+        const result = await this.topicRepository.updateMany(
+            { _id: { $in: topicIds.map((id) => new mongoose.Types.ObjectId(id)) } },
+            {
+                $set: {
+                    currentPhase: PeriodPhaseName.COMPLETION
+                }
+            }
+        )
+        return result.modifiedCount
     }
 }

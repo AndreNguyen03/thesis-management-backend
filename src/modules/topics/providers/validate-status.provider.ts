@@ -6,7 +6,7 @@ export class ValidateTopicStatusProvider {
     async validateStatusManualTransition(currentStatus: string, newStatus: string): Promise<boolean> {
         const validTransitions = {
             draft: ['submitted'], //ok
-            submitted: ['approved', 'rejected', 'under_review', 'draft' ],
+            submitted: ['approved', 'rejected', 'under_review', 'draft'],
             under_review: ['approved', 'rejected'],
             refected: [],
             approved: ['in_progress'],
@@ -14,7 +14,8 @@ export class ValidateTopicStatusProvider {
             delayed: ['in_progress'],
             paused: ['in_progress'],
             submitted_for_review: ['awaiting_evaluation'],
-            awaiting_evaluation: ['graded', 'rejected_final'],
+            awaiting_evaluation: ['assigned_defense'],
+            assigned_defense: ['graded', 'rejected_final', 'awaiting_evaluation'],
             graded: ['reviewed'],
             reviewd: ['archived'],
             archived: [],
