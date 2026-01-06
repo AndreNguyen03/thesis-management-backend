@@ -72,8 +72,8 @@ export class DashboardService {
             await this.getPeriodInfoProvider.getCurrentPeriodInfo(facultyId)
 
         return {
-            thesis: latestThesisPeriod,
-            scientificResearch: latestResearchPeriod
+            thesis: this.mapPeriodToDashboardDto(latestThesisPeriod),
+            scientificResearch: this.mapPeriodToDashboardDto(latestResearchPeriod)
         }
     }
 
@@ -117,7 +117,8 @@ export class DashboardService {
                 facultyName: period.facultyName,
                 phases: null,
                 currentPhaseDetail: null,
-                currentPhase: null
+                currentPhase: null,
+                type: period.type
             }
         }
 
@@ -135,7 +136,7 @@ export class DashboardService {
                 phases: null,
                 currentPhaseDetail: null,
                 currentPhase: null,
-                type: null
+                type: period.type
             }
         }
 
@@ -177,6 +178,60 @@ export class DashboardService {
                 return this.completionPhaseProvider
             default:
                 throw new NotFoundException(`Phase ${phase} không được hỗ trợ`)
+        }
+    }
+
+    private mapPeriodToDashboardDto(period: any | null) {
+        if (!period) {
+            return {
+                exists: false,
+                message: 'Không tìm thấy kỳ',
+                data: null
+            }
+        }
+
+        if (period.status === 'timeout') {
+            return {
+                title: 'Hiện tại chưa có đợt đề tài nào',
+                description: null,
+                facultyName: period.facultyName,
+                phases: null,
+                currentPhaseDetail: null,
+                currentPhase: null,
+                type: period.type
+            }
+        }
+
+        if (
+            period.status === 'pending' ||
+            (period.status === 'active' && period.currentPhase === PeriodPhaseName.EMPTY)
+        ) {
+            return {
+                _id: period._id.toString(),
+                title: `Kì hiện tại: ${period.year} • HK ${period.semester} • ${this.typeLabels[period.type]}`,
+                description: 'Kỳ hiện tại đang trong trạng thái chuẩn bị quy trình.',
+                facultyName: period.facultyName,
+                status: period.status,
+                phases: null,
+                currentPhaseDetail: null,
+                currentPhase: null,
+                type: period.type
+            }
+        }
+
+        // === CASE: đã có phase, nhưng faculty dashboard không cần topicData ===
+        return {
+            _id: period._id.toString(),
+            title: `Kì hiện tại: ${period.year} • HK ${period.semester} • ${this.typeLabels[period.type]}`,
+            description: this.phaseDescriptions[period.currentPhase],
+            startTime: period.startTime,
+            endTime: period.endTime,
+            facultyName: period.facultyName,
+            phases: period.phases,
+            currentPhaseDetail: period.currentPhaseDetail,
+            currentPhase: period.currentPhase,
+            type: period.type,
+            status: period.status
         }
     }
 }

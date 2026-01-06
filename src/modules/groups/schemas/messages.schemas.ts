@@ -29,6 +29,9 @@ export class Message extends BaseEntity {
 
     @Prop({ default: false }) // Thêm
     isEdited: boolean
+
+    updatedAt: Date
+    createdAt: Date
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message)
