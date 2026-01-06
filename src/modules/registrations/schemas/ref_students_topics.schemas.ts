@@ -17,12 +17,6 @@ export enum StudentTopicRole {
     MEMBER = 'member'
 }
 
-@Schema({
-    timestamps: {
-        createdAt: 'created_at',
-        updatedAt: 'updated_at'
-    }
-})
 @Schema({ collection: 'ref_students_topics', timestamps: true })
 export class StudentRegisterTopic extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })

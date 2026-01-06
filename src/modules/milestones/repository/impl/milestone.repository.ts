@@ -37,6 +37,41 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
     ) {
         super(milestoneModel)
     }
+    async getAllMilestones(userId: string): Promise<any> {
+        // lay tat ca nhung milestone của user ở trong tất cả group
+        // userId -> groupId -> milestone
+
+        const userObjId = new mongoose.Types.ObjectId(userId)
+
+        let pipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'groups',
+                    localField: 'groupId',
+                    foreignField: '_id',
+                    as: 'group'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$group',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            {
+                $match: {
+                    'group.participants': userObjId
+                }
+            },
+            {
+                $project: {
+                    group: 0
+                }
+            }
+        ]
+
+        return this.milestoneModel.aggregate(pipeline).exec()
+    }
 
     async reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview): Promise<boolean> {
         const milestone = await this.milestoneModel

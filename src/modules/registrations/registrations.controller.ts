@@ -24,6 +24,16 @@ export class RegistrationsController {
         private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider
     ) {}
 
+    // lấy topic của sinh viên để biết là các trạng thái đã có điểm hay chưa
+    @Get('/student/current-period-topic-state')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async getStudentTopicState(@Req() req: { user: ActiveUserData }) {
+        const res = await this.studentRegTopicService.getStudentTopicStateInPeriod(req.user.sub)
+        return res
+    }
+
     //BCN, giảng viên là chủ đề tài
     // assign giảng viên khác vào đề tài
     //cho giảng viên chính

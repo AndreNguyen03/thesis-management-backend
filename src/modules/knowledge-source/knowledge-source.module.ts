@@ -4,7 +4,7 @@ import { UpdateKnowledgeSourceProvider } from './application/update-knowledge-so
 import { MongooseModule } from '@nestjs/mongoose'
 import { KnowledgeSource, KnowledgeSourceSchema } from './schemas/knowledge-source.schema'
 import { KnowledgeSourceRepository } from './repository/impl/knowledge-source.repository'
-import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider'
+import { SearchSimilarTopicsProvider } from './application/search-similar-topics.provider'
 import { CreateSearchIndexerProvider } from './application/create-search-indexer.provider'
 import { KnowledgeChunk, KnowledgeChunkSchema } from './schemas/knowledge-chunk.schema'
 import { CreateKnowledgeChunksProvider } from './application/create-knowledge-chunks.provider'
@@ -17,6 +17,8 @@ import { KnowledgeSourceController } from './knowledge-source.controller'
 import { KnowledgeSourceService } from './application/knowledge-source.service'
 import { PaginationModule } from '../../common/pagination/pagination.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider copy'
+import { TopicVector, TopicVectorSchema } from '../topic_search/schemas/topic-vector.schemas'
 
 @Module({
     providers: [
@@ -33,14 +35,16 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         SearchSimilarDocumentsProvider,
         CreateSearchIndexerProvider,
         CreateKnowledgeChunksProvider,
+        SearchSimilarTopicsProvider,
         UpdateKnowledgeChunkProvider,
-        KnowledgeSourceService,
-        
+        KnowledgeSourceService
     ],
     imports: [
         MongooseModule.forFeature([
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
-            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
+            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
+            { name: TopicVector.name, schema: TopicVectorSchema }
+
         ]),
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => ChatBotModule),
@@ -51,11 +55,12 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         CreateKnowledgeSourceProvider,
         UpdateKnowledgeSourceProvider,
         SearchSimilarDocumentsProvider,
+        SearchSimilarTopicsProvider,
         CreateSearchIndexerProvider,
         CreateKnowledgeChunksProvider,
         UpdateKnowledgeChunkProvider,
         'IKnowledgeChunkRepository',
-        'IKnowledgeSourceRepository',
+        'IKnowledgeSourceRepository'
     ],
     controllers: [KnowledgeSourceController]
 })

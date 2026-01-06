@@ -8,4 +8,8 @@ export class GetPeriodInfoProvider {
     async getPeriodInfo(periodId: string): Promise<GetPeriodDto> {
         return await this.iPeriodRepository.getPeriodById(periodId)
     }
+
+    async getCurrentPeriodInfo(facultyId:string): Promise<any> {
+        return await this.iPeriodRepository.getCurrentPeriodInfo(facultyId)
+    }
 }

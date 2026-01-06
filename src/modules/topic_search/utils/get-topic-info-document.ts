@@ -5,12 +5,31 @@ import { stripHtml } from '../../../common/pagination-an/utils/stripHtml'
 export const topicToDocument = (topic: GetGeneralTopics) => {
     const { _id, ...nest } = topic
     return new Document({
-        pageContent: `Tên đề tài bằng tiếng Anh: ${topic.titleEng}. Tên đề tài bằng tiếng Việt: ${topic.titleVN}
-                    . Mô tả: ${stripHtml(topic.description)}. Giảng viên hướng dẫn: ${topic.lecturers.map((lec) => ` ${lec.title} ${lec.title} ${lec.fullName}`).join(', ')}. Lĩnh vực: ${topic.fields
-                        .filter((field) => field && field.name)
-                        .map((field) => field.name)
-                        .join(', ')}. Yêu cầu: ${topic.requirements.map((req) => req.name).join(', ')}.
-                    Số sinh viên tối đa: ${topic.maxStudents}. Số sinh viên hiện tại: ${topic.studentsNum}. Loại đề tài: ${topic.type}. Chuyên ngành: ${topic.major.name}`,
+        pageContent: `Đề tài nghiên cứu về ${topic.titleVN}.
+        ${topic.titleEng ? `Tên tiếng Anh: ${topic.titleEng}.` : ''}
+
+        Mô tả đề tài:
+        ${stripHtml(topic.description)}
+
+        Lĩnh vực và hướng nghiên cứu:
+        ${topic.fields?.map((f) => f.name).join(', ')}
+
+        Yêu cầu kiến thức và kỹ năng:
+        ${topic.requirements?.map((req) => req.name).join(', ')}
+
+        Chuyên ngành phù hợp:
+        ${topic.major?.name}
+
+        Tóm tắt:
+        Đề tài này phù hợp với sinh viên quan tâm đến ${topic.fields
+            ?.map((f) => f.name)
+            .slice(0, 2)
+            .join(', ')},
+        yêu cầu nền tảng về ${topic.requirements
+            ?.map((r) => r.name)
+            .slice(0, 3)
+            .join(', ')}.
+                `.trim(),
         metadata: { original_id: topic._id, facultyId: topic.major.facultyId, ...nest }
     })
 }

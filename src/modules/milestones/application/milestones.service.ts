@@ -32,6 +32,10 @@ export class MilestonesService {
         private readonly downLoadFileProvider: DownLoadFileProvider
     ) {}
 
+    async getAllMilestones(userId: string): Promise<any> {
+        return await this.milestoneRepository.getAllMilestones(userId)
+    }
+
     async reviewMilestone(milestoneId: string, lecturerId: string, body: RequestLecturerReview) {
         return await this.milestoneRepository.reviewMilestone(milestoneId, lecturerId, body)
     }

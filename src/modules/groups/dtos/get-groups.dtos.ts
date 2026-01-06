@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer'
 import { GetPaginatedObjectDto } from '../../../common/pagination-an/dtos/get-pagination-list.dtos'
+import { Types } from 'mongoose'
 
 /* =======================
  * Last Message
@@ -23,7 +24,7 @@ export class LastMessageDTO {
  * ======================= */
 export class BaseParticipantDTO {
     @Expose()
-    id: string
+    _id: string
 
     @Expose()
     fullName: string
@@ -151,4 +152,44 @@ export class RequestPaginatedGroups extends GetPaginatedObjectDto {
     @Expose()
     @Type(() => GroupSidebarDTO)
     data: GroupSidebarDTO[]
+}
+
+export class MessageDto {
+    @Expose()
+    _id: string
+    @Expose()
+    groupId: string
+    @Expose()
+    senderId: {
+        _id: string
+        fullName: string
+        avatarUrl: string
+    }
+    @Expose()
+    content: string
+    @Expose()
+    type: 'text' | 'file' | 'image'
+    @Expose()
+    attachments?: string[]
+    @Expose()
+    replyTo?: string | null
+    @Expose()
+    createdAt: string
+    @Expose()
+    status?: 'sending' | 'sent' | 'delivered' | 'seen'
+}
+
+export interface LeanPopulatedMessage {
+    _id: Types.ObjectId
+    groupId: Types.ObjectId
+    content: string
+    type: 'text' | 'file' | 'image'
+    attachments?: string[]
+    replyTo?: Types.ObjectId | null
+    createdAt: Date
+    senderId: {
+        _id: Types.ObjectId
+        fullName: string
+        avatarUrl: string
+    }
 }
