@@ -370,6 +370,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             )
     }
     public async archiveTopic(topicId: string, actorId: string) {
+        //thêm file vòa topic
         await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
             topicId,
             TopicStatus.Archived,

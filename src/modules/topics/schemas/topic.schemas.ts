@@ -70,8 +70,8 @@ export class PhaseHistory extends BaseEntity {
 }
 @Schema({ _id: false })
 class FileSnapshot {
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: File.name, required: true })
-    fileId: string // Reference gốc để quản lý xóa/sửa
+    // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: File.name, required: true })
+    // fileId: string // Reference gốc để quản lý xóa/sửa
 
     @Prop({ required: true })
     fileName: string // VD: "Bao_cao_final_v2.pdf"
@@ -91,8 +91,8 @@ class FileSnapshot {
 @Schema({ _id: false })
 class FinalProduct {
     // Tài liệu báo cáo (Khóa luận văn) - Bắt buộc phải có khi lưu kho
-    @Prop({ type: FileSnapshot, required: true })
-    thesisReport: FileSnapshot
+    @Prop({ type: [FileSnapshot], required: true })
+    thesisReport: FileSnapshot[]
 
     // // Source code (Có thể là Link Git hoặc File Zip)
     // @Prop({ type: String })

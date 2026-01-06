@@ -160,7 +160,7 @@ class FileSnapshotDto {
 class FinalProduct {
     @Expose()
     @Type(() => FileSnapshotDto)
-    thesisReport: FileSnapshotDto
+    thesisReport: FileSnapshotDto[]
     @Expose()
     sourceCodeUrl: string
     @Expose()
@@ -189,6 +189,7 @@ export class DefenseResult {
     @Expose()
     gradeText: string // Xếp loại: "Xuất sắc"
     @Expose()
+    @Type(() => CouncilMemberSnapshot)
     councilMembers: CouncilMemberSnapshot[]
     @Expose()
     councilName: string // VD: "Hội đồng CNPM 01"

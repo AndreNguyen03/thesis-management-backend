@@ -12,14 +12,6 @@ export class MessagePart {
     @Prop({ type: String })
     text?: string // Nội dung text
 
-    // @Prop()
-    // state?: string // Trạng thái của part (done, pending, etc.)
-
-    // @Prop({ type: mongoose.Schema.Types.Mixed })
-    // providerMetadata?: any // Metadata từ AI provider
-
-    // @Prop({ type: mongoose.Schema.Types.Mixed })
-    // metadata?: any // Metadata khác
 }
 
 // Schema cho tin nhắn chatbot
@@ -60,12 +52,12 @@ export class ChatBot extends BaseEntity {
     @Prop({ default: 'Cuộc trò chuyện mới' })
     title?: string // Tiêu đề cuộc hội thoại
 
-    // @Prop({ default: 'active' })
-    // status?: string // 'active', 'archived', 'ended'
+    @Prop({ default: 'active' })
+    status?: string // 'active', 'archived', 'ended'
 
     @Prop({ default: 0 })
     messageCount?: number // Số lượng tin nhắn trong cuộc hội thoại
-}
+}4
 
 export type ChatDocument = HydratedDocument<ChatBot>
 export const ChatBotSchema = SchemaFactory.createForClass(ChatBot)

@@ -150,4 +150,7 @@ export class ChatBotService {
     public async deleteChatbotVersion(id: string) {
         return this.chatBotRepository.softDelete(id)
     }
+    public async toggleSuggestionStatus(id: string, status: boolean, suggestionId: string) {
+        return await this.chatBotRepository.toggleSuggestionStatus(id, status, suggestionId)
+    }
 }

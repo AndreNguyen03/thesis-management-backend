@@ -1,4 +1,4 @@
 export enum ChatbotStatus {
-    ENABLED = 'Enabled',
-    DISABLED = 'Disabled'
+    ENABLED = 'enabled',
+    DISABLED = 'disabled'
 }

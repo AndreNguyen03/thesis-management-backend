@@ -1022,6 +1022,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 studentRef: 1,
                 stats: 1,
                 defenseResult: 1,
+                finalProduct: 1,
                 registrationStatus: { $arrayElemAt: [{ $ifNull: ['$studentRef.status', []] }, 0] }
             }
         })
@@ -1351,7 +1352,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 year: { $year: '$defenseResult.defenseDate' },
                 stats: 1,
                 defenseDate: '$defenseResult.defenseDate',
-                defenseResult: 1
+                defenseResult: 1,
+                finalProduct: 1,
+                studentInTopics: 1
             }
         })
         //Phân trang phụ

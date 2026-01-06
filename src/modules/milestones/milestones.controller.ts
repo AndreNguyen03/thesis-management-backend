@@ -34,6 +34,7 @@ import { PaginatedTopicInBatchMilestone, ResponseMilestone } from './dtos/respon
 import { FileInfo } from './schemas/milestones.schemas'
 import { RequestCreate } from '../todolists/dtos/request-update.dtos'
 import { Response } from 'express'
+import { PaginationAllDefenseMilestonesQuery } from './dtos/query-params.dto'
 
 @Controller('milestones')
 export class MilestonesController {
@@ -131,7 +132,7 @@ export class MilestonesController {
     }
 
     @Get('/in-period/manage-defense-assignment/:periodId')
-    @Roles(UserRole.FACULTY_BOARD)
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
     @UseGuards(RolesGuard)
     async facultyGetMilestonesInManageDefenseAssignment(@Param('periodId') periodId: string) {
         return await this.milestonesService.facultyGetMilestonesInManageDefenseAssignment(periodId)
@@ -197,11 +198,21 @@ export class MilestonesController {
         }
     }
 
+    @Get('/manage-defense-milestones/years-combobox')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getComboboxYears(@Req() req: { user: ActiveUserData }) {
+        return await this.milestonesService.getYearsOfDefenseMilestones(req.user.facultyId!)
+    }
+
     @Get('/faculty/all')
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async getAllDefenseMilestonesForFaculty(@Req() req: { user: ActiveUserData }) {
-        return await this.milestonesService.getAllDefenseMilestonesForFaculty(req.user.facultyId!)
+    async getAllDefenseMilestonesForFaculty(
+        @Req() req: { user: ActiveUserData },
+        @Query() queryParams: PaginationAllDefenseMilestonesQuery
+    ) {
+        return await this.milestonesService.getAllDefenseMilestonesForFaculty(req.user.facultyId!, queryParams)
     }
 
     @Get('/lecturer/assigned')

@@ -23,6 +23,8 @@ import { DefenseCouncilMember, MilestoneTemplate } from '../../schemas/milestone
 import { Topic } from '../../../topics/schemas/topic.schemas'
 import { TopicStatus } from '../../../topics/enum/topic-status.enum'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
+import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { PaginationAllDefenseMilestonesQuery } from '../../dtos/query-params.dto'
 
 @Injectable()
 export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> implements IMilestoneRepository {
@@ -899,7 +901,11 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         return existingMilestone
     }
 
-    async getAllDefenseMilestonesForFaculty(facultyId: string): Promise<any[]> {
+    async getAllDefenseMilestonesForFaculty(
+        facultyId: string,
+        queryParams: PaginationAllDefenseMilestonesQuery
+    ): Promise<Paginated<MilestoneTemplate>> {
+        const { year } = queryParams
 
         const pipeline: any[] = [
             {
@@ -943,7 +949,8 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             // Count topics và lecturers
             {
                 $addFields: {
-                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } }
+                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } },
+                    councilMembers: { $size: { $ifNull: ['$defenseCouncil', []] } }
                 }
             },
             // Project
@@ -956,6 +963,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     isPublished: 1,
                     isBlock: 1,
                     councilMembers: 1,
+                    defenseCouncil: 1,
                     topicsCount: 1,
                     periodInfo: {
                         _id: 1,
@@ -968,14 +976,25 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                         },
                         type: 1,
                         currentPhase: 1
-                    }
+                    },
+                    year: { $year: '$dueDate' }
                 }
             },
             // Sort theo dueDate mới nhất
             { $sort: { dueDate: -1 } }
         ]
-
-        return await this.milestoneTemplateModel.aggregate(pipeline).exec()
+        if (year) {
+            pipeline.push({
+                $match: {
+                    year: Number(year)
+                }
+            })
+        }
+        return await this.paginationProvider.paginateQuery<MilestoneTemplate>(
+            queryParams,
+            this.milestoneTemplateModel,
+            pipeline
+        )
     }
 
     async getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]> {
@@ -1025,6 +1044,26 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                         },
                         type: 1,
                         currentPhase: 1
+                    },
+                    myRole: {
+                        $arrayElemAt: [
+                            {
+                                $map: {
+                                    input: {
+                                        $filter: {
+                                            input: '$defenseCouncil',
+                                            as: 'member',
+                                            cond: {
+                                                $eq: ['$$member.memberId', new mongoose.Types.ObjectId(lecturerId)]
+                                            }
+                                        }
+                                    },
+                                    as: 'd',
+                                    in: '$$d.role'
+                                }
+                            },
+                            0
+                        ]
                     }
                 }
             },
@@ -1032,5 +1071,51 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         ]
 
         return await this.milestoneTemplateModel.aggregate(pipeline).exec()
+    }
+    async getYearsOfDefenseMilestones(facultyId: string): Promise<string[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'periods',
+                    let: {
+                        facultyId: {
+                            $toObjectId: facultyId
+                        }
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$faculty', '$$facultyId'] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            }
+        )
+
+        pipelineSub.push({
+            $addFields: {
+                year: { $year: '$dueDate' }
+            }
+        })
+        pipelineSub.push({
+            $group: {
+                _id: '$year'
+            }
+        })
+        pipelineSub.push({
+            $sort: {
+                _id: -1
+            }
+        })
+        const results = await this.milestoneTemplateModel.aggregate(pipelineSub).exec()
+        return results.map((item) => item._id.toString()).filter((year) => year != null)
     }
 }

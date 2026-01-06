@@ -1,6 +1,8 @@
 import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { PaginationAllDefenseMilestonesQuery } from '../dtos/query-params.dto'
 import {
     PaginationRequestTopicInMilestoneQuery,
     PayloadCreateMilestone,
@@ -34,6 +36,10 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     deleteScoringResultFile(milestoneTemplateId: string): Promise<MilestoneTemplate | null>
     updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean): Promise<MilestoneTemplate>
     blockGrade(milestoneId: string): Promise<MilestoneTemplate>
-    getAllDefenseMilestonesForFaculty(facultyId: string): Promise<any[]>
+    getAllDefenseMilestonesForFaculty(
+        facultyId: string,
+        queryParams: PaginationAllDefenseMilestonesQuery
+    ): Promise<Paginated<MilestoneTemplate>>
     getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]>
+    getYearsOfDefenseMilestones(facultyId: string): Promise<string[]>
 }
