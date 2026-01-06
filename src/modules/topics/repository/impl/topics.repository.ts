@@ -9,6 +9,7 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    RequestGetTopicsApprovalRegistrationPagination,
     PublishTopic,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPhaseParams
@@ -46,6 +47,7 @@ import {
     PendingLecturerReview
 } from '../../../periods/dtos/phase-resolve.dto'
 import { ParseDay } from '../../utils/transfer-function'
+import { promiseHooks } from 'v8'
 import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
@@ -1393,6 +1395,114 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         console.log('pipelineSub', pipelineSub)
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+
+    async getTopicRegistrationApprovalsOfLecturer(
+        userId: string,
+        query: RequestGetTopicsApprovalRegistrationPagination
+    ): Promise<Paginated<any>> {
+        const pipeline: any[] = []
+
+        // 1. Match các trường filter cơ bản
+        const match: any = {}
+        if (query.periodId) match.periodId = new mongoose.Types.ObjectId(query.periodId)
+        if (query.type) match.type = query.type
+        if (query.allowManualApproval !== undefined) match.allowManualApproval = query.allowManualApproval
+        if (userId) match.createBy = new mongoose.Types.ObjectId(userId)
+        // Chỉ lấy pha 'open_registration'
+        match['phaseHistories.phaseName'] = 'open_registration'
+
+        pipeline.push({ $match: match })
+
+        // 2. Join đăng ký
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'ref_students_topics',
+                    localField: '_id',
+                    foreignField: 'topicId',
+                    as: 'registrations'
+                }
+            },
+            { $unwind: { path: '$registrations', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'students',
+                    localField: 'registrations.userId',
+                    foreignField: 'userId',
+                    as: 'student'
+                }
+            },
+            { $unwind: { path: '$student', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'student.userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } }
+        )
+
+        // 3. Group theo topic
+        pipeline.push({
+            $group: {
+                _id: '$_id',
+                titleVN: { $first: '$titleVN' },
+                maxStudents: { $first: '$maxStudents' },
+                allowManualApproval: { $first: '$allowManualApproval' },
+                type: { $first: '$type' },
+                deleted_at: { $first: '$deleted_at' },
+                registrations: {
+                    $push: {
+                        _id: '$registrations._id',
+                        studentId: '$student._id',
+                        studentName: '$user.fullName',
+                        status: '$registrations.status',
+                        studentSkills: '$student.skills',
+                        studentNote: '$registrations.studentNote',
+                        lecturerResponse: '$registrations.lecturerResponse',
+                        processAt: '$registrations.updatedAt',
+                        createdAt: '$registrations.createdAt',
+                        rejectionReasonType: '$registrations.rejectionReasonType'
+                    }
+                }
+            }
+        })
+
+        // 4. Phân loại trạng thái học sinh
+        pipeline.push({
+            $addFields: {
+                pendingStudents: {
+                    $filter: { input: '$registrations', as: 'r', cond: { $eq: ['$$r.status', 'pending'] } }
+                },
+                approvedStudents: {
+                    $filter: { input: '$registrations', as: 'r', cond: { $eq: ['$$r.status', 'approved'] } }
+                },
+                rejectedStudents: {
+                    $filter: { input: '$registrations', as: 'r', cond: { $eq: ['$$r.status', 'rejected'] } }
+                }
+            }
+        })
+
+        // 6. Chọn các trường trả về
+        pipeline.push({
+            $project: {
+                _id: 1,
+                titleVN: 1,
+                type: 1,
+                maxStudents: 1,
+                deleted_at: 1,
+                allowManualApproval: 1,
+                pendingStudents: 1,
+                approvedStudents: 1,
+                rejectedStudents: 1
+            }
+        })
+
+        // 7. Gọi paginateQuery để phân trang, sort, search
+        return await this.paginationProvider.paginateQuery(query, this.topicRepository, pipeline)
     }
 
     private buildStudentPipeline(status: StudentRegistrationStatus) {

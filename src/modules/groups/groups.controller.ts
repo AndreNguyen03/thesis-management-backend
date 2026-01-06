@@ -4,7 +4,7 @@ import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { GroupsService } from './application/groups.service'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { plainToInstance } from 'class-transformer'
-import { RequestPaginatedGroups, GroupDetailDto } from './dtos/get-groups.dtos'
+import { RequestPaginatedGroups, GroupDetailDto, MessageDto } from './dtos/get-groups.dtos'
 import { ChatService } from './application/chat.service'
 import { CreateDirectGroupDto } from './dtos/create-direct.dto'
 
@@ -22,12 +22,13 @@ export class GroupsController {
         @Query('before') before?: string,
         @Query('limit') limit?: string
     ) {
-        return this.chatService.getGroupMessages({
+        const result = this.chatService.getGroupMessages({
             groupId,
             userId: req.user.sub,
             limit: limit ? parseInt(limit, 10) : undefined,
             before: before ? new Date(before) : undefined
         })
+        return result
     }
 
     @Get('/:groupId/search')

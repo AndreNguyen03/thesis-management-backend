@@ -12,6 +12,7 @@ import {
     GetTopicResponseDto,
     PaginationTopicsQueryParams,
     PatchTopicDto,
+    RequestGetTopicsApprovalRegistrationPagination,
     PublishTopic,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPeriodDto,
@@ -108,4 +109,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         query?: PaginationQueryDto
     ): Promise<Paginated<Topic>>
     batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
+
+    
+    getTopicRegistrationApprovalsOfLecturer(userId: string, query: RequestGetTopicsApprovalRegistrationPagination): Promise<Paginated<any>>
 }

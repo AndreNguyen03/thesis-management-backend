@@ -13,7 +13,7 @@ export class GroupsService {
 
     async getGroupDetail(groupId: string): Promise<Group> {
         const group = await this.groupRepository.getGroupDetail(groupId)
-
+        console.log('backend group detail ::: ', group)
         if (!group) {
             throw new NotFoundException('Không tìm thấy group')
         }

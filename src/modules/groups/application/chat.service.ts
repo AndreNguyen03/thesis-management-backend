@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
 import { Group } from '../schemas/groups.schemas'
 import { Message } from '../schemas/messages.schemas'
+import { LeanPopulatedMessage, MessageDto } from '../dtos/get-groups.dtos'
 
 @Injectable()
 export class ChatService {
@@ -92,7 +93,12 @@ export class ChatService {
     // ===============================
     // 3. Lấy message của group (pagination)
     // ===============================
-    async getGroupMessages(params: { groupId: string; userId: string; limit?: number; before?: Date }) {
+    async getGroupMessages(params: {
+        groupId: string
+        userId: string
+        limit?: number
+        before?: Date
+    }): Promise<MessageDto[]> {
         const { groupId, userId, limit = 20, before } = params
 
         // Check quyền
@@ -117,13 +123,21 @@ export class ChatService {
                 path: 'senderId',
                 select: '_id fullName avatarUrl'
             })
-            .lean()
+            .lean<LeanPopulatedMessage[]>()
 
-        return messages
+        console.log('fetch group messages ::', messages)
+        const res = messages.map(this.toMessageDto)
+        console.log('fetch group res ::', res)
+        return res
     }
 
     // ===================== SEARCH MESSAGES =====================
-    async searchGroupMessages(params: { groupId: string; userId: string; keyword: string; limit?: number }) {
+    async searchGroupMessages(params: {
+        groupId: string
+        userId: string
+        keyword: string
+        limit?: number
+    }): Promise<MessageDto[]> {
         const { groupId, userId, keyword, limit = 20 } = params
         const isMember = await this.isUserInGroup(groupId, userId)
         if (!isMember) throw new ForbiddenException('User is not in this group')
@@ -135,9 +149,12 @@ export class ChatService {
             .sort({ createdAt: -1 })
             .limit(limit)
             .populate({ path: 'senderId', select: '_id fullName avatarUrl' })
-            .lean()
+            .lean<LeanPopulatedMessage[]>()
 
-        return messages
+        console.log('search group messages ::', messages)
+        const res = messages.map(this.toMessageDto)
+        console.log('search group res ::', res)
+        return res
     }
 
     // ===============================
@@ -162,5 +179,22 @@ export class ChatService {
 
     async resetUnreadCount(groupId: string, userId: string) {
         return this.groupModel.findByIdAndUpdate(groupId, { $set: { [`unreadCounts.${userId}`]: 0 } }, { new: true })
+    }
+
+    private toMessageDto(msg: LeanPopulatedMessage): MessageDto {
+        return {
+            _id: msg._id.toString(),
+            groupId: msg.groupId.toString(),
+            content: msg.content,
+            type: msg.type,
+            attachments: msg.attachments,
+            replyTo: msg.replyTo ? msg.replyTo.toString() : null,
+            createdAt: msg.createdAt.toISOString(),
+            senderId: {
+                _id: msg.senderId._id.toString(),
+                fullName: msg.senderId.fullName,
+                avatarUrl: msg.senderId.avatarUrl
+            }
+        }
     }
 }

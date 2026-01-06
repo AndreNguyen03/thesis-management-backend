@@ -238,6 +238,7 @@ export class TopicVectorRepository
                     allowManualApproval: 1,
                     areaInterest: '$creator.areaInterest',
                     researchInterests: '$creator.researchInterests',
+                    createByInfo: 1,
                     embedding: 1,
                     fields: 1,
                     requirements: 1,

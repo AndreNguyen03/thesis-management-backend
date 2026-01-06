@@ -130,7 +130,7 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     let: { senderId: { $toObjectId: '$lastMessage.senderId' } },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$_id', '$$senderId'] } } },
-                        { $project: { _id: 0, fullName: 1, avatarUrl: 1 } }
+                        { $project: { _id: 1, fullName: 1, avatarUrl: 1 } }
                     ],
                     as: 'senderInfo'
                 }

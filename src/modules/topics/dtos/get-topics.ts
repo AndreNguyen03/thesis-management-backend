@@ -467,6 +467,22 @@ export class RequestGetTopicsInAdvanceSearchParams extends IntersectionType(
     PaginationQueryDto
 ) {}
 
+export class RequestGetTopicsApprovalRegistration {
+    @IsOptional()
+    periodId?: string
+
+    @IsOptional()
+    type?: string
+
+    @IsOptional()
+    allowManualApproval?: boolean
+
+    @IsOptional()
+    onlyPending? :boolean
+}
+
+export class RequestGetTopicsApprovalRegistrationPagination extends IntersectionType(RequestGetTopicsApprovalRegistration,PaginationQueryDto) {}
+
 @Expose()
 export class GetTopicsInPhaseDto extends GetTopicsInPeriodDto {}
 export class GetPaginatedTopicsInPhaseDto extends GetPaginatedObjectDto {

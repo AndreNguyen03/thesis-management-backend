@@ -47,6 +47,85 @@ export class StudentRegTopicRepository
     ) {
         super(studentRegTopicModel)
     }
+    async getStudentTopicStateInPeriod(studentId: string) {
+        const studentObjId = new mongoose.Types.ObjectId(studentId)
+
+        const pipeline: any[] = [
+            {
+                $match: {
+                    userId: studentObjId,
+                    status: StudentRegistrationStatus.APPROVED
+                }
+            },
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: 'topicId',
+                    foreignField: '_id',
+                    as: 'topic'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$topic',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            {
+                $lookup: {
+                    from: 'periods',
+                    let: {
+                        periodId: '$topic.periodId'
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $eq: [{ $year: '$endTime' }, { $year: '$$NOW' }]
+                                        },
+                                        {
+                                            $eq: ['$_id', '$$periodId']
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'period'
+                }
+            },
+            // {
+            //     $unwind: {
+            //         path: 'period'
+            //     }
+            // },
+            {
+                $project: {
+                    // Project các trường cần từ StudentRegisterTopic và Topic
+                    _id: 1,
+                    userId: 1,
+                    topicId: 1,
+                    status: 1,
+                    // Từ topic
+                    'topic.titleVN': 1,
+                    'topic.titleEng': 1,
+                    'topic.description': 1,
+                    'topic.type': 1,
+                    'topic.majorId': 1,
+                    'topic.currentStatus': 1,
+                    'topic.currentPhase': 1,
+                    'topic.periodId': 1,
+                    'topic.defenseResult': 1
+                    // Thêm các trường khác nếu cần, ví dụ: 'topic.fileIds': 1
+                }
+            },
+            { $sort: { created_at: -1 } }
+        ]
+
+        return this.studentRegTopicModel.aggregate(pipeline).exec()
+    }
     async getParticipantsInTopic(topicId: string): Promise<string[]> {
         const registrations = await this.studentRegTopicModel
             .find({

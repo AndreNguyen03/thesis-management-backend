@@ -49,6 +49,9 @@ export class Group extends BaseEntity {
         default: {}
     })
     lastSeenAtByUser: Map<string, Date>
+
+    updatedAt: Date
+    createdAt: Date
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group)

@@ -22,8 +22,9 @@ export class DynamicThresholdService {
         const std = Math.sqrt(variance)
 
         // Dynamic threshold: mean + 0.5*std
-        let threshold = Math.max(mean + 0.5 * std, 0.3)
-
+        const rawThreshold = mean + 0.5 * std
+        const threshold = Math.min(Math.max(rawThreshold, 0.3), 0.85)
+        
         // Lấy topics có score >= threshold
         let candidates = sorted.filter((item) => item.score >= threshold)
 
