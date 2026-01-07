@@ -42,7 +42,7 @@ import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
 import { GetMajorLibraryCombox } from '../majors/dtos/get-major.dto'
 import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
-import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 
 @Controller('topics')
@@ -79,7 +79,7 @@ export class TopicController {
     }
     @Get('/registered-topics')
     @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationRegisteredTopicsQueryParams) {
         const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
         return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
@@ -499,6 +499,7 @@ export class TopicController {
         return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
+    //cập nhật kết quả
     @Patch('/batch-update-defense-results')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
@@ -518,4 +519,32 @@ export class TopicController {
     ) {
         return await this.topicService.batchPublishOrNotDefenseResults(body.topics, req.user.sub, templateMilestoneId)
     }
+
+    //Lưu đề tài vào thư viện số
+    @Patch('/batch-archive')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async batchArchiveTopics(@Req() req: { user: ActiveUserData }, @Body() body: { topicIds: string[] }) {
+        const { topicIds } = body
+        let success = 0
+        let failed = 0
+
+        for (const topicId of topicIds) {
+            try {
+                await this.topicService.archiveTopic(topicId, req.user.sub)
+                success++
+            } catch (error) {
+                failed++
+                console.error(`Failed to archive topic ${topicId}: ${error.message}`)
+            }
+        }
+
+        return {
+            success,
+            failed,
+            message: `Đã lưu ${success} đề tài vào thư viện, ${failed} đề tài thất bại`
+        }
+    }
+    
 }

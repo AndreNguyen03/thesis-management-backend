@@ -17,4 +17,5 @@ export interface ChatBotRepositoryInterface extends BaseRepositoryInterface<Chat
         suggestionId: string,
         newContent: string
     ): Promise<number | null>
+    toggleSuggestionStatus(id: string, status: boolean, suggestionId: string): Promise<ChatbotVersion | null>
 }

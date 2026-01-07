@@ -9,6 +9,7 @@ import { PeriodsService } from '../../modules/periods/application/periods.servic
 import { UserService } from '../../users/application/users.service'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bullmq'
+import { RecipientType } from '../../modules/notifications/enum/recipient-type.enum'
 
 @Injectable()
 export class MailService {
@@ -266,7 +267,7 @@ export class MailService {
                     currentPeriod: currPeriod
                 },
                 {
-                    delay: i * 500, // Delay 1s cho mỗi email
+                    delay: i * 5000, // Delay 5s cho mỗi email
                     attempts: 3,
                     backoff: {
                         type: 'exponential',
@@ -323,5 +324,9 @@ export class MailService {
                 }
             )
         }
+    }
+
+    async send() {
+
     }
 }

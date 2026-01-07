@@ -9,7 +9,7 @@ import { extend } from 'joi'
         updatedAt: 'updated_at'
     }
 })
-@Schema({ _id: false })
+@Schema()
 export class QuerySuggestion extends BaseEntity {
     @Prop({ required: true, type: String })
     content: string

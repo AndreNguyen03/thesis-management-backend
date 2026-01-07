@@ -19,6 +19,8 @@ import { GetGroupProvider } from '../../groups/provider/get-group.provider'
 import mongoose from 'mongoose'
 import { ActiveUserData } from '../../../auth/interface/active-user-data.interface'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { PaginationAllDefenseMilestonesQuery } from '../dtos/query-params.dto'
 
 @Injectable()
 export class MilestonesService {
@@ -146,12 +148,18 @@ export class MilestonesService {
         return res ? true : false
     }
     async updateMilestoneTemplatePublishState(milestoneTemplateId: string, isPublished: boolean) {
-        return await this.milestoneRepository.updateMilestoneTemplatePublishState(
-            milestoneTemplateId,
-            isPublished
-        )
+        return await this.milestoneRepository.updateMilestoneTemplatePublishState(milestoneTemplateId, isPublished)
     }
     async blockGrade(milestoneId: string) {
         return await this.milestoneRepository.blockGrade(milestoneId)
+    }
+    async getAllDefenseMilestonesForFaculty(facultyId: string, queryParams: PaginationAllDefenseMilestonesQuery) {
+        return await this.milestoneRepository.getAllDefenseMilestonesForFaculty(facultyId, queryParams)
+    }
+    async getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string) {
+        return await this.milestoneRepository.getAssignedDefenseMilestonesForLecturer(lecturerId, facultyId)
+    }
+    async getYearsOfDefenseMilestones(facultyId: string) {
+        return await this.milestoneRepository.getYearsOfDefenseMilestones(facultyId)
     }
 }

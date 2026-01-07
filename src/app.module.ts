@@ -45,7 +45,8 @@ import { MilestonesModule } from './modules/milestones/milestones.module'
 import { TodolistsModule } from './modules/todolists/todolists.module'
 import { TopicInteractionModule } from './modules/topic_interaction/topic_interaction.module'
 import { RecommendModule } from './modules/recommend/recommend.module'
-import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module'
+import { RatingModule } from './modules/ratings/rating.module'
 
 const ENV = process.env.NODE_ENV
 
@@ -124,7 +125,8 @@ const ENV = process.env.NODE_ENV
         TodolistsModule,
         TopicInteractionModule,
         RecommendModule,
-        DashboardModule
+        DashboardModule,
+        RatingModule
     ],
     controllers: [AppController],
     providers: [

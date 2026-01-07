@@ -1,5 +1,6 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { ChatbotStatus } from '../enums/chatbot-status.enum'
+import { Type } from 'class-transformer'
 
 export class UpdateChatbotDto {
     @IsOptional()
@@ -9,10 +10,17 @@ export class UpdateChatbotDto {
     @IsOptional()
     status: ChatbotStatus
 }
-
+export class CreateSuggestion {
+    @IsNotEmpty()
+    @IsString()
+    content: string
+    @IsNotEmpty()
+    @IsBoolean()
+    enabled: boolean
+}
 export class QuerySuggestionDto {
     @IsNotEmpty()
     @IsArray()
-    @IsString({ each: true })
-    contents: string[]
+    @Type(() => CreateSuggestion)
+    suggestions: CreateSuggestion[]
 }

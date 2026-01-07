@@ -23,6 +23,8 @@ import { DefenseCouncilMember, MilestoneTemplate } from '../../schemas/milestone
 import { Topic } from '../../../topics/schemas/topic.schemas'
 import { TopicStatus } from '../../../topics/enum/topic-status.enum'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
+import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
+import { PaginationAllDefenseMilestonesQuery } from '../../dtos/query-params.dto'
 
 @Injectable()
 export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> implements IMilestoneRepository {
@@ -932,5 +934,223 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         existingMilestone.isBlock = true
         await existingMilestone.save()
         return existingMilestone
+    }
+
+    async getAllDefenseMilestonesForFaculty(
+        facultyId: string,
+        queryParams: PaginationAllDefenseMilestonesQuery
+    ): Promise<Paginated<MilestoneTemplate>> {
+        const { year } = queryParams
+
+        const pipeline: any[] = [
+            {
+                $lookup: {
+                    from: 'periods',
+                    let: { periodId: '$periodId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$_id', '$$periodId'] },
+                                        { $eq: ['$faculty', new mongoose.Types.ObjectId(facultyId)] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'periodInfo'
+                }
+            },
+            { $unwind: { path: '$periodInfo' } },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            { $unwind: { path: '$facultyInfo', preserveNullAndEmptyArrays: true } },
+            // Lookup topics để đếm
+            {
+                $lookup: {
+                    from: 'topics',
+                    localField: '_id',
+                    foreignField: 'defenseResult.milestoneId',
+                    as: 'topics'
+                }
+            },
+            // Count topics và lecturers
+            {
+                $addFields: {
+                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } },
+                    councilMembers: { $size: { $ifNull: ['$defenseCouncil', []] } }
+                }
+            },
+            // Project
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    location: 1,
+                    dueDate: 1,
+                    isPublished: 1,
+                    isBlock: 1,
+                    councilMembers: 1,
+                    defenseCouncil: 1,
+                    topicsCount: 1,
+                    periodInfo: {
+                        _id: 1,
+                        year: 1,
+                        semester: 1,
+                        faculty: {
+                            name: '$facultyInfo.name',
+                            email: '$facultyInfo.email',
+                            urlDirection: '$facultyInfo.urlDirection'
+                        },
+                        type: 1,
+                        currentPhase: 1
+                    },
+                    year: { $year: '$dueDate' }
+                }
+            },
+            // Sort theo dueDate mới nhất
+            { $sort: { dueDate: -1 } }
+        ]
+        if (year) {
+            pipeline.push({
+                $match: {
+                    year: Number(year)
+                }
+            })
+        }
+        return await this.paginationProvider.paginateQuery<MilestoneTemplate>(
+            queryParams,
+            this.milestoneTemplateModel,
+            pipeline
+        )
+    }
+
+    async getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]> {
+        const matchStage: any = {
+            'defenseCouncil.memberId': new mongoose.Types.ObjectId(lecturerId)
+        }
+
+        const pipeline: any[] = [
+            { $match: matchStage },
+            // Lookup period
+            {
+                $lookup: {
+                    from: 'periods',
+                    localField: 'periodId',
+                    foreignField: '_id',
+                    as: 'periodInfo'
+                }
+            },
+            { $unwind: { path: '$periodInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    localField: 'periodInfo.faculty',
+                    foreignField: '_id',
+                    as: 'facultyInfo'
+                }
+            },
+            { $unwind: { path: '$facultyInfo', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    location: 1,
+                    dueDate: 1,
+                    isPublished: 1,
+                    isBlock: 1,
+                    defenseCouncil: 1,
+                    topicsCount: { $size: { $ifNull: ['$topicSnaps', []] } },
+                    periodInfo: {
+                        _id: 1,
+                        year: 1,
+                        semester: 1,
+                        faculty: {
+                            name: '$facultyInfo.name',
+                            email: '$facultyInfo.email',
+                            urlDirection: '$facultyInfo.urlDirection'
+                        },
+                        type: 1,
+                        currentPhase: 1
+                    },
+                    myRole: {
+                        $arrayElemAt: [
+                            {
+                                $map: {
+                                    input: {
+                                        $filter: {
+                                            input: '$defenseCouncil',
+                                            as: 'member',
+                                            cond: {
+                                                $eq: ['$$member.memberId', new mongoose.Types.ObjectId(lecturerId)]
+                                            }
+                                        }
+                                    },
+                                    as: 'd',
+                                    in: '$$d.role'
+                                }
+                            },
+                            0
+                        ]
+                    }
+                }
+            },
+            { $sort: { dueDate: -1 } }
+        ]
+
+        return await this.milestoneTemplateModel.aggregate(pipeline).exec()
+    }
+    async getYearsOfDefenseMilestones(facultyId: string): Promise<string[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(
+            {
+                $lookup: {
+                    from: 'periods',
+                    let: {
+                        facultyId: {
+                            $toObjectId: facultyId
+                        }
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$faculty', '$$facultyId'] }]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            }
+        )
+
+        pipelineSub.push({
+            $addFields: {
+                year: { $year: '$dueDate' }
+            }
+        })
+        pipelineSub.push({
+            $group: {
+                _id: '$year'
+            }
+        })
+        pipelineSub.push({
+            $sort: {
+                _id: -1
+            }
+        })
+        const results = await this.milestoneTemplateModel.aggregate(pipelineSub).exec()
+        return results.map((item) => item._id.toString()).filter((year) => year != null)
     }
 }

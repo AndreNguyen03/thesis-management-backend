@@ -16,7 +16,7 @@ import { TopicStatus } from '../../topics/enum'
 import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-topics-batch.provider'
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
-import mongoose from 'mongoose'
+import { VectorSyncProvider } from '../../topic_search/provider/vector-sync.provider'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -26,7 +26,9 @@ export class CreatePhaseProvider {
         @Inject(forwardRef(() => TopicService)) private readonly topicService: TopicService,
         private readonly updateTopicsBatchProvider: UpdateTopicsPhaseBatchProvider,
         private readonly notificationPublisherService: NotificationPublisherService,
-        private readonly createBatchGroupsProvider: CreateBatchGroupsProvider
+        private readonly createBatchGroupsProvider: CreateBatchGroupsProvider,
+        @Inject(forwardRef(() => VectorSyncProvider))
+        private readonly vectorSyncProvider: VectorSyncProvider
     ) {}
     //Khởi tạo sơ khai cho kì mới
     async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
@@ -54,8 +56,6 @@ export class CreatePhaseProvider {
             )
         }
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
-        await this.iPeriodRepository.updateCurrentPhaseToCompleted(periodId)
-        console.log('Cấu hình pha Submit Topic thành công!', newPeriodPhase)
         const res = await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         if (res)
             await this.notificationPublisherService.sendPhaseSubmitTopicNotification(
@@ -115,9 +115,15 @@ export class CreatePhaseProvider {
         const newPeriodPhase = plainToClass(PeriodPhase, dto)
         await this.iPeriodRepository.updateCurrentPhaseToCompleted(periodId)
         await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
+        //sync dữ liệu
+        await this.vectorSyncProvider.syncDataInPeriodOnPhase(periodId, {
+            limit: 0,
+            page: 1,
+            phase: PeriodPhaseName.OPEN_REGISTRATION
+        })
         return {
             success: true,
-            message: `Chuyển sang ${PeriodPhaseName.OPEN_REGISTRATION} thành công. ${approvedTopicsCount} đề tài được mở đăng ký.`
+            message: `Chuyển sang pha đăng ký thành công. ${approvedTopicsCount} đề tài được mở đăng ký và được thêm vào hệ thống gợi ý.`
         }
     }
 
@@ -148,29 +154,29 @@ export class CreatePhaseProvider {
         // }
 
         // Kiểm tra toàn vẹn dữ liệu
-        console.log('[CHECK] Checking topics with invalid statuses...')
-        const topics =
-            (await this.topicService.findByCondition({
-                periodId: periodId,
-                currentPhase: period.currentPhase,
-                currentStatus: { $in: [TopicStatus.PendingRegistration] },
-                deleted_at: null
-            })) ?? []
+        // console.log('[CHECK] Checking topics with invalid statuses...')
+        // const topics =
+        //     (await this.topicService.findByCondition({
+        //         periodId: periodId,
+        //         currentPhase: period.currentPhase,
+        //         currentStatus: { $in: [TopicStatus.PendingRegistration] },
+        //         deleted_at: null
+        //     })) ?? []
 
-        console.log(`[RESULT] Found ${topics.length} topics in bad statuses`)
-        if (topics.length > 0) {
-            console.log(
-                '[TOPICS]',
-                topics.map((t) => ({ id: t._id, status: t.currentStatus }))
-            )
-        }
+        // console.log(`[RESULT] Found ${topics.length} topics in bad statuses`)
+        // if (topics.length > 0) {
+        //     console.log(
+        //         '[TOPICS]',
+        //         topics.map((t) => ({ id: t._id, status: t.currentStatus }))
+        //     )
+        // }
 
-        if (!force && topics.length > 0) {
-            console.log('[ERROR] INVALID TOPICS REMAINING')
-            throw new BadRequestException(
-                `Vẫn còn ${topics.length} đề tài ở trạng thái Submitted hoặc UnderReview. Có thể dùng force.`
-            )
-        }
+        // if (!force && topics.length > 0) {
+        //     console.log('[ERROR] INVALID TOPICS REMAINING')
+        //     throw new BadRequestException(
+        //         `Vẫn còn ${topics.length} đề tài ở trạng thái Mở đăng ký. Có thể dùng force.`
+        //     )
+        // }
 
         // Update topics batch
         console.log('[ACTION] Updating topics batch to execution phase...')

@@ -130,36 +130,34 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             phase: 'submit_topic',
             missingTopics: [],
             pendingTopics: 0,
+            currentApprovedTopics: 0,
             canTriggerNextPhase: false
         }
-
         const minTopicsRequired = phaseDetail.minTopicsPerLecturer
-        //  console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
+        // console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
 
         // loop get missing topic count per lecturer
-
+        //console.log(phaseDetail)
         for (const lec of phaseDetail.requiredLecturers) {
-            //  console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
+            //console.log('[handleCloseSubmitTopicPhase] Processing lecturer:', lec._id, lec.fullName)
 
             const lecStatsPhase1 = (await this.lecturerGetStatisticsSubmitTopicPhase(
                 period._id.toString(),
-                lec._id
+                lec.userId.toString()
             )) as LecGetTopicStatisticInSubmitPhaseDto
 
-            console.log(lecStatsPhase1)
+            const approval = lecStatsPhase1.approvalTopicsNumber
 
-            const submited = lecStatsPhase1.submittedTopicsNumber
-
-            if (submited < minTopicsRequired) {
-                const missing = minTopicsRequired - submited
+            result.currentApprovedTopics += approval
+            if (approval < minTopicsRequired) {
+                const missing = minTopicsRequired - approval
                 console.log(`[handleCloseSubmitTopicPhase] Lecturer missing topics: ${missing}`)
-
                 result.missingTopics.push({
-                    lecturerId: lec._id,
+                    userId: lec.userId.toString(),
                     lecturerEmail: lec.email,
                     minTopicsRequired: minTopicsRequired,
                     lecturerName: lec.fullName,
-                    submittedTopicsCount: submited,
+                    approvalTopicsCount: approval,
                     missingTopicsCount: missing
                 })
             }
@@ -178,7 +176,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         result.canTriggerNextPhase = this.computeCanTriggerNextPhase(
             phaseDetail,
             nextPhase,
-            result.missingTopics.length > 0 && result.pendingTopics > 0
+            result.currentApprovedTopics >= minTopicsRequired * (phaseDetail.requiredLecturers?.length || 0)
         )
         return result
     }
@@ -382,8 +380,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return await this.iPeriodRepository.getPeriodInfo(facultyId, type)
     }
 
-    async getDashboardCurrentPeriod(facultyId: string,userId:string) : Promise<any> {
-        return await this.iPeriodRepository.getDashboardCurrentPeriod(facultyId,userId)
+    async getDashboardCurrentPeriod(facultyId: string, userId: string): Promise<any> {
+        return await this.iPeriodRepository.getDashboardCurrentPeriod(facultyId, userId)
     }
 
     async getCurrentPeriods(facultyId: string, role: string, userId: string): Promise<GetCurrentPeriod[]> {

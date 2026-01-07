@@ -68,15 +68,11 @@ export class ChatController {
     @Get('/chatbot-version/enabled')
     @Auth(AuthType.Bearer)
     async getChatbotVersion() {
-        try {
-            const chatbotversion = await this.chatBotService.getChatBotEnabledVersion()
-            return plainToClass(GetChatbotDto, chatbotversion, {
-                excludeExtraneousValues: true,
-                enableImplicitConversion: true
-            })
-        } catch (error) {
-            return { message: 'Error getting Chatbot version', error: error.message }
-        }
+        const chatbotversion = await this.chatBotService.getChatBotEnabledVersion()
+        return plainToClass(GetChatbotDto, chatbotversion, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 
     // @Get('/chatbot-version/get-all')
@@ -115,7 +111,7 @@ export class ChatController {
         }
     }
 
-    @Post('/chatbot-version/:versionId/add-suggestion-questions')
+    @Post('/chatbot-version/:versionId/query-suggestions')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.ADMIN)
     @UseGuards(RolesGuard)
@@ -124,16 +120,16 @@ export class ChatController {
         return { message: 'Đã thêm các đề nghị cho câu hỏi tới chatbot', numberModified }
     }
 
-    @Patch('/chatbot-version/:versionId/unenable-suggestion-questions')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.ADMIN)
-    @UseGuards(RolesGuard)
-    async unenableSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
-        const numberModified = await this.chatBotService.unenableSuggestionsFromChatbot(versionId, suggestionIds)
-        return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
-    }
+    // @Patch('/chatbot-version/:versionId/unenable-suggestion-questions')
+    // @Auth(AuthType.Bearer)
+    // @Roles(UserRole.ADMIN)
+    // @UseGuards(RolesGuard)
+    // async unenableSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
+    //     const numberModified = await this.chatBotService.unenableSuggestionsFromChatbot(versionId, suggestionIds)
+    //     return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
+    // }
 
-    @Patch('/chatbot-version/:versionId/suggestion-questions/:suggestionId')
+    @Patch('/chatbot-version/:versionId/query-suggestions/:suggestionId')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.ADMIN)
     @UseGuards(RolesGuard)
@@ -150,12 +146,23 @@ export class ChatController {
         return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
     }
 
-    @Delete('/chatbot-version/:versionId/remove-suggestion-questions')
+    @Delete('/chatbot-version/:versionId/query-suggestions')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.ADMIN)
     @UseGuards(RolesGuard)
     async removeSuggestions(@Param('versionId') versionId: string, @Body('suggestionIds') suggestionIds: string[]) {
         const numberModified = await this.chatBotService.removeSuggestionsFromChatbot(versionId, suggestionIds)
         return { message: 'Đã xóa các đề nghị cho câu hỏi khỏi chatbot', numberModified }
+    }
+    //toggle status change
+    @Patch('/chatbot-version/:id/toggle-suggestion-status')
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    @Auth(AuthType.Bearer)
+    async toggleSuggestionStatus(@Param('id') id: string, @Body() body: { status: boolean; suggestionId: string }) {
+        const result = await this.chatBotService.toggleSuggestionStatus(id, body.status, body.suggestionId)
+        return result
+            ? { message: `Đã thay đổi trạng thái chatbot thành công. ${body.status}` }
+            : { message: 'Thay đổi trạng thái chatbot thất bại' }
     }
 }

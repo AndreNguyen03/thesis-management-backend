@@ -45,7 +45,19 @@ export class PeriodsController {
         private readonly periodsService: PeriodsService,
         private readonly getTopicProvider: GetTopicProvider
     ) {}
-
+    @Patch('/:periodId/config-submit-topic-phase')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async configSubmitTopicPhase(
+        @Req() req: { user: ActiveUserData },
+        @Param('periodId') periodId: string,
+        @Body() configPhaseSubmitTopicDto: ConfigPhaseSubmitTopicDto,
+        @Query('force') force: boolean
+    ) {
+        await this.periodsService.configPhaseSubmitTopic(req.user.sub, periodId, configPhaseSubmitTopicDto, force)
+        return { message: 'Thiết lập giai đoạn "nộp đề tài" thành công' }
+    }
     // Tạo kì/ đợt đăng ký mới
     @Post()
     @Auth(AuthType.Bearer)
@@ -115,20 +127,6 @@ export class PeriodsController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
-    }
-
-    @Patch('/:periodId/config-submit-topic-phase')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async configSubmitTopicPhase(
-        @Req() req: { user: ActiveUserData },
-        @Param('periodId') periodId: string,
-        @Body() configPhaseSubmitTopicDto: ConfigPhaseSubmitTopicDto,
-        @Query('force') force: boolean
-    ) {
-        await this.periodsService.configPhaseSubmitTopic(req.user.sub, periodId, configPhaseSubmitTopicDto, force)
-        return { message: 'Thiết lập giai đoạn "nộp đề tài" thành công' }
     }
 
     @Patch(':periodId/config-execution-phase')

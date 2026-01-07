@@ -34,6 +34,6 @@ import { TopicModule } from '../topics/topic.module'
             useClass: TopicVectorRepository
         }
     ],
-    exports: [TopicSearchService]
+    exports: [TopicSearchService,VectorSyncProvider]
 })
 export class TopicVectorModule {}

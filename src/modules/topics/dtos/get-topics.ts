@@ -129,6 +129,11 @@ export class GetGeneralTopics extends AbstractTopic {
     //dùng trong pha thực hiện đề tài
     progress?: number
 
+    @Expose()
+    finalGrade?: number
+
+    @Expose()
+    defenseMilestoneDate?: Date
 }
 
 class TopicStatsDto {
@@ -155,7 +160,7 @@ class FileSnapshotDto {
 class FinalProduct {
     @Expose()
     @Type(() => FileSnapshotDto)
-    thesisReport: FileSnapshotDto
+    thesisReport: FileSnapshotDto[]
     @Expose()
     sourceCodeUrl: string
     @Expose()
@@ -184,6 +189,7 @@ export class DefenseResult {
     @Expose()
     gradeText: string // Xếp loại: "Xuất sắc"
     @Expose()
+    @Type(() => CouncilMemberSnapshot)
     councilMembers: CouncilMemberSnapshot[]
     @Expose()
     councilName: string // VD: "Hội đồng CNPM 01"
@@ -410,7 +416,7 @@ export class RequestGetTopicsInPhaseBaseDto {
     @IsEnum(PeriodPhaseName)
     phase: string
     @IsOptional()
-    status: string
+    status?: string
     @IsNotEmpty()
     //100 là search semantic
     //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù

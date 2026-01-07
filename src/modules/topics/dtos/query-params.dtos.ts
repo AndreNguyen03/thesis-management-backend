@@ -6,3 +6,9 @@ export class SubmittedTopicParamsDto extends PaginationQueryDto {
     @IsString()
     periodId: string
 }
+
+export class PaginationRegisteredTopicsQueryParams extends PaginationQueryDto {
+    @IsOptional()
+    @IsString()
+    periodId: string
+}

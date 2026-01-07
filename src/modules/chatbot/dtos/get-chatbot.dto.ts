@@ -18,9 +18,6 @@ export class GetChatbotDto {
     @Type(() => GetQuerySuggestionDto)
     query_suggestions: GetQuerySuggestionDto[]
     @Expose()
-    @Type(() => GetQuerySuggestionDto)
-    query_unenable_suggestions: GetQuerySuggestionDto[]
-    @Expose()
     createdAt: Date
     @Expose()
     updatedAt: Date
