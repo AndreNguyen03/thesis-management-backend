@@ -16,7 +16,6 @@ import { GetCurrentPeriod, GetPeriodDto } from '../../dtos/period.dtos'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 
-
 export class PeriodRepository extends BaseRepositoryAbstract<Period> implements IPeriodRepository {
     constructor(
         @InjectModel(Period.name) private readonly periodModel: Model<Period>,
@@ -25,11 +24,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         super(periodModel)
     }
     async getCurrentPeriodInfo(facultyId: string): Promise<any> {
+        console.log('facultyId', facultyId)
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
         pipelineSub.push(
             { $match: { faculty: new mongoose.Types.ObjectId(facultyId), deleted_at: null } },
-            { $sort: { createdAt: 1 } },
+            { $sort: { createdAt: -1 } },
             {
                 $addFields: {
                     status: {
@@ -45,15 +45,15 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 },
                                 {
                                     case: {
-                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                        $eq: ['$status', PeriodStatus.Completed]
                                     },
-                                    then: 'active'
+                                    then: PeriodStatus.Completed
                                 },
                                 {
                                     case: {
-                                        $eq: ['status', PeriodStatus.Completed]
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
                                     },
-                                    then: PeriodStatus.Completed
+                                    then: 'active'
                                 }
                             ],
                             default: 'timeout'
@@ -95,6 +95,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                             ]
                                                         },
                                                         then: 'active'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $eq: ['$status', PeriodStatus.Completed]
+                                                        },
+                                                        then: PeriodStatus.Completed
                                                     }
                                                 ],
                                                 default: 'timeout'
@@ -155,7 +161,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                 startTime: 1,
                 endTime: 1,
                 currentPhase: 1,
-                currentPhaseDetail: 1
+                currentPhaseDetail: 1,
+                createdAt: 1
             }
         })
 
@@ -236,15 +243,15 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 },
                                 {
                                     case: {
-                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                        $eq: ['$status', PeriodStatus.Completed]
                                     },
-                                    then: 'active'
+                                    then: PeriodStatus.Completed
                                 },
                                 {
                                     case: {
-                                        $eq: ['status', PeriodStatus.Completed]
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
                                     },
-                                    then: PeriodStatus.Completed
+                                    then: 'active'
                                 }
                             ],
                             default: 'timeout'
@@ -277,6 +284,12 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                     {
                                                         case: { $lt: ['$$NOW', '$$phase.startTime'] },
                                                         then: 'pending'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $eq: ['$status', PeriodStatus.Completed]
+                                                        },
+                                                        then: PeriodStatus.Completed
                                                     },
                                                     {
                                                         case: {
@@ -368,15 +381,15 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                 },
                                 {
                                     case: {
-                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
+                                        $eq: ['$status', PeriodStatus.Completed]
                                     },
-                                    then: 'active'
+                                    then: PeriodStatus.Completed
                                 },
                                 {
                                     case: {
-                                        $eq: ['status', PeriodStatus.Completed]
+                                        $and: [{ $gte: ['$$NOW', '$startTime'] }, { $lte: ['$$NOW', '$endTime'] }]
                                     },
-                                    then: PeriodStatus.Completed
+                                    then: 'active'
                                 }
                             ],
                             default: 'timeout'
@@ -1435,7 +1448,9 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         }
                     }
                 }
-            },
+            }
+        ]
+        pipelineMain.push(
             // Map required lecturers to each phase
             {
                 $addFields: {
@@ -1452,7 +1467,10 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                 input: '$lecturers',
                                                 as: 'lec',
                                                 cond: {
-                                                    $in: ['$$lec._id', { $ifNull: ['$$phase.requiredLecturerIds', []] }]
+                                                    $in: [
+                                                        '$$lec.userId',
+                                                        { $ifNull: ['$$phase.requiredLecturerIds', []] }
+                                                    ]
                                                 }
                                             }
                                         }
@@ -1471,7 +1489,7 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                     lecturers: 0
                 }
             }
-        ]
+        )
 
         return pipelineMain
     }

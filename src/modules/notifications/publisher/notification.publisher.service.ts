@@ -1,5 +1,5 @@
 import { InjectQueue } from '@nestjs/bull'
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { Queue } from 'bull'
 import { NotificationType } from '../schemas/notification.schemas'
 import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.provider'
@@ -24,6 +24,12 @@ import { transferNamePeriod } from '../../../common/utils/transfer-name-period'
 import { PeriodType } from '../../periods/enums/periods.enum'
 import { MailService } from '../../../mail/providers/mail.service'
 import { UserService } from '../../../users/application/users.service'
+import { SendCustomNotificationDto } from '../dtos/send-custom-notificaition.dtos'
+import { RecipientType } from '../enum/recipient-type.enum'
+import { UserRole } from '../../../auth/enum/user-role.enum'
+import mongoose from 'mongoose'
+import { RecipientMode, SendData } from '../../../mail/dtos/send-data.dtos'
+
 @Injectable()
 export class NotificationPublisherService {
     constructor(
@@ -209,20 +215,21 @@ export class NotificationPublisherService {
     //Khi đề tài BCn gửi nhắc nhở xử lý các tồn động
     //có socket
     async sendReminderLecturerInPeriod(body: RequestReminderLecturers, senderId: string) {
-        const periodInfo = await this.periodsService.getCurrentPeriodInfo(body.periodId, PeriodType.THESIS)
+        const periodInfo = await this.periodsService.getPeriodById(body.periodId)
         const periodName = transferNamePeriod(periodInfo!)
         const { faculty: facultyInfo, ...nest } = periodInfo!
 
-        console.log('Faculty info:', facultyInfo)
         //Lấy danh sách các giảng viên cùng thông tin
         let list
         if (body.phaseName === PeriodPhaseName.SUBMIT_TOPIC) {
             list = (await this.periodsService.closePhase(body.periodId, body.phaseName)) as Phase1Response
             // duyệt qua tất cả giảng viên để gửi thông báo
+            console.log("rrrr", list)
             const { missingTopics: lecturers } = list
             for (const lecturer of lecturers) {
+                console.log("sdsad",lecturer.userId)
                 const newNotification: CreateNotification = {
-                    recipientId: lecturer.lecturerId,
+                    recipientId: lecturer.userId,
                     senderId,
                     title: NotificationTitleEnum.REMINDER_SUBMIT_TOPIC,
                     message: `BCN khoa ${facultyInfo.name}: Bạn hiện tại mới nộp ${lecturer.submittedTopicsCount}/${lecturer.minTopicsRequired} đề tài yêu cầu. Vui lòng hoàn thành trước ${new Date(body.deadline).toLocaleString('vi-VN')}`,
@@ -244,12 +251,12 @@ export class NotificationPublisherService {
                 }
                 //Gửi thông báo qua socket
                 await this.queue.add('send-notifications-inphase', {
-                    senderId: lecturer.lecturerId,
+                    senderId: lecturer.userId,
                     notiSend
                 })
                 //Gửi thông báo qua email
                 //Lấy thông tin người gửi
-                const checkUserInfo = await this.checkUserInfo.getUserInfo(lecturer.lecturerId)
+                const checkUserInfo = await this.checkUserInfo.getUserInfo(lecturer.userId)
                 const message = 'Kính mong quý thầy/cô sớm hoàn thành việc nộp đề tài'
                 await this.mailService.sendReminderSubmitTopicMail(
                     checkUserInfo,
@@ -449,6 +456,55 @@ export class NotificationPublisherService {
                 delay: 2000
             }
         })
-        await this.mailService.sendSubmitTopicRequestEmail({ users, periodName: transferNamePeriod(periodInfo), deadline: deadline.toISOString(), periodId: periodInfo._id.toString() })
+        await this.mailService.sendSubmitTopicRequestEmail({
+            users,
+            periodName: transferNamePeriod(periodInfo),
+            deadline: deadline.toISOString(),
+            periodId: periodInfo._id.toString()
+        })
+    }
+    async sendCustomNotification(
+        senderId: string,
+        facultyId: string,
+        dto: SendCustomNotificationDto
+    ): Promise<{ sentCount: number }> {
+        // 1. Validate period thuộc faculty
+        const period = await this.periodsService.checkCurrentPeriod(dto.periodId)
+
+        if (!period) {
+            throw new NotFoundException('Không tìm thấy đợt đăng ký')
+        }
+
+        // 2. Lấy danh sách người nhận
+        let recipientIds: string[] = []
+
+        if (dto.recipientType === RecipientMode.ALL_INSTRUCTORS) {
+            //lấy tất cả các lecturers trong faculty
+            const lecturers = await this.userService.getUsersByFacultyId(facultyId, UserRole.LECTURER)
+            recipientIds = lecturers.map((l) => l._id.toString())
+        } else if (dto.recipientType === RecipientMode.ALL_STUDENTS) {
+            // Lấy tất cả sinh viên có đề tài trong period này
+            const students = await this.userService.getUsersByFacultyId(facultyId, UserRole.STUDENT)
+            recipientIds = students.map((s) => s._id.toString())
+        } else if (dto.recipientIds && dto.recipientIds.length > 0) {
+            recipientIds = dto.recipientIds
+        }
+
+        if (recipientIds.length === 0) {
+            throw new BadRequestException('Không có người nhận nào được chọn')
+        }
+
+        //3. Gửi thông báo qua queue
+        await this.queue.add('send-custom-noti', { subject: dto.subject, content: dto.content, senderId, recipientIds })
+
+        // 4. Gửi email (nếu có service email)
+        const mailData = {
+            recipientMode: dto.recipientType as RecipientMode,
+            recipients: recipientIds,
+            subject: dto.subject,
+            content: dto.content
+        } as SendData
+        await this.mailService.sendCustomEmail(dto.periodId, mailData)
+        return { sentCount: recipientIds.length }
     }
 }

@@ -43,6 +43,7 @@ export class NotificationsService {
         try {
             res = (await this.notiModel.create(createDto)).toObject()
         } catch (error) {
+            console.log(error)
             throw new BadRequestException('Không thể tạo thông báo')
         }
         return res

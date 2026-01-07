@@ -1,4 +1,5 @@
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { RecipientType } from '../../modules/notifications/enum/recipient-type.enum'
 
 export enum RecipientMode {
     CUSTOM_INSTRUCTORS = 'custom-instructors',

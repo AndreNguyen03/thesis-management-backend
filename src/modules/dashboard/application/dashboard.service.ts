@@ -71,6 +71,9 @@ export class DashboardService {
         const { latestThesisPeriod, latestResearchPeriod } =
             await this.getPeriodInfoProvider.getCurrentPeriodInfo(facultyId)
 
+            console.log('latestThesisPeriod', latestThesisPeriod)
+            console.log('latestResearchPeriod', latestResearchPeriod)
+
         return {
             thesis: this.mapPeriodToDashboardDto(latestThesisPeriod),
             scientificResearch: this.mapPeriodToDashboardDto(latestResearchPeriod)

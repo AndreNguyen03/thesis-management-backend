@@ -12,6 +12,8 @@ export class TopicInteractionService {
 
     async logInteraction(userId: string, topicId: string, action: string) {
         if (action === 'view') {
+            // Kiểm tra xem user đã xem trong vòng 10 phút chưa
+            // (Frontend đã đảm bảo chỉ gọi API sau khi xem ít nhất 2 phút)
             const existed = await this.interactionRepo.findRecentView(userId, topicId, 10)
             if (existed) return
         }

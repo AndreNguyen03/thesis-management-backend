@@ -41,7 +41,7 @@ import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { Response } from 'express'
-import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
@@ -78,17 +78,17 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     async batchPublishOrNotDefenseResults(topics: PublishTopic[], actorId: string, templateMilestoneId: string) {
         const bol = await this.topicRepository.batchPublishOrNotDefenseResults(topics)
         let i = 0
-        if (bol) {
-            for (const topic of topics) {
-                await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-                    topic.topicId,
-                    TopicStatus.Graded,
-                    actorId,
-                    'Đề tài đã được chấm điểm và công bố kết quả.'
-                )
-                i++
-            }
-        }
+        // if (bol) {
+        //     for (const topic of topics) {
+        //         await this.milestonesService.getThesisReportMilestoneOfTopics(
+        //             topic.topicId,
+        //             TopicStatus.Graded,
+        //             actorId,
+        //             'Đề tài đã được chấm điểm và công bố kết quả.'
+        //         )
+        //         i++
+        //     }
+        // }
         //cập nhật cờ isPublish của milestone thành true
         await this.milestonesService.updateMilestoneTemplatePublishState(templateMilestoneId, topics[0].isPublished)
         return {
@@ -135,7 +135,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
         const newPhaseHistory = this.initializePhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
-
+        lecturerIds?.push(userId)
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
@@ -212,7 +212,10 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return await this.userSavedTopicRepository.unassignSaveTopic(userId, topicId)
     }
 
-    public async getRegisteredTopics(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+    public async getRegisteredTopics(
+        userId: string,
+        query: PaginationRegisteredTopicsQueryParams
+    ): Promise<Paginated<Topic>> {
         return await this.topicRepository.findRegisteredTopicsByUserId(userId, query)
     }
     public async getCanceledRegisteredTopics(userId: string, userRole: string): Promise<GetTopicResponseDto[]> {
@@ -540,7 +543,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
                         isPublished: result.isPublished || false
                     }
                 })
-
+                await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+                    result.topicId,
+                    TopicStatus.Graded,
+                    userId
+                )
                 success++
             } catch (error) {
                 console.error(`Failed to update defense result for topic ${result.topicId}:`, error)

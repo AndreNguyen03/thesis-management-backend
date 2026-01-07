@@ -29,7 +29,7 @@ import {
     LecGetTopicStatisticInOpenRegPhaseDto,
     LecGetTopicStatisticInSubmitPhaseDto
 } from '../dtos/get-statistics-topics.dtos'
-import { SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Topic } from '../schemas/topic.schemas'
 
@@ -41,7 +41,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
     findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
-    findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
+    findRegisteredTopicsByUserId(userId: string, query: PaginationRegisteredTopicsQueryParams): Promise<Paginated<Topic>>
     findCanceledRegisteredTopicsByUserId(
         userId: string,
         userRole: string

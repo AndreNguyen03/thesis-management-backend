@@ -42,7 +42,7 @@ import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
 import { GetMajorLibraryCombox } from '../majors/dtos/get-major.dto'
 import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
-import { SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 
 @Controller('topics')
@@ -79,7 +79,7 @@ export class TopicController {
     }
     @Get('/registered-topics')
     @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationRegisteredTopicsQueryParams) {
         const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
         return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
@@ -546,4 +546,5 @@ export class TopicController {
             message: `Đã lưu ${success} đề tài vào thư viện, ${failed} đề tài thất bại`
         }
     }
+    
 }

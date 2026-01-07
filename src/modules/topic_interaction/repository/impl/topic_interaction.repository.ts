@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
 import { TopicInteraction } from '../../schema/topic_interaction.schema'
 import { TopicInteractionRepositoryInterface } from '../topic_interaction.interface.repository'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model, Types } from 'mongoose'
+import mongoose, { Model, Types } from 'mongoose'
+import { Topic } from '../../../topics/schemas/topic.schemas'
+import { TopicStatus } from '../../../topics/enum'
 
 @Injectable()
 export class TopicInteractionRepository
@@ -12,12 +14,25 @@ export class TopicInteractionRepository
 {
     constructor(
         @InjectModel(TopicInteraction.name)
-        private readonly interactionModel: Model<TopicInteraction>
+        private readonly interactionModel: Model<TopicInteraction>,
+        @InjectModel(Topic.name)
+        private readonly topicModel: Model<Topic>
     ) {
         super(interactionModel)
     }
 
     async findRecentView(userId: string, topicId: string, minutes: number): Promise<TopicInteraction | null> {
+        // Kiểm tra đề tài có tồn tại và đã được archived không
+        const topic = await this.topicModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(topicId), currentStatus: TopicStatus.Archived },
+            { $inc: { "stats.views": 1 } },
+            { new: true }
+        )
+        if (!topic) {
+            throw new NotFoundException('Đề tài không được tìm thấy trong thư viện')
+        }
+
+        // Tìm kiếm lượt xem gần đây của user này
         return this.findOneByCondition({
             userId,
             topicId,

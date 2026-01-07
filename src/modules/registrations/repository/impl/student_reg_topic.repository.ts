@@ -31,6 +31,7 @@ import { ActiveUserData } from '../../../../auth/interface/active-user-data.inte
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
 import { PaginationStudentGetHistoryQuery } from '../../dtos/request.dto'
 import { MetaCustom } from '../../dtos/get-history-registration.dto'
+import { create } from 'domain'
 
 export class StudentRegTopicRepository
     extends BaseRepositoryAbstract<StudentRegisterTopic>
@@ -251,6 +252,7 @@ export class StudentRegTopicRepository
                 }
             })
         }
+        console.log('Pipeline history registration:::', pipeline)
         const data = await this.paginationProvider.paginateQuery<StudentRegisterTopic>(
             query,
             this.studentRegTopicModel,
@@ -698,7 +700,8 @@ export class StudentRegTopicRepository
                 registeredAt: '$createdAt',
                 lecturerResponse: 1,
                 rejectionReasonType: 1,
-                processedBy: 1
+                processedBy: 1,
+                createdAt:1
             }
         })
         return pipelineMain

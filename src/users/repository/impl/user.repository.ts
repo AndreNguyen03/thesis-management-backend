@@ -173,10 +173,10 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
         return res.map((user) => user.email)
     }
     //lấy danh sách các user có trong khoa theo facultyId
-    async getUsersByFacultyId(facultyId: string): Promise<User[]> {
+    async getUsersByFacultyId(facultyId: string, role?: string): Promise<User[]> {
         let pipeline: any[] = []
-        pipeline.push(
-            {
+        if (role === UserRole.LECTURER || !role)
+            pipeline.push({
                 $lookup: {
                     from: 'lecturers',
                     let: { facultyId: facultyId },
@@ -194,86 +194,81 @@ export class UserRepository extends BaseRepositoryAbstract<User> implements User
                     ],
                     as: 'lecturers'
                 }
-            },
-            {
-                $lookup: {
-                    from: 'students',
-                    let: { facultyId: facultyId },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
-                                        { $eq: ['$deleted_at', null] }
-                                    ]
-                                }
+            })
+        pipeline.push({
+            $lookup: {
+                from: 'students',
+                let: { facultyId: facultyId },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
+                                    { $eq: ['$deleted_at', null] }
+                                ]
                             }
                         }
-                    ],
-                    as: 'students'
-                }
-            },
-            {
-                $lookup: {
-                    from: 'faculty_boards',
-                    let: { facultyId: facultyId },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
-                                        { $eq: ['$deleted_at', null] }
-                                    ]
-                                }
+                    }
+                ],
+                as: 'students'
+            }
+        })
+        pipeline.push({
+            $lookup: {
+                from: 'faculty_boards',
+                let: { facultyId: facultyId },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$facultyId', new Types.ObjectId(facultyId)] },
+                                    { $eq: ['$deleted_at', null] }
+                                ]
                             }
                         }
-                    ],
-                    as: 'facultyBoards'
-                }
-            },
-            {
-                $addFields: {
-                    userIds: {
-                        $setUnion: [
-                            {
-                                $map: {
-                                    input: '$lecturers',
-                                    as: 'lecturer',
-                                    in: '$$lecturer.userId'
-                                }
-                            },
-                            {
-                                $map: {
-                                    input: '$students',
-                                    as: 'student',
-                                    in: '$$student.userId'
-                                }
-                            },
-                            {
-                                $map: {
-                                    input: '$facultyBoards',
-                                    as: 'facultyBoard',
-                                    in: '$$facultyBoard.userId'
-                                }
+                    }
+                ],
+                as: 'facultyBoards'
+            }
+        })
+        pipeline.push({
+            $addFields: {
+                userIds: {
+                    $setUnion: [
+                        {
+                            $map: {
+                                input: '$lecturers',
+                                as: 'lecturer',
+                                in: '$$lecturer.userId'
                             }
-                        ]
-                    }
-                }
-            },
-            {
-                $match: {
-                    $expr: {
-                        $and: [
-                            { $in: ['$_id', '$userIds'] },
-                            { $eq: ['$isActive', true] },
-                            { $eq: ['$deleted_at', null] }
-                        ]
-                    }
+                        },
+                        {
+                            $map: {
+                                input: '$students',
+                                as: 'student',
+                                in: '$$student.userId'
+                            }
+                        },
+                        {
+                            $map: {
+                                input: '$facultyBoards',
+                                as: 'facultyBoard',
+                                in: '$$facultyBoard.userId'
+                            }
+                        }
+                    ]
                 }
             }
-        )
+        })
+        pipeline.push({
+            $match: {
+                $expr: {
+                    $and: [{ $in: ['$_id', '$userIds'] }, { $eq: ['$isActive', true] }, { $eq: ['$deleted_at', null] }]
+                }
+            }
+        })
         return await this.userModel.aggregate(pipeline)
     }
 

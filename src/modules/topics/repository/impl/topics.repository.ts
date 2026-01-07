@@ -36,7 +36,7 @@ import { TopicStatus } from '../../enum'
 import { PaginationQueryDto } from '../../../../common/pagination-an/dtos/pagination-query.dto'
 import { LecturerRoleEnum } from '../../../registrations/enum/lecturer-role.enum'
 import { GetUploadedFileDto } from '../../../upload-files/dtos/upload-file.dtos'
-import { SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
+import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../../dtos/query-params.dtos'
 import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
 import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
 import { MilestoneCreator, MilestoneStatus, MilestoneType } from '../../../milestones/schemas/milestones.schemas'
@@ -698,10 +698,19 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
-    async findRegisteredTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>> {
+    async findRegisteredTopicsByUserId(
+        userId: string,
+        query: PaginationRegisteredTopicsQueryParams
+    ): Promise<Paginated<Topic>> {
         let pipeline: any[] = []
         pipeline.push(...this.getTopicInfoPipelineAbstract(userId))
-        pipeline.push({ $match: { deleted_at: null, registrationStatus: { $ne: null } } })
+        pipeline.push({
+            $match: {
+                deleted_at: null,
+                registrationStatus: { $ne: null },
+                ...(query.periodId ? { periodId: new mongoose.Types.ObjectId(query.periodId) } : {})
+            }
+        })
         //Lấy ra topic không null và mảng topic người dùng đã lưu khác rỗng
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipeline)
     }
@@ -2554,36 +2563,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 $facet: {
                     rejectedTopics: [
                         {
-                            $lookup: {
-                                //tìm những topic mà người này là hướng dẫn chính
-                                from: 'ref_lecturers_topics',
-                                let: { topicId: '$_id' },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
-                                                    { $eq: ['$topicId', '$$topicId'] },
-                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
-                                                    { $eq: ['$deleted_at', null] }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as: 'lecTopicRefs'
-                            }
-                        },
-                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
-                        {
-                            $addFields: {
-                                isMainSupervisor: {
-                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
-                                }
-                            }
-                        },
-                        {
                             $addFields: {
                                 lastStatusInPhaseHistory: {
                                     $arrayElemAt: [
@@ -2602,7 +2581,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                isMainSupervisor: true,
+                                createBy: new mongoose.Types.ObjectId(lecturerId),
                                 'lastStatusInPhaseHistory.status': TopicStatus.Rejected,
                                 deleted_at: null
                             }
@@ -2611,36 +2590,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     approvedTopics: [
                         {
-                            $lookup: {
-                                //tìm những topic mà người này là hướng dẫn chính
-                                from: 'ref_lecturers_topics',
-                                let: { topicId: '$_id' },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
-                                                    { $eq: ['$topicId', '$$topicId'] },
-                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
-                                                    { $eq: ['$deleted_at', null] }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as: 'lecTopicRefs'
-                            }
-                        },
-                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
-                        {
-                            $addFields: {
-                                isMainSupervisor: {
-                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
-                                }
-                            }
-                        },
-                        {
                             $addFields: {
                                 lastStatusInPhaseHistory: {
                                     $arrayElemAt: [
@@ -2659,7 +2608,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                isMainSupervisor: true,
+                                createBy: new mongoose.Types.ObjectId(lecturerId),
                                 'lastStatusInPhaseHistory.status': TopicStatus.Approved,
                                 deleted_at: null
                             }
@@ -2668,36 +2617,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     submittedTopics: [
                         {
-                            $lookup: {
-                                //tìm những topic mà người này là hướng dẫn chính
-                                from: 'ref_lecturers_topics',
-                                let: { topicId: '$_id' },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
-                                                    { $eq: ['$topicId', '$$topicId'] },
-                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
-                                                    { $eq: ['$deleted_at', null] }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as: 'lecTopicRefs'
-                            }
-                        },
-                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
-                        {
-                            $addFields: {
-                                isMainSupervisor: {
-                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
-                                }
-                            }
-                        },
-                        {
                             $addFields: {
                                 lastStatusInPhaseHistory: {
                                     $arrayElemAt: [
@@ -2716,7 +2635,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                isMainSupervisor: true,
+                                createBy: new mongoose.Types.ObjectId(lecturerId),
                                 'lastStatusInPhaseHistory.status': TopicStatus.Submitted,
                                 deleted_at: null
                             }
@@ -2725,36 +2644,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     underReviewTopics: [
                         {
-                            $lookup: {
-                                //tìm những topic mà người này là hướng dẫn chính
-                                from: 'ref_lecturers_topics',
-                                let: { topicId: '$_id' },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
-                                                    { $eq: ['$topicId', '$$topicId'] },
-                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
-                                                    { $eq: ['$deleted_at', null] }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as: 'lecTopicRefs'
-                            }
-                        },
-                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
-                        {
-                            $addFields: {
-                                isMainSupervisor: {
-                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
-                                }
-                            }
-                        },
-                        {
                             $addFields: {
                                 lastStatusInPhaseHistory: {
                                     $arrayElemAt: [
@@ -2773,7 +2662,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                         {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                isMainSupervisor: true,
                                 'lastStatusInPhaseHistory.status': TopicStatus.UnderReview,
                                 deleted_at: null
                             }
@@ -2782,39 +2670,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     ],
                     totalTopicsInPhase: [
                         {
-                            $lookup: {
-                                //tìm những topic mà người này là hướng dẫn chính
-                                from: 'ref_lecturers_topics',
-                                let: { topicId: '$_id' },
-                                pipeline: [
-                                    {
-                                        $match: {
-                                            $expr: {
-                                                $and: [
-                                                    { $eq: ['$userId', new mongoose.Types.ObjectId(lecturerId)] },
-                                                    { $eq: ['$topicId', '$$topicId'] },
-                                                    { $eq: ['$role', LecturerRoleEnum.MAIN_SUPERVISOR] },
-                                                    { $eq: ['$deleted_at', null] }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as: 'lecTopicRefs'
-                            }
-                        },
-                        //Thêm cờ để đánh dấu đề tài này là của giảng viên đương nhiệm
-                        {
-                            $addFields: {
-                                isMainSupervisor: {
-                                    $gt: [{ $size: '$lecTopicRefs' }, 0]
-                                }
-                            }
-                        },
-                        {
                             $match: {
                                 periodId: new mongoose.Types.ObjectId(periodId),
-                                isMainSupervisor: true,
+                                createBy: new mongoose.Types.ObjectId(lecturerId),
                                 phaseHistories: { $elemMatch: { phaseName: submitPhase } },
                                 deleted_at: null
                             }
@@ -3867,7 +3725,13 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 submittedAt: '$submittedPhaseHistory.createdAt',
                 periodInfo: 1,
                 studentsNum: 1,
-                allowManualApproval: 1
+                allowManualApproval: 1,
+                submittedPhaseHistory: 1
+            }
+        })
+        pipelineSub.push({
+            $match: {
+                submittedPhaseHistory: { $ne: null }
             }
         })
         return pipelineSub

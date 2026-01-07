@@ -3,11 +3,11 @@ import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { ResponseMiniStudentDto } from '../../../users/dtos/student.dto'
 export class MissingTopicRecord {
-    lecturerId: string
+    userId: string
     lecturerName: string
     lecturerEmail: string
     minTopicsRequired: number
-    submittedTopicsCount: number
+    approvalTopicsCount: number
     missingTopicsCount: number
 }
 export interface Phase1Response {
@@ -15,6 +15,7 @@ export interface Phase1Response {
     phase: 'submit_topic'
     missingTopics: MissingTopicRecord[]
     canTriggerNextPhase: boolean
+    currentApprovedTopics: number
     pendingTopics: number
 }
 
@@ -80,6 +81,7 @@ export interface PendingLecturerReview {
 
 export interface LecturerInfo {
     _id: string
+    userId: string
     fullName: string
     email: string
     phone: string

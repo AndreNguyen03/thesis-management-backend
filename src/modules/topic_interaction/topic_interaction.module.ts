@@ -4,9 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { TopicInteraction, TopicInteractionSchema } from './schema/topic_interaction.schema'
 import { TopicInteractionService } from './application/topic_interaction.service'
 import { TopicInteractionRepository } from './repository/impl/topic_interaction.repository'
+import { Topic, TopicSchema } from '../topics/schemas/topic.schemas'
 
 @Module({
-    imports: [MongooseModule.forFeature([{ name: TopicInteraction.name, schema: TopicInteractionSchema }])],
+    imports: [MongooseModule.forFeature([{ name: TopicInteraction.name, schema: TopicInteractionSchema },{name: Topic.name, schema: TopicSchema}])],
     controllers: [TopicInteractionController],
     providers: [
         TopicInteractionService,

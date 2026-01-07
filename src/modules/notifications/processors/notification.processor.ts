@@ -211,4 +211,24 @@ export class NotificationQueueProcessor {
             console.error('Error sending open registration period notifications:', error)
         }
     }
+
+    @Process('send-custom-noti')
+    async handleSendCustomNotification(
+        job: Job<{ subject: string; content: string; senderId: string; recipientIds: string[] }>
+    ) {
+        const { subject, content, senderId, recipientIds } = job.data
+        const notifications = recipientIds.map((recipientId) => ({
+            recipientId: recipientId,
+            senderId: senderId,
+            title: subject,
+            message: content,
+            type: 'custom',
+            isRead: false,
+            createdAt: new Date()
+        }))
+
+        for (const noti of notifications) {
+            await this.notificationsService.createNotification(noti)
+        }
+    }
 }
