@@ -5,6 +5,8 @@ import { z } from 'zod'
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { plainToInstance } from 'class-transformer'
 import { GetKnowledgeChunkDto } from '../../knowledge-source/dto/get-knowledge-chunk.dto'
+import { Injectable } from '@nestjs/common'
+@Injectable()
 export class DocumentSearchTool {
     constructor(
         private readonly searchProvider: SearchSimilarDocumentsProvider,
@@ -45,8 +47,8 @@ OUTPUT: Đoạn text trích dẫn từ tài liệu + link nguồn
                         limit,
                         scoreThreshold: 0.75 // Yêu cầu cao hơn cho documents
                     })
-
                     if (results.length === 0) {
+                        console.log('📄 [DOCUMENT TOOL] No documents found for query:', query)
                         return 'Không tìm thấy tài liệu phù hợp.'
                     }
                     const chunks = plainToInstance(GetKnowledgeChunkDto, results, {

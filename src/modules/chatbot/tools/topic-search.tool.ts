@@ -7,6 +7,10 @@ import { z } from 'zod'
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
 import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
+import { plainToInstance } from 'class-transformer'
+import { GetKnowledgeChunkDto } from '../../knowledge-source/dto/get-knowledge-chunk.dto'
+import { Injectable } from '@nestjs/common'
+@Injectable()
 export class TopicSearchTool {
     constructor(
         private readonly searchProvider: SearchSimilarDocumentsProvider,
@@ -46,15 +50,18 @@ OUTPUT: Danh sách đề tài kèm thông tin chi tiết (tên, mô tả, yêu c
                     const queryVector = await this.embeddingProvider.getEmbedding(query)
 
                     // B2: Vector search với filter TOPIC
-                    const chunks = await this.searchProvider.searchSimilarDocuments(queryVector, {
+                    const res = await this.searchProvider.searchSimilarDocuments(queryVector, {
                         sourceTypes: [SourceType.TOPIC_REGISTERING, SourceType.TOPIC_LIBRARY],
                         limit: limit * 3, // Lấy nhiều chunks
                         scoreThreshold: 0.7
                     })
-                    if (chunks.length === 0) {
+                    if (res.length === 0) {
                         return 'Không tìm thấy đề tài phù hợp với yêu cầu.'
                     }
-          
+                    const chunks = plainToInstance(GetKnowledgeChunkDto, res, {
+                        excludeExtraneousValues: true,
+                        enableImplicitConversion: true
+                    })
                     // B3: Lấy topicIds từ chunks qua knowledge source
                     const sourceIds = chunks.map((c) => new mongoose.Types.ObjectId(c.source_id))
                     const knowledgeSources = await this.knowledgeSourceModel
@@ -66,19 +73,28 @@ OUTPUT: Danh sách đề tài kèm thông tin chi tiết (tên, mô tả, yêu c
                     const topics = await this.getTopicProvider.getStandarStructureTopicsByTopicIds(topicIds, limit)
 
                     // B5: Format kết quả cho LLM
-                    const formattedTopics = topics.map((topic, idx) => ({
-                        index: idx + 1,
-                        id: topic._id,
-                        titleVN: topic.titleVN,
-                        titleENG: topic.titleEng || 'N/A',
-                        description: topic.description?.substring(0, 300) + '...',
-                        fields: topic.fields?.map((f) => f.name).join(', ') || 'N/A',
-                        requirements: topic.requirements?.map((r) => r.name).join(', ') || 'N/A',
-                        major: topic.major?.name || 'N/A',
-                        lecturers: topic.lecturers?.map((l) => `${l.fullName} (${l.email})`).join(', ') || 'N/A',
-                        maxStudents: topic.maxStudents || 1,
-                        type: topic.type || 'N/A'
-                    }))
+                    const formattedTopics = topics.map((topic, idx) => {
+                        // Tìm chunk tương ứng để lấy score
+                        const matchingChunk = chunks.find((chunk) => {
+                            const ks = knowledgeSources.find((ks) => ks._id.toString() === chunk.source_id)
+                            return ks?.source_location.toString() === topic._id.toString()
+                        })
+
+                        return {
+                            index: idx + 1,
+                            id: topic._id,
+                            titleVN: topic.titleVN,
+                            titleENG: topic.titleEng || 'N/A',
+                            description: topic.description?.substring(0, 300) + '...',
+                            fields: topic.fields?.map((f) => f.name).join(', ') || 'N/A',
+                            requirements: topic.requirements?.map((r) => r.name).join(', ') || 'N/A',
+                            major: topic.major?.name || 'N/A',
+                            lecturers: topic.lecturers?.map((l) => `${l.fullName} (${l.email})`).join(', ') || 'N/A',
+                            maxStudents: topic.maxStudents || 1,
+                            type: topic.type || 'N/A',
+                            similarityScore: matchingChunk?.score || 0
+                        }
+                    })
 
                     return JSON.stringify(
                         {

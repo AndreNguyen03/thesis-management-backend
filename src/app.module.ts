@@ -47,6 +47,7 @@ import { TopicInteractionModule } from './modules/topic_interaction/topic_intera
 import { RecommendModule } from './modules/recommend/recommend.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { RatingModule } from './modules/ratings/rating.module'
+import groqConfig from './config/groq.config'
 
 const ENV = process.env.NODE_ENV
 
@@ -65,7 +66,7 @@ const ENV = process.env.NODE_ENV
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: !ENV ? '.env' : `.env.${ENV}`,
-            load: [appConfig, mongoConfig, redisConfig],
+            load: [appConfig, mongoConfig, redisConfig, googleAIConfig, groqConfig],
             validationSchema: envValidation
         }),
 
@@ -87,8 +88,6 @@ const ENV = process.env.NODE_ENV
         AuthModule,
         MailModule,
 
-        // GoogleAI config
-        ConfigModule.forFeature(googleAIConfig),
         // JWT config
         ConfigModule.forFeature(jwtConfig),
         JwtModule.registerAsync(jwtConfig.asProvider()),
@@ -141,7 +140,7 @@ const ENV = process.env.NODE_ENV
         },
         AccessTokenGuard,
         PaginationProvider,
-        GetTopicStatusProvider,
+        GetTopicStatusProvider
     ]
 })
 // export class AppModule {}

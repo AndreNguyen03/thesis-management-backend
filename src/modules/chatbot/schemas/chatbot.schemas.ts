@@ -57,7 +57,7 @@ export class ChatBot extends BaseEntity {
 
     @Prop({ default: 0 })
     messageCount?: number // Số lượng tin nhắn trong cuộc hội thoại
-}4
+}
 
 export type ChatDocument = HydratedDocument<ChatBot>
 export const ChatBotSchema = SchemaFactory.createForClass(ChatBot)
