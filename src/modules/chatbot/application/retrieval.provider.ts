@@ -30,6 +30,7 @@ export class RetrievalProvider {
         return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch)
     }
 
+    
     async searchCollection(params: {
         collection: 'lecturers' | 'topics' | 'process_docs'
         vector: number[]
