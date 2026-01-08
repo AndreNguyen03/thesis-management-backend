@@ -12,9 +12,16 @@ export class KnowledgeChunkRepository
     constructor(@InjectModel(KnowledgeChunk.name) private readonly knowledgeChunkModel: Model<KnowledgeChunk>) {
         super(knowledgeChunkModel)
     }
-    async createKnowledgeChunk(createKnowledgeChunkDtos: CreateKnowledgeChunkDto): Promise<boolean> {
-        const result = await this.knowledgeChunkModel.insertMany(createKnowledgeChunkDtos)
-        return result && result.length > 0
+    async upsertKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto[]): Promise<boolean> {
+        const bulkOps = createKnowledgeChunkDtos.map(dto => ({
+            updateOne: {
+                filter: { source_id: dto.source_id }, // Assumes dto contains _id for upsert
+                update: { $set: dto },
+                upsert: true
+            }
+        }))
+        const result = await this.knowledgeChunkModel.bulkWrite(bulkOps)
+        return result.upsertedCount > 0 || result.modifiedCount > 0
     }
     async updateKnowledgeChunks(sourceId: string, isDeleteNeeded: boolean): Promise<boolean> {
         const res = await this.knowledgeChunkModel

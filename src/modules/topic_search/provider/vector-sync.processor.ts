@@ -1,5 +1,4 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common'
-import { ModuleRef } from '@nestjs/core'
 import { GetGeneralTopics } from '../../topics/dtos'
 import { Document } from '@langchain/core/documents'
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai'
@@ -9,7 +8,6 @@ import { CreateSearchIndexProvider } from './create-search-index.provider'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { MongoDBAtlasVectorSearch } from '@langchain/mongodb'
-import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
 import { TopicVector } from '../schemas/topic-vector.schemas'
 import { topicToDocument } from '../utils/get-topic-info-document'
 import { Process, Processor } from '@nestjs/bull'
@@ -25,7 +23,7 @@ export class VectorSyncProcessor implements OnModuleInit {
         private readonly googleAIConfiguration: ConfigType<typeof googleAIConfig>,
         @InjectModel(TopicVector.name)
         private readonly topicVectorModel: Model<TopicVector>,
-        private readonly createSearchIndexProvider: CreateSearchIndexProvider,
+        private readonly createSearchIndexProvider: CreateSearchIndexProvider
     ) {}
     async onModuleInit() {
         try {
@@ -35,6 +33,11 @@ export class VectorSyncProcessor implements OnModuleInit {
             })
             //tạo vector_index nếu có
             await this.createSearchIndexProvider.createTopicVectorIndexer('search_topic_vector_index', 'embedding')
+            await this.createSearchIndexProvider.createKnowledgeChunkIndexer(
+                'search_knowledge_chunk',
+                'plot_embedding_gemini_large'
+            )
+
             const collectionName = this.topicVectorModel.collection.name
             const collection = this.topicVectorModel.db.db?.collection(collectionName)
             this.vectorStore = new MongoDBAtlasVectorSearch(this.embeddings, {
@@ -55,10 +58,34 @@ export class VectorSyncProcessor implements OnModuleInit {
         if (topics.length === 0) {
             return
         }
-       
+
         const docs = topics.map((topic) => {
             return topicToDocument(topic)
         })
+
+        //  await db.collection(this.VECTOR_COLLECTION_NAME).deleteMany({})
+        try {
+            await this.vectorStore.addDocuments(docs)
+            console.log(`✅ Đã đồng bộ xong ${docs.length} đề tài bằng Gemini Embeddings!`)
+        } catch (error) {
+            console.error('❌ Lỗi khi thêm documents vào vector store:', error)
+            throw error
+        }
+    }
+
+    // //Đồng bộ dữ liệu các đề tài trong kỳ và pha cụ thể lên vector store
+    @Process('sync-registering-topics-in-period-by-chunks')
+    async syncDataInPeriodOnPhaseByChunk(job: Job<{ topics: GetGeneralTopics[] }>) {
+        const { topics } = job.data
+        if (topics.length === 0) {
+            return
+        }
+        const docs: Document[] = []
+        docs.push(
+            ...topics.map((topic) => {
+                return topicToDocument(topic)
+            })
+        )
 
         //  await db.collection(this.VECTOR_COLLECTION_NAME).deleteMany({})
         try {

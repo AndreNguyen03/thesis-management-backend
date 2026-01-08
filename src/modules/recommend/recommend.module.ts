@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { RecommendController } from './recommend.controller'
-import { GetEmbeddingProvider } from '../chatbot/application/get-embedding.provider'
+import { GetEmbeddingProvider } from '../chatbot/providers/get-embedding.provider'
 import { UsersModule } from '../../users/users.module'
 import { TopicModule } from '../topics/topic.module'
 import { FieldsModule } from '../fields/fields.module'

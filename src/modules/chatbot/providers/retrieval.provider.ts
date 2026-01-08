@@ -10,7 +10,7 @@ import { CreateKnowledgeChunksProvider } from '../../knowledge-source/applicatio
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { KnowledgeChunk } from '../../knowledge-source/schemas/knowledge-chunk.schema'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
-import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
+import { SearchOptions, SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
 
 @Injectable()
 export class RetrievalProvider {
@@ -23,9 +23,9 @@ export class RetrievalProvider {
         @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue
     ) {}
 
-    public async searchSimilarDocuments(vectorSearch: number[]): Promise<KnowledgeChunk[]> {
+    public async searchSimilarDocuments(vectorSearch: number[], options: SearchOptions): Promise<KnowledgeChunk[]> {
         // Search similar documents in the database
-        return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch)
+        return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch, options)
     }
 
     public async buildKnowledgeDocuments(
@@ -71,11 +71,13 @@ export class RetrievalProvider {
                 const vector = await this.getEmbeddingProvider.getEmbedding(chunk)
                 console.log('Created embedding for chunk', vector.length)
                 //console.log('Embedding dimension:', vector.length)
-                const res = await this.knowledgeChunksProvider.createKnowledgeChunks({
-                    source_id: sourceId,
-                    text: chunk,
-                    plot_embedding_gemini_large: vector
-                })
+                const res = await this.knowledgeChunksProvider.createKnowledgeChunks([
+                    {
+                        source_id: sourceId,
+                        text: chunk,
+                        plot_embedding_gemini_large: vector
+                    }
+                ])
                 console.log('Stored chunk result:', chunk)
                 console.log('result chunk saving', res)
             }

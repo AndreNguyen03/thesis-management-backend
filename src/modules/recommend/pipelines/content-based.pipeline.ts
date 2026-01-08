@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { TopicService } from '../../topics/application/topic.service'
 import { FieldsService } from '../../fields/application/fields.service'
-import { GetEmbeddingProvider } from '../../chatbot/application/get-embedding.provider'
+import { GetEmbeddingProvider } from '../../chatbot/providers/get-embedding.provider'
 import { Reranker } from './rerank.pipeline'
 import { BadgeGenerator } from './badge-generator'
 import { StudentService } from '../../../users/application/student.service'

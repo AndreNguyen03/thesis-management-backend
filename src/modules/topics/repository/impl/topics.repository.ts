@@ -19,7 +19,6 @@ import mongoose, { Model, Types } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
-import { BadRequestException, Inject, RequestTimeoutException } from '@nestjs/common'
 import { RequestGradeTopicDto } from '../../dtos/request-grade-topic.dtos'
 import {
     GetTopicsStatisticInCompletionPhaseDto,
@@ -52,6 +51,7 @@ import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
 import { min } from 'class-validator'
+import { BadRequestException, Inject } from '@nestjs/common'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
     public constructor(
@@ -66,7 +66,33 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
-
+    async getStandarStructureTopicsByTopicIds(topicIds: string[], limit: number): Promise<Topic[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(
+            {
+                $match: {
+                    _id: { $in: topicIds.map((id) => new Types.ObjectId(id)) }
+                }
+            },
+            { $limit: limit }
+        )
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                titleVN: 1,
+                titleEng: 1,
+                description: 1,
+                fields: 1,
+                requirements: 1,
+                major: 1,
+                lecturers: 1,
+                maxStudents: 1,
+                type: 1
+            }
+        })
+        return await this.topicRepository.aggregate(pipelineSub).exec()
+    }
     async batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean> {
         const bulkOps = topics.map((topic) => ({
             updateOne: {

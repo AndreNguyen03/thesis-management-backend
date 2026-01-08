@@ -21,7 +21,7 @@ export class KnowledgeSource extends BaseEntity {
     @Prop({ required: true, enum: SourceType })
     source_type: SourceType
 
-    @Prop({ required: true })
+    @Prop({ required: false })
     source_location: string
 
     @Prop({ enum: KnowledgeStatus, default: KnowledgeStatus.DISABLED })

@@ -44,3 +44,10 @@ export class ChatRequestDto {
     @IsOptional()
     trigger?: string
 }
+
+export class ChatAgentRequestDto {
+    @IsNotEmpty()
+    message: string
+    @IsOptional()
+    chatHistory?: any[]
+}

@@ -8,13 +8,12 @@ export class CreateKnowledgeChunksProvider {
     constructor(
         @Inject('IKnowledgeChunkRepository') private readonly knowledgeChunkRepository: IKnowledgeChunkRepository
     ) {}
- 
-    public async createKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto): Promise<boolean> {
+
+    public async createKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto[]): Promise<boolean> {
         //Create indexer when create knowledge chunks
         //Check if indexer exists and create if not exists
-        console.log('chunks provider called', createKnowledgeChunkDtos.source_id)
         try {
-            return await this.knowledgeChunkRepository.createKnowledgeChunk(createKnowledgeChunkDtos)
+            return await this.knowledgeChunkRepository.upsertKnowledgeChunks(createKnowledgeChunkDtos)
         } catch (error) {
             console.error('Error creating knowledge chunks:', error)
             throw error
