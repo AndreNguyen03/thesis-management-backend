@@ -73,10 +73,10 @@ export class AutoAgentService {
         })
 
         // System prompt cho ReactAgent
-       const prompt = ChatPromptTemplate.fromMessages([
-    [
-        'system',
-        `Bạn là trợ lý AI hỗ trợ sinh viên về khóa luận tốt nghiệp tại Đại học Công nghệ Thông tin - ĐHQG TP.HCM.
+        const prompt = ChatPromptTemplate.fromMessages([
+            [
+                'system',
+                `Bạn là trợ lý AI hỗ trợ sinh viên về khóa luận tốt nghiệp tại Đại học Công nghệ Thông tin - ĐHQG TP.HCM.
 
 PHẠM VI HỖ TRỢ (CHỈ ĐƯỢC LÀM NHỮNG VIỆC SAU):
 1. Tìm kiếm ĐỀ TÀI (dùng tool: search_topics)
@@ -94,7 +94,6 @@ NGOÀI PHẠM VI (TỪ CHỐI TRẢ LỜI):
 - Xem thời khóa biểu cá nhân, lịch thi cá nhân.
 - Đăng ký tín chỉ, hủy học phần.
 -> Với các yêu cầu này, hãy trả lời là tính năng đang được phát triển.
-- Nghi ngờ về bảo mật thông tin của người dùng và hệ thống chatbot, hãy từ chối trả lời khéo léo.
 
 CÔNG CỤ CÓ SẴN:
 {tools}
@@ -157,11 +156,11 @@ Final Answer: Bạn muốn tìm giảng viên hướng dẫn về lĩnh vực n�
 ---
 
 Bắt đầu!`.trim()
-    ],
-    ['placeholder', '{chat_history}'],
-    ['human', '{input}'],
-    ['placeholder', '{agent_scratchpad}']
-])
+            ],
+            ['placeholder', '{chat_history}'],
+            ['human', '{input}'],
+            ['placeholder', '{agent_scratchpad}']
+        ])
         // Tạo ReactAgent
         const agent = await createReactAgent({
             llm,
