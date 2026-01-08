@@ -5,8 +5,13 @@ import { KnowledgeChunk } from '../schemas/knowledge-chunk.schema'
 import { ChatBotService } from '../../chatbot/application/chatbot.service'
 import { KnowledgeSource } from '../schemas/knowledge-source.schema'
 import { KnowledgeStatus } from '../enums/knowledge-status.enum'
-import { CandidateTopicDto } from '../../topics/dtos/candidate-topic.dto'
 import { TopicVector } from '../../topic_search/schemas/topic-vector.schemas'
+import { SourceType } from '../enums/source_type.enum'
+export interface SearchOptions {
+    sourceTypes?: SourceType[] // Filter theo loại nguồn
+    limit?: number
+    scoreThreshold?: number // Ngưỡng điểm similarity tối thiểu
+}
 
 @Injectable()
 export class SearchSimilarDocumentsProvider {
@@ -17,47 +22,95 @@ export class SearchSimilarDocumentsProvider {
         private readonly chatbotService: ChatBotService,
         @InjectModel(TopicVector.name) private readonly topicVectorModel: Model<TopicVector>
     ) {}
-    public async searchSimilarDocuments(queryVector: number[]): Promise<KnowledgeChunk[]> {
-        const chatversion = await this.chatbotService.getChatBotEnabledVersion()
-        if (!chatversion) {
-            throw new BadGatewayException('Phiên bản chatbot hiện tại không hợp lệ')
+    public async searchSimilarDocuments(queryVector: number[], options: SearchOptions): Promise<KnowledgeChunk[]> {
+        const { sourceTypes, limit = 10, scoreThreshold = 0.7 } = options
+
+        console.log('Searching similar documents with query vector of length:', JSON.stringify(queryVector))
+        const sourceQuery: any = {
+            status: KnowledgeStatus.ENABLED,
+            deleted_at: null
+        }
+        // Nếu có filter theo sourceTypes, thêm điều kiện
+        if (sourceTypes && sourceTypes.length > 0) {
+            sourceQuery.source_type = { $in: sourceTypes }
         }
         // Lấy sourceIds mà được người dùng set có thể thực hiện được
-        const sourcIds = await this.knowledgeSourceModel
-            .find({ status: KnowledgeStatus.ENABLED, deleted_at: null })
-            .select('_id')
-            .exec()
+        const sourceIds = await this.knowledgeSourceModel.find(sourceQuery).distinct('_id')
 
-        const agg = [
+        const agg: any[] = [
+            // Stage 1: Vector Search
             {
                 $vectorSearch: {
-                    index: 'vector_indexer',
+                    index: 'search_knowledge_chunk',
                     path: 'plot_embedding_gemini_large',
                     queryVector: queryVector,
-                    exact: true,
-                    limit: 10,
-                    skip: 0
+                    limit: limit * 2,
+                    numCandidates: limit * 10
                 }
             },
+            // Stage 2: Match với sources đã enable
             {
                 $match: {
-                    sourceId: { $in: sourcIds }
+                    source_id: { $in: sourceIds }
+                }
+            }, // Stage 3: Add similarity score
+            {
+                $addFields: {
+                    score: { $meta: 'vectorSearchScore' }
                 }
             },
+            // Stage 4: Filter theo score threshold
+            {
+                $match: {
+                    score: { $gte: scoreThreshold }
+                }
+            },
+            // Stage 5: Lookup để lấy source_type từ KnowledgeSource
+            {
+                $lookup: {
+                    from: 'knowledge_sources',
+                    localField: 'source_id',
+                    foreignField: '_id',
+                    as: 'source_info'
+                }
+            },
+            // Stage 6: Unwind source_info
+            {
+                $unwind: {
+                    path: '$source_info',
+                    preserveNullAndEmptyArrays: false
+                }
+            },
+            // Stage 7: Filter theo source_type nếu có
+            ...(sourceTypes && sourceTypes.length > 0
+                ? [
+                      {
+                          $match: {
+                              'source_info.source_type': { $in: sourceTypes }
+                          }
+                      }
+                  ]
+                : []),
+            // Stage 8: Project fields cần thiết
             {
                 $project: {
-                    _id: 0,
                     text: 1,
-                    sourceId: 1,
-                    score: {
-                        $meta: 'vectorSearchScore'
-                    }
+                    source_id: 1,
+                    source_type: '$source_info.source_type',
+                    original_id: 1,
+                    score: 1
                 }
-            }
+            },
+            // Stage 9: Limit kết quả
+            { $sort: { score: -1 } },
+            { $limit: limit }
         ]
         // run pipeline
         const result = await this.knowledgeChunkModel.aggregate(agg)
-        console.log('Search similar documents result:', result.length)
+        console.log('📊 Search Results:', {
+            totalChunks: result.length,
+            avgScore: result.length > 0 ? (result.reduce((sum, r) => sum + r.score, 0) / result.length).toFixed(3) : 0
+        })
         return result
     }
 }

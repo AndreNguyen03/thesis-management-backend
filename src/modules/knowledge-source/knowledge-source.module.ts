@@ -19,6 +19,7 @@ import { PaginationModule } from '../../common/pagination/pagination.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider copy'
 import { TopicVector, TopicVectorSchema } from '../topic_search/schemas/topic-vector.schemas'
+import { TopicModule } from '../topics/topic.module'
 
 @Module({
     providers: [
@@ -49,7 +50,8 @@ import { TopicVector, TopicVectorSchema } from '../topic_search/schemas/topic-ve
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => ChatBotModule),
         PaginationModule,
-        PaginationAnModule
+        PaginationAnModule,
+        TopicModule,
     ],
     exports: [
         CreateKnowledgeSourceProvider,

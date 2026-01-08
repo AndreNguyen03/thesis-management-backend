@@ -484,10 +484,13 @@ export class RequestGetTopicsApprovalRegistration {
     allowManualApproval?: boolean
 
     @IsOptional()
-    onlyPending? :boolean
+    onlyPending?: boolean
 }
 
-export class RequestGetTopicsApprovalRegistrationPagination extends IntersectionType(RequestGetTopicsApprovalRegistration,PaginationQueryDto) {}
+export class RequestGetTopicsApprovalRegistrationPagination extends IntersectionType(
+    RequestGetTopicsApprovalRegistration,
+    PaginationQueryDto
+) {}
 
 @Expose()
 export class GetTopicsInPhaseDto extends GetTopicsInPeriodDto {}
@@ -504,3 +507,30 @@ export class TopicsQueryParams {
     status: string
 }
 export class PaginationTopicsQueryParams extends IntersectionType(TopicsQueryParams, PaginationQueryDto) {}
+
+export class StandardStructureTopicDto {
+    @Expose()
+    _id: string
+    @Expose()
+    titleVN: string
+    @Expose()
+    titleEng: string
+    @Expose()
+    description: string
+    @Expose()
+    @Type(() => GetFieldNameReponseDto)
+    fields: GetFieldNameReponseDto[]
+    @Expose()
+    @Type(() => GetRequirementNameReponseDto)
+    requirements: GetRequirementNameReponseDto[]
+    @Expose()
+    @Type(() => GetMajorMiniDto)
+    major: GetMajorMiniDto
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    lecturers: ResponseMiniLecturerDto[]
+    @Expose()
+    maxStudents: number
+    @Expose()
+    type: string
+}

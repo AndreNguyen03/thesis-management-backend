@@ -34,6 +34,7 @@ import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Topic } from '../schemas/topic.schemas'
 
 export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic> {
+    getStandarStructureTopicsByTopicIds(topicIds: string[],limit:number): Promise<Topic[]>
     createTopic(topicData: CreateTopicDto): Promise<string>
     getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null>
     getAllTopics(userId: string): Promise<Paginated<Topic>>

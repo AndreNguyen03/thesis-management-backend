@@ -1,6 +1,6 @@
 import { Processor, Process } from '@nestjs/bull'
 import { Job } from 'bullmq'
-import { RetrievalProvider } from '../application/retrieval.provider'
+import { RetrievalProvider } from '../providers/retrieval.provider'
 export class KnowledgeProcessingProcessor {
     constructor(private readonly retrievalProvider: RetrievalProvider) {}
 

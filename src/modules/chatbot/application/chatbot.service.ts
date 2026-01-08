@@ -1,10 +1,10 @@
 import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common'
 import { ChatRequestDto } from '../dtos'
 import { BuildKnowledgeDB } from '../dtos/build-knowledge-db.dto'
-import { RetrievalProvider } from './retrieval.provider'
-import { GetEmbeddingProvider } from './get-embedding.provider'
+import { RetrievalProvider } from '../providers/retrieval.provider'
+import { GetEmbeddingProvider } from '../providers/get-embedding.provider'
 import { ChatBotRepositoryInterface } from '../repository/chatbot.repository.interface'
-import { GenerationProvider } from './generation.provider'
+import { GenerationProvider } from '../providers/generation.provider'
 import { ChatbotVersion } from '../schemas/chatbot_version.schemas'
 import { QuerySuggestionDto, UpdateChatbotDto } from '../dtos/update-chatbot.dto'
 import { CreateChatbotVersionDto } from '../dtos/create-chatbot-version.dto'
@@ -12,6 +12,7 @@ import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { GetChatbotDto } from '../dtos/get-chatbot.dto'
+import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 
 @Injectable()
 export class ChatBotService {
@@ -62,7 +63,11 @@ export class ChatBotService {
             // Query database for similar docs
             let documents: any[] = []
             try {
-                documents = await this.retrievalProvider.searchSimilarDocuments(vector)
+                documents = await this.retrievalProvider.searchSimilarDocuments(vector, {
+                    limit: 5,
+                    scoreThreshold: 0.75,
+                    sourceTypes: [SourceType.FILE, SourceType.TOPIC_REGISTERING, SourceType.TOPIC_LIBRARY]
+                })
             } catch (err) {
                 console.error('❌ Database query error:', err)
                 throw new HttpException(

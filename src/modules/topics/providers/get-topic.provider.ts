@@ -2,16 +2,17 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { TopicRepositoryInterface } from '../repository'
 import {
     GetGeneralTopics,
-    PaginatedGeneralTopics,
+    PaginatedTopicsInLibrary,
     PaginatedTopicsInPeriod,
     RequestGetTopicsInAdvanceSearchParams,
     RequestGetTopicsInPhaseParams,
-    RequestLectureGetTopicsInPhaseParams
+    RequestLectureGetTopicsInPhaseParams,
+    StandardStructureTopicDto,
+    TopicsInLibrary
 } from '../dtos'
 import { plainToInstance } from 'class-transformer'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { Topic } from '../schemas/topic.schemas'
-import { GetRegistrationInTopicProvider } from '../../registrations/provider/get-registration-in-topic.provider'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { OverdueTopicInfo, PausedOrDelayedTopicInfo, PendingLecturerReview } from '../../periods/dtos/phase-resolve.dto'
@@ -25,6 +26,14 @@ export class GetTopicProvider extends BaseServiceAbstract<Topic> {
         private readonly periodsService: PeriodsService
     ) {
         super(topicRepositoryInterface)
+    }
+
+    async getStandarStructureTopicsByTopicIds(topicIds: string[], limit: number): Promise<StandardStructureTopicDto[]> {
+        const result = await this.topicRepositoryInterface.getStandarStructureTopicsByTopicIds(topicIds, limit)
+        return plainToInstance(StandardStructureTopicDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
     async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
         const periodInfo = await this.periodsService.getPeriodById(periodId)
@@ -40,8 +49,17 @@ export class GetTopicProvider extends BaseServiceAbstract<Topic> {
             }
         }
     }
-    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
-        return await this.topicRepositoryInterface.getTopicsInLibrary(query)
+    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<PaginatedTopicsInLibrary> {
+        const result = await this.topicRepositoryInterface.getTopicsInLibrary(query)
+        return {
+            data: plainToInstance(TopicsInLibrary, result.data, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }),
+            meta: {
+                ...result.meta
+            }
+        }
     }
     async lecturerGetTopicsInPhase(
         userId: string,

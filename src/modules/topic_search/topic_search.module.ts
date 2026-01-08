@@ -13,10 +13,14 @@ import { VectorSyncProvider } from './provider/vector-sync.provider'
 import { TopicVectorRepository } from './repository/impl/topic-vector.repository'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { TopicModule } from '../topics/topic.module'
+import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schemas/knowledge-chunk.schema'
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{ name: TopicVector.name, schema: TopicVectorSchema }]),
+        MongooseModule.forFeature([
+            { name: TopicVector.name, schema: TopicVectorSchema },
+            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
+        ]),
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => PeriodsModule),
         BullModule.registerQueue({ name: 'vector-sync-queue' }),
@@ -34,6 +38,6 @@ import { TopicModule } from '../topics/topic.module'
             useClass: TopicVectorRepository
         }
     ],
-    exports: [TopicSearchService,VectorSyncProvider]
+    exports: [TopicSearchService, VectorSyncProvider]
 })
 export class TopicVectorModule {}
