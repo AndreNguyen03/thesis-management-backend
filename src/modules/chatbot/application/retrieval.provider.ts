@@ -11,6 +11,7 @@ import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { KnowledgeChunk } from '../../knowledge-source/schemas/knowledge-chunk.schema'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
 import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
+import { VectordbService } from '../../vectordb/application/vectordb.service'
 
 @Injectable()
 export class RetrievalProvider {
@@ -20,12 +21,34 @@ export class RetrievalProvider {
         private readonly knowledgeChunksProvider: CreateKnowledgeChunksProvider,
         @Inject() private readonly knowledgeSourceProvider: CreateKnowledgeSourceProvider,
         @Inject() private readonly searchSimilarDocumentsProvider: SearchSimilarDocumentsProvider,
-        @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue
+        @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue,
+        private readonly vectorDbService: VectordbService
     ) {}
 
     public async searchSimilarDocuments(vectorSearch: number[]): Promise<KnowledgeChunk[]> {
         // Search similar documents in the database
         return await this.searchSimilarDocumentsProvider.searchSimilarDocuments(vectorSearch)
+    }
+
+    async searchCollection(params: {
+        collection: 'lecturers' | 'topics' | 'process_docs'
+        vector: number[]
+        limit?: number
+        filter?: any
+        scoreThreshold?: number
+    }) {
+        const { collection, vector, limit = 5, filter, scoreThreshold = 0.3 } = params
+        // 2️⃣ Search Qdrant
+        const results = await this.vectorDbService.search(collection, vector, limit, filter)
+
+        // 3️⃣ Normalize result
+        return results
+            .filter((r) => r.score >= scoreThreshold)
+            .map((r) => ({
+                id: r.id,
+                score: r.score,
+                payload: r.payload
+            }))
     }
 
     public async buildKnowledgeDocuments(
@@ -84,6 +107,7 @@ export class RetrievalProvider {
         }
     }
 }
+
 const scrapePage = async (url: string) => {
     const loader = new PuppeteerWebBaseLoader(url, {
         launchOptions: {

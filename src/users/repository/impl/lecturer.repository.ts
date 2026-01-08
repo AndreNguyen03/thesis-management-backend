@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
+import { v4 as uuidv4 } from 'uuid'
 import mongoose, { ClientSession, Document, Model, PipelineStage, Types } from 'mongoose'
 import { LecturerRepositoryInterface } from '../lecturer.repository.interface'
 import { BaseRepositoryAbstract } from '../../../shared/base/repository/base.repository.abstract'
@@ -22,6 +23,8 @@ import { RequestGetLecturerDto } from '../../dtos/request-get.dto'
 import { generateEmail } from '../../helpers/email-gen'
 import { HashingProvider } from '../../../auth/providers/hashing.provider'
 import { UserRole } from '../../enums/user-role'
+import { VectordbService } from '../../../modules/vectordb/application/vectordb.service'
+import { GetEmbeddingProvider } from '../../../modules/chatbot/application/get-embedding.provider'
 
 @Injectable()
 export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> implements LecturerRepositoryInterface {
@@ -33,9 +36,47 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         @InjectModel(Faculty.name)
         private readonly facultyModel: Model<Faculty>,
         private readonly hashingProvider: HashingProvider,
-        private readonly paginationProvider: PaginationProvider
+        private readonly paginationProvider: PaginationProvider,
+        private readonly vectorDbService: VectordbService,
+        private readonly embeddingProvider: GetEmbeddingProvider
     ) {
         super(lecturerModel)
+    }
+    async getAllLecturerHaveProfile(): Promise<any[]> {
+        let pipeline = [
+            {
+                $match: {
+                    $expr: {
+                        $and: [{ $gt: [{ $size: '$areaInterest' }, 0] }, { $gt: [{ $size: '$researchInterests' }, 0] }]
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $unwind: '$user'
+            },
+            {
+                $project: {
+                    userId: 1,
+                    fullName: '$user.fullName',
+                    email: '$user.email',
+                    phone: '$user.phone',
+                    avatarUrl: '$user.avatarUrl',
+                    areaInterest: 1,
+                    researchInterests: 1,
+                    bio: '$user.bio'
+                }
+            }
+        ]
+
+        return this.lecturerModel.aggregate(pipeline).exec()
     }
 
     private readonly logger = new Logger(LecturerRepository.name)
@@ -180,6 +221,12 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
         const lecturer = await this.lecturerModel.findOne({ userId: objectId })
         if (!lecturer) throw new Error('Lecturer not found')
 
+        const user = await this.userModel.findOne({ _id: objectId })
+        if (!user) throw new Error('User not found')
+
+        const faculty = await this.facultyModel.findById(lecturer.facultyId)
+        if (!faculty) throw new Error('Faculty not found')
+
         // Cập nhật User fields
         const userUpdate: Partial<User> = {}
         if (dto.fullName !== undefined) userUpdate.fullName = dto.fullName
@@ -209,9 +256,71 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
                 link: pub.link ?? ''
             }))
         }
+
+        try {
+            this.logger.log(`[Embed] Start embedding lecturer profile | userId=${userId}`)
+
+            const content = this.buildLecturerProfileContent(dto)
+            this.logger.debug(`[Embed] Content length=${content.length} | preview="${content.substring(0, 120)}..."`)
+
+            const embedding = await this.embeddingProvider.getEmbedding(content)
+
+            if (!Array.isArray(embedding)) {
+                throw new Error('Embedding is not an array')
+            }
+
+            this.logger.debug(`[Embed] Embedding generated | dim=${embedding.length}`)
+
+            let pointId: string
+            if (lecturer.vectorPointId) {
+                pointId = lecturer.vectorPointId
+                this.logger.debug(`[Embed] Reusing existing vectorPointId=${pointId}`)
+            } else {
+                pointId = uuidv4()
+                lecturer.vectorPointId = pointId
+                this.logger.debug(`[Embed] Generated new vectorPointId=${pointId}`)
+            }
+
+            const point = {
+                id: pointId,
+                vector: embedding,
+                payload: {
+                    entity: 'lecturer',
+                    userId: userId,
+                    fullName: user.fullName,
+                    title: lecturer.title,
+                    areaInterest: lecturer.areaInterest ?? [],
+                    researchInterests: lecturer.researchInterests ?? [],
+                    faculty: faculty.name
+                }
+            }
+
+            this.logger.debug(`[Embed] Upserting point into Qdrant | collection=lecturers | pointId=${pointId}`)
+
+            await this.vectorDbService.upsert('lecturers', [point])
+
+            this.logger.log(`[Embed] Upsert success | lecturer=${userId} | pointId=${pointId}`)
+        } catch (error) {
+            this.logger.error(
+                `[Embed] Failed to embed lecturer profile | userId=${userId} | reason=${error.message}`,
+                error.stack
+            )
+            throw error // ⚠️ nên throw để client biết
+        }
+
         await lecturer.save()
 
+        this.logger.log(`[Embed] Lecturer saved | userId=${userId}`)
+
         return { message: 'Profile updated successfully' }
+    }
+
+    private buildLecturerProfileContent(lecturer: UpdateLecturerProfileDto): string {
+        const { areaInterest, researchInterests, bio } = lecturer
+        let content = `Tiểu sử giảng viên: ${bio}\n`
+        if (areaInterest) content += `Lĩnh vực chuyên môn: ${areaInterest.join(', ')}\n`
+        if (researchInterests) content += `Nghiên cứu: ${researchInterests.join(', ')}\n`
+        return content
     }
 
     async getLecturers(query: RequestGetLecturerDto): Promise<Paginated_An<any>> {
@@ -292,8 +401,6 @@ export class LecturerRepository extends BaseRepositoryAbstract<Lecturer> impleme
 
         return this.paginationProvider.paginateQuery<any>(query, this.lecturerModel, pipelineSub)
     }
-
-   
 
     async findByEmail(email: string): Promise<LecturerDocument | null> {
         return this.lecturerModel.findOne({ email, deleted_at: null }).exec()

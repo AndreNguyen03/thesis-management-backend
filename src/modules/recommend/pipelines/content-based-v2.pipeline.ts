@@ -168,6 +168,7 @@ export class ContentBasedPipeline {
                     .map((t) => `${t.titleVN}:${t.score.toFixed(3)}`)
                     .join(' | ')}`
             )
+            
             return scoredTopics
         } catch (error) {
             this.logger.error(`Semantic scoring failed: ${error.message}`)

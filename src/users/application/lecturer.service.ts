@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { Lecturer, LecturerDocument } from '../schemas/lecturer.schema'
 import { LecturerRepositoryInterface } from '../repository/lecturer.repository.interface'
@@ -16,12 +16,14 @@ import {
 } from '../dtos/lecturer.dto'
 import { UserRepositoryInterface } from '../repository/user.repository.interface'
 import { InjectConnection } from '@nestjs/mongoose'
-import { Connection, HydratedDocument } from 'mongoose'
+import { Connection } from 'mongoose'
 import { UserRole } from '../enums/user-role'
 import { RequestGetLecturerDto } from '../dtos/request-get.dto'
 
 @Injectable()
-export class LecturerService extends BaseServiceAbstract<Lecturer> {
+export class LecturerService extends BaseServiceAbstract<Lecturer> implements OnModuleInit {
+    private readonly logger = new Logger(LecturerService.name)
+
     constructor(
         @Inject('LecturerRepositoryInterface')
         private readonly lecturerRepository: LecturerRepositoryInterface,
@@ -30,10 +32,16 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
         private readonly userRepository: UserRepositoryInterface,
 
         @InjectConnection()
-        private readonly connection: Connection
+        private readonly connection: Connection,
     ) {
         super(lecturerRepository)
+        console.log('LecturerService initialized')
     }
+    async onModuleInit() {
+        const lecturer = await this.lecturerRepository.getAllLecturerHaveProfile()
+        console.log(lecturer)
+    }
+
 
     toResponseLecturerProfile(doc: Lecturer & { userId: any; facultyId: any }): ResponseLecturerProfileDto {
         return {
@@ -50,11 +58,12 @@ export class LecturerService extends BaseServiceAbstract<Lecturer> {
             isActive: doc.userId.isActive,
             areaInterest: doc.areaInterest,
             researchInterests: doc.researchInterests,
-            publications: doc.publications,
-           // supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
+            publications: doc.publications
+            // supervisedThesisIds: doc.supervisedThesisIds.map((id) => id.toString())
         }
     }
 
+ 
     async createManyLecturer(dtos: CreateBatchLecturerDto[]) {
         const result = await this.lecturerRepository.createMany(dtos)
         return result

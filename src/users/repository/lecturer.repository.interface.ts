@@ -11,6 +11,7 @@ export interface LecturerRepositoryInterface extends BaseRepositoryInterface<Lec
     updatePassword(id: string, newHash: string): Promise<void>
     createLecturer(userId: string, dto: CreateLecturerDto, options?: { session?: ClientSession }): Promise<Lecturer>
     getLecturers(paginationQuery: RequestGetLecturerDto): Promise<Paginated_An<any>>
+    getAllLecturerHaveProfile(): Promise<any[]>
     getAllLecturersAn(facultyId: string, paginationQuery: PaginationAn): Promise<Paginated_An<Lecturer>>
     updateLecturerByTable(id: string, dto: UpdateLecturerTableDto): Promise<any>
     updateLecturerProfile(userId: string, dto: UpdateLecturerProfileDto): Promise<any>

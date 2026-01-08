@@ -46,6 +46,7 @@
         "@nestjs/swagger": "^11.2.0",
         "@nestjs/typeorm": "^11.0.0",
         "@nestjs/websockets": "^11.1.9",
+        "@qdrant/js-client-rest": "^1.16.2",
         "@types/archiver": "^7.0.0",
         "ai": "^5.0.60",
         "archiver": "^7.0.1",

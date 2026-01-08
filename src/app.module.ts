@@ -46,6 +46,8 @@ import { TodolistsModule } from './modules/todolists/todolists.module'
 import { TopicInteractionModule } from './modules/topic_interaction/topic_interaction.module'
 import { RecommendModule } from './modules/recommend/recommend.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { VectordbModule } from './modules/vectordb/vectordb.module';
+import { VectordbService } from './modules/vectordb/application/vectordb.service'
 
 const ENV = process.env.NODE_ENV
 
@@ -124,7 +126,8 @@ const ENV = process.env.NODE_ENV
         TodolistsModule,
         TopicInteractionModule,
         RecommendModule,
-        DashboardModule
+        DashboardModule,
+        VectordbModule,
     ],
     controllers: [AppController],
     providers: [
@@ -140,6 +143,7 @@ const ENV = process.env.NODE_ENV
         AccessTokenGuard,
         PaginationProvider,
         GetTopicStatusProvider,
+        VectordbService,
     ]
 })
 // export class AppModule {}

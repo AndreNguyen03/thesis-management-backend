@@ -1,7 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { BullModule } from '@nestjs/bull'
-
 import { ChatController } from './chatbot.controller'
 import { ChatBotService } from './application/chatbot.service'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -16,6 +15,8 @@ import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schema
 import { googleAIConfig } from '../../config/googleai.config'
 import { KnowledgeProcessingProcessor } from './processors/knowledge-processing.processor'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
+import { VectordbModule } from '../vectordb/vectordb.module'
+import { UsersModule } from '../../users/users.module'
 
 @Module({
     controllers: [ChatController],
@@ -35,12 +36,13 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         MongooseModule.forFeature([
             { name: ChatBot.name, schema: ChatBotSchema },
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
-            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
-            
+            { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),
-        PaginationAnModule
+        PaginationAnModule,
+        forwardRef(() => VectordbModule),
+        forwardRef(() => UsersModule)
     ],
     exports: [ChatBotService, GetEmbeddingProvider]
 })

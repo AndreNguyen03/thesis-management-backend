@@ -26,6 +26,8 @@ import { CheckUserInfoProvider } from './provider/check-user-info.provider'
 import { NotificationsModule } from '../modules/notifications/notifications.module'
 import { Faculty, FacultySchema } from '../modules/faculties/schemas/faculty.schema'
 import { Major, MajorSchema } from '../modules/majors/schemas/majors.schemas'
+import { VectordbModule } from '../modules/vectordb/vectordb.module'
+import { ChatBotModule } from '../modules/chatbot/chatbot.module'
 
 @Module({
     controllers: [UserController],
@@ -84,9 +86,12 @@ import { Major, MajorSchema } from '../modules/majors/schemas/majors.schemas'
             { name: Major.name, schema: MajorSchema }
             
         ]),
+        VectordbModule,
         ConfigModule.forFeature(profileConfig),
         forwardRef(() => UploadFilesModule),
-        forwardRef(() => PaginationAnModule)
+        forwardRef(() => UploadFilesModule),
+        forwardRef(() => PaginationAnModule),
+        forwardRef(() => ChatBotModule),
     ] // Add any other modules that UsersService depends on here
 })
 export class UsersModule {}

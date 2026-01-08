@@ -50,6 +50,8 @@ export class Lecturer extends BaseEntity {
     @Prop({ type: [Publication], default: [] })
     publications: Publication[]
 
+    @Prop({ type: String, default: null, index: true })
+    vectorPointId: string
     // @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Topic', default: [] })
     // supervisedThesisIds: Types.ObjectId[]
 }

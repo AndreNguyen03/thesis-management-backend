@@ -1,19 +1,21 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { Inject, Injectable } from '@nestjs/common'
+import { Inject, Injectable, Logger } from '@nestjs/common'
 import { ConfigService, ConfigType } from '@nestjs/config'
-import { convertToModelMessages, streamText } from 'ai'
+import { convertToModelMessages, generateText, streamText } from 'ai'
 import { googleAIConfig } from '../../../config/googleai.config'
 
 @Injectable()
 export class GenerationProvider {
     private google: any
+    private readonly logger = new Logger(GenerationProvider.name)
+
     constructor(
         @Inject(googleAIConfig.KEY)
         private readonly googleAIConfigValue: ConfigType<typeof googleAIConfig>
     ) {
-            this.google = createGoogleGenerativeAI({
-                apiKey: this.googleAIConfigValue.apiKey
-            })  
+        this.google = createGoogleGenerativeAI({
+            apiKey: this.googleAIConfigValue.apiKey
+        })
     }
     public async *streamAIResponse(prompt: string, messages: any[]): AsyncIterable<string> {
         console.log('Streaming AI response with prompt and messages...', prompt)
@@ -25,6 +27,35 @@ export class GenerationProvider {
         })
         for await (const text of result.textStream) {
             yield text
+        }
+    }
+
+    public async generateOnce(prompt: string): Promise<string> {
+        try {
+            this.logger.debug('🧠 GenerationOnce prompt:')
+            this.logger.debug(prompt)
+
+            const result = await generateText({
+                model: this.google('models/gemini-2.5-flash'),
+                system: `Bạn là hệ thống AI chỉ trả về câu trả lời NGẮN GỌN, CHÍNH XÁC.
+Không giải thích, không markdown, không lan man.`,
+                prompt,
+                temperature: 0
+            })
+
+            const text = result.text
+
+            if (!text) {
+                throw new Error('Gemini trả về nội dung rỗng')
+            }
+
+            this.logger.debug('✅ GenerationOnce result:')
+            this.logger.debug(text)
+
+            return text.trim()
+        } catch (error) {
+            this.logger.error('❌ GenerationOnce failed', error instanceof Error ? error.stack : String(error))
+            throw error
         }
     }
 }
