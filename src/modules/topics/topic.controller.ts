@@ -44,11 +44,15 @@ import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
 import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
+import { PeriodGateway } from '../periods/gateways/period.gateway'
 
 @Controller('topics')
 export class TopicController {
     // create endpoint to add thesis
-    constructor(private readonly topicService: TopicService) {}
+    constructor(
+        private readonly topicService: TopicService,
+        private readonly periodGateway: PeriodGateway
+    ) {}
     @Get()
     @Auth(AuthType.Bearer)
     async getTopicList(@Req() req: { user: ActiveUserData }) {
@@ -79,7 +83,10 @@ export class TopicController {
     }
     @Get('/registered-topics')
     @Auth(AuthType.Bearer)
-    async getRegisteredTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationRegisteredTopicsQueryParams) {
+    async getRegisteredTopics(
+        @Req() req: { user: ActiveUserData },
+        @Query() query: PaginationRegisteredTopicsQueryParams
+    ) {
         const topics = await this.topicService.getRegisteredTopics(req.user.sub, query)
         return plainToInstance(GetPaginatedTopicsDto, topics, {
             excludeExtraneousValues: true,
@@ -252,6 +259,9 @@ export class TopicController {
         @Param('periodId') periodId: string
     ) {
         await this.topicService.submitTopic(topicId, req.user.sub, periodId)
+
+        // emit event
+        this.periodGateway.emitDetailPeriodUpdate({})
         return { message: 'Nộp đề tài thành công' }
     }
 
@@ -261,6 +271,10 @@ export class TopicController {
     @UseGuards(RolesGuard)
     async facultyBoardApproveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.approveTopic(topicId, req.user.sub)
+        
+        // event refresh
+        this.periodGateway.emitPeriodDashboardUpdate({})
+
         return { message: 'Duyệt đề tài thành công' }
     }
 
@@ -443,6 +457,8 @@ export class TopicController {
     @UseGuards(RolesGuard)
     async tranferStatus(@Req() req: { user: ActiveUserData }, @Body() body: WithDrawSubmittedTopicQuery) {
         await this.topicService.withdrawSubmittedTopics(body.topicIds, req.user.sub)
+
+        this.periodGateway.emitDetailPeriodUpdate({})
         return { message: 'Chuyển trạng thái đề tài thành công' }
     }
 
@@ -546,5 +562,4 @@ export class TopicController {
             message: `Đã lưu ${success} đề tài vào thư viện, ${failed} đề tài thất bại`
         }
     }
-    
 }

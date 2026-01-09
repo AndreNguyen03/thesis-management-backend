@@ -1,4 +1,11 @@
-import { BadRequestException, Inject, Injectable, NotFoundException, RequestTimeoutException } from '@nestjs/common'
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    RequestTimeoutException
+} from '@nestjs/common'
 import { IPeriodRepository } from '../repository/periods.repository.interface'
 import {
     CreatePeriodDto,
@@ -42,18 +49,63 @@ import {
 } from '../../topics/dtos/get-statistics-topics.dtos'
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import mongoose from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
+import { Faculty } from '../../faculties/schemas/faculty.schema'
+import { PeriodGateway } from '../gateways/period.gateway'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
+    private readonly logger = new Logger(PeriodsService.name)
+
     constructor(
         @Inject('IPeriodRepository') private readonly iPeriodRepository: IPeriodRepository,
         private readonly createPhaseProvider: CreatePhaseProvider,
         private readonly getTopicProvider: GetTopicProvider,
         private readonly getTopicStatusProvider: GetTopicStatusProvider,
         private readonly getStatisticsTopicsProvider: GetStatisticsTopicsProvider,
-        private readonly notificationPublisherService: NotificationPublisherService
+        private readonly notificationPublisherService: NotificationPublisherService,
+        @InjectModel(Faculty.name) private facultyModel: mongoose.Model<Faculty>,
+        private readonly periodGateway: PeriodGateway
     ) {
         super(iPeriodRepository)
+    }
+
+    /**
+     * Kiểm tra các phase hết hạn và phát event qua PeriodGateway
+     */
+    async checkAndEmitExpiredPhases() {
+        // Lấy tất cả period đang active
+
+        this.logger.log('Checking and emitting expired phases...', new Date())
+
+        const faculties = await this.facultyModel.find({ deleted_at: null }).select('_id').lean()
+        for (const faculty of faculties) {
+            const facultyPeriodsInfo = await this.iPeriodRepository.getCurrentPeriodInfo(faculty._id.toString())
+
+            const periods = [facultyPeriodsInfo.latestThesisPeriod, facultyPeriodsInfo.latestResearchPeriod].filter(
+                Boolean
+            )
+
+            for (const period of periods) {
+                const currentPhaseDetail = period.currentPhaseDetail
+                // console.log(`period ${period.year} , period ${period.semester} in faculty ${faculty._id} current phase detail`, currentPhaseDetail)
+                if (
+                    currentPhaseDetail &&
+                     (
+                        (period.startTime && new Date(period.startTime) < new Date()) ||
+                        (period.endTime && new Date(period.endTime) < new Date())
+                    )
+                    &&
+                    (
+                        (currentPhaseDetail.startTime && new Date(currentPhaseDetail.startTime) < new Date()) ||
+                        (currentPhaseDetail.endTime && new Date(currentPhaseDetail.endTime) < new Date())
+                    )
+                ) {
+                    // console.log(`Period ${period.year} , period ${period.semester} in faculty ${faculty._id} phase ${currentPhaseDetail.phase} needs dashboard update (startTime: ${currentPhaseDetail.startTime}, endTime: ${currentPhaseDetail.endTime})`)
+                    this.periodGateway.emitPeriodDashboardUpdate({ facultyId: faculty._id.toString() })
+                }
+            }
+        }
     }
 
     //kiểm tra xem pha đã có thể đóng hay chưa

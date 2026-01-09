@@ -330,7 +330,7 @@ ${studentSummary}
 Các đề tài hiện tại cần xếp hạng:
 ${topicListStr}
 
-Hãy xếp hạng 3 đề tài phù hợp nhất. 
+Hãy xếp hạng các đề tài phù hợp nhất.  đúng với số lượng topic list, nếu ít hơn thì chỉ gợi ý đúng bằng số đề tài, còn nhiều hơn thì gợi ý đúng 3 đề tài
 - Trả về JSON chỉ gồm 1 mảng các object:
 [
   {

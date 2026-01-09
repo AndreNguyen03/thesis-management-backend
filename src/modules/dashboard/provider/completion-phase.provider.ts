@@ -41,7 +41,6 @@ export class CompletionPhaseProvider {
                 deleted_at: 1
             }
         })
-        
 
         return this.topicModel.aggregate(pipeline).exec()
     }
@@ -170,7 +169,7 @@ export class CompletionPhaseProvider {
                     type: 1,
                     defenseResult: 1,
                     isPublishedToLibrary: 1,
-                    lecturer: 1,
+                    lecturer: 1
                 }
             }
         ]
