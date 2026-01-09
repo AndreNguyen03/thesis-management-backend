@@ -407,7 +407,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                             },
                             action: '$$activity.action',
                             metadata: '$$activity.metadata',
-                            timestamp: '$$activity.timestamp'
+                            created_at: '$$activity.created_at'
                         }
                     }
                 }
@@ -541,7 +541,13 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
             comment.files = fileInfos
         }
 
-        await this.addActivity(taskId, userId, 'edited a comment')
+        // Add activity directly to avoid version conflict
+        const activity = new TaskActivity()
+        activity._id = new mongoose.Types.ObjectId() as any
+        activity.userId = userId
+        activity.action = 'edited a comment'
+        task.activities.push(activity)
+
         await task.save()
 
         return task
@@ -564,7 +570,13 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
 
         task.comments.splice(commentIndex, 1)
 
-        await this.addActivity(taskId, userId, 'deleted a comment')
+        // Add activity directly to avoid version conflict
+        const activity = new TaskActivity()
+        activity._id = new mongoose.Types.ObjectId() as any
+        activity.userId = userId
+        activity.action = 'deleted a comment'
+        task.activities.push(activity)
+
         await task.save()
 
         return task

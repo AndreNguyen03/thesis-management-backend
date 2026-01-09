@@ -10,7 +10,7 @@ import {
     ValidateNested
 } from 'class-validator'
 import { TaskPriority } from '../schemas/task.schema'
-import { Type } from 'class-transformer'
+import { Type, Transform } from 'class-transformer'
 
 export class FileInfoDto {
     @IsString()
@@ -44,6 +44,16 @@ export class UpdateCommentDto {
 
     @IsOptional()
     @IsArray()
+    @Transform(({ value }) => {
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value)
+            } catch {
+                return []
+            }
+        }
+        return value
+    })
     existingFiles?: FileInfoDto[]
 }
 
