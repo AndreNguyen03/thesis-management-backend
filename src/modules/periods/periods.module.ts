@@ -15,6 +15,10 @@ import { TopicVectorModule } from '../topic_search/topic_search.module'
 import { NotificationsModule } from '../notifications/notifications.module'
 import { GetPeriodInfoProvider } from './providers/get-period-info.provider'
 import { GroupsModule } from '../groups/groups.module'
+import { FacultyModule } from '../faculties/faculty.module'
+import { PeriodGateway } from './gateways/period.gateway'
+import { PeriodsCronProvider } from './cron/periods-cron.provider'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
     controllers: [PeriodsController],
@@ -24,9 +28,12 @@ import { GroupsModule } from '../groups/groups.module'
         CreatePhaseProvider,
         GetPeriodInfoProvider,
         ValidatePeriodPhaseProvider,
-        ValidatePeriodProvider
+        ValidatePeriodProvider,
+        PeriodGateway,
+        PeriodsCronProvider
     ],
     imports: [
+        ScheduleModule.forRoot(),
         MongooseModule.forFeature([
             { name: 'Period', schema: PeriodSchema },
             { name: 'Faculty', schema: FacultySchema }
@@ -36,8 +43,9 @@ import { GroupsModule } from '../groups/groups.module'
         BullModule.registerQueue({ name: 'period' }),
         TopicVectorModule,
         NotificationsModule,
-        GroupsModule
+        GroupsModule,
+        FacultyModule
     ],
-    exports: [PeriodsService, GetPeriodInfoProvider]
+    exports: [PeriodsService, GetPeriodInfoProvider, PeriodGateway]
 })
 export class PeriodsModule {}

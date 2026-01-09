@@ -24,7 +24,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         super(periodModel)
     }
     async getCurrentPeriodInfo(facultyId: string): Promise<any> {
-        console.log('facultyId', facultyId)
         let pipelineSub: any[] = []
         //Tìm kiếm những period trong khoa
         pipelineSub.push(
@@ -36,18 +35,18 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                         $switch: {
                             branches: [
                                 {
+                                    case: {
+                                        $eq: ['$status', PeriodStatus.Completed]
+                                    },
+                                    then: PeriodStatus.Completed
+                                },
+                                {
                                     case: { $or: [{ $not: '$startTime' }, { $not: '$endTime' }] },
                                     then: 'pending'
                                 },
                                 {
                                     case: { $lt: ['$$NOW', '$startTime'] },
                                     then: 'pending'
-                                },
-                                {
-                                    case: {
-                                        $eq: ['$status', PeriodStatus.Completed]
-                                    },
-                                    then: PeriodStatus.Completed
                                 },
                                 {
                                     case: {
@@ -74,6 +73,13 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                         status: {
                                             $switch: {
                                                 branches: [
+                                                    
+                                                    {
+                                                        case: {
+                                                            $eq: ['$$phase.status', PeriodStatus.Completed]
+                                                        },
+                                                        then: PeriodStatus.Completed
+                                                    },
                                                     {
                                                         case: {
                                                             $or: [
@@ -95,12 +101,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                             ]
                                                         },
                                                         then: 'active'
-                                                    },
-                                                    {
-                                                        case: {
-                                                            $eq: ['$status', PeriodStatus.Completed]
-                                                        },
-                                                        then: PeriodStatus.Completed
                                                     }
                                                 ],
                                                 default: 'timeout'
@@ -189,6 +189,9 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
         })
 
         const [result] = await this.periodModel.aggregate(pipelineMain).exec()
+
+        console.log('thesis dashboard pipeline', result.thesisPipeline[0])
+
         return {
             latestThesisPeriod: result.thesisPipeline[0],
             latestResearchPeriod: result.researchPipeline[0]

@@ -15,7 +15,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         }
     ],
     controllers: [FacultyController],
-    exports: [FacultyService],
+    exports: [FacultyService, 'FacultyRepositoryInterface'],
     imports: [MongooseModule.forFeature([{ name: Faculty.name, schema: FacultySchema }]), PaginationAnModule]
 })
 export class FacultyModule {}
