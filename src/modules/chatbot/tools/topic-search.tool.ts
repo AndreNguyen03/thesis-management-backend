@@ -82,9 +82,9 @@ OUTPUT: Danh sách đề tài kèm thông tin chi tiết (tên, mô tả, yêu c
 
                         return {
                             index: idx + 1,
-                            id: topic._id,
+                            _id: topic._id,
                             titleVN: topic.titleVN,
-                            titleENG: topic.titleEng || 'N/A',
+                            titleEng: topic.titleEng || 'N/A',
                             description: topic.description?.substring(0, 300) + '...',
                             fields: topic.fields?.map((f) => f.name).join(', ') || 'N/A',
                             requirements: topic.requirements?.map((r) => r.name).join(', ') || 'N/A',

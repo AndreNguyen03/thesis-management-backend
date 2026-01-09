@@ -10,7 +10,31 @@ export class GetConversationsQuery {
     @IsOptional()
     search?: string
 }
+export class TopicSnapshotDto {
+    @Expose()
+    _id: string
+    @Expose()
+    titleVN: string
+    @Expose()
+    titleEng: string
+    @Expose()
+    description: string
+    @Expose()
+    fields: string
+    @Expose()
+    requirements: string
 
+    @Expose()
+    major: string
+    @Expose()
+    lecturers: string
+    @Expose()
+    maxStudents: number
+    @Expose()
+    type: string
+    @Expose()
+    similarityScore: number
+}
 export class ConversationMessage {
     @Expose()
     id: string
@@ -19,8 +43,8 @@ export class ConversationMessage {
     @Expose()
     content: string
     @Expose()
-    @Type(() => TopicSnapshot)
-    topics?: TopicSnapshot[] // Lưu topics từ search_topics tool
+    @Type(() => TopicSnapshotDto)
+    topics?: TopicSnapshotDto[] // Lưu topics từ search_topics tool
     @Expose()
     timestamp: Date
 }

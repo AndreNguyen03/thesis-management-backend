@@ -24,7 +24,6 @@ export class ChatbotConversationController {
     ) {
         const userId = req.user.sub
         const result = await this.conversationService.addMessage(conversationId, userId, dto)
-        console.log("dsdsd",result)
         return plainToInstance(ConversationMessage, result, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { ChatbotConversation, ChatbotConversationDocument } from '../schemas/chatbot-conversation.schema'
+import { ChatbotConversation, ChatbotConversationDocument, TopicSnapshot } from '../schemas/chatbot-conversation.schema'
 import mongoose from 'mongoose'
 
 @Injectable()
@@ -75,7 +75,7 @@ export class ChatbotConversationRepository {
             id: string
             role: 'user' | 'assistant'
             content: string
-            topics?: any[]
+            topics?: TopicSnapshot[]
             timestamp: Date
         }
     ): Promise<ChatbotConversationDocument | null> {

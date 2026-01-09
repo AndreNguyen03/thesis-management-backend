@@ -38,6 +38,12 @@ export class KnowledgeSourceController {
     async syncTopicsToKnowledgeSource(@Body() body: { periodId: string }, @Req() req: { user: ActiveUserData }) {
         return await this.knowledgeSourceService.syncTopicsDataToKnowledgeSource(body.periodId, req.user.sub)
     }
+
+    //sync lecturer profiles 
+    @Post('/sync-lecturer-profiles')
+    async syncLecturerProfiles(@Req() req: { user: ActiveUserData }) {  
+        return await this.knowledgeSourceService.syncLecturerProfiles(req.user.sub)
+    }
     @Get('/search-semantic')
     async semanticSearchKnowledgeSources(@Query('query') query: string) {
         return await this.knowledgeSourceService.semanticSearchKnowledgeSources(query)

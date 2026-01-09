@@ -27,6 +27,8 @@ import { ChatbotConversationController } from './chatbot-conversation.controller
 import { ChatbotConversationService } from './application/chatbot-conversation.service'
 import { ChatbotConversationRepository } from './repository/chatbot-conversation.repository'
 import { ChatbotConversation, ChatbotConversationSchema } from './schemas/chatbot-conversation.schema'
+import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
+import { User, UserSchema } from '../../users/schemas/users.schema'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
@@ -54,7 +56,9 @@ import { ChatbotConversation, ChatbotConversationSchema } from './schemas/chatbo
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
-            { name: ChatbotConversation.name, schema: ChatbotConversationSchema }
+            { name: ChatbotConversation.name, schema: ChatbotConversationSchema },
+            { name: Lecturer.name, schema: LecturerSchema },
+            { name: User.name, schema: UserSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),

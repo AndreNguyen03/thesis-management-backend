@@ -8,16 +8,28 @@ import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { User } from '../../../users/schemas/users.schema'
 
 export class TopicSnapshot {
+    @Prop({ required: true ,type: String})
     _id: string
+    @Prop({ required: true , type: String})
     titleVN: string
+    @Prop({ required: true , type: String})
     titleEng: string
+    @Prop({ required: true , type: String})
     description: string
-    fields: GetFieldNameReponseDto[]
-    requirements: GetRequirementNameReponseDto[]
-    major: GetMajorMiniDto
-    lecturers: ResponseMiniLecturerDto[]
+    @Prop({ required: true , type: String})
+    fields: string
+    @Prop({ required: true , type: String})
+    requirements: string
+    @Prop({ required: true , type: String})
+    major: string
+    @Prop({ required: true , type: String})
+    lecturers: string
+    @Prop({ required: true , type: Number})
     maxStudents: number
+    @Prop({ required: true , type: String})
     type: string
+    @Prop({ required: true , type: Number})
+    similarityScore: number
 }
 
 // Message trong conversation
