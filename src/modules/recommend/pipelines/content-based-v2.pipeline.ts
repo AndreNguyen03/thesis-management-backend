@@ -11,6 +11,10 @@ import { SearchSimilarTopicsProvider } from '../../knowledge-source/application/
 import { TopicStatus } from '../../topics/enum'
 import { CacheService } from '../../../redis/providers/cache.service'
 import { CACHE_TTL } from '../../../redis/constants/cache.constants'
+import { GetTopicProvider } from '../../topics/providers/get-topic.provider'
+import { CurrentTopicsState } from '../../topics/dtos'
+import { Badge } from '../dto/recommendation.interface'
+import { GenerationProvider } from '../../chatbot/providers/generation.provider'
 
 @Injectable()
 export class ContentBasedPipeline {
@@ -22,7 +26,9 @@ export class ContentBasedPipeline {
         private readonly studentSummaryBuilder: StudentSummaryBuilderService,
         private readonly cacheService: CacheService,
         private readonly topicSearchService: TopicSearchService,
-        private readonly searchSimilarTopicProvider: SearchSimilarTopicsProvider
+        private readonly searchSimilarTopicProvider: SearchSimilarTopicsProvider,
+        private readonly getTopicProvider: GetTopicProvider,
+        private readonly generationProvider: GenerationProvider
     ) {}
 
     /**
@@ -69,17 +75,73 @@ export class ContentBasedPipeline {
         // BƯỚC 3: Semantic scoring
         const semanticScoredTopics = await this.performSemanticScoring(periodId, studentEmbedding)
 
-        this.logger.log(`[PIPELINE END] studentId=${studentId}, duration=${Date.now() - startTime}ms`)
-        // Assign ranks
-        return semanticScoredTopics.map((result, index) => {
+        console.log('Semantic Scored Topics:', semanticScoredTopics)
+
+
+        // map thanh id
+        const topicIds = semanticScoredTopics.map((t) => t.original_id.toString())
+
+        console.log('Semantic Scored Topics:', topicIds)
+
+        // lay thong tin hien tai cua topic
+        const currentTopicsState = await this.getTopicProvider.getCurrentTopicsState(topicIds, 10)
+
+        console.log('Current Topics State:', currentTopicsState)
+
+        const currentTopicStateWithScore = currentTopicsState.map((topic) => {
+            const matchedTopic = semanticScoredTopics.find((t) => t.original_id.toString() === topic._id.toString())
             return {
-                topic: result,
-                type: 'recommend',
-                rank: index + 1
+                ...topic,
+                semanticScore: matchedTopic ? Number(matchedTopic.score.toFixed(2)) : 0
             }
         })
-    }
 
+        console.log('Current Topic State with Score:', currentTopicStateWithScore)
+
+        const rerankPrompt = this.buildRerankPrompt(studentSemanticSummary, currentTopicStateWithScore)
+        if (!rerankPrompt) {
+            this.logger.warn('No topics available → skip LLM rerank')
+            return [] // Trả về mảng rỗng hoặc fallback
+        }
+
+        let rerankedTopics: Array<{
+            id: string
+            score: number
+            badges: Badge[]
+        }> = []
+
+        try {
+            const rerankResult = await this.generationProvider.generateOnce(rerankPrompt)
+
+            rerankedTopics = JSON.parse(rerankResult)
+        } catch (err) {
+            this.logger.error('Failed to parse rerank JSON from LLM, fallback to semantic score', err)
+            rerankedTopics = semanticScoredTopics.map((t) => ({
+                id: t._id.toString(),
+                score: t.score,
+                badges: []
+            }))
+        }
+
+        // --- BƯỚC 7: Map sang RecommendationResult
+        const topicMap = Object.fromEntries(currentTopicsState.map((t) => [t._id.toString(), t]))
+
+        const finalResults: RecommendationResult[] = rerankedTopics.map((r, idx) => {
+            const topic = topicMap[r.id]
+            return {
+                topic: topic as CurrentTopicsState, // hoặc TopicRecommendResponse nếu bạn cần
+                type: 'recommend',
+                rank: idx + 1,
+                semanticScore: r.score,
+                badges: r.badges,
+                badgeSummary: r.badges.map((b) => b.label).join(', ')
+            }
+        })
+
+        this.logger.log(`[PIPELINE END] studentId=${studentId}, duration=${Date.now() - startTime}ms`)
+
+        return finalResults
+    }
     /**
      * BƯỚC 1: Load data với validation
      */
@@ -245,5 +307,43 @@ export class ContentBasedPipeline {
             },
             CACHE_TTL.LONG
         )
+    }
+
+    private buildRerankPrompt(studentSummary: string, topics: Array<CurrentTopicsState & { semanticScore: number }>) {
+        if (!topics || topics.length === 0) {
+            this.logger.warn('No topics available to build rerank prompt')
+            return null
+        }
+
+        const topicListStr = topics
+            .map(
+                (t, idx) =>
+                    `${idx + 1}. ${t.titleVN} - ${t.description.replace(/\n/g, ' ')}- Lĩnh vực: ${t.fields?.join(', ')}, Yêu cầu: ${t.requirements?.join(', ') || 'Không có'} semantic score: ${t.semanticScore} (id: ${t._id})`
+            )
+            .join('\n')
+
+        return `
+        Trả về kết quả bằng tiếng việt.
+Bạn là AI gợi ý đề tài khóa luận cho sinh viên. Sinh viên có hồ sơ sau:
+${studentSummary}
+
+Các đề tài hiện tại cần xếp hạng:
+${topicListStr}
+
+Hãy xếp hạng 3 đề tài phù hợp nhất. 
+- Trả về JSON chỉ gồm 1 mảng các object:
+[
+  {
+    "id": "<topic_id>",
+    "score": <0-1>,
+    "badges": [
+        { "type": "reason", "label": "<ngắn gọn>", "tooltip": "<giải thích>", "color": "blue", "icon": "Info", "priority": 1 }
+    ]
+  },
+  ...
+]
+Mỗi badge nên giải thích **tại sao đề tài phù hợp với hồ sơ sinh viên**.
+Chỉ trả về JSON, không giải thích thêm.
+`
     }
 }

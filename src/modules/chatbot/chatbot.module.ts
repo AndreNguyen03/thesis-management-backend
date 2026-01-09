@@ -54,6 +54,6 @@ import { AutoAgentController } from './auto-agent.controller'
         PaginationAnModule,
         TopicModule
     ],
-    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider]
+    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider, GenerationProvider]
 })
 export class ChatBotModule {}

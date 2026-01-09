@@ -33,7 +33,8 @@ import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.modu
         ConfigModule.forFeature(googleAIConfig),
         RedisModule,
         TopicVectorModule,
-        KnowledgeSourceModule
+        KnowledgeSourceModule,
+        ChatBotModule
     ],
     providers: [
         RecommendationService,

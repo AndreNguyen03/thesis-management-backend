@@ -13,7 +13,7 @@ export class SearchSimilarTopicsProvider {
         const agg = [
             {
                 $vectorSearch: {
-                    index: 'topic_vector_recommend_index',
+                    index: 'search_topic_vector_index',
                     path: 'embedding',
                     queryVector: queryVector,
                     numCandidates: 200,
@@ -21,10 +21,10 @@ export class SearchSimilarTopicsProvider {
                     skip: 0,
                     filter: {
                         'periodInfo._id': periodId,
-                        currentStatus: {
+                        'lastStatusInPhaseHistory.status': {
                             $in: [TopicStatus.PendingRegistration, TopicStatus.Registered]
                         },
-                        currentPhase: PeriodPhaseName.OPEN_REGISTRATION
+                        'lastStatusInPhaseHistory.phaseName': PeriodPhaseName.OPEN_REGISTRATION
                     }
                 }
             },
@@ -33,6 +33,7 @@ export class SearchSimilarTopicsProvider {
                 $project: {
                     _id: 1,
                     titleVN: 1,
+                    original_id: 1,
                     currentStatus: 1,
                     studentsNum: 1,
                     maxStudents: 1,
@@ -44,11 +45,6 @@ export class SearchSimilarTopicsProvider {
                     requirements: 1,
                     lecturers: 1,
                     createByInfo: 1
-                }
-            },
-            {
-                $match: {
-                    score: { $gte: 0.6 } // it lien quan thi loc ra
                 }
             }
         ]
