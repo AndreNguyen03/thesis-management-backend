@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common'
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Put,
+    Query,
+    UploadedFiles,
+    UseInterceptors
+} from '@nestjs/common'
 import { TasksService } from './application/tasks.service'
 import { RequestGetTaskQuery } from './dtos/request-get.dto'
 import { RequestCreate, RequestUpdate, UpdateTaskColumn } from './dtos/request-update.dtos'
@@ -7,6 +19,15 @@ import { TaskDto } from './dtos/get.dtos'
 import { MoveInColumnQuery, MoveToColumnQuery, UpdateStatus, UpdateTaskMilestoneDto } from './dtos/request-patch.dtos'
 import { ActiveUser } from '../../auth/decorator/active-user.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
+import {
+    AddCommentDto,
+    AssignUsersDto,
+    UpdateCommentDto,
+    UpdateDescriptionDto,
+    UpdateTaskDetailDto
+} from './dtos/task-detail.dto'
+import { TaskDetailDto } from './dtos/task-detail-response.dto'
+import { FilesInterceptor } from '@nestjs/platform-express'
 
 @Controller('tasks')
 export class TodolistsController {
@@ -90,5 +111,90 @@ export class TodolistsController {
         @ActiveUser('sub') userId: string
     ) {
         return await this.tasksService.updateTaskMilestone(taskId, body.milestoneId, userId)
+    }
+
+    // ==================== JIRA-LIKE FEATURES ====================
+
+    // Lấy chi tiết task (giống modal Jira)
+    @Get('/:id/detail')
+    async getTaskDetail(@Param('id') taskId: string) {
+        const task = await this.tasksService.getTaskDetail(taskId)
+        return plainToInstance(TaskDetailDto, task, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    // Cập nhật thông tin chi tiết task (title, description, priority, labels, dueDate, assignees)
+    @Patch('/:id/detail')
+    async updateTaskDetails(
+        @Param('id') taskId: string,
+        @Body() body: UpdateTaskDetailDto,
+        @ActiveUser('sub') userId: string
+    ) {
+        const task = await this.tasksService.updateTaskDetails(taskId, userId, body)
+        return plainToInstance(TaskDetailDto, task, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    // Thêm comment
+    @Post('/:id/comments')
+    @UseInterceptors(FilesInterceptor('files', 10)) // Tối đa 10 files
+    async addComment(
+        @Param('id') taskId: string,
+        @Body() body: AddCommentDto,
+        @UploadedFiles() files: Express.Multer.File[],
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.addComment(taskId, userId, body, files)
+    }
+
+    // Cập nhật comment
+    @Patch('/:id/comments/:commentId')
+    @UseInterceptors(
+        FilesInterceptor('files', 10, {
+            limits: { fileSize: 50 * 1024 * 1024 }
+        })
+    )
+    async updateComment(
+        @Param('id') taskId: string,
+        @Param('commentId') commentId: string,
+        @Body() body: UpdateCommentDto,
+        @ActiveUser('sub') userId: string,
+        @UploadedFiles() files?: Express.Multer.File[]
+    ) {
+        return await this.tasksService.updateComment(taskId, commentId, userId, body, files)
+    }
+
+    // Xóa comment
+    @Delete('/:id/comments/:commentId')
+    async deleteComment(
+        @Param('id') taskId: string,
+        @Param('commentId') commentId: string,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.deleteComment(taskId, commentId, userId)
+    }
+
+    // Assign/unassign users
+    @Patch('/:id/assignees')
+    async assignUsers(@Param('id') taskId: string, @Body() body: AssignUsersDto, @ActiveUser('sub') userId: string) {
+        const task = await this.tasksService.assignUsers(taskId, userId, body)
+        return plainToInstance(TaskDetailDto, task, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    // Cập nhật description (có thể dùng rich text editor)
+    @Patch('/:id/description')
+    async updateDescription(
+        @Param('id') taskId: string,
+        @Body() body: UpdateDescriptionDto,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.updateDescription(taskId, userId, body)
     }
 }

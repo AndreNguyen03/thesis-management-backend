@@ -212,11 +212,11 @@ export class KnowledgeSourceService {
                         source_name: user.fullName,
                         source_url: null,
                         status: KnowledgeStatus.ENABLED,
-                        metadata: {
-                            title: lecturer.title,
-                            faculty: faculty?.name || 'N/A',
-                            email: user.email
-                        },
+                        // metadata: {
+                        //     title: lecturer.title,
+                        //     faculty: faculty?.name || 'N/A',
+                        //     email: user.email
+                        // },
                         owner: userId
                     })
                     console.log(`   📦 Created knowledge source: ${knowledgeSource._id}`)
@@ -225,7 +225,7 @@ export class KnowledgeSourceService {
                     const chunk = await this.knowledgeChunkModel.create({
                         source_id: knowledgeSource._id,
                         text: profileText,
-                        embedding: embedding,
+                        plot_embedding_gemini_large: embedding,
                         metadata: {
                             lecturerId: lecturer._id.toString(),
                             userId: user._id.toString(),

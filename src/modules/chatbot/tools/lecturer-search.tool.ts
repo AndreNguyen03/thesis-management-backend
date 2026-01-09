@@ -70,17 +70,17 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                         enableImplicitConversion: true
                     })
 
-                    // B3: Lấy lecturerIds từ chunks qua knowledge source
+                    // B3: Lấy userIds từ chunks qua knowledge source (source_location là userId)
                     const sourceIds = chunks.map((c) => new mongoose.Types.ObjectId(c.source_id))
                     const knowledgeSources = await this.knowledgeSourceModel
                         .find({ _id: { $in: sourceIds } })
                         .select('_id source_location')
+                   /// console.log('knowledgeSources', knowledgeSources)
+                    const userIds = knowledgeSources.map((ks) => new mongoose.Types.ObjectId(ks.source_location))
 
-                    const lecturerIds = knowledgeSources.map((ks) => new mongoose.Types.ObjectId(ks.source_location))
-
-                    // B4: Populate lecturer từ DB
-                    const lecturers = await this.userModel
-                        .find({ _id: { $in: lecturerIds } })
+                    // B4: Query lecturer bằng userId và populate thông tin user + faculty
+                    const lecturers = await this.lecturerModel
+                        .find({ userId: { $in: userIds } })
                         .populate('userId', 'fullName email bio avatarUrl')
                         .populate('facultyId', 'name')
                         .limit(limit)
@@ -89,16 +89,15 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                     if (lecturers.length === 0) {
                         return 'Không tìm thấy thông tin giảng viên.'
                     }
-
                     // B5: Format kết quả cho LLM
                     const formattedLecturers = lecturers.map((lecturer, idx) => {
-                        const user = lecturer._id as any
+                        const user = lecturer.userId as any
                         const faculty = lecturer.facultyId as any
 
                         // Tìm chunk tương ứng để lấy score
                         const matchingChunk = chunks.find((chunk) => {
                             const ks = knowledgeSources.find((ks) => ks._id.toString() === chunk.source_id)
-                            return ks?.source_location.toString() === lecturer._id.toString()
+                            return ks?.source_location.toString() === (lecturer.userId as any)?._id?.toString()
                         })
 
                         return {

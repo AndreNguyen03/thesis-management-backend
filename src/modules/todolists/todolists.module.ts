@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Task, TaskSchema } from './schemas/task.schema'
 import { Milestone, MilestoneSchema } from '../milestones/schemas/milestones.schemas'
 import { Group, GroupSchema } from '../groups/schemas/groups.schemas'
+import { UploadFilesModule } from '../upload-files/upload-files.module'
 
 @Module({
     providers: [
@@ -21,7 +22,8 @@ import { Group, GroupSchema } from '../groups/schemas/groups.schemas'
             { name: Task.name, schema: TaskSchema },
             { name: Milestone.name, schema: MilestoneSchema },
             { name: Group.name, schema: GroupSchema }
-        ])
+        ]),
+        UploadFilesModule
     ],
     exports: [TasksService]
 })

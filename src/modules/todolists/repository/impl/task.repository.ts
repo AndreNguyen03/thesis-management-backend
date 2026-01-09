@@ -1,22 +1,24 @@
 import { InjectModel } from '@nestjs/mongoose'
 import { BaseRepositoryAbstract } from '../../../../shared/base/repository/base.repository.abstract'
-import { Subtask, Task, TaskColumn } from '../../schemas/task.schema'
+import { Subtask, Task, TaskColumn, TaskComment, TaskActivity, FileInfo } from '../../schemas/task.schema'
 import { ITaskRepository } from '../task.repository.interface'
 import mongoose, { Model } from 'mongoose'
 import { ObjectId } from 'mongodb'
 import { RequestCreate } from '../../dtos/request-update.dtos'
 import { TaskColumnTitleEnum } from '../../enum/taskcolumn.enum'
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, NotFoundException, Inject } from '@nestjs/common'
 import { MoveInColumnQuery, MoveToColumnQuery } from '../../dtos/request-patch.dtos'
 import { pipe } from 'rxjs'
 import { Milestone } from '../../../milestones/schemas/milestones.schemas'
 import { Group } from '../../../groups/schemas/groups.schemas'
+import { ManageMinioProvider } from '../../../upload-files/providers/manage-file-minio.provider'
 
 export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITaskRepository {
     constructor(
         @InjectModel(Task.name) private readonly taskModel: Model<Task>,
         @InjectModel(Milestone.name) private readonly milestoneModel: Model<Milestone>,
-        @InjectModel(Group.name) private readonly groupModel: Model<Group>
+        @InjectModel(Group.name) private readonly groupModel: Model<Group>,
+        @Inject(ManageMinioProvider) private readonly manageMinioProvider: ManageMinioProvider
     ) {
         super(taskModel)
     }
@@ -219,5 +221,451 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         await task.populate('milestoneId')
 
         return task
+    }
+
+    // ==================== JIRA-LIKE FEATURES ====================
+
+    async getTaskDetail(taskId: string): Promise<Task> {
+        const pipeline: any[] = []
+
+        // Match task by ID
+        pipeline.push({
+            $match: {
+                _id: new mongoose.Types.ObjectId(taskId),
+                deleted_at: null
+            }
+        })
+
+        // Lookup assignees
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'assignees',
+                foreignField: '_id',
+                as: 'assignees',
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            fullname: 1,
+                            email: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        })
+
+        // Lookup createdBy user
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'createdBy',
+                foreignField: '_id',
+                as: 'createdBy',
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            fullname: 1,
+                            email: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        })
+
+        // Unwind createdBy (single object)
+        pipeline.push({
+            $unwind: {
+                path: '$createdBy',
+                preserveNullAndEmptyArrays: true
+            }
+        })
+
+        // Lookup reporter user
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'reporter',
+                foreignField: '_id',
+                as: 'reporter',
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            fullName: 1,
+                            email: 1,
+                            avatarUrl: 1
+                        }
+                    }
+                ]
+            }
+        })
+
+        // Unwind reporter (single object)
+        pipeline.push({
+            $unwind: {
+                path: '$reporter',
+                preserveNullAndEmptyArrays: true
+            }
+        })
+
+        // Lookup milestone
+        pipeline.push({
+            $lookup: {
+                from: 'milestones',
+                localField: 'milestoneId',
+                foreignField: '_id',
+                as: 'milestone',
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            title: 1,
+                            description: 1,
+                            dueDate: 1,
+                            status: 1
+                        }
+                    }
+                ]
+            }
+        })
+
+        // Unwind milestone (single object)
+        pipeline.push({
+            $unwind: {
+                path: '$milestone',
+                preserveNullAndEmptyArrays: true
+            }
+        })
+
+        // Lookup comment users
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'comments.userId',
+                foreignField: '_id',
+                as: 'commentUsers'
+            }
+        })
+
+        // Lookup activity users
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'activities.userId',
+                foreignField: '_id',
+                as: 'activityUsers'
+            }
+        })
+
+        // Add fields to map users to comments and activities
+        pipeline.push({
+            $addFields: {
+                comments: {
+                    $map: {
+                        input: '$comments',
+                        as: 'comment',
+                        in: {
+                            _id: '$$comment._id',
+                            user: {
+                                $arrayElemAt: [
+                                    {
+                                        $filter: {
+                                            input: '$commentUsers',
+                                            cond: { $eq: ['$$this._id', '$$comment.userId'] }
+                                        }
+                                    },
+                                    0
+                                ]
+                            },
+                            content: '$$comment.content',
+                            files: '$$comment.files',
+                            created_at: '$$comment.created_at',
+                            editedAt: '$$comment.editedAt'
+                        }
+                    }
+                },
+                activities: {
+                    $map: {
+                        input: '$activities',
+                        as: 'activity',
+                        in: {
+                            _id: '$$activity._id',
+                            userId: {
+                                $arrayElemAt: [
+                                    {
+                                        $filter: {
+                                            input: '$activityUsers',
+                                            cond: { $eq: ['$$this._id', '$$activity.userId'] }
+                                        }
+                                    },
+                                    0
+                                ]
+                            },
+                            action: '$$activity.action',
+                            metadata: '$$activity.metadata',
+                            timestamp: '$$activity.timestamp'
+                        }
+                    }
+                }
+            }
+        })
+
+        // Project final shape
+        pipeline.push({
+            $project: {
+                commentUsers: 0,
+                activityUsers: 0
+            }
+        })
+
+        const results = await this.taskModel.aggregate(pipeline).exec()
+
+        if (!results || results.length === 0) {
+            throw new NotFoundException('Task not found')
+        }
+
+        return results[0]
+    }
+
+    async addComment(
+        taskId: string,
+        userId: string,
+        content: string,
+        files?: Express.Multer.File[]
+    ): Promise<TaskComment> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        const newComment = new TaskComment()
+        newComment._id = new mongoose.Types.ObjectId() as any
+        newComment.userId = userId
+        newComment.content = content
+
+        // Upload files nếu có và lưu FileInfo
+        if (files && files.length > 0) {
+            const fileInfos: FileInfo[] = []
+            for (const file of files) {
+                try {
+                    // Upload file lên MinIO
+                    const folderName = `tasks/${taskId}/comments`
+                    const fileUrl = await this.manageMinioProvider.uploadFileToMinio(file, folderName)
+
+                    // Tạo FileInfo object
+                    const fileInfo = new FileInfo()
+                    fileInfo.name = Buffer.from(file.originalname, 'latin1').toString('utf8')
+                    fileInfo.url = fileUrl
+                    fileInfo.size = file.size
+
+                    fileInfos.push(fileInfo)
+                } catch (error) {
+                    console.error('Error uploading file:', error)
+                    // Tiếp tục với các file khác
+                }
+            }
+            newComment.files = fileInfos
+        }
+
+        task.comments.push(newComment)
+
+        // Thêm activity log
+        await this.addActivity(taskId, userId, 'added a comment')
+
+        await task.save()
+
+        // Populate user info
+        await task.populate('comments.userId', 'fullname email avatar')
+
+        return task.comments[task.comments.length - 1]
+    }
+
+    async updateComment(
+        taskId: string,
+        commentId: string,
+        userId: string,
+        content: string,
+        existingFiles?: any[],
+        files?: Express.Multer.File[]
+    ): Promise<Task> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        const comment = task.comments.find((c) => c._id.toString() === commentId)
+        if (!comment) {
+            throw new NotFoundException('Comment not found')
+        }
+
+        if (comment.userId.toString() !== userId) {
+            throw new ForbiddenException('You can only edit your own comments')
+        }
+
+        comment.content = content
+        comment.editedAt = new Date()
+
+        // Handle file updates if files are provided
+        if (files || existingFiles !== undefined) {
+            const fileInfos: FileInfo[] = []
+
+            // Add existing files that weren't removed
+            if (existingFiles && existingFiles.length > 0) {
+                fileInfos.push(...existingFiles)
+            }
+
+            // Upload and add new files
+            if (files && files.length > 0) {
+                for (const file of files) {
+                    try {
+                        const folderName = `tasks/${taskId}/comments`
+                        const fileUrl = await this.manageMinioProvider.uploadFileToMinio(file, folderName)
+
+                        const fileInfo = new FileInfo()
+                        fileInfo.name = Buffer.from(file.originalname, 'latin1').toString('utf8')
+                        fileInfo.url = fileUrl
+                        fileInfo.size = file.size
+
+                        fileInfos.push(fileInfo)
+                    } catch (error) {
+                        console.error('Error uploading file:', error)
+                        // Continue with other files
+                    }
+                }
+            }
+
+            comment.files = fileInfos
+        }
+
+        await this.addActivity(taskId, userId, 'edited a comment')
+        await task.save()
+
+        return task
+    }
+
+    async deleteComment(taskId: string, commentId: string, userId: string): Promise<Task> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        const commentIndex = task.comments.findIndex((c) => c._id.toString() === commentId)
+        if (commentIndex === -1) {
+            throw new NotFoundException('Comment not found')
+        }
+
+        if (task.comments[commentIndex].userId.toString() !== userId) {
+            throw new ForbiddenException('You can only delete your own comments')
+        }
+
+        task.comments.splice(commentIndex, 1)
+
+        await this.addActivity(taskId, userId, 'deleted a comment')
+        await task.save()
+
+        return task
+    }
+
+    async assignUsers(taskId: string, userIds: string[], userId: string): Promise<Task> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        const oldAssignees = task.assignees.map((id) => id.toString())
+        task.assignees = userIds
+
+        // Log activity với thông tin thay đổi
+        await this.addActivity(taskId, userId, 'updated assignees', {
+            oldAssignees,
+            newAssignees: userIds
+        })
+
+        await task.save()
+        await task.populate('assignees', 'fullname email avatar')
+
+        return task
+    }
+
+    async updateDescription(taskId: string, description: string, userId: string): Promise<Task> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        task.description = description
+
+        await this.addActivity(taskId, userId, 'updated description')
+        await task.save()
+
+        return task
+    }
+
+    async updateTaskDetails(taskId: string, updates: any, userId: string): Promise<Task> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            throw new NotFoundException('Task not found')
+        }
+
+        const changedFields: string[] = []
+
+        if (updates.title !== undefined && updates.title !== task.title) {
+            task.title = updates.title
+            changedFields.push('title')
+        }
+
+        if (updates.description !== undefined && updates.description !== task.description) {
+            task.description = updates.description
+            changedFields.push('description')
+        }
+
+        if (updates.priority !== undefined && updates.priority !== task.priority) {
+            task.priority = updates.priority
+            changedFields.push('priority')
+        }
+
+        if (updates.labels !== undefined) {
+            task.labels = updates.labels
+            changedFields.push('labels')
+        }
+
+        if (updates.dueDate !== undefined) {
+            task.dueDate = updates.dueDate ? new Date(updates.dueDate) : null
+            changedFields.push('dueDate')
+        }
+
+        if (updates.assignees !== undefined) {
+            task.assignees = updates.assignees
+            changedFields.push('assignees')
+        }
+
+        if (changedFields.length > 0) {
+            await this.addActivity(taskId, userId, `updated ${changedFields.join(', ')}`)
+        }
+
+        await task.save()
+        await task.populate('assignees', 'fullname email avatar')
+
+        return task
+    }
+
+    async addActivity(taskId: string, userId: string, action: string, metadata?: any): Promise<void> {
+        const task = await this.taskModel.findById(new mongoose.Types.ObjectId(taskId))
+        if (!task) {
+            return
+        }
+
+        const activity = new TaskActivity()
+        activity._id = new mongoose.Types.ObjectId() as any
+        activity.userId = userId
+        activity.action = action
+        activity.metadata = metadata
+
+        task.activities.push(activity)
+        await task.save()
     }
 }

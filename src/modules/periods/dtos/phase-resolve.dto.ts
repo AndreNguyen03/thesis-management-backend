@@ -10,13 +10,25 @@ export class MissingTopicRecord {
     approvalTopicsCount: number
     missingTopicsCount: number
 }
+export interface DueInfo {
+    startTime: Date
+    endTime: Date
+}
+export class TopicInfo {
+    _id: string
+    titleVN: string
+    titleEng: string
+    description: string
+    currentStatus: string
+}
 export interface Phase1Response {
     periodId: string
     phase: 'submit_topic'
+    dueInfo: DueInfo | null
+    pendingTopics: TopicInfo[]
     missingTopics: MissingTopicRecord[]
     canTriggerNextPhase: boolean
     currentApprovedTopics: number
-    pendingTopics: number
 }
 
 export interface Phase2Response {
