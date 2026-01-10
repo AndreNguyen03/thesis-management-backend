@@ -1167,7 +1167,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         await task.save()
 
         // Populate user info
-        await task.populate(`columns.${column._id}.items.${subtask._id}.comments.userId`, 'fullname email avatar')
+        // await task.populate(`columns.${column._id}.items.${subtask._id}.comments.userId`, 'fullname email avatar')
 
         return subtask.comments[subtask.comments.length - 1]
     }
