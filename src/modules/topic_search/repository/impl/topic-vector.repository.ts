@@ -61,7 +61,7 @@ export class TopicVectorRepository
                 }
             )
         }
-
+        //dùng cho filter theo giảng viên
         if (query.lecturerIds) {
             pipelineSub.push({
                 $match: {

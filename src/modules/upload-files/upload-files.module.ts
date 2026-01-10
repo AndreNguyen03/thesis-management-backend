@@ -32,6 +32,7 @@ import { DownLoadFileProvider } from './providers/download-file.provider'
         UploadManyFilesProvider,
         DeleteFileProvider,
         DownLoadFileProvider,
+        ManageMinioProvider
     ],
     imports: [MongooseModule.forFeature([{ name: File.name, schema: FilesSchema }])]
 })

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Query, Req } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common'
 import { TopicSearchService } from './application/search.service'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
@@ -30,7 +30,7 @@ export class TopicSearchController {
         return await this.searchService.getPendingRegistrationTopics(periodId)
     }
 
-    @Get('/sync-topics/in-period-on-phase/:periodId')
+    @Post('/sync-topics/in-period-on-phase/:periodId')
     //trước mắt là ban chủ nhiệm
     @Auth(AuthType.Bearer)
     async syncTopic(@Param('periodId') periodId: string, @Query() query: RequestGetTopicsInPhaseParams) {

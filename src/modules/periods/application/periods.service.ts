@@ -49,6 +49,7 @@ import {
 } from '../../topics/dtos/get-statistics-topics.dtos'
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import mongoose from 'mongoose'
+import { TopicStatus } from '../../topics/enum'
 import { InjectModel } from '@nestjs/mongoose'
 import { Faculty } from '../../faculties/schemas/faculty.schema'
 import { PeriodGateway } from '../gateways/period.gateway'
@@ -174,14 +175,16 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         return result
     }
     async handleCloseSubmitTopicPhase(phaseDetail: PeriodPhaseDetail, period: PeriodDetail) {
-        //  console.log('[handleCloseSubmitTopicPhase] Start processing', { period, phaseDetail })
-
         // init dto
         let result: Phase1Response = {
             periodId: period._id.toString(),
             phase: 'submit_topic',
+            //có giá trị nếu còn hạn
+            dueInfo: null,
+            //thông tin giảng viên thiếu đề tài
             missingTopics: [],
-            pendingTopics: 0,
+            //các đề tài đang chờ xét duyệt
+            pendingTopics: [],
             currentApprovedTopics: 0,
             canTriggerNextPhase: false
         }
@@ -203,7 +206,6 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             result.currentApprovedTopics += approval
             if (approval < minTopicsRequired) {
                 const missing = minTopicsRequired - approval
-                console.log(`[handleCloseSubmitTopicPhase] Lecturer missing topics: ${missing}`)
                 result.missingTopics.push({
                     userId: lec.userId.toString(),
                     lecturerEmail: lec.email,
@@ -216,11 +218,25 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         }
 
         // get board stats to get remaining submitted
-        const boardStatsPhase1 = (await this.boardGetStatisticsInPeriod(period._id.toString(), {
-            phase: phaseDetail.phase
-        })) as GetTopicStatisticInSubmitPhaseDto
+        // const boardStatsPhase1 = (await this.boardGetStatisticsInPeriod(period._id.toString(), {
+        //     phase: phaseDetail.phase
+        // })) as GetTopicStatisticInSubmitPhaseDto
 
-        result.pendingTopics = boardStatsPhase1.submittedTopicsNumber
+        const { data: res } = (await this.getTopicsInPhase(period._id.toString(), {
+            limit: 0,
+            page: 1,
+            phase: PeriodPhaseName.SUBMIT_TOPIC,
+            status: TopicStatus.Submitted
+        })) as PaginatedTopicsInPeriod
+        for (const item of res) {
+            result.pendingTopics.push({
+                _id: item._id,
+                titleVN: item.titleVN,
+                titleEng: item.titleEng,
+                description: item.description,
+                currentStatus: item.currentStatus
+            })
+        }
 
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
@@ -228,7 +244,9 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         result.canTriggerNextPhase = this.computeCanTriggerNextPhase(
             phaseDetail,
             nextPhase,
-            result.currentApprovedTopics >= minTopicsRequired * (phaseDetail.requiredLecturers?.length || 0)
+            (result.currentApprovedTopics >= minTopicsRequired * (phaseDetail.requiredLecturers?.length || 0) ||
+                result.pendingTopics.length > 0) ||
+                result.dueInfo != null
         )
         return result
     }
@@ -374,8 +392,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     //     return period
     // }
 
-    async getTopicsInPhase(phaseId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
-        const period = await this.getTopicProvider.getTopicsInPhase(phaseId, query)
+    async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
+        const period = await this.getTopicProvider.getTopicsInPhase(periodId, query)
         return period
     }
 

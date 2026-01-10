@@ -68,7 +68,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                             as: 'phase',
                             in: {
                                 $mergeObjects: [
-                                    '$$phase',
                                     {
                                         status: {
                                             $switch: {
@@ -101,12 +100,19 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                                             ]
                                                         },
                                                         then: 'active'
+                                                    },
+                                                    {
+                                                        case: {
+                                                            $eq: ['$$phase.status', PeriodStatus.Completed]
+                                                        },
+                                                        then: PeriodStatus.Completed
                                                     }
                                                 ],
                                                 default: 'timeout'
                                             }
                                         }
-                                    }
+                                    },
+                                    '$$phase'
                                 ]
                             }
                         }

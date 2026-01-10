@@ -136,6 +136,9 @@ export class GetGeneralTopics extends AbstractTopic {
     defenseMilestoneDate?: Date
 
     @Expose()
+    approvedStudentsNum: number
+
+    @Expose()
     userRegistrationStatus?: string
 
     @Expose()
@@ -335,6 +338,8 @@ export class GetMiniTopicInfo {
     titleEng: string
     @Expose()
     createBy: string
+    @Expose()
+    periodId: string
 }
 export class GetSubmmitedTopic extends GetTopicResponseDto {}
 export class GetPaginatedTopicsDto extends GetPaginatedObjectDto {

@@ -9,7 +9,7 @@ import {
 import { PeriodNotFoundException } from '../../../common/exceptions/period-exceptions'
 import { plainToClass } from 'class-transformer'
 import { ValidatePeriodPhaseProvider } from './validate-phase.provider'
-import { PeriodPhaseName, PeriodPhaseStatus } from '../enums/period-phases.enum'
+import { PeriodPhaseName } from '../enums/period-phases.enum'
 import { Period, PeriodPhase } from '../schemas/period.schemas'
 import { TopicService } from '../../topics/application/topic.service'
 import { TopicStatus } from '../../topics/enum'
@@ -89,6 +89,7 @@ export class CreatePhaseProvider {
 
         //Kiểm tra thời gian
         const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
+
         if (new Date() < new Date(currentPeriodPhase!.endTime)) {
             throw new BadRequestException('Chưa đến thời gian kết thúc pha hiện tại. ')
         }

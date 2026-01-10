@@ -17,6 +17,7 @@ import { StudentRegisterTopic, StudentRegisterTopicSchema } from './schemas/ref_
 import { LecturerRegisterTopic, LecturerRegisterTopicSchema } from './schemas/ref_lecturers_topics.schemas'
 import { Topic, TopicSchema } from '../topics/schemas/topic.schemas'
 import { PeriodsModule } from '../periods/periods.module'
+import { TopicVectorModule } from '../topic_search/topic_search.module'
 @Module({
     controllers: [RegistrationsController],
     providers: [
@@ -38,6 +39,7 @@ import { PeriodsModule } from '../periods/periods.module'
         forwardRef(() => UsersModule),
         forwardRef(() => NotificationsModule),
         forwardRef(() => PeriodsModule),
+        forwardRef(() => TopicVectorModule),
         MongooseModule.forFeature([
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
             { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },

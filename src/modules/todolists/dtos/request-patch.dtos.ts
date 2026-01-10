@@ -1,5 +1,47 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator'
-import { Status } from '../schemas/task.schema'
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    Min,
+    IsString,
+    IsArray,
+    IsEnum,
+    IsDateString
+} from 'class-validator'
+import { Status, TaskPriority } from '../schemas/task.schema'
+
+export class UpdateSubtaskDto {
+    @IsOptional()
+    @IsString()
+    title?: string
+
+    @IsOptional()
+    @IsString()
+    description?: string
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    assignees?: string[]
+
+    @IsOptional()
+    @IsEnum(TaskPriority)
+    priority?: TaskPriority
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    labels?: string[]
+
+    @IsOptional()
+    @IsDateString()
+    dueDate?: string | null
+
+    @IsOptional()
+    @IsString()
+    reporter?: string | null
+}
 
 export class MoveInColumnQuery {
     @IsNotEmpty()

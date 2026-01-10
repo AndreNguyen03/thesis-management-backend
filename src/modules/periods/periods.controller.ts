@@ -326,7 +326,6 @@ export class PeriodsController {
         return this.periodsService.closePhase(
             periodId,
             phase
-            //    , req.user
         )
     }
 
