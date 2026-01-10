@@ -16,7 +16,13 @@ import { RequestGetTaskQuery } from './dtos/request-get.dto'
 import { RequestCreate, RequestUpdate, UpdateTaskColumn } from './dtos/request-update.dtos'
 import { plainToInstance } from 'class-transformer'
 import { TaskDto } from './dtos/get.dtos'
-import { MoveInColumnQuery, MoveToColumnQuery, UpdateStatus, UpdateTaskMilestoneDto } from './dtos/request-patch.dtos'
+import {
+    MoveInColumnQuery,
+    MoveToColumnQuery,
+    UpdateStatus,
+    UpdateTaskMilestoneDto,
+    UpdateSubtaskDto
+} from './dtos/request-patch.dtos'
 import { ActiveUser } from '../../auth/decorator/active-user.decorator'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import {
@@ -103,6 +109,74 @@ export class TodolistsController {
         return await this.tasksService.deleteSubtask(id, columnId, subtaskId)
     }
 
+    //Cập nhật subtask
+    @Patch('/:id/columns/:columnId/subtasks/:subtaskId')
+    async updateSubtask(
+        @Param('id') id: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string,
+        @Body() body: UpdateSubtaskDto,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.updateSubtask(id, columnId, subtaskId, body, userId)
+    }
+
+    //Toggle complete subtask
+    @Patch('/:id/columns/:columnId/subtasks/:subtaskId/toggle')
+    async toggleSubtaskComplete(
+        @Param('id') id: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.toggleSubtaskComplete(id, columnId, subtaskId, userId)
+    }
+
+    // Thêm comment vào subtask
+    @Post('/:id/columns/:columnId/subtasks/:subtaskId/comments')
+    @UseInterceptors(FilesInterceptor('files', 10))
+    async addSubtaskComment(
+        @Param('id') taskId: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string,
+        @Body() body: AddCommentDto,
+        @UploadedFiles() files: Express.Multer.File[],
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.addSubtaskComment(taskId, columnId, subtaskId, userId, body, files)
+    }
+
+    // Cập nhật comment của subtask
+    @Patch('/:id/columns/:columnId/subtasks/:subtaskId/comments/:commentId')
+    @UseInterceptors(
+        FilesInterceptor('files', 10, {
+            limits: { fileSize: 50 * 1024 * 1024 }
+        })
+    )
+    async updateSubtaskComment(
+        @Param('id') taskId: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string,
+        @Param('commentId') commentId: string,
+        @Body() body: UpdateCommentDto,
+        @ActiveUser('sub') userId: string,
+        @UploadedFiles() files?: Express.Multer.File[]
+    ) {
+        return await this.tasksService.updateSubtaskComment(taskId, columnId, subtaskId, commentId, userId, body, files)
+    }
+
+    // Xóa comment của subtask
+    @Delete('/:id/columns/:columnId/subtasks/:subtaskId/comments/:commentId')
+    async deleteSubtaskComment(
+        @Param('id') taskId: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string,
+        @Param('commentId') commentId: string,
+        @ActiveUser('sub') userId: string
+    ) {
+        return await this.tasksService.deleteSubtaskComment(taskId, columnId, subtaskId, commentId, userId)
+    }
+
     //Cập nhật milestone cho task
     @Patch('/:taskId/milestone')
     async updateTaskMilestone(
@@ -123,6 +197,16 @@ export class TodolistsController {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
+    }
+
+    // Lấy chi tiết subtask
+    @Get('/:id/columns/:columnId/subtasks/:subtaskId/detail')
+    async getSubtaskDetail(
+        @Param('id') taskId: string,
+        @Param('columnId') columnId: string,
+        @Param('subtaskId') subtaskId: string
+    ) {
+        return await this.tasksService.getSubtaskDetail(taskId, columnId, subtaskId)
     }
 
     // Cập nhật thông tin chi tiết task (title, description, priority, labels, dueDate, assignees)

@@ -72,6 +72,51 @@ export class TaskActivityDto {
     created_at: Date
 }
 
+class SubtaskDto {
+    @Expose()
+    _id: string
+    @Expose()
+    title: string
+    @Expose()
+    isCompleted: boolean
+    //@Expose()
+    // description?: string
+    // @Expose()
+    // @Type(() => TaskUserDto)
+    // assignees?: TaskUserDto[]
+    // @Expose()
+    // @Type(() => String)
+    // priority?: TaskPriority
+    // @Expose()
+    // labels?: string[]
+    // @Expose()
+    // dueDate?: Date
+    // @Expose()
+    // @Type(() => TaskCommentDto)
+    // comments?: TaskCommentDto[]
+    // @Expose()
+    // @Type(() => TaskActivityDto)
+    // activities?: TaskActivityDto[]
+    // @Expose()
+    // @Type(() => TaskUserDto)
+    // reporter?: TaskUserDto
+    // @Expose()
+    // created_at?: Date
+    // @Expose()
+    // updated_at?: Date
+}
+class TaskColumnDto {
+    @Expose()
+    _id: string
+    @Expose()
+    title: string // VD: "Todo", "In Progress", "Done"
+    @Expose()
+    color: string // Màu nền cột
+    @Expose()
+    @Type(() => SubtaskDto)
+    items: SubtaskDto[]
+}
+
 // DTO chi tiết task (giống Jira)
 export class TaskDetailDto {
     @Expose()
@@ -126,4 +171,7 @@ export class TaskDetailDto {
 
     @Expose()
     updated_at: Date
+    @Expose()
+    @Type(() => TaskColumnDto)
+    columns: TaskColumnDto[]
 }

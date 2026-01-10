@@ -142,7 +142,7 @@ export class Topic extends BaseEntity {
     phaseHistories: PhaseHistory[]
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, required: false, ref: Period.name })
-    periodId: Period | string | null
+    periodId: Period | string 
 
     // @Prop({ type: DefenseResult, default: {}, required: false })
     // defenseResult: DefenseResult

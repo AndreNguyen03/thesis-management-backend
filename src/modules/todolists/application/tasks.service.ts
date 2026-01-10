@@ -52,6 +52,14 @@ export class TasksService {
         return await this.taskInterface.deleteSubtask(id, columnId, subtaskId)
     }
 
+    async updateSubtask(id: string, columnId: string, subtaskId: string, body: any, userId: string) {
+        return await this.taskInterface.updateSubtask(id, columnId, subtaskId, body, userId)
+    }
+
+    async toggleSubtaskComplete(id: string, columnId: string, subtaskId: string, userId: string) {
+        return await this.taskInterface.toggleSubtaskComplete(id, columnId, subtaskId, userId)
+    }
+
     async updateColumnInTask(id: string, body: UpdateTaskColumn) {
         //  return await this.taskInterface.updateColumnsInTask(id,body.columns)
     }
@@ -73,7 +81,9 @@ export class TasksService {
     async getTaskDetail(taskId: string) {
         return await this.taskInterface.getTaskDetail(taskId)
     }
-
+    async getSubtaskDetail(taskId: string, columnId: string, subtaskId: string) {
+        return await this.taskInterface.getSubtaskDetail(taskId, columnId, subtaskId)
+    }
     async addComment(taskId: string, userId: string, body: AddCommentDto, files?: Express.Multer.File[]) {
         return await this.taskInterface.addComment(taskId, userId, body.content, files)
     }
@@ -109,5 +119,42 @@ export class TasksService {
 
     async updateTaskDetails(taskId: string, userId: string, body: UpdateTaskDetailDto) {
         return await this.taskInterface.updateTaskDetails(taskId, body, userId)
+    }
+
+    // Subtask comments
+    async addSubtaskComment(
+        taskId: string,
+        columnId: string,
+        subtaskId: string,
+        userId: string,
+        body: AddCommentDto,
+        files?: Express.Multer.File[]
+    ) {
+        return await this.taskInterface.addSubtaskComment(taskId, columnId, subtaskId, userId, body.content, files)
+    }
+
+    async updateSubtaskComment(
+        taskId: string,
+        columnId: string,
+        subtaskId: string,
+        commentId: string,
+        userId: string,
+        body: UpdateCommentDto,
+        files?: Express.Multer.File[]
+    ) {
+        return await this.taskInterface.updateSubtaskComment(
+            taskId,
+            columnId,
+            subtaskId,
+            commentId,
+            userId,
+            body.content,
+            body.existingFiles,
+            files
+        )
+    }
+
+    async deleteSubtaskComment(taskId: string, columnId: string, subtaskId: string, commentId: string, userId: string) {
+        return await this.taskInterface.deleteSubtaskComment(taskId, columnId, subtaskId, commentId, userId)
     }
 }

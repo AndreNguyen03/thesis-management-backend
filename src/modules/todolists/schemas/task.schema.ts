@@ -83,8 +83,33 @@ const TaskActivitySchema = SchemaFactory.createForClass(TaskActivity)
 export class Subtask extends BaseEntity {
     @Prop({ required: true })
     title: string
+    
     @Prop({ default: false })
     isCompleted: boolean
+
+    @Prop({ default: '' })
+    description: string
+
+    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }], default: [] })
+    assignees: string[]
+
+    @Prop({ type: String, enum: TaskPriority, default: TaskPriority.MEDIUM })
+    priority: TaskPriority
+
+    @Prop({ type: [String], default: [] })
+    labels: string[]
+
+    @Prop({ type: Date, default: null })
+    dueDate: Date | null
+
+    @Prop({ type: [TaskCommentSchema], default: [] })
+    comments: TaskComment[]
+
+    @Prop({ type: [TaskActivitySchema], default: [] })
+    activities: TaskActivity[]
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+    reporter: string
 }
 const SubtaskSchema = SchemaFactory.createForClass(Subtask)
 
