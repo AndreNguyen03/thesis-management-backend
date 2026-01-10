@@ -5,6 +5,8 @@ import { PaginationQueryDto } from '../../../common/pagination-an/dtos/paginatio
 export class AllDefenseMilestonesQuery {
     @IsOptional()
     year: string
+    @IsOptional()
+    periodId: string
 }
 export class PaginationAllDefenseMilestonesQuery extends IntersectionType(
     AllDefenseMilestonesQuery,

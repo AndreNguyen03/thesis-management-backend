@@ -24,9 +24,9 @@ export class PayloadCreateMilestone {
 export class PayloadFacultyCreateMilestone {
     @IsNotEmpty()
     periodId: string
-    @IsOptional()
+    @IsNotEmpty()
     @IsEnum(PeriodPhaseName)
-    phaseName: PeriodPhaseName
+    phaseName: PeriodPhaseName = PeriodPhaseName.EXECUTION
     @IsNotEmpty()
     title: string
     @IsNotEmpty()

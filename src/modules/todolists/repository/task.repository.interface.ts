@@ -6,9 +6,9 @@ import { MoveInColumnQuery, MoveToColumnQuery } from '../dtos/request-patch.dtos
 
 export interface ITaskRepository extends BaseRepositoryInterface<Task> {
     getTasks(groupId: string, milestoneId?: string): Promise<Task[]>
-    createTask(body: RequestCreate): Promise<Task>
+    createTask(body: RequestCreate, userId: string): Promise<Task>
     deleteTask(id: string): Promise<string>
-    createNewSubtask(id: string, columnId: string, title: string): Promise<Subtask>
+    createNewSubtask(id: string, columnId: string, title: string, userId: string): Promise<Subtask>
     deleteSubtask(id: string, columnId: string, subtaskId: string): Promise<string>
     updateSubtask(id: string, columnId: string, subtaskId: string, updates: any, userId: string): Promise<Task>
     toggleSubtaskComplete(id: string, columnId: string, subtaskId: string, userId: string): Promise<Task>

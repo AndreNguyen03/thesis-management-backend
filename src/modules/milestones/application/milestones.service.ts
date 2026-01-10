@@ -45,7 +45,7 @@ export class MilestonesService {
     async createMilestone(body: PayloadCreateMilestone, user: ActiveUserData) {
         return await this.milestoneRepository.createMilestone(body, user)
     }
-    async facultyCreate(body: PayloadFacultyCreateMilestone, user: ActiveUserData) {
+    async facultyCreate(user: ActiveUserData, body: PayloadFacultyCreateMilestone) {
         const groupIds = await this.getGroupProvider.getGroupIdsByPeriodId(body.periodId, body.phaseName)
         return await this.milestoneRepository.facultyCreateMilestone(body, user, groupIds)
     }
@@ -78,9 +78,9 @@ export class MilestonesService {
         await this.milestoneRepository.uploadReport(milestoneId, fileSnapshot, userId)
         return fileSnapshot
     }
-    async createTaskInMinesTone(body: RequestCreate) {
+    async createTaskInMinesTone(body: RequestCreate, userId: string) {
         //Tạo task mới
-        const newTask = await this.taskService.createTask(body)
+        const newTask = await this.taskService.createTask(body, userId)
         return await this.milestoneRepository.createTaskInMinesTone(body.milestoneId, newTask._id.toString())
     }
     async facultyGetMilestonesInPeriod(periodId: string) {

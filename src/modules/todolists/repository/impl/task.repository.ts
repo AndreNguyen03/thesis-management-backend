@@ -68,7 +68,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         const results = await this.taskModel.aggregate(pipeline).exec()
         return results
     }
-    async createTask(body: RequestCreate): Promise<Task> {
+    async createTask(body: RequestCreate, userId: string): Promise<Task> {
         const { milestoneId, groupId, title, description } = body
         const defaultColumns = [
             TaskColumnTitleEnum.TO_DO,
@@ -80,7 +80,8 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
             milestoneId: new mongoose.Types.ObjectId(milestoneId),
             title: title,
             description: description || '',
-            columns: defaultColumns
+            columns: defaultColumns,
+            reporter: userId
         })
         return await newTask.save()
     }
@@ -93,19 +94,19 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         }
         return id
     }
-    async createNewSubtask(id: string, columnId: string, title: string): Promise<Subtask> {
+    async createNewSubtask(id: string, columnId: string, title: string, userId: string): Promise<Subtask> {
         const task = await this.taskModel.findById(new mongoose.Types.ObjectId(id))
         if (!task) {
             throw new BadRequestException('Nhiệm vụ không tồn tại')
         }
         let newSubTask = new Subtask()
         newSubTask._id = new mongoose.Types.ObjectId() as any
-        console.log('Creating subtask with title:', newSubTask)
         task?.columns.forEach((column) => {
             if (column._id.toString() === columnId) {
                 newSubTask.title = title
                 newSubTask.isCompleted = false
                 newSubTask.deleted_at = null
+                newSubTask.reporter = userId
                 column.items.push(newSubTask)
             }
         })
@@ -364,9 +365,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                     {
                         $project: {
                             _id: 1,
-                            fullname: 1,
+                            fullName: 1,
                             email: 1,
-                            avatar: 1
+                            avatarUrl: 1
                         }
                     }
                 ]
@@ -499,9 +500,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                     {
                         $project: {
                             _id: 1,
-                            fullname: 1,
+                            fullName: 1,
                             email: 1,
-                            avatar: 1
+                            avatarUrl: 1
                         }
                     }
                 ],
@@ -545,9 +546,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                     {
                         $project: {
                             _id: 1,
-                            fullname: 1,
+                            fullName: 1,
                             email: 1,
-                            avatar: 1
+                            avatarUrl: 1
                         }
                     }
                 ],
@@ -733,9 +734,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                     {
                         $project: {
                             _id: 1,
-                            fullname: 1,
+                            fullName: 1,
                             email: 1,
-                            avatar: 1
+                            avatarUrl: 1
                         }
                     }
                 ]
@@ -753,9 +754,9 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                     {
                         $project: {
                             _id: 1,
-                            fullname: 1,
+                            fullName: 1,
                             email: 1,
-                            avatar: 1
+                            avatarUrl: 1
                         }
                     }
                 ]
@@ -1023,7 +1024,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         })
 
         await task.save()
-        await task.populate('assignees', 'fullname email avatar')
+        await task.populate('assignees', 'fullName email avatarUrl')
 
         return task
     }
@@ -1085,7 +1086,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
         }
 
         await task.save()
-        await task.populate('assignees', 'fullname email avatar')
+        await task.populate('assignees', 'fullName email avatarUrl')
 
         return task
     }

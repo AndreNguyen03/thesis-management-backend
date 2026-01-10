@@ -19,8 +19,8 @@ export class TasksService {
         return await this.taskInterface.getTasks(query.groupId, query.milestoneId)
     }
 
-    async createTask(body: RequestCreate) {
-        return await this.taskInterface.createTask(body)
+    async createTask(body: RequestCreate, userId: string) {
+        return await this.taskInterface.createTask(body, userId)
     }
 
     async updateTaskInfo(id: string, body: RequestUpdate) {
@@ -43,8 +43,8 @@ export class TasksService {
         return await this.taskInterface.deleteTask(id)
     }
 
-    async createSubtask(id: string, columnId: string, body: { title: string }) {
-        const subtaskId = await this.taskInterface.createNewSubtask(id, columnId, body.title)
+    async createSubtask(id: string, columnId: string, body: { title: string }, userId: string) {
+        const subtaskId = await this.taskInterface.createNewSubtask(id, columnId, body.title, userId)
         return subtaskId
     }
 

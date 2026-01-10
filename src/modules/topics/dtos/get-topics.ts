@@ -136,9 +136,6 @@ export class GetGeneralTopics extends AbstractTopic {
     defenseMilestoneDate?: Date
 
     @Expose()
-    approvedStudentsNum: number
-
-    @Expose()
     userRegistrationStatus?: string
 
     @Expose()

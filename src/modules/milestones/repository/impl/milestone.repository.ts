@@ -940,9 +940,18 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         facultyId: string,
         queryParams: PaginationAllDefenseMilestonesQuery
     ): Promise<Paginated<MilestoneTemplate>> {
-        const { year } = queryParams
-
+        const { year, periodId } = queryParams
         const pipeline: any[] = [
+            //nếu periodId có thì tìm kiếm đợt bảo vệ theo periodId
+            ...(periodId
+                ? [
+                      {
+                          $match: {
+                              periodId: new mongoose.Types.ObjectId(periodId)
+                          }
+                      }
+                  ]
+                : []),
             {
                 $lookup: {
                     from: 'periods',
