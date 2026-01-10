@@ -513,6 +513,7 @@ export class StudentRegTopicRepository
 
         return res
     }
+    
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {
         const registrations = await this.studentRegTopicModel
             .find({

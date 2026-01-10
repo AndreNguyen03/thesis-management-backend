@@ -13,13 +13,15 @@ import { GetStudentsRegistrationsInTopic } from '../topics/dtos/registration/get
 import { GetRegistrationInTopicProvider } from './provider/get-registration-in-topic.provider'
 import { BodyReplyRegistrationDto } from './dtos/query-reply-registration.dto'
 import { PaginationStudentGetHistoryQuery } from './dtos/request.dto'
+import { PeriodGateway } from '../periods/gateways/period.gateway'
 
 @Controller('registrations')
 export class RegistrationsController {
     constructor(
         private readonly studentRegTopicService: StudentRegTopicService,
         private readonly lecturerRegTopicService: LecturerRegTopicService,
-        private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider
+        private readonly getRegistrationInTopicProvider: GetRegistrationInTopicProvider,
+        private readonly periodGateway: PeriodGateway
     ) {}
 
     // lấy topic của sinh viên để biết là các trạng thái đã có điểm hay chưa
@@ -92,7 +94,9 @@ export class RegistrationsController {
     @Roles(UserRole.STUDENT)
     @UseGuards(RolesGuard)
     async studentRegisterTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
-        return this.studentRegTopicService.studentSingleRegistration(req.user.role, req.user.sub, topicId)
+        const result = await this.studentRegTopicService.studentSingleRegistration(req.user.role, req.user.sub, topicId)
+        this.periodGateway.emitPeriodDashboardUpdate({})
+        return result
     }
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER, UserRole.STUDENT)
@@ -102,10 +106,14 @@ export class RegistrationsController {
         const { sub: userId, role } = req.user
         if (role === 'student') {
             //sinh viên hủy đăng ký đề tài
-            return this.studentRegTopicService.cancelRegistration(topicId, userId)
+            const result = await this.studentRegTopicService.cancelRegistration(topicId, userId)
+            this.periodGateway.emitPeriodDashboardUpdate({})
+            return result
         } else if (role === 'lecturer') {
             //giảng viên rút khỏi đề tài
-            return this.lecturerRegTopicService.cancelRegistration(topicId, userId)
+            const result = await this.lecturerRegTopicService.cancelRegistration(topicId, userId)
+            this.periodGateway.emitPeriodDashboardUpdate({})
+            return result
         } else {
             throw new Error('Invalid user role')
         }
@@ -143,6 +151,7 @@ export class RegistrationsController {
         @Req() req: { user: ActiveUserData }
     ) {
         await this.studentRegTopicService.replyStudentRegistrationByLecturer(req.user.sub, registrationId, body)
+        this.periodGateway.emitPeriodDashboardUpdate({})
         return { message: 'Đăng ký của sinh viên đã được giảng viên phê duyệt' }
     }
 }
