@@ -23,9 +23,15 @@ import { DocumentSearchTool } from './tools/document-search.tool'
 import { LecturerSearchTool } from './tools/lecturer-search.tool'
 import { KnowledgeSource, KnowledgeSourceSchema } from '../knowledge-source/schemas/knowledge-source.schema'
 import { AutoAgentController } from './auto-agent.controller'
+import { ChatbotConversationController } from './chatbot-conversation.controller'
+import { ChatbotConversationService } from './application/chatbot-conversation.service'
+import { ChatbotConversationRepository } from './repository/chatbot-conversation.repository'
+import { ChatbotConversation, ChatbotConversationSchema } from './schemas/chatbot-conversation.schema'
+import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
+import { User, UserSchema } from '../../users/schemas/users.schema'
 
 @Module({
-    controllers: [ChatController, AutoAgentController],
+    controllers: [ChatController, AutoAgentController, ChatbotConversationController],
     providers: [
         ChatBotService,
         GetEmbeddingProvider,
@@ -39,7 +45,9 @@ import { AutoAgentController } from './auto-agent.controller'
         AutoAgentService,
         TopicSearchTool,
         DocumentSearchTool,
-        LecturerSearchTool
+        LecturerSearchTool,
+        ChatbotConversationService,
+        ChatbotConversationRepository
     ],
     imports: [
         ConfigModule.forFeature(googleAIConfig),
@@ -47,7 +55,10 @@ import { AutoAgentController } from './auto-agent.controller'
             { name: ChatBot.name, schema: ChatBotSchema },
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
-            { name: KnowledgeSource.name, schema: KnowledgeSourceSchema }
+            { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
+            { name: ChatbotConversation.name, schema: ChatbotConversationSchema },
+            { name: Lecturer.name, schema: LecturerSchema },
+            { name: User.name, schema: UserSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),

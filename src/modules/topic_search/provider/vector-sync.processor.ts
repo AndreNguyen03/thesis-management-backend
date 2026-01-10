@@ -65,6 +65,8 @@ export class VectorSyncProcessor implements OnModuleInit {
 
         //  await db.collection(this.VECTOR_COLLECTION_NAME).deleteMany({})
         try {
+            const original_ids = docs.map((doc) => doc.metadata.original_id) // hoặc doc.id nếu có
+            await this.topicVectorModel.deleteMany({ original_id: { $in: original_ids } }) // xóa trùng
             await this.vectorStore.addDocuments(docs)
             console.log(`✅ Đã đồng bộ xong ${docs.length} đề tài bằng Gemini Embeddings!`)
         } catch (error) {

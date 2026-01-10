@@ -341,7 +341,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             _id: topicData._id.toString(),
             titleVN: topicData.titleVN,
             titleEng: topicData.titleEng,
-            createBy: topicData.createBy.toString()
+            createBy: topicData.createBy.toString(),
+            periodId: topicData.periodId!.toString()
         }
     }
     async updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null> {
@@ -693,7 +694,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
     async createTopic(topicData: CreateTopicDto): Promise<string> {
         const res = await this.topicRepository.create(topicData)
-        console.log(res)
+
         const newTopic = plainToInstance(GetTopicResponseDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -1260,6 +1261,16 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     }
                 },
                 studentsNum: { $size: { $ifNull: ['$studentRef', []] } },
+                approvedStudentsNum: {
+                    $size: {
+                        $filter: {
+                            input: '$studentRef',
+
+                            as: 'student',
+                            cond: { $eq: ['$$student.status', StudentRegistrationStatus.APPROVED] }
+                        }
+                    }
+                },
                 fields: `$fields`,
                 requirements: `$requirements`,
                 fieldIds: 1,

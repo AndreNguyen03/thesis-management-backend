@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common'
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { StudentRegTopicRepositoryInterface } from '../repository/student-reg-topic.repository.interface'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
@@ -16,6 +16,8 @@ import { CheckUserInfoProvider } from '../../../users/provider/check-user-info.p
 import { PaginationStudentGetHistoryQuery } from '../dtos/request.dto'
 import { GetPaginatedStudentRegistrationsHistory } from '../dtos/get-history-registration.dto'
 import { plainToInstance } from 'class-transformer'
+import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
+import { VectorSyncProvider } from '../../topic_search/provider/vector-sync.provider'
 
 @Injectable()
 export class StudentRegTopicService {
@@ -24,10 +26,12 @@ export class StudentRegTopicService {
         private readonly studentRegTopicRepository: StudentRegTopicRepositoryInterface,
         private readonly notificationPublisherService: NotificationPublisherService,
         private readonly getMiniTopicInfoProvider: GetMiniTopicInfoProvider,
-        private readonly checkUserInfoProvider: CheckUserInfoProvider
+        private readonly checkUserInfoProvider: CheckUserInfoProvider,
+        @Inject(forwardRef(() => VectorSyncProvider))
+        private readonly vectorSyncProvider: VectorSyncProvider
     ) {}
 
-    async getStudentTopicStateInPeriod(userId:string) {
+    async getStudentTopicStateInPeriod(userId: string) {
         return this.studentRegTopicRepository.getStudentTopicStateInPeriod(userId)
     }
 
@@ -97,7 +101,11 @@ export class StudentRegTopicService {
                 body.studentRole,
                 body.lecturerResponse
             )
-
+            await this.vectorSyncProvider.syncDataInPeriodOnPhase(topicInfo.periodId, {
+                limit: 0,
+                page: 1,
+                phase: PeriodPhaseName.OPEN_REGISTRATION
+            })
             //Gửi thông báo cho sinh viên về việc đồng ý đăng ký
             await this.notificationPublisherService.sendApprovedRegisterationNotification(
                 registration.userId,

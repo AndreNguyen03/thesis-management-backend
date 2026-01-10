@@ -20,6 +20,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
 import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider copy'
 import { TopicVector, TopicVectorSchema } from '../topic_search/schemas/topic-vector.schemas'
 import { TopicModule } from '../topics/topic.module'
+import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
 
 @Module({
     providers: [
@@ -44,14 +45,17 @@ import { TopicModule } from '../topics/topic.module'
         MongooseModule.forFeature([
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
-            { name: TopicVector.name, schema: TopicVectorSchema }
-
+            { name: TopicVector.name, schema: TopicVectorSchema },
+            {
+                name: Lecturer.name,
+                schema: LecturerSchema
+            }
         ]),
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => ChatBotModule),
         PaginationModule,
         PaginationAnModule,
-        TopicModule,
+        TopicModule
     ],
     exports: [
         CreateKnowledgeSourceProvider,

@@ -6,10 +6,14 @@ import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PhaseHistory, Topic } from '../schemas/topic.schemas'
 import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
 import mongoose from 'mongoose'
+import { TopicService } from '../application/topic.service'
 
 @Injectable()
 export class UpdateTopicsPhaseBatchProvider {
-    constructor(@Inject('TopicRepositoryInterface') private readonly topicRepository: TopicRepositoryInterface) {}
+    constructor(
+        @Inject('TopicRepositoryInterface') private readonly topicRepository: TopicRepositoryInterface,
+        private readonly topicService: TopicService
+    ) {}
 
     async updateTopicsBatchToExecutionPhase(
         periodId: string,
@@ -65,7 +69,8 @@ export class UpdateTopicsPhaseBatchProvider {
                     this.createPhaseHistory(PeriodPhaseName.OPEN_REGISTRATION, TopicStatus.Draft, actorId)
                 ]
             }
-
+            //tạo đề tài nháp mới cho người dùng
+            await this.topicService.copyToDraft(topic._id.toString(), topic.createBy._id.toString())
             console.log(`\n[CLEANUP] Chuyển đề tài ${topic._id} → Draft`, payload)
             await this.topicRepository.update(topic._id.toString(), payload)
             console.log(`[OK] -> ${topic._id} chuyển về Draft`)
@@ -114,7 +119,6 @@ export class UpdateTopicsPhaseBatchProvider {
         //Task1: cập nhật những đề tài có trạng thái là approved
         //Chuyển chúng sang pha mới với trạng thái là pending registration
         const awaitingEvaluationTopics = await this.topicRepository.findByCondition({
-            periodId: periodId,
             currentPhase: PeriodPhaseName.EXECUTION,
             currentStatus: TopicStatus.AwaitingEvaluation,
             deleted_at: null

@@ -25,7 +25,7 @@ import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schema
         forwardRef(() => PeriodsModule),
         BullModule.registerQueue({ name: 'vector-sync-queue' }),
         PaginationAnModule,
-        TopicModule
+        forwardRef(() => TopicModule)
     ],
     controllers: [TopicSearchController],
     providers: [
