@@ -2031,6 +2031,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                     }
                 },
                 studentsNum: 1,
+                approvedStudentsNum: {
+                    $size: {
+                        $filter: {
+                            input: '$studentRef',
+                            as: 'studentRegistration',
+                            cond: { $eq: ['$$studentRegistration.status', StudentRegistrationStatus.APPROVED] }
+                        }
+                    }
+                },
                 fields: `$fields`,
                 requirements: `$requirements`,
                 fieldIds: 1,

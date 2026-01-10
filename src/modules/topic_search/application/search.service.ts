@@ -203,6 +203,9 @@ export class TopicSearchService implements OnModuleInit {
         queries: RequestGetTopicsInAdvanceSearchParams
     ): Promise<Paginated<TopicVector>> {
         const currPeriod = await this.periodsService.checkCurrentPeriod(periodId)
+
+        console.log('Current Period:', currPeriod, periodId)
+
         if (!currPeriod) {
             throw new BadGatewayException('Không tìm thấy kì hiện tại cho khoa của bạn.')
         }

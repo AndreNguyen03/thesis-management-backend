@@ -1433,7 +1433,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                             as: 'userInfo',
                             in: {
                                 $mergeObjects: [
-                                    '$$userInfo',
                                     {
                                         $arrayElemAt: [
                                             {
@@ -1445,7 +1444,8 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
                                             },
                                             0
                                         ]
-                                    }
+                                    },
+                                    '$$userInfo'
                                 ]
                             }
                         }

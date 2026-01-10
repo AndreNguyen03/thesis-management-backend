@@ -42,8 +42,8 @@ export class TopicVectorRepository
                         limit: 50,
                         filter: {
                             'periodInfo._id': periodId,
-                            'lastStatusInPhaseHistory.phaseName': PeriodPhaseName.OPEN_REGISTRATION,
-                            'lastStatusInPhaseHistory.status': {
+                            currentPhase: PeriodPhaseName.OPEN_REGISTRATION,
+                            currentStatus: {
                                 $in: [TopicStatus.PendingRegistration, TopicStatus.Registered, TopicStatus.Full]
                             }
                         }
