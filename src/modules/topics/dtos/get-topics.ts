@@ -140,6 +140,9 @@ export class GetGeneralTopics extends AbstractTopic {
 
     @Expose()
     userRegistrationStatus?: string
+
+    @Expose()
+    approvedStudentsNum?: number
 }
 
 class TopicStatsDto {
