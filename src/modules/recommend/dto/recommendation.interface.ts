@@ -50,7 +50,7 @@ export interface Badge {
     icon: string
     tooltip: string
     priority: number 
-}
+}   
 
 export interface MatchDetails {
     matchedSkills: string[]

@@ -137,6 +137,9 @@ export class GetGeneralTopics extends AbstractTopic {
 
     @Expose()
     approvedStudentsNum: number
+
+    @Expose()
+    userRegistrationStatus?: string
 }
 
 class TopicStatsDto {
@@ -538,4 +541,37 @@ export class StandardStructureTopicDto {
     maxStudents: number
     @Expose()
     type: string
+}
+
+export class CurrentTopicsState {
+    @Expose()
+    _id: string
+    @Expose()
+    titleVN: string
+    @Expose()
+    titleEng: string
+    @Expose()
+    description: string
+    @Expose()
+    @Type(() => GetFieldNameReponseDto)
+    fields: GetFieldNameReponseDto[]
+    @Expose()
+    @Type(() => GetRequirementNameReponseDto)
+    requirements: GetRequirementNameReponseDto[]
+    @Expose()
+    @Type(() => GetMajorMiniDto)
+    major: GetMajorMiniDto
+    @Expose()
+    @Type(() => ResponseMiniLecturerDto)
+    lecturers: ResponseMiniLecturerDto[]
+    @Expose()
+    maxStudents: number
+    @Expose()
+    type: string
+    @Expose()
+    currentStatus: string
+    @Expose()
+    studentsNum: number
+    @Expose()
+    createByInfo: ResponseMiniLecturerDto
 }

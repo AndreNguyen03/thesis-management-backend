@@ -5,6 +5,7 @@ import { Major } from '../../majors/schemas/majors.schemas'
 import { Field } from '../../fields/schemas/fields.schemas'
 import { Requirement } from '../../requirements/schemas/requirement.schemas'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
+import { CurrentTopicsState } from '../../topics/dtos'
 
 export class RecommendationResponseDtoe {}
 
@@ -17,7 +18,7 @@ export class EnrichedRecommendation extends CandidateTopicDto {
 }
 
 export interface RecommendationResult {
-    topic: TopicVectorSearch | TopicRecommendResponse
+    topic: CurrentTopicsState | TopicRecommendResponse
     type: 'fallback' | 'recommend',
     badges?: Badge[]
     badgeSummary?: string
@@ -27,6 +28,7 @@ export interface RecommendationResult {
 
 export interface TopicVectorSearch {
     _id: string
+    original_id: string
     titleVN: string
     currentStatus: string
     studentsNum: number

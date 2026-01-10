@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { TopicRepositoryInterface } from '../repository'
 import {
+    CurrentTopicsState,
     GetGeneralTopics,
     PaginatedTopicsInLibrary,
     PaginatedTopicsInPeriod,
@@ -35,6 +36,15 @@ export class GetTopicProvider extends BaseServiceAbstract<Topic> {
             enableImplicitConversion: true
         })
     }
+
+    async getCurrentTopicsState(topicIds: string[], limit: number): Promise<CurrentTopicsState[]> {
+        const result = await this.topicRepositoryInterface.getCurrentTopicsState(topicIds, limit)
+        return plainToInstance(CurrentTopicsState, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
     async getTopicsInPhase(periodId: string, query: RequestGetTopicsInPhaseParams): Promise<PaginatedTopicsInPeriod> {
         const periodInfo = await this.periodsService.getPeriodById(periodId)
         const paginationResult = await this.topicRepositoryInterface.getTopicsInPhaseHistory(periodId, query)

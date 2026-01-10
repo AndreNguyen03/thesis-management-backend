@@ -9,13 +9,16 @@ import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 export class RecommendController {
     constructor(private readonly recommendationService: RecommendationService) {}
 
+    // @Get('/:userId/period/:periodId')
     @Get('/period/:periodId')
     async getRecommendations(
         @Req() req: { user: ActiveUserData },
+        // @Param('userId') userId: string,
         @Param('periodId') periodId: string,
         @Query('limit') limit?: number
     ) {
         try {
+            // const result = await this.recommendationService.getRecommendationsForStudent(userId, periodId, {
             const result = await this.recommendationService.getRecommendationsForStudent(req.user.sub, periodId, {
                 limit: limit ? parseInt(limit.toString()) : undefined
             })

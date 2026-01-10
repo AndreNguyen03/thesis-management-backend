@@ -65,6 +65,6 @@ import { User, UserSchema } from '../../users/schemas/users.schema'
         PaginationAnModule,
         TopicModule
     ],
-    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider]
+    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider, GenerationProvider]
 })
 export class ChatBotModule {}

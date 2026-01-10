@@ -66,6 +66,38 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     ) {
         super(topicRepository)
     }
+
+    async getCurrentTopicsState(topicIds: string[], limit: number): Promise<Topic[]> {
+        const pipelineSub: any[] = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(
+            {
+                $match: {
+                    _id: { $in: topicIds.map((id) => new mongoose.Types.ObjectId(id)) }
+                }
+            },
+            { $limit: limit }
+        )
+        pipelineSub.push({
+            $project: {
+                _id: 1,
+                titleVN: 1,
+                titleEng: 1,
+                description: 1,
+                fields: 1,
+                requirements: 1,
+                major: 1,
+                lecturers: 1,
+                maxStudents: 1,
+                type: 1,
+                currentStatus: 1,
+                studentsNum: 1,
+                createByInfo: 1
+            }
+        })
+        return await this.topicRepository.aggregate(pipelineSub).exec()
+    }
+
     async getStandarStructureTopicsByTopicIds(topicIds: string[], limit: number): Promise<Topic[]> {
         const pipelineSub: any[] = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
@@ -1931,7 +1963,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
     }
     async getRegisteringTopics(
         periodId: string,
-        query: RequestGetTopicsInAdvanceSearchParams
+        query: RequestGetTopicsInAdvanceSearchParams,
+        userId?: string
     ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
@@ -1952,6 +1985,35 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         })
+        // lay ra trang thai dang ki cua user trong de tai
+        pipelineSub.push({
+            $addFields: {
+                userRegistration: {
+                    $arrayElemAt: [
+                        {
+                            $filter: {
+                                input: '$studentRef',
+                                as: 'registration',
+                                cond: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$$registration.userId', new mongoose.Types.ObjectId(userId)]
+                                            },
+                                            {
+                                                $ne: ['$$registration.status', StudentRegistrationStatus.WITHDRAWN]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        0
+                    ]
+                }
+            }
+        })
+
         pipelineSub.push({
             $project: {
                 titleEng: 1,
@@ -1988,6 +2050,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 grade: 1,
                 isEditable: 1,
                 allowManualApproval: 1,
+                userRegistrationStatus: '$userRegistration.status',
                 //lastStatusInPhaseHistory: 1,
                 //nếu là pha nộp đề tài thì lấy thêm thời gian nộp đề tài
                 //Không thì thôi vì phải plainToInstance
