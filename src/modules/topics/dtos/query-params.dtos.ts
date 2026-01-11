@@ -12,3 +12,13 @@ export class PaginationRegisteredTopicsQueryParams extends PaginationQueryDto {
     @IsString()
     periodId: string
 }
+export class DraftTopicsQuery {
+    @IsOptional()
+    @IsString()
+    periodId: string
+}
+export class PaginationDraftTopicsQueryParams extends PaginationQueryDto {
+    @IsOptional()
+    @IsString()
+    periodId: string
+}

@@ -581,5 +581,7 @@ export class CurrentTopicsState {
     @Expose()
     studentsNum: number
     @Expose()
+    approvedStudentsNum: number
+    @Expose()
     createByInfo: ResponseMiniLecturerDto
 }

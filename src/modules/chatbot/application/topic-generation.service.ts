@@ -132,8 +132,7 @@ YÊU CẦU BẮT BUỘC:
 
 DESCRIPTION RULES:
 - Mỗi description 3–4 câu
-- Phải nêu rõ: bài toán, phương pháp, kết quả và tiêu chí đánh giá
-- Mỗi đề tài phải có góc tiếp cận khác nhau (hệ thống / mô hình / ứng dụng)
+- Mỗi đề tài phải có góc tiếp cận khác nhau (hệ thống / mô hình / ứng dụng,...)
 - Văn phong học thuật, không dùng cấu trúc lặp
 
 ĐỊNH DẠNG OUTPUT (BẮT BUỘC CHÍNH XÁC):

@@ -5,6 +5,7 @@ import { TopicVector } from '../../topic_search/schemas/topic-vector.schemas'
 import { TopicStatus } from '../../topics/enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { TopicVectorSearch } from '../../recommend/dto/recommendation-response.dto'
+import { StudentRegistrationStatus } from '../../registrations/enum/student-registration-status.enum'
 
 @Injectable()
 export class SearchSimilarTopicsProvider {
@@ -28,7 +29,47 @@ export class SearchSimilarTopicsProvider {
                     }
                 }
             },
-
+            {
+                $lookup: {
+                    from: 'ref_students_topics',
+                    let: {
+                        originalId: {
+                            $toObjectId: '$original_id'
+                        }
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$topicId', '$$originalId']
+                                }
+                            }
+                        }
+                    ],
+                    as: 'studentRef'
+                }
+            },
+            {
+                $addFields: {
+                    approvedStudentsNum: {
+                        $size: {
+                            $filter: {
+                                input: '$studentRef',
+                                as: 'studentRegistration',
+                                cond: {
+                                    $eq: ['$$studentRegistration.status', StudentRegistrationStatus.APPROVED]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: {
+                    path: '$studentRef',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
             {
                 $project: {
                     _id: 1,
@@ -44,7 +85,8 @@ export class SearchSimilarTopicsProvider {
                     fields: 1,
                     requirements: 1,
                     lecturers: 1,
-                    createByInfo: 1
+                    createByInfo: 1,
+                    approvedStudentsNum: 1
                 }
             }
         ]

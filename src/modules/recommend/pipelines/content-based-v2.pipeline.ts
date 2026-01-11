@@ -77,7 +77,6 @@ export class ContentBasedPipeline {
 
         console.log('Semantic Scored Topics:', semanticScoredTopics)
 
-
         // map thanh id
         const topicIds = semanticScoredTopics.map((t) => t.original_id.toString())
 
@@ -86,9 +85,17 @@ export class ContentBasedPipeline {
         // lay thong tin hien tai cua topic
         const currentTopicsState = await this.getTopicProvider.getCurrentTopicsState(topicIds, 10)
 
+        const currentTopicsStateWithApprovedStudentsNum = currentTopicsState.map((topic) => {
+            const matchedTopic = semanticScoredTopics.find((t) => t.original_id.toString() === topic._id.toString())
+            return {
+                ...topic,
+                approvedStudentsNum: matchedTopic ? matchedTopic.approvedStudentsNum : 0
+            }
+        })
+
         console.log('Current Topics State:', currentTopicsState)
 
-        const currentTopicStateWithScore = currentTopicsState.map((topic) => {
+        const currentTopicStateWithScore = currentTopicsStateWithApprovedStudentsNum.map((topic) => {
             const matchedTopic = semanticScoredTopics.find((t) => t.original_id.toString() === topic._id.toString())
             return {
                 ...topic,
@@ -124,7 +131,7 @@ export class ContentBasedPipeline {
         }
 
         // --- BƯỚC 7: Map sang RecommendationResult
-        const topicMap = Object.fromEntries(currentTopicsState.map((t) => [t._id.toString(), t]))
+        const topicMap = Object.fromEntries(currentTopicsStateWithApprovedStudentsNum.map((t) => [t._id.toString(), t]))
 
         const finalResults: RecommendationResult[] = rerankedTopics.map((r, idx) => {
             const topic = topicMap[r.id]
@@ -223,6 +230,8 @@ export class ContentBasedPipeline {
     ): Promise<Array<TopicVectorSearch>> {
         try {
             const scoredTopics = await this.searchSimilarTopicProvider.searchSimilarTopics(studentEmbedding, periodId)
+
+            console.log('Scored Topics:', scoredTopics)
 
             this.logger.debug(
                 `[STEP 4] Top semantic scores: ${scoredTopics
