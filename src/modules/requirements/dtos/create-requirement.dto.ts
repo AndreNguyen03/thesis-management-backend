@@ -6,5 +6,5 @@ export class CreateRequirementDto {
     @IsNotEmpty()
     slug: string
     @IsOptional()
-    description: string
+    description?: string
 }

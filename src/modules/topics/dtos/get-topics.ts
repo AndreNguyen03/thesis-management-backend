@@ -136,9 +136,6 @@ export class GetGeneralTopics extends AbstractTopic {
     defenseMilestoneDate?: Date
 
     @Expose()
-    approvedStudentsNum: number
-
-    @Expose()
     userRegistrationStatus?: string
 
     @Expose()
@@ -434,12 +431,16 @@ export class RequestGetTopicsInPhaseBaseDto {
     //mặc định là lọc bình thường
     rulesPagination?: number = 0
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     lecturerIds?: string[]
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     fieldIds?: string[]
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     queryStatus?: string[]
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     majorIds?: string[]
 }
 
@@ -467,13 +468,17 @@ export class RequestGetTopicsInAdvanceSearch {
     @IsOptional()
     status?: string
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     lecturerIds?: string[]
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     fieldIds?: string[]
     @IsOptional()
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
     queryStatus?: string[]
     @IsOptional()
-    majorIds?: string[] | string
+    @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []), { toClassOnly: true })
+    majorIds?: string[]
     @IsOptional()
     @IsString()
     year?: string

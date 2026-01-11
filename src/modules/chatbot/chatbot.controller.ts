@@ -13,9 +13,27 @@ import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { Roles } from '../../auth/decorator/roles.decorator'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
+import { TopicGenerationService } from './application/topic-generation.service'
+import { ApplyGeneratedTopicDto, GenerateTopicDto } from './dtos/create-topic-generation.dto'
 @Controller('chatbots')
 export class ChatController {
-    constructor(private readonly chatBotService: ChatBotService) {}
+    constructor(
+        private readonly chatBotService: ChatBotService,
+        private readonly topicGenerationService: TopicGenerationService
+    ) {}
+
+    @Post('/generate-topic')
+    @Auth(AuthType.None)
+    async generateTopic(@Body() body: GenerateTopicDto) {
+        const result = await this.topicGenerationService.generateTopics(body)
+        return result
+    }
+
+    @Post('/apply-field-requirement')
+    @Auth(AuthType.Bearer)
+    async applyGeneratedTopic(@Body() body: ApplyGeneratedTopicDto) {
+        return await this.topicGenerationService.applyMissingEntities(body)
+    }
 
     @Post('/request')
     @Auth(AuthType.None)
