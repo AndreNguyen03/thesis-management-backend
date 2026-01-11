@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { IMilestoneRepository } from '../repository/miletones.repository.interface'
 import {
     PaginationRequestTopicInMilestoneQuery,
@@ -21,6 +21,7 @@ import { ActiveUserData } from '../../../auth/interface/active-user-data.interfa
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { PaginationAllDefenseMilestonesQuery } from '../dtos/query-params.dto'
+import { PeriodsService } from '../../periods/application/periods.service'
 
 @Injectable()
 export class MilestonesService {
@@ -29,7 +30,9 @@ export class MilestonesService {
         private readonly uploadManyFilesProvider: UploadManyFilesProvider,
         private readonly taskService: TasksService,
         private readonly getGroupProvider: GetGroupProvider,
-        private readonly downLoadFileProvider: DownLoadFileProvider
+        private readonly downLoadFileProvider: DownLoadFileProvider,
+        @Inject(forwardRef(() => PeriodsService))
+        private readonly periodsService: PeriodsService
     ) {}
 
     async getAllMilestones(userId: string): Promise<any> {
@@ -161,5 +164,8 @@ export class MilestonesService {
     }
     async getYearsOfDefenseMilestones(facultyId: string) {
         return await this.milestoneRepository.getYearsOfDefenseMilestones(facultyId)
+    }
+    async getDefenseMilestoneDetailById(milestoneTemplateId: string) {
+        return await this.milestoneRepository.getDefenseMilestoneDetailById(milestoneTemplateId)
     }
 }

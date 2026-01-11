@@ -41,7 +41,7 @@ import { GetFacultyByUserIdProvider } from '../../../users/provider/get-facutly-
 import { UserRole } from '../../../auth/enum/user-role.enum'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { Response } from 'express'
-import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
@@ -133,9 +133,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     }
     public async createTopic(userId: string, topicData: CreateTopicDto, files: Express.Multer.File[]): Promise<string> {
         const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
+        let lecIds = topicData.lecturerIds || []
         const newPhaseHistory = this.initializePhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
-        lecturerIds?.push(userId)
+        lecIds.push(userId)
+        console.log('Creating topic with data:', topicData)
         let topicId
         try {
             topicId = await this.topicRepository.createTopic(topicData)
@@ -184,7 +186,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         const res = await this.topicRepository.findSavedTopicsByUserId(userId, query)
         return res
     }
-    public async getDraftTopics(lecturerId: string, query: PaginationQueryDto) {
+    public async getDraftTopics(lecturerId: string, query: PaginationDraftTopicsQueryParams) {
         return await this.topicRepository.findDraftTopicsByLecturerId(lecturerId, query)
     }
     public async getSubmittedTopics(

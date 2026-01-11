@@ -50,7 +50,7 @@ export class CreatePhaseProvider {
             period.currentPhase,
             PeriodPhaseName.SUBMIT_TOPIC
         )
-        if (!isValid) {
+        if (!isValid && !force) {
             throw new BadRequestException(
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.SUBMIT_TOPIC}`
             )
@@ -78,10 +78,10 @@ export class CreatePhaseProvider {
         //Kiểm tra chuyển pha theo đúng trình tự
         const isValid = await this.validatePeriodPhaseProvider.validateStatusManualTransition(
             period.currentPhase,
-            PeriodPhaseName.SUBMIT_TOPIC
+            PeriodPhaseName.OPEN_REGISTRATION
         )
 
-        if (isValid) {
+        if (!isValid && !force) {
             throw new BadRequestException(
                 `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.SUBMIT_TOPIC}`
             )
@@ -90,7 +90,7 @@ export class CreatePhaseProvider {
         //Kiểm tra thời gian
         const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
 
-        if (new Date() < new Date(currentPeriodPhase!.endTime)) {
+        if (!force && new Date() < new Date(currentPeriodPhase!.endTime)) {
             throw new BadRequestException('Chưa đến thời gian kết thúc pha hiện tại. ')
         }
 
@@ -138,6 +138,25 @@ export class CreatePhaseProvider {
         console.log('================= CONFIG PHASE EXECUTION =================')
         const period = await this.iPeriodRepository.findOneById(periodId)
         if (!period) throw new PeriodNotFoundException()
+
+        //Kiểm tra thời gian
+        const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
+
+        if (!force && new Date() < new Date(currentPeriodPhase!.endTime)) {
+            throw new BadRequestException('Chưa đến thời gian kết thúc pha hiện tại. ')
+        }
+
+        //Kiểm tra chuyển pha theo đúng trình tự
+        const isValid = await this.validatePeriodPhaseProvider.validateStatusManualTransition(
+            period.currentPhase,
+            PeriodPhaseName.SUBMIT_TOPIC
+        )
+
+        if (!isValid && !force) {
+            throw new BadRequestException(
+                `Kì đã ở trạng thái ${period.currentPhase}, không thể chuyển tiếp thành ${PeriodPhaseName.SUBMIT_TOPIC}`
+            )
+        }
 
         // Kiểm tra phase execution có tồn tại trong period không
         console.log('[CHECK] Validating execution phase exists')
@@ -221,6 +240,13 @@ export class CreatePhaseProvider {
     ): Promise<{ success: boolean; message: string }> {
         const period = await this.iPeriodRepository.findOneById(periodId)
         if (!period) throw new PeriodNotFoundException()
+
+        //Kiểm tra thời gian
+        const currentPeriodPhase = period.phases.find((p: PeriodPhase) => p.phase === period.currentPhase)
+
+        if (!force && new Date() < new Date(currentPeriodPhase!.endTime)) {
+            throw new BadRequestException('Chưa đến thời gian kết thúc pha hiện tại. ')
+        }
 
         // Kiểm tra phase completion có tồn tại trong period không
         const completionPhaseExists = period.phases.some((p: PeriodPhase) => p.phase === PeriodPhaseName.COMPLETION)

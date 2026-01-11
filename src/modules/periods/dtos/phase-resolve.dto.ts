@@ -29,6 +29,7 @@ export interface Phase1Response {
     missingTopics: MissingTopicRecord[]
     canTriggerNextPhase: boolean
     currentApprovedTopics: number
+    isTimeout: boolean
 }
 
 export interface Phase2Response {
@@ -39,6 +40,7 @@ export interface Phase2Response {
         executing: { topicId: string; title: string }[]
     }
     canTriggerNextPhase: boolean
+    isTimeout: boolean
 }
 export interface Phase3Response {
     periodId: string
@@ -50,6 +52,7 @@ export interface Phase3Response {
     // 3. Đề tài chờ giảng viên đánh giá
     pendingLecturerReview: PendingLecturerReview[]
     canTriggerNextPhase: boolean
+    isTimeout: boolean
 }
 
 export interface Phase4Response {
@@ -62,6 +65,7 @@ export interface Phase4Response {
     // // 3. Đề tài chờ giảng viên đánh giá
     // pendingLecturerReview: PendingLecturerReview[]
     canTriggerNextPhase: boolean
+    isTimeout: boolean
 }
 
 export interface PausedOrDelayedTopicInfo {

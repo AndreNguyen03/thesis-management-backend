@@ -122,6 +122,7 @@ export class PeriodsController {
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async getPeriodInfo(@Param('periodId') periodId: string) {
+        console.log('periodId ::: ', periodId)
         const res = await this.periodsService.getPeriodInfo(periodId)
         return plainToInstance(GetPeriodDto, res, {
             excludeExtraneousValues: true,

@@ -230,4 +230,8 @@ export class MilestonesController {
     async getAssignedDefenseMilestonesForLecturer(@Req() req: { user: ActiveUserData }) {
         return await this.milestonesService.getAssignedDefenseMilestonesForLecturer(req.user.sub, req.user.facultyId!)
     }
+    @Get('/:milestoneTemplateId/detail')
+    async getDefenseMilestoneDetailById(@Param('milestoneTemplateId') milestoneTemplateId: string) {
+        return await this.milestonesService.getDefenseMilestoneDetailById(milestoneTemplateId)
+    }
 }

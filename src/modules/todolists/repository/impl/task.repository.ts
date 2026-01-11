@@ -44,7 +44,7 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
             {
                 $match: { groupId: new mongoose.Types.ObjectId(groupId), deleted_at: null }
             },
-            { $sort: { createdAt: 1 } }
+            { $sort: { created_at: -1 } }
         )
 
         pipeline.push({
@@ -53,8 +53,8 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
                 title: 1,
                 description: 1,
                 status: 1,
-                createdAt: 1,
-                updatedAt: 1,
+                createdAt: "$created_at",
+                updatedAt: "$updated_at",
                 columns: 1,
                 milestone: {
                     _id: 1,

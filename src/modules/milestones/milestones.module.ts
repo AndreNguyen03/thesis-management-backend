@@ -11,31 +11,36 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
 import { MilestoneTemplate, MilestoneTemplateSchema } from './schemas/milestones-templates.schema'
 import { Topic, TopicSchema } from '../topics/schemas/topic.schemas'
 import { TopicModule } from '../topics/topic.module'
+import { PeriodsModule } from '../periods/periods.module'
+import { DefenseCouncil, DefenseCouncilSchema } from './schemas/defense-council.schema'
+import { DefenseCouncilController } from './defense-council.controller'
+import { DefenseCouncilService } from './application/defense-council.service'
+import { DefenseCouncilRepository } from './repository/defense-council.repository'
 
 @Module({
-    controllers: [MilestonesController],
+    controllers: [MilestonesController, DefenseCouncilController],
     providers: [
         MilestonesService,
+        DefenseCouncilService,
+        DefenseCouncilRepository,
         {
             provide: 'IMilestoneRepository',
             useClass: MilestoneRepository
-        },
-        
+        }
     ],
-    exports: [
-        MilestonesService,
-        'IMilestoneRepository'
-    ],
+    exports: [MilestonesService, DefenseCouncilService, 'IMilestoneRepository'],
     imports: [
         MongooseModule.forFeature([
             { name: Milestone.name, schema: MilestoneSchema },
             { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
-            { name: Topic.name, schema: TopicSchema }
+            { name: Topic.name, schema: TopicSchema },
+            { name: DefenseCouncil.name, schema: DefenseCouncilSchema }
         ]),
         UploadFilesModule,
         TodolistsModule,
         GroupsModule,
         PaginationAnModule,
+        forwardRef(() => PeriodsModule),
         forwardRef(() => TopicModule)
     ]
 })

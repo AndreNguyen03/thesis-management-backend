@@ -19,7 +19,7 @@ import { StudentRegistrationStatus } from '../../../registrations/enum/student-r
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { LecturerReviewDecision } from '../../enums/lecturer-decision.enum'
-import { DefenseCouncilMember, MilestoneTemplate } from '../../schemas/milestones-templates.schema'
+import { MilestoneTemplate } from '../../schemas/milestones-templates.schema'
 import { Topic } from '../../../topics/schemas/topic.schemas'
 import { TopicStatus } from '../../../topics/enum/topic-status.enum'
 import { TranferStatusAndAddPhaseHistoryProvider } from '../../../topics/providers/tranfer-status-and-add-phase-history.provider'
@@ -224,29 +224,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             },
             {
                 $addFields: {
-                    submisstion: {
-                        lecturerDecision: '$submission.decision',
-                        createdBy: { $ifNull: [{ $arrayElemAt: ['$submissionUserTmp', 0] }, null] },
-                        lecturerInfo: {
-                            $ifNull: [
-                                '$submissionUserTmp',
-                                null,
-                                {
-                                    $mergeObjects: [
-                                        { $arrayElemAt: ['$lecturerUserTmp', 0] },
-                                        {
-                                            title: {
-                                                $let: {
-                                                    vars: { profile: { $arrayElemAt: ['$lecturerProfileTmp', 0] } },
-                                                    in: '$$profile.title'
-                                                }
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    },
                     submissionHistory: {
                         $map: {
                             input: '$submissionHistory',
@@ -317,10 +294,39 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     progress: 1,
                     totalTasks: 1,
                     tasksCompleted: 1,
-                    submission: 1,
+                    submission: {
+                        $cond: [
+                            { $ifNull: ['$submission', false] },
+                            {
+                                files: '$submission.files',
+                                feedbackAt: '$submission.feedbackAt',
+                                lecturerFeedback: '$submission.lecturerFeedback',
+                                lecturerDecision: '$submission.decision',
+                                createdBy: { $ifNull: [{ $arrayElemAt: ['$submissionUserTmp', 0] }, null] },
+                                lecturerInfo: {
+                                    $mergeObjects: [
+                                        { $arrayElemAt: ['$lecturerUserTmp', 0] },
+                                        {
+                                            title: {
+                                                $let: {
+                                                    vars: {
+                                                        profile: { $arrayElemAt: ['$lecturerProfileTmp', 0] }
+                                                    },
+                                                    in: '$$profile.title'
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                date: '$submission.date'
+                            },
+                            null
+                        ]
+                    },
                     submissionHistory: 1,
                     topicId: 1,
                     group: 1,
+                    tasks: 1,
                     status: 1,
                     creatorType: 1,
                     isAbleEdit: { $cond: [{ $eq: ['$creatorType', role] }, true, false] }
@@ -815,76 +821,70 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
     }
 
     async manageTopicsInDefenseMilestone(body: ManageTopicsInDefenseMilestoneDto, userId: string): Promise<void> {
-        const { milestoneTemplateId, action, topicSnapshots } = body
-        // Tìm milestone template
-        const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
-        if (!milestoneTemplate) {
-            throw new NotFoundException('Không tìm thấy mốc deadline template')
-        }
-
-        // Lấy danh sách topicIds từ topicSnapshots
-        const topicIds = topicSnapshots.map((snap) => snap._id)
-
-        if (action === DefenseAction.ADD) {
-            // Thêm topics vào milestone template
-            // Lọc ra các topicId chưa có trong mảng
-            const newTopicSnapshots = topicSnapshots.filter(
-                (snap) => !milestoneTemplate.topicSnaps.some((existingSnap) => existingSnap._id === snap._id.toString())
-            )
-            milestoneTemplate.topicSnaps.push(...newTopicSnapshots)
-
-            await milestoneTemplate.save()
-
-            for (const snap of newTopicSnapshots) {
-                await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-                    snap._id,
-                    TopicStatus.AssignedDefense,
-                    userId,
-                    `Chuyển đề tài vào mốc bảo vệ: ${milestoneTemplate.title}`
-                )
-            }
-        } else if (action === DefenseAction.DELETE) {
-            milestoneTemplate.topicSnaps = milestoneTemplate.topicSnaps.filter(
-                (snap) => !topicIds.includes(snap._id.toString())
-            )
-            await milestoneTemplate.save()
-            for (const topicId of topicIds) {
-                await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
-                    topicId,
-                    TopicStatus.AwaitingEvaluation,
-                    userId,
-                    `Chuyển đề tài ra khỏi mốc bảo vệ: ${milestoneTemplate.title}`
-                )
-            }
-        }
+        // const { milestoneTemplateId, action, topicSnapshots } = body
+        // // Tìm milestone template
+        // const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
+        // if (!milestoneTemplate) {
+        //     throw new NotFoundException('Không tìm thấy mốc deadline template')
+        // }
+        // // Lấy danh sách topicIds từ topicSnapshots
+        // const topicIds = topicSnapshots.map((snap) => snap._id)
+        // if (action === DefenseAction.ADD) {
+        //     // Thêm topics vào milestone template
+        //     // Lọc ra các topicId chưa có trong mảng
+        //     const newTopicSnapshots = topicSnapshots.filter(
+        //         (snap) => !milestoneTemplate.topicSnaps.some((existingSnap) => existingSnap._id === snap._id.toString())
+        //     )
+        //     milestoneTemplate.topicSnaps.push(...newTopicSnapshots)
+        //     await milestoneTemplate.save()
+        //     for (const snap of newTopicSnapshots) {
+        //         await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+        //             snap._id,
+        //             TopicStatus.AssignedDefense,
+        //             userId,
+        //             `Chuyển đề tài vào mốc bảo vệ: ${milestoneTemplate.title}`
+        //         )
+        //     }
+        // } else if (action === DefenseAction.DELETE) {
+        //     milestoneTemplate.topicSnaps = milestoneTemplate.topicSnaps.filter(
+        //         (snap) => !topicIds.includes(snap._id.toString())
+        //     )
+        //     await milestoneTemplate.save()
+        //     for (const topicId of topicIds) {
+        //         await this.transferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+        //             topicId,
+        //             TopicStatus.AwaitingEvaluation,
+        //             userId,
+        //             `Chuyển đề tài ra khỏi mốc bảo vệ: ${milestoneTemplate.title}`
+        //         )
+        //     }
+        // }
     }
 
     async manageLecturersInDefenseMilestone(body: ManageLecturersInDefenseMilestoneDto, userId: string): Promise<void> {
-        const { milestoneTemplateId, action, defenseCouncil } = body
-        // Tìm milestone template
-        const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
-        if (!milestoneTemplate) {
-            throw new NotFoundException('Không tìm thấy mốc deadline template')
-        }
-
-        if (action === DefenseAction.ADD) {
-            // Thêm giảng viên vào hội đồng - lọc ra những người chưa có
-            const newMembers = defenseCouncil.filter(
-                (newMember: DefenseCouncilMember) =>
-                    !milestoneTemplate.defenseCouncil.some(
-                        (existingMember) => existingMember.memberId === newMember.memberId
-                    )
-            )
-            milestoneTemplate.defenseCouncil.push(...newMembers)
-        } else if (action === DefenseAction.DELETE) {
-            // Xóa giảng viên khỏi hội đồng
-            const memberIdsToRemove = defenseCouncil.map((member: DefenseCouncilMember) => member.memberId)
-            milestoneTemplate.defenseCouncil = milestoneTemplate.defenseCouncil.filter(
-                (member) => !memberIdsToRemove.includes(member.memberId.toString())
-            )
-        }
-
-        await milestoneTemplate.save()
+        // const { milestoneTemplateId, action, defenseCouncil } = body
+        // // Tìm milestone template
+        // const milestoneTemplate = await this.milestoneTemplateModel.findById(milestoneTemplateId)
+        // if (!milestoneTemplate) {
+        //     throw new NotFoundException('Không tìm thấy mốc deadline template')
+        // }
+        // if (action === DefenseAction.ADD) {
+        //     // Thêm giảng viên vào hội đồng - lọc ra những người chưa có
+        //     const newMembers = defenseCouncil.filter(
+        //         (newMember: DefenseCouncilMember) =>
+        //             !milestoneTemplate.defenseCouncil.some(
+        //                 (existingMember) => existingMember.memberId === newMember.memberId
+        //             )
+        //     )
+        //     milestoneTemplate.defenseCouncil.push(...newMembers)
+        // } else if (action === DefenseAction.DELETE) {
+        //     // Xóa giảng viên khỏi hội đồng
+        //     const memberIdsToRemove = defenseCouncil.map((member: DefenseCouncilMember) => member.memberId)
+        //     milestoneTemplate.defenseCouncil = milestoneTemplate.defenseCouncil.filter(
+        //         (member) => !memberIdsToRemove.includes(member.memberId.toString())
+        //     )
+        // }
+        // await milestoneTemplate.save()
     }
 
     async saveScoringResult(templateId: string, fileId: string): Promise<MilestoneTemplate> {
@@ -892,8 +892,8 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         if (!milestoneTemplate) {
             throw new NotFoundException('Không tìm thấy mốc deadline template')
         }
-        milestoneTemplate.resultScoringTemplate = fileId
-        await milestoneTemplate.save()
+        // milestoneTemplate.resultScoringTemplate = fileId
+        // await milestoneTemplate.save()
 
         return milestoneTemplate
     }
@@ -904,7 +904,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         if (!existingMilestone) {
             throw new NotFoundException('Không tìm thấy mốc deadline template')
         }
-        existingMilestone.resultScoringTemplate = null
+        // existingMilestone.resultScoringTemplate = null
         await existingMilestone.save()
         return existingMilestone
     }
@@ -952,6 +952,11 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                       }
                   ]
                 : []),
+            {
+                $match: {
+                    type: MilestoneType.DEFENSE
+                }
+            },
             {
                 $lookup: {
                     from: 'periods',
@@ -1161,5 +1166,30 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         })
         const results = await this.milestoneTemplateModel.aggregate(pipelineSub).exec()
         return results.map((item) => item._id.toString()).filter((year) => year != null)
+    }
+    async getDefenseMilestoneDetailById(milestoneTemplateId: string): Promise<any> {
+        const pipeline: any[] = []
+        pipeline.push(
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(milestoneTemplateId),
+                    deleted_at: null
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    description: 1,
+                    dueDate: 1,
+                    type: 1,
+                    periodId: 1,
+                    isPublished: 1,
+                    isBlock: 1,
+                    createdBy: 1
+                }
+            }
+        )
+        const res = await this.milestoneTemplateModel.aggregate(pipeline).exec()
+        return res.length > 0 ? res[0] : null
     }
 }
