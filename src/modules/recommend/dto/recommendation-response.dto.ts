@@ -31,6 +31,7 @@ export interface TopicVectorSearch {
     original_id: string
     titleVN: string
     currentStatus: string
+    approvedStudentsNum: number
     studentsNum: number
     maxStudents: number
     score: number

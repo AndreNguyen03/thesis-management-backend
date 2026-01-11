@@ -5,6 +5,6 @@ export class CreateFieldDto {
     name: string
     @IsNotEmpty()
     slug: string
-    @IsNotEmpty()
-    description: string
+    @IsOptional()
+    description?: string
 }

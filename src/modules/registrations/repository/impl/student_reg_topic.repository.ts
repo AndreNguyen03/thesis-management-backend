@@ -450,7 +450,9 @@ export class StudentRegTopicRepository
             status: { $in: [StudentRegistrationStatus.PENDING, StudentRegistrationStatus.APPROVED] },
             deleted_at: null
         })
+        console.log('Existing registration:', existingRegistration)
         if (existingRegistration) {
+            console.log('Student already has an active registration for this topic.')
             throw new StudentAlreadyRegisteredException()
         }
         
@@ -458,6 +460,72 @@ export class StudentRegTopicRepository
         //riêng nghiên cứu khoa học thì không kiểm tra vì sinh viên có thể đăng ký được nhiều đề tài nghiên cứu khoa học
 
         if (topic.type !== TopicType.SCIENCE_RESEARCH) {
+            const existingRegistration = await this.studentRegTopicModel
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: 'topics',
+                            let: { topicId: '$topicId' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$_id', new mongoose.Types.ObjectId(topicId)] },
+                                                { $eq: ['$deleted_at', null] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'topicInfo'
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: '$topicInfo'
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'topics',
+                            let: { periodId: '$topicInfo.periodId' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [{ $eq: ['$periodId', '$$periodId'] }, { $eq: ['$deleted_at', null] }]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'topicInfos'
+                        }
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$userId', new mongoose.Types.ObjectId(studentId)] },
+                                    {
+                                        $in: [
+                                            '$topicId',
+                                            {
+                                                $ifNull: ['$topicInfos._id', []]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        $in: ['$status', [StudentRegistrationStatus.APPROVED]]
+                                    },
+                                    { $eq: ['$deleted_at', null] }
+                                ]
+                            }
+                        }
+                    }
+                ])
+                .exec()
+            if (existingRegistration && existingRegistration.length > 0) {
             const existingRegistration = await this.studentRegTopicModel
                 .aggregate([
                     {

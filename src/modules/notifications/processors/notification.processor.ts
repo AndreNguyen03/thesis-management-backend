@@ -146,7 +146,7 @@ export class NotificationQueueProcessor {
         )
         const isOnline = await this.onlineUserService.isUserOnline(userId)
         if (isOnline) {
-            this.notiGateway.server.to('user_' + userId).emit('notification:mark-read-all')
+            this.notiGateway.notifyMarkReadAll(userId)
         }
     }
 
@@ -158,9 +158,7 @@ export class NotificationQueueProcessor {
 
         if (!noti) throw new NotFoundException('Notification not found')
         // console.log('Emitting mark-read for notification:', noti)
-        this.notiGateway.server
-            .to('user_' + noti.recipientId.toString())
-            .emit('notification:marked-read', notificationId)
+        this.notiGateway.notifyMarkedRead(noti.recipientId.toString(), notificationId)
     }
 
     @Process('submit-topic-request')

@@ -40,6 +40,11 @@ import {
     PaginationRegisteredTopicsQueryParams,
     SubmittedTopicParamsDto
 } from '../../dtos/query-params.dtos'
+import {
+    PaginationDraftTopicsQueryParams,
+    PaginationRegisteredTopicsQueryParams,
+    SubmittedTopicParamsDto
+} from '../../dtos/query-params.dtos'
 import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
 import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
 import { MilestoneCreator, MilestoneStatus, MilestoneType } from '../../../milestones/schemas/milestones.schemas'
@@ -758,6 +763,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             }
         })
         //  console.log('pipelineSub', pipelineSub)
+        console.log('Applied pipelineSub:', JSON.stringify(pipelineSub, null, 2))
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
@@ -1315,36 +1321,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //Phân trang phụ
         //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
-            if (query.lecturerIds) {
+            if (query.lecturerIds && query.lecturerIds.length > 0) {
                 pipelineSub.push({
                     $match: {
-                        ...{
-                            ...(query.lecturerIds
-                                ? {
-                                      lecturerIds: {
-                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.fieldIds
-                                ? {
-                                      fieldIds: {
-                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.queryStatus
-                                ? {
-                                      currentStatus: {
-                                          $in: query.queryStatus
-                                      }
-                                  }
-                                : {})
-                        }
+                        lecturerIds: { $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id)) }
+                    }
+                })
+            }
+            if (query.fieldIds && query.fieldIds.length > 0) {
+                console.log('fieldIds filter applied :: ', query.fieldIds)
+                pipelineSub.push({
+                    $match: {
+                        fieldIds: { $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id)) }
+                    }
+                })
+            }
+            if (query.queryStatus && query.queryStatus.length > 0) {
+                pipelineSub.push({
+                    $match: {
+                        currentStatus: { $in: query.queryStatus }
                     }
                 })
             }
@@ -1445,36 +1440,24 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //Phân trang phụ
         //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
-            if (query.lecturerIds) {
+            if (query.lecturerIds && query.lecturerIds.length > 0) {
                 pipelineSub.push({
                     $match: {
-                        ...{
-                            ...(query.lecturerIds
-                                ? {
-                                      lecturerIds: {
-                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.fieldIds
-                                ? {
-                                      fieldIds: {
-                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.queryStatus
-                                ? {
-                                      currentStatus: {
-                                          $in: query.queryStatus
-                                      }
-                                  }
-                                : {})
-                        }
+                        lecturerIds: { $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id)) }
+                    }
+                })
+            }
+            if (query.fieldIds && query.fieldIds.length > 0) {
+                pipelineSub.push({
+                    $match: {
+                        fieldIds: { $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id)) }
+                    }
+                })
+            }
+            if (query.queryStatus && query.queryStatus.length > 0) {
+                pipelineSub.push({
+                    $match: {
+                        currentStatus: { $in: query.queryStatus }
                     }
                 })
             }
@@ -2075,37 +2058,25 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //Phân trang phụ
         //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
+            const match: any = {}
             if (query.lecturerIds) {
+                match.lecturerIds = {
+                    $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
+                }
+            }
+            if (query.fieldIds) {
+                match.fieldIds = {
+                    $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
+                }
+            }
+            if (query.queryStatus) {
+                match.currentStatus = {
+                    $in: query.queryStatus
+                }
+            }
+            if (Object.keys(match).length > 0) {
                 pipelineSub.push({
-                    $match: {
-                        ...{
-                            ...(query.lecturerIds
-                                ? {
-                                      lecturerIds: {
-                                          $in: query.lecturerIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.fieldIds
-                                ? {
-                                      fieldIds: {
-                                          $in: query.fieldIds.map((id) => new mongoose.Types.ObjectId(id))
-                                      }
-                                  }
-                                : {})
-                        },
-                        ...{
-                            ...(query.queryStatus
-                                ? {
-                                      currentStatus: {
-                                          $in: query.queryStatus
-                                      }
-                                  }
-                                : {})
-                        }
-                    }
+                    $match: match
                 })
             }
         }
@@ -3751,45 +3722,19 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         lecturerId: string,
         query: PaginationDraftTopicsQueryParams
     ): Promise<Paginated<Topic>> {
+    async findDraftTopicsByLecturerId(
+        lecturerId: string,
+        query: PaginationDraftTopicsQueryParams
+    ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        console.log('query period id', query.periodId, lecturerId)
-        pipelineSub.push(...this.getTopicInfoPipelineAbstract(lecturerId))
-        pipelineSub.push(
-            ...(query.periodId
-                ? [
-                      {
-                          $lookup: {
-                              from: 'periods',
-                              let: { periodId: new mongoose.Types.ObjectId(query.periodId) },
-                              pipeline: [
-                                  {
-                                      $match: {
-                                          $expr: { $eq: ['$_id', '$$periodId'] }
-                                      }
-                                  }
-                              ],
-                              as: 'periodInfo'
-                          }
-                      },
-                      {
-                          $unwind: { path: '$periodInfo', preserveNullAndEmptyArrays: true }
-                      }
-                  ]
-                : []),
-            {
-                $match: {
-                    $expr: {
-                        $and: [
-                            { $eq: ['$createBy', new mongoose.Types.ObjectId(lecturerId)] },
-                            { $eq: ['$currentStatus', TopicStatus.Draft] },
-                            { $eq: ['$deleted_at', null] },
-                            ...(query.periodId ? [{ $eq: ['$type', '$periodInfo.type'] }] : [])
-                        ]
-                    }
-                }
+        ưpipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                createBy: new mongoose.Types.ObjectId(lecturerId),
+                currentStatus: TopicStatus.Draft,
+                deleted_at: null
             }
-        )
-        console.log('pipeline sub draft topics', JSON.stringify(pipelineSub))
+        })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     async findSubmittedTopicsByLecturerId(

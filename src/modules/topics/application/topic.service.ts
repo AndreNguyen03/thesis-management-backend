@@ -42,6 +42,7 @@ import { UserRole } from '../../../auth/enum/user-role.enum'
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { Response } from 'express'
 import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
 import { plainToInstance } from 'class-transformer'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { CandidateTopicDto } from '../dtos/candidate-topic.dto'
@@ -132,7 +133,9 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
     }
     public async createTopic(userId: string, topicData: CreateTopicDto, files: Express.Multer.File[]): Promise<string> {
+        console.log('createby Id :::', userId)
         const { studentIds, lecturerIds, periodId, ...newTopic } = topicData
+        let lecIds = topicData.lecturerIds || []
         let lecIds = topicData.lecturerIds || []
         const newPhaseHistory = this.initializePhaseHistory(userId, topicData.currentPhase, topicData.currentStatus)
         topicData.phaseHistories = [newPhaseHistory]
@@ -152,8 +155,8 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             console.error('Lỗi khi tạo đề tài:', error)
             throw new RequestTimeoutException('Tạo đề tài thất bại, vui lòng thử lại.')
         }
-        if (lecturerIds && lecturerIds.length > 0)
-            await this.lecturerRegTopicService.createRegistrationWithLecturers(userId, lecturerIds, topicId)
+        if (lecIds && lecIds.length > 0)
+            await this.lecturerRegTopicService.createRegistrationWithLecturers(userId, lecIds, topicId)
 
         if (studentIds && studentIds.length > 0) {
             await this.studentRegTopicService.createRegistrationWithStudents(studentIds, topicId)

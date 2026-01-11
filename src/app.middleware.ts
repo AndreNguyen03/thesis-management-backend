@@ -21,7 +21,7 @@ export function appMiddleware(app: INestApplication) {
     )
     // logging interceptor
     app.useGlobalInterceptors(new LoggingInterceptor())
-    app.useWebSocketAdapter(new SocketIoAdapter(app, app.get(ConfigService)))
+    // app.useWebSocketAdapter(new SocketIoAdapter(app, app.get(ConfigService)))
     // cookie parser
     app.use(cookieParser())
 

@@ -15,6 +15,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
             provide: 'IFieldsRepository',
             useClass: FieldsRepository
         }
-    ]
+    ],
+    exports: [FieldsService, 'IFieldsRepository']
 })
 export class FieldsModule {}

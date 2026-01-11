@@ -33,6 +33,10 @@ export class SocketIoAdapter extends IoAdapter {
 }
 const createTokenMiddleware = (jwtService: JwtService) => async (socket: SocketWithAuth, next) => {
     const token = socket.handshake.auth?.token
+    console.log('Socket attempting connection with token:', token)
+    if (!token) {
+        return next(new Error('Authentication token missing'))
+    }
     try {
         const payload = await jwtService.verifyAsync(token)
         socket.payload = payload

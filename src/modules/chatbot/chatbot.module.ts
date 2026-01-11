@@ -29,6 +29,9 @@ import { ChatbotConversationRepository } from './repository/chatbot-conversation
 import { ChatbotConversation, ChatbotConversationSchema } from './schemas/chatbot-conversation.schema'
 import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
 import { User, UserSchema } from '../../users/schemas/users.schema'
+import { FieldsModule } from '../fields/fields.module'
+import { RequirementsModule } from '../requirements/requirements.module'
+import { TopicGenerationService } from './application/topic-generation.service'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
@@ -47,7 +50,8 @@ import { User, UserSchema } from '../../users/schemas/users.schema'
         DocumentSearchTool,
         LecturerSearchTool,
         ChatbotConversationService,
-        ChatbotConversationRepository
+        ChatbotConversationRepository,
+        TopicGenerationService
     ],
     imports: [
         ConfigModule.forFeature(googleAIConfig),
@@ -58,9 +62,12 @@ import { User, UserSchema } from '../../users/schemas/users.schema'
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: ChatbotConversation.name, schema: ChatbotConversationSchema },
             { name: Lecturer.name, schema: LecturerSchema },
-            { name: User.name, schema: UserSchema }
+            { name: User.name, schema: UserSchema },
+
         ]),
         forwardRef(() => KnowledgeSourceModule),
+        forwardRef(() => FieldsModule),
+        forwardRef(() => RequirementsModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),
         PaginationAnModule,
         TopicModule
