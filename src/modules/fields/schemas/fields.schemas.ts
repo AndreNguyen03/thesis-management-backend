@@ -15,7 +15,7 @@ export class Field extends BaseEntity {
     @Prop({ required: true, type: String })
     slug: string
 
-    @Prop({ required: true, type: String })
+    @Prop({ required: false, type: String, default: '' })
     description: string
 }
 export const FieldSchema = SchemaFactory.createForClass(Field)

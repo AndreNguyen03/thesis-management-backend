@@ -1,4 +1,4 @@
-import { Inject, Injectable, BadRequestException } from '@nestjs/common'
+import { Inject, Injectable, BadRequestException, Logger } from '@nestjs/common'
 import slugify from 'slugify'
 import { ChatGroq } from '@langchain/groq'
 import { ConfigType } from '@nestjs/config'
@@ -12,6 +12,7 @@ import { Field } from '../../fields/schemas/fields.schemas'
 
 @Injectable()
 export class TopicGenerationService {
+    private readonly logger = new Logger(TopicGenerationService.name)
     constructor(
         private readonly fieldService: FieldsService,
         @Inject('IRequirementsRepository')
@@ -221,8 +222,8 @@ ${prompt}
                     slug
                 })
                 createdFields.push(field)
-            } catch {
-                // ignore duplicate
+            } catch (err) {
+                this.logger.warn(`Failed to create field "${name}": ${err?.message ?? err}`)
             }
         }
 
@@ -236,8 +237,8 @@ ${prompt}
                     slug
                 })
                 createdRequirements.push(requirement)
-            } catch {
-                // ignore duplicate
+            } catch (err) {
+                this.logger.warn(`Failed to create requirement "${name}": ${err?.message ?? err}`)
             }
         }
 
