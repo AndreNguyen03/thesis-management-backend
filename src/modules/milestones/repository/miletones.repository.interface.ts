@@ -42,5 +42,6 @@ export interface IMilestoneRepository extends BaseRepositoryInterface<Milestone>
     ): Promise<Paginated<MilestoneTemplate>>
     getAssignedDefenseMilestonesForLecturer(lecturerId: string, facultyId: string): Promise<any[]>
     getYearsOfDefenseMilestones(facultyId: string): Promise<string[]>
-    getAllMilestones(userId: string) : Promise<any>
+    getAllMilestones(userId: string): Promise<any>
+    getDefenseMilestoneDetailById(milestoneTemplateId: string): Promise<MilestoneTemplate | null>
 }

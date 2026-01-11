@@ -40,6 +40,11 @@ import {
     PaginationRegisteredTopicsQueryParams,
     SubmittedTopicParamsDto
 } from '../../dtos/query-params.dtos'
+import {
+    PaginationDraftTopicsQueryParams,
+    PaginationRegisteredTopicsQueryParams,
+    SubmittedTopicParamsDto
+} from '../../dtos/query-params.dtos'
 import { CandidateTopicDto } from '../../dtos/candidate-topic.dto'
 import { TopicInteractionRepositoryInterface } from '../../../topic_interaction/repository/topic_interaction.interface.repository'
 import { MilestoneCreator, MilestoneStatus, MilestoneType } from '../../../milestones/schemas/milestones.schemas'
@@ -3717,43 +3722,19 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         lecturerId: string,
         query: PaginationDraftTopicsQueryParams
     ): Promise<Paginated<Topic>> {
+    async findDraftTopicsByLecturerId(
+        lecturerId: string,
+        query: PaginationDraftTopicsQueryParams
+    ): Promise<Paginated<Topic>> {
         const pipelineSub: any = []
-        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
-        pipelineSub.push(
-            ...(query.periodId
-                ? [
-                      {
-                          $lookup: {
-                              from: 'periods',
-                              let: { periodId: new mongoose.Types.ObjectId(query.periodId) },
-                              pipeline: [
-                                  {
-                                      $match: {
-                                          $expr: { $eq: ['$_id', '$$periodId'] }
-                                      }
-                                  }
-                              ],
-                              as: 'periodInfo'
-                          }
-                      },
-                      {
-                          $unwind: { path: '$periodInfo', preserveNullAndEmptyArrays: true }
-                      }
-                  ]
-                : []),
-            {
-                $match: {
-                    $expr: {
-                        $and: [
-                            { $eq: ['$createBy', new mongoose.Types.ObjectId(lecturerId)] },
-                            { $eq: ['$currentStatus', TopicStatus.Draft] },
-                            { $eq: ['$deleted_at', null] },
-                            ...(query.periodId ? [{ $eq: ['$type', '$periodInfo.type'] }] : [])
-                        ]
-                    }
-                }
+        ưpipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push({
+            $match: {
+                createBy: new mongoose.Types.ObjectId(lecturerId),
+                currentStatus: TopicStatus.Draft,
+                deleted_at: null
             }
-        )
+        })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
     async findSubmittedTopicsByLecturerId(

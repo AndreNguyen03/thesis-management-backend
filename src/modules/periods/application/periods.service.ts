@@ -53,6 +53,7 @@ import { TopicStatus } from '../../topics/enum'
 import { InjectModel } from '@nestjs/mongoose'
 import { Faculty } from '../../faculties/schemas/faculty.schema'
 import { PeriodGateway } from '../gateways/period.gateway'
+import { time } from 'console'
 
 @Injectable()
 export class PeriodsService extends BaseServiceAbstract<Period> {
@@ -92,15 +93,10 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
                 // console.log(`period ${period.year} , period ${period.semester} in faculty ${faculty._id} current phase detail`, currentPhaseDetail)
                 if (
                     currentPhaseDetail &&
-                     (
-                        (period.startTime && new Date(period.startTime) < new Date()) ||
-                        (period.endTime && new Date(period.endTime) < new Date())
-                    )
-                    &&
-                    (
-                        (currentPhaseDetail.startTime && new Date(currentPhaseDetail.startTime) < new Date()) ||
-                        (currentPhaseDetail.endTime && new Date(currentPhaseDetail.endTime) < new Date())
-                    )
+                    ((period.startTime && new Date(period.startTime) < new Date()) ||
+                        (period.endTime && new Date(period.endTime) < new Date())) &&
+                    ((currentPhaseDetail.startTime && new Date(currentPhaseDetail.startTime) < new Date()) ||
+                        (currentPhaseDetail.endTime && new Date(currentPhaseDetail.endTime) < new Date()))
                 ) {
                     // console.log(`Period ${period.year} , period ${period.semester} in faculty ${faculty._id} phase ${currentPhaseDetail.phase} needs dashboard update (startTime: ${currentPhaseDetail.startTime}, endTime: ${currentPhaseDetail.endTime})`)
                     this.periodGateway.emitPeriodDashboardUpdate({ facultyId: faculty._id.toString() })
@@ -116,7 +112,7 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         // user: ActiveUserData
     ): Promise<Phase1Response | Phase2Response | Phase3Response | Phase4Response> {
         const period = await this.iPeriodRepository.getDetailPeriod(periodId)
-        const phaseDetail = period?.phases.find((p) => p.phase === phase && p.status === 'timeout')
+        const phaseDetail = period?.phases.find((p) => p.phase === phase)
         //const canTriggerNextPhase = phaseDetail?.endTime
         if (!period) throw new NotFoundException('Không tìm thấy đợt')
         if (!phaseDetail) throw new NotFoundException('Không tìm thấy pha')
@@ -134,8 +130,13 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         }
     }
     async handleCloseCompletionPhase(phaseDetail: PeriodPhaseDetail): Promise<Phase4Response> {
+        let isTimeout = true
+        if (new Date() < new Date(phaseDetail.endTime)) {
+            isTimeout = false
+        }
         return {
             periodId: phaseDetail._id.toString(),
+            isTimeout,
             canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, undefined, false)
         }
     }
@@ -147,12 +148,17 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         const pendingReview = await this.getTopicProvider.getPendingReviewTopics(period._id.toString())
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
+        let isTimeout = true
+        if (new Date() < new Date(phaseDetail.endTime)) {
+            isTimeout = false
+        }
         return {
             periodId: period._id.toString(),
             phase: PeriodPhaseName.EXECUTION,
             overdueTopics: getOverDueTopics,
             pausedOrDelayedTopics: getDelayed,
             pendingLecturerReview: pendingReview,
+            isTimeout,
             canTriggerNextPhase: this.computeCanTriggerNextPhase(phaseDetail, nextPhase, getOverDueTopics.length > 0)
         }
     }
@@ -165,11 +171,14 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             periodId: period._id.toString(),
             phase: PeriodPhaseName.OPEN_REGISTRATION,
             resolveTopics: { draft: [], executing: [] },
-            canTriggerNextPhase: false
+            canTriggerNextPhase: false,
+            isTimeout: true
         }
         const currentIndex = period.phases.findIndex((p) => p.phase === phaseDetail.phase)
         const nextPhase = period.phases[currentIndex + 1]
-
+        if (new Date() < new Date(phaseDetail.endTime)) {
+            result.isTimeout = false
+        }
         result.canTriggerNextPhase = this.computeCanTriggerNextPhase(phaseDetail, nextPhase, false)
 
         return result
@@ -185,12 +194,15 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
             missingTopics: [],
             //các đề tài đang chờ xét duyệt
             pendingTopics: [],
+            isTimeout: true,
             currentApprovedTopics: 0,
             canTriggerNextPhase: false
         }
         const minTopicsRequired = phaseDetail.minTopicsPerLecturer
         // console.log('[handleCloseSubmitTopicPhase] minTopicsRequired:', minTopicsRequired)
-
+        if (new Date() < new Date(phaseDetail.endTime)) {
+            result.isTimeout = false
+        }
         // loop get missing topic count per lecturer
         //console.log(phaseDetail)
         for (const lec of phaseDetail.requiredLecturers) {
@@ -244,8 +256,8 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
         result.canTriggerNextPhase = this.computeCanTriggerNextPhase(
             phaseDetail,
             nextPhase,
-            (result.currentApprovedTopics >= minTopicsRequired * (phaseDetail.requiredLecturers?.length || 0) ||
-                result.pendingTopics.length > 0) ||
+            result.currentApprovedTopics >= minTopicsRequired * (phaseDetail.requiredLecturers?.length || 0) ||
+                result.pendingTopics.length > 0 ||
                 result.dueInfo != null
         )
         return result

@@ -72,14 +72,14 @@ export class MilestonesController {
     }
 
     @Post('/create-task')
-    async createTaskInMineTones(@Body() body: RequestCreate) {
-        return await this.milestonesService.createTaskInMinesTone(body)
+    async createTaskInMineTones(@Body() body: RequestCreate, @Req() req: { user: ActiveUserData }) {
+        return await this.milestonesService.createTaskInMinesTone(body, req.user.sub)
     }
     @Post('/faculty-create')
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async facultyCreate(@Req() req: { user: ActiveUserData }, @Body() body: PayloadFacultyCreateMilestone) {
-        return plainToInstance(ResponseMilestone, await this.milestonesService.facultyCreate(body, req.user), {
+        return plainToInstance(ResponseMilestone, await this.milestonesService.facultyCreate(req.user, body), {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -229,5 +229,9 @@ export class MilestonesController {
     @UseGuards(RolesGuard)
     async getAssignedDefenseMilestonesForLecturer(@Req() req: { user: ActiveUserData }) {
         return await this.milestonesService.getAssignedDefenseMilestonesForLecturer(req.user.sub, req.user.facultyId!)
+    }
+    @Get('/:milestoneTemplateId/detail')
+    async getDefenseMilestoneDetailById(@Param('milestoneTemplateId') milestoneTemplateId: string) {
+        return await this.milestonesService.getDefenseMilestoneDetailById(milestoneTemplateId)
     }
 }

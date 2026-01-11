@@ -68,8 +68,8 @@ export class TodolistsController {
     }
     //tạo task mới - tự động init ba cột mặc định
     @Post()
-    async createTask(@Body() body: RequestCreate) {
-        const res = await this.tasksService.createTask(body)
+    async createTask(@Body() body: RequestCreate, @ActiveUser() user: ActiveUserData) {
+        const res = await this.tasksService.createTask(body,user.sub)
         return plainToInstance(TaskDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -95,8 +95,8 @@ export class TodolistsController {
     //--Quản lý các subtask trong cột ---
     //Tạo subtask
     @Post('/:id/columns/:columnId/subtasks')
-    async createSubtask(@Param('id') id: string, @Param('columnId') columnId: string, @Body() body: { title: string }) {
-        return await this.tasksService.createSubtask(id, columnId, body)
+    async createSubtask(@Param('id') id: string, @Param('columnId') columnId: string, @Body() body: { title: string }, @ActiveUser('sub') userId: string) {
+        return await this.tasksService.createSubtask(id, columnId, body, userId)
     }
 
     //Xáo subtask

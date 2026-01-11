@@ -259,7 +259,6 @@ export class TopicController {
         @Param('periodId') periodId: string
     ) {
         await this.topicService.submitTopic(topicId, req.user.sub, periodId)
-
         // emit event
         this.periodGateway.emitDetailPeriodUpdate({})
         return { message: 'Nộp đề tài thành công' }

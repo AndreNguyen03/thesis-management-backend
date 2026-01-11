@@ -6,7 +6,6 @@ import { IntersectionType } from '@nestjs/mapped-types'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { LecturerReviewDecision } from '../enums/lecturer-decision.enum'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
-import { DefenseCouncilMember } from '../schemas/milestones-templates.schema'
 
 export class PayloadCreateMilestone {
     @IsNotEmpty()
@@ -24,9 +23,9 @@ export class PayloadCreateMilestone {
 export class PayloadFacultyCreateMilestone {
     @IsNotEmpty()
     periodId: string
-    @IsOptional()
+    @IsNotEmpty()
     @IsEnum(PeriodPhaseName)
-    phaseName: PeriodPhaseName
+    phaseName: PeriodPhaseName = PeriodPhaseName.EXECUTION
     @IsNotEmpty()
     title: string
     @IsNotEmpty()
@@ -149,6 +148,4 @@ export class ManageLecturersInDefenseMilestoneDto {
     @IsEnum(DefenseAction)
     action: DefenseAction
 
-    @IsNotEmpty()
-    defenseCouncil: DefenseCouncilMember[]
 }

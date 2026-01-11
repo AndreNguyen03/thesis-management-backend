@@ -143,7 +143,7 @@ export class RegistrationsController {
     }
     @Patch('lecturer/reply-registration/:registrationId')
     @Auth(AuthType.Bearer)
-    @Roles(UserRole.LECTURER)
+    @Roles(UserRole.LECTURER, UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
     async replyStudentRegistrationByLecturer(
         @Param('registrationId') registrationId: string,

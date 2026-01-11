@@ -22,7 +22,8 @@ export class VectorSyncProvider {
         if (rawTopics.length === 0) {
             console.log('Không có đề tài nào')
             return
-        }
+        } 
+        console.log(`Đang đồng bộ ${rawTopics.length} đề tài lên vector database`)
         await this.vectorSyncQueue.add('sync-registering-topics-in-period', { topics: rawTopics })
         //bắn socket cho ban chủ nhiệm nè -comming soon
     }

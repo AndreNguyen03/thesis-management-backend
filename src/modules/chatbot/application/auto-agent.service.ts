@@ -175,7 +175,8 @@ Bắt đầu!`.trim()
             tools,
             verbose: true, // Log chi tiết quá trình
             maxIterations: 3, // Chỉ 1 vòng để tránh multi-tool calling với Groq
-            returnIntermediateSteps: true // Trả về các bước trung gian
+            returnIntermediateSteps: true, // Trả về các bước trung gian,
+            earlyStoppingMethod: "force" // Dừng khi LLM tạo Final Answer
         })
 
         console.log('✅ Auto Agent initialized with', tools.length, 'tools')

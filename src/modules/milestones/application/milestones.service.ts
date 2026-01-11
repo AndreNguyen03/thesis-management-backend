@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { IMilestoneRepository } from '../repository/miletones.repository.interface'
 import {
     PaginationRequestTopicInMilestoneQuery,
@@ -21,6 +21,7 @@ import { ActiveUserData } from '../../../auth/interface/active-user-data.interfa
 import { DownLoadFileProvider } from '../../upload-files/providers/download-file.provider'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { PaginationAllDefenseMilestonesQuery } from '../dtos/query-params.dto'
+import { PeriodsService } from '../../periods/application/periods.service'
 
 @Injectable()
 export class MilestonesService {
@@ -29,7 +30,9 @@ export class MilestonesService {
         private readonly uploadManyFilesProvider: UploadManyFilesProvider,
         private readonly taskService: TasksService,
         private readonly getGroupProvider: GetGroupProvider,
-        private readonly downLoadFileProvider: DownLoadFileProvider
+        private readonly downLoadFileProvider: DownLoadFileProvider,
+        @Inject(forwardRef(() => PeriodsService))
+        private readonly periodsService: PeriodsService
     ) {}
 
     async getAllMilestones(userId: string): Promise<any> {
@@ -45,7 +48,7 @@ export class MilestonesService {
     async createMilestone(body: PayloadCreateMilestone, user: ActiveUserData) {
         return await this.milestoneRepository.createMilestone(body, user)
     }
-    async facultyCreate(body: PayloadFacultyCreateMilestone, user: ActiveUserData) {
+    async facultyCreate(user: ActiveUserData, body: PayloadFacultyCreateMilestone) {
         const groupIds = await this.getGroupProvider.getGroupIdsByPeriodId(body.periodId, body.phaseName)
         return await this.milestoneRepository.facultyCreateMilestone(body, user, groupIds)
     }
@@ -78,9 +81,9 @@ export class MilestonesService {
         await this.milestoneRepository.uploadReport(milestoneId, fileSnapshot, userId)
         return fileSnapshot
     }
-    async createTaskInMinesTone(body: RequestCreate) {
+    async createTaskInMinesTone(body: RequestCreate, userId: string) {
         //Tạo task mới
-        const newTask = await this.taskService.createTask(body)
+        const newTask = await this.taskService.createTask(body, userId)
         return await this.milestoneRepository.createTaskInMinesTone(body.milestoneId, newTask._id.toString())
     }
     async facultyGetMilestonesInPeriod(periodId: string) {
@@ -161,5 +164,8 @@ export class MilestonesService {
     }
     async getYearsOfDefenseMilestones(facultyId: string) {
         return await this.milestoneRepository.getYearsOfDefenseMilestones(facultyId)
+    }
+    async getDefenseMilestoneDetailById(milestoneTemplateId: string) {
+        return await this.milestoneRepository.getDefenseMilestoneDetailById(milestoneTemplateId)
     }
 }
