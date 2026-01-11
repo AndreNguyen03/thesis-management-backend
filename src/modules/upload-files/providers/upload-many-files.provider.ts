@@ -53,7 +53,8 @@ export class UploadManyFilesProvider {
             'video/x-msvideo', //avi
             'video/mp4', //mp4
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // XLSX
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation' // PPTX
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // PPTX
+            'text/plain' // TXT
         ]
 
         for (const file of files) {

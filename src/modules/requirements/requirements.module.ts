@@ -16,6 +16,6 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         }
     ],
     controllers: [RequirementsController],
-    exports: [RequirementsService]
+    exports: [RequirementsService, 'IRequirementsRepository']
 })
 export class RequirementsModule {}

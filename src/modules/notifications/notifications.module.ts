@@ -40,7 +40,7 @@ import { PaginationAnModule } from '../../common/pagination-an/pagination.module
         forwardRef(() => FacultyModule),
         PaginationAnModule
     ],
-    exports: [NotificationPublisherService],
+    exports: [NotificationPublisherService,NotificationsGateway],
     controllers: [NotificationsController]
 })
 export class NotificationsModule {}

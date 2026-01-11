@@ -42,7 +42,7 @@ import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
 import { GetMajorLibraryCombox } from '../majors/dtos/get-major.dto'
 import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
-import { PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 import { PeriodGateway } from '../periods/gateways/period.gateway'
 
@@ -149,7 +149,7 @@ export class TopicController {
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
     @Get('/lecturer/get-draft-topics')
-    async getDraftTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationQueryDto) {
+    async getDraftTopics(@Req() req: { user: ActiveUserData }, @Query() query: PaginationDraftTopicsQueryParams) {
         const res = await this.topicService.getDraftTopics(req.user.sub, query)
         return plainToInstance(GetPaginatedTopicsDto, res, {
             excludeExtraneousValues: true,

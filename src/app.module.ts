@@ -47,7 +47,10 @@ import { TopicInteractionModule } from './modules/topic_interaction/topic_intera
 import { RecommendModule } from './modules/recommend/recommend.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { RatingModule } from './modules/ratings/rating.module'
+import { MatchingModule } from './modules/matching/matching.module';
+
 import groqConfig from './config/groq.config'
+import { MatchingService } from './modules/matching/application/matching.service'
 
 const ENV = process.env.NODE_ENV
 
@@ -125,7 +128,8 @@ const ENV = process.env.NODE_ENV
         TopicInteractionModule,
         RecommendModule,
         DashboardModule,
-        RatingModule
+        RatingModule,
+        MatchingModule
     ],
     controllers: [AppController],
     providers: [
@@ -140,7 +144,8 @@ const ENV = process.env.NODE_ENV
         },
         AccessTokenGuard,
         PaginationProvider,
-        GetTopicStatusProvider
+        GetTopicStatusProvider,
+        MatchingService
     ]
 })
 // export class AppModule {}

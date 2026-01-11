@@ -449,39 +449,81 @@ export class StudentRegTopicRepository
             status: { $in: [StudentRegistrationStatus.PENDING, StudentRegistrationStatus.APPROVED] },
             deleted_at: null
         })
+        console.log('Existing registration:', existingRegistration)
         if (existingRegistration) {
+            console.log('Student already has an active registration for this topic.')
             throw new StudentAlreadyRegisteredException()
         }
         // kiểm tra có đăng ký đề tài khóa luận khác không
         //riêng nghiên cứu khoa học thì không kiểm tra vì sinh viên có thể đăng ký được nhiều đề tài nghiên cứu khoa học
 
         if (topic.type !== TopicType.SCIENCE_RESEARCH) {
-            let checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
-                {
-                    $lookup: {
-                        from: 'topics',
-                        localField: 'topicId',
-                        foreignField: '_id',
-                        as: 'topicInfo'
-                    }
-                },
-                {
-                    $unwind: '$topicInfo'
-                },
-                {
-                    $match: {
-                        $expr: {
-                            $and: [
-                                { $not: { $in: ['$topicInfo.type', [TopicType.SCIENCE_RESEARCH]] } },
-                                { $eq: ['$userId', new mongoose.Types.ObjectId(studentId)] },
-                                { $eq: ['$status', StudentRegistrationStatus.APPROVED] },
-                                { $eq: ['$deleted_at', null] }
-                            ]
+            const existingRegistration = await this.studentRegTopicModel
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: 'topics',
+                            let: { topicId: '$topicId' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$_id', new mongoose.Types.ObjectId(topicId)] },
+                                                { $eq: ['$deleted_at', null] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'topicInfo'
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: '$topicInfo'
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'topics',
+                            let: { periodId: '$topicInfo.periodId' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [{ $eq: ['$periodId', '$$periodId'] }, { $eq: ['$deleted_at', null] }]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'topicInfos'
+                        }
+                    },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$userId', new mongoose.Types.ObjectId(studentId)] },
+                                    {
+                                        $in: [
+                                            '$topicId',
+                                            {
+                                                $ifNull: ['$topicInfos._id', []]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        $in: ['$status', [StudentRegistrationStatus.APPROVED]]
+                                    },
+                                    { $eq: ['$deleted_at', null] }
+                                ]
+                            }
                         }
                     }
-                }
-            ])
-            if (checkExistingRegisterOtherSameType.length > 0) {
+                ])
+                .exec()
+            if (existingRegistration && existingRegistration.length > 0) {
                 throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
             }
         }
@@ -513,7 +555,7 @@ export class StudentRegTopicRepository
 
         return res
     }
-    
+
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {
         const registrations = await this.studentRegTopicModel
             .find({
@@ -702,7 +744,7 @@ export class StudentRegTopicRepository
                 lecturerResponse: 1,
                 rejectionReasonType: 1,
                 processedBy: 1,
-                createdAt:1
+                createdAt: 1
             }
         })
         return pipelineMain
@@ -741,32 +783,105 @@ export class StudentRegTopicRepository
             }
             //Kiểm tra sinh viên    đã đăng ký đề tài cùng loại
             if (topic.type !== TopicType.SCIENCE_RESEARCH) {
-                let checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
-                    {
-                        $lookup: {
-                            from: 'topics',
-                            localField: 'topicId',
-                            foreignField: '_id',
-                            as: 'topicInfo'
-                        }
-                    },
-                    {
-                        $unwind: '$topicInfo'
-                    },
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $not: { $in: ['$topicInfo.type', [TopicType.SCIENCE_RESEARCH]] } },
-                                    { $eq: ['$userId', registration.userId] },
-                                    { $eq: ['$status', StudentRegistrationStatus.APPROVED] },
-                                    { $eq: ['$deleted_at', null] }
-                                ]
+                // let checkExistingRegisterOtherSameType = await this.studentRegTopicModel.aggregate([
+                //     {
+                //         $lookup: {
+                //             from: 'topics',
+                //             localField: 'topicId',
+                //             foreignField: '_id',
+                //             as: 'topicInfo'
+                //         }
+                //     },
+                //     {
+                //         $unwind: '$topicInfo'
+                //     },
+                //     {
+                //         $match: {
+                //             $expr: {
+                //                 $and: [
+                //                     { $not: { $in: ['$topicInfo.type', [TopicType.SCIENCE_RESEARCH]] } },
+                //                     { $eq: ['$userId', registration.userId] },
+                //                     { $eq: ['$status', StudentRegistrationStatus.APPROVED] },
+                //                     { $eq: ['$deleted_at', null] }
+                //                 ]
+                //             }
+                //         }
+                //     }
+                // ])
+                // if (checkExistingRegisterOtherSameType.length > 0) {
+                //     throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
+                // }
+                const existingRegistration = await this.studentRegTopicModel
+                    .aggregate([
+                        {
+                            $lookup: {
+                                from: 'topics',
+                                let: { topicId: '$topicId' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    {
+                                                        $eq: ['$_id', new mongoose.Types.ObjectId(registration.topicId)]
+                                                    },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'topicInfo'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$topicInfo'
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'topics',
+                                let: { periodId: '$topicInfo.periodId' },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $and: [
+                                                    { $eq: ['$periodId', '$$periodId'] },
+                                                    { $eq: ['$deleted_at', null] }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ],
+                                as: 'topicInfos'
+                            }
+                        },
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$userId', new mongoose.Types.ObjectId(registration.userId)] },
+                                        {
+                                            $in: [
+                                                '$topicId',
+                                                {
+                                                    $ifNull: ['$topicInfos._id', []]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            $in: ['$status', [StudentRegistrationStatus.APPROVED]]
+                                        },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
                             }
                         }
-                    }
-                ])
-                if (checkExistingRegisterOtherSameType.length > 0) {
+                    ])
+                    .exec()
+                if (existingRegistration && existingRegistration.length > 0) {
                     throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
                 }
             }
