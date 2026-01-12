@@ -17,10 +17,12 @@ import { KnowledgeSourceController } from './knowledge-source.controller'
 import { KnowledgeSourceService } from './application/knowledge-source.service'
 import { PaginationModule } from '../../common/pagination/pagination.module'
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
-import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider copy'
+import { SearchSimilarDocumentsProvider } from './application/search-similar-documents.provider'
 import { TopicVector, TopicVectorSchema } from '../topic_search/schemas/topic-vector.schemas'
 import { TopicModule } from '../topics/topic.module'
 import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
+import { BullModule } from '@nestjs/bull'
+import { KnowledgeSyncProvider } from './provider/knowledge-sync.processor'
 
 @Module({
     providers: [
@@ -39,7 +41,8 @@ import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
         CreateKnowledgeChunksProvider,
         SearchSimilarTopicsProvider,
         UpdateKnowledgeChunkProvider,
-        KnowledgeSourceService
+        KnowledgeSourceService,
+        KnowledgeSyncProvider
     ],
     imports: [
         MongooseModule.forFeature([
@@ -51,11 +54,12 @@ import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
                 schema: LecturerSchema
             }
         ]),
+        BullModule.registerQueue({ name: 'knowledge-sync-queue' }),
         ConfigModule.forFeature(googleAIConfig),
         forwardRef(() => ChatBotModule),
         PaginationModule,
         PaginationAnModule,
-        TopicModule
+        forwardRef(() => TopicModule)
     ],
     exports: [
         CreateKnowledgeSourceProvider,
@@ -66,7 +70,8 @@ import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
         CreateKnowledgeChunksProvider,
         UpdateKnowledgeChunkProvider,
         'IKnowledgeChunkRepository',
-        'IKnowledgeSourceRepository'
+        'IKnowledgeSourceRepository',
+        KnowledgeSourceService
     ],
     controllers: [KnowledgeSourceController]
 })

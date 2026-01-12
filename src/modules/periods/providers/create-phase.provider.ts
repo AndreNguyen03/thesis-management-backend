@@ -17,6 +17,7 @@ import { UpdateTopicsPhaseBatchProvider } from '../../topics/providers/update-to
 import { NotificationPublisherService } from '../../notifications/publisher/notification.publisher.service'
 import { CreateBatchGroupsProvider } from '../../groups/provider/create-batch-groups.provider'
 import { VectorSyncProvider } from '../../topic_search/provider/vector-sync.provider'
+import { KnowledgeSourceService } from '../../knowledge-source/application/knowledge-source.service'
 
 @Injectable()
 export class CreatePhaseProvider {
@@ -28,7 +29,8 @@ export class CreatePhaseProvider {
         private readonly notificationPublisherService: NotificationPublisherService,
         private readonly createBatchGroupsProvider: CreateBatchGroupsProvider,
         @Inject(forwardRef(() => VectorSyncProvider))
-        private readonly vectorSyncProvider: VectorSyncProvider
+        private readonly vectorSyncProvider: VectorSyncProvider,
+        private readonly knowledgeSourceService: KnowledgeSourceService
     ) {}
     //Khởi tạo sơ khai cho kì mới
     async initalizePhasesForNewPeriod(periodId: string): Promise<Period> {
@@ -121,7 +123,8 @@ export class CreatePhaseProvider {
             limit: 0,
             page: 1,
             phase: PeriodPhaseName.OPEN_REGISTRATION
-        })
+        },actorId)
+        await this.knowledgeSourceService.syncRegisteringTopicsDataToKnowledgeSource(periodId, actorId)
         return {
             success: true,
             message: `Chuyển sang pha đăng ký thành công. ${approvedTopicsCount} đề tài được mở đăng ký và được thêm vào hệ thống gợi ý.`
@@ -149,7 +152,7 @@ export class CreatePhaseProvider {
         //Kiểm tra chuyển pha theo đúng trình tự
         const isValid = await this.validatePeriodPhaseProvider.validateStatusManualTransition(
             period.currentPhase,
-            PeriodPhaseName.SUBMIT_TOPIC
+            PeriodPhaseName.EXECUTION
         )
 
         if (!isValid && !force) {

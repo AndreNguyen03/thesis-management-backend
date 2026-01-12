@@ -23,15 +23,18 @@ export class ChatbotConversationService {
 
         // Nếu có initialMessage, gửi luôn
         if (dto.initialMessage) {
-            await this.addMessage(conversation._id.toString(), userId, {
+           const message = await this.addMessage(conversation._id.toString(), userId, {
                 role: 'user' as ChatbotUserRole,
                 content: dto.initialMessage
             })
             // Reload conversation để có messages
-            return await this.repository.findById(conversation._id.toString())
+            return {
+                conversationId: conversation._id.toString(),
+                messsage: message
+            }
         }
 
-        return conversation
+        return { conversationId: conversation._id.toString(), messsage: null }
     }
 
     /**
@@ -96,6 +99,7 @@ export class ChatbotConversationService {
             role: dto.role,
             content: dto.content,
             topics: dto.topics,
+            lecturers: dto.lecturers,
             timestamp: new Date()
         }
         await this.repository.addMessage(conversationId, newMessage)

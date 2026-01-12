@@ -7,6 +7,7 @@ import { UserRole } from '../../auth/enum/user-role.enum'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import {
     AddTopicToCouncilDto,
+    AddMultipleTopicsToCouncilDto,
     CreateDefenseCouncilDto,
     GetDefenseCouncilsQuery,
     QueryDefenseCouncilsDto,
@@ -88,6 +89,21 @@ export class DefenseCouncilController {
         const council = await this.defenseCouncilService.addTopicToCouncil(councilId, dto)
         return {
             message: 'Thêm đề tài vào hội đồng thành công',
+            data: council
+        }
+    }
+
+    // Thêm nhiều đề tài vào hội đồng cùng lúc
+    @Post(':councilId/topics/batch')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async addMultipleTopicsToCouncil(
+        @Param('councilId') councilId: string,
+        @Body() dto: AddMultipleTopicsToCouncilDto
+    ) {
+        const council = await this.defenseCouncilService.addMultipleTopicsToCouncil(councilId, dto)
+        return {
+            message: `Thêm ${dto.topics.length} đề tài vào hội đồng thành công`,
             data: council
         }
     }

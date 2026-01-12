@@ -388,18 +388,18 @@ export class TopicController {
 
     //Tải file hướng dẫn lên topic
     //Chỉ có giảng viên thuộc đề tài mới được phép tải
-    @Post('/:topicId/lecturer/upload-files')
+    @Post('in-group/:groupId/lecturer/upload-files')
     @Auth(AuthType.Bearer)
     @UseInterceptors(FilesInterceptor('files'))
     async lecturerUploadFile(
         @UploadedFiles() files: Express.Multer.File[],
-        @Param('topicId') topicId: string,
+        @Param('groupId') groupId: string,
         @Req() req: { user: ActiveUserData }
     ) {
         if (!files || files.length === 0) {
             throw new BadRequestException('Vui lòng chọn file để tải lên')
         }
-        const res = await this.topicService.uploadManyFiles(req.user.sub, topicId, files)
+        const res = await this.topicService.uploadManyFiles(req.user.sub, groupId, files)
         return plainToInstance(GetDocumentsDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
@@ -409,11 +409,11 @@ export class TopicController {
     //Xóa nhiều file khỏi topic
     //Xóa hết file (thuộc topic): không cần truyền fileids
     //Chỉ có giảng viên thuộc đề tài mới được phép xóa
-    @Delete('/:topicId/lecturer/delete-files')
+    @Delete('/in-group/:groupId/lecturer/delete-files')
     @Auth(AuthType.Bearer)
     @UseGuards(RolesGuard)
-    async lecturerDeleteFiles(@Param('topicId') topicId: string, @Body() fileIds?: string[]) {
-        const resultFiles = await this.topicService.deleteManyFile(topicId, fileIds)
+    async lecturerDeleteFiles(@Param('groupId') groupId: string, @Body() fileIds?: string[]) {
+        const resultFiles = await this.topicService.deleteManyFile(groupId, fileIds)
         return { message: `Đã xóa thành công ${resultFiles} file` }
     }
 
@@ -481,18 +481,18 @@ export class TopicController {
         return await this.topicService.getYearsOfTopicInLibrary()
     }
 
-    @Get('/:topicId/documents')
-    async getDocumentsOfTopic(@Param('topicId') topicId: string) {
-        const res = await this.topicService.getDocumentsOfTopic(topicId)
+    @Get('/in-group/:groupId/documents')
+    async getDocumentsOfTopic(@Param('groupId') groupId: string) {
+        const res = await this.topicService.getDocumentsOfTopic(groupId)
         return plainToInstance(GetDocumentsDto, res, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
     }
-    @Get('/:topicId/download-zip')
+    @Get('/in-group/:groupId/download-zip')
     @Auth(AuthType.Bearer)
-    async downloadZip(@Res() res: Response, @Param('topicId') topicId: string) {
-        return this.topicService.downloadZip(topicId, res)
+    async downloadZip(@Res() res: Response, @Param('groupId') groupId: string) {
+        return this.topicService.downloadZip(groupId, res)
     }
 
     @Get('/awaiting-evaluation/in-period/:periodId')

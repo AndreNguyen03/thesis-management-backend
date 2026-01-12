@@ -7,7 +7,7 @@ export class CreateKnowledgeSourceDto {
     @IsNotEmpty()
     name: string
     @IsOptional()
-    description: string
+    description?: string
     @IsNotEmpty()
     @IsEnum(SourceType)
     source_type: SourceType = SourceType.URL
@@ -15,10 +15,10 @@ export class CreateKnowledgeSourceDto {
     source_location: string // nếu là url thì là link, nếu là file thì là download_url trên minio
     @IsOptional()
     @IsEnum(KnowledgeStatus)
-    status: KnowledgeStatus = KnowledgeStatus.ENABLED // hỏi người dùng có cần kích hoạt Knowledge Source này ko
+    status?: KnowledgeStatus = KnowledgeStatus.ENABLED // hỏi người dùng có cần kích hoạt Knowledge Source này ko
     @IsNotEmpty()
     @IsEnum(ProcessingStatus)
-    processing_status: ProcessingStatus = ProcessingStatus.PENDING
+    processing_status?: ProcessingStatus = ProcessingStatus.PENDING
     @IsOptional()
-    last_processed_at: Date | null // mặc định là null, sau khi thêm rabbitmq thì vào đây
+    last_processed_at?: Date | null // mặc định là null, sau khi thêm rabbitmq thì vào đây
 }

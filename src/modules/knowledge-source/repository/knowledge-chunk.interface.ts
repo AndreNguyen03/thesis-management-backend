@@ -4,5 +4,6 @@ import { CreateKnowledgeChunkDto } from '../dto/create-knowledge-chunk.dto'
 
 export interface IKnowledgeChunkRepository extends BaseRepositoryInterface<KnowledgeChunk> {
     updateKnowledgeChunks(sourceId: string, isDeleteNeeded: boolean): Promise<boolean>
-    upsertKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto[]): Promise<boolean>
+    upsertSingleKnowledgeChunk(createKnowledgeChunkDto: CreateKnowledgeChunkDto[]): Promise<boolean>
+    insertManyKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto[]): Promise<boolean>
 }

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { AgentExecutor, createReactAgent } from 'langchain/agents'
-import { TopicSearchTool } from '../tools/topic-search.tool'
+import { TopicRegisteringSearchTool } from '../tools/topic-registering-search.tool'
 import { DocumentSearchTool } from '../tools/document-search.tool'
 import { LecturerSearchTool } from '../tools/lecturer-search.tool'
 import { googleAIConfig } from '../../../config/googleai.config'
@@ -11,14 +11,16 @@ import { HumanMessage, AIMessage, BaseMessage } from '@langchain/core/messages'
 import { ChatGroq } from '@langchain/groq'
 import groqConfig from '../../../config/groq.config'
 import { DynamicTool } from '@langchain/core/tools'
+import { TopicInLibrarySearchTool } from '../tools/topic-in-library-search.tool'
 @Injectable()
 export class AutoAgentService {
     private agent: AgentExecutor
 
     constructor(
-        private readonly topicTool: TopicSearchTool,
+        private readonly topicRegisteringTool: TopicRegisteringSearchTool,
         private readonly documentTool: DocumentSearchTool,
         private readonly lecturerTool: LecturerSearchTool,
+        private readonly topicInLibraryTool: TopicInLibrarySearchTool,
         @Inject(googleAIConfig.KEY)
         private readonly googleConfig: ConfigType<typeof googleAIConfig>,
         @Inject(groqConfig.KEY)
@@ -37,15 +39,17 @@ export class AutoAgentService {
         const llm = new ChatGroq({
             apiKey: this.groqConfiguration.apiKey,
             model: 'llama-3.3-70b-versatile', // Model mạnh nhất của Groq
-            temperature: 0.3,
-            maxTokens: 2048
+            temperature: 0, // Set 0 để giảm hallucination
+            maxTokens: 2048,
+            stop: ['Observation:', '\nObservation'] // Stop ngay khi LLM cố gắng tự tạo Observation
         })
 
         // Danh sách tools
         const structuredTools = [
-            this.topicTool.createTool(),
+            this.topicRegisteringTool.createTool(),
             this.documentTool.createTool(),
-            this.lecturerTool.createTool()
+            this.lecturerTool.createTool(),
+            this.topicInLibraryTool.createTool()
         ]
 
         // Wrap structured tools thành DynamicTool cho ReactAgent (chỉ nhận string input)
@@ -76,83 +80,117 @@ export class AutoAgentService {
         const prompt = ChatPromptTemplate.fromMessages([
             [
                 'system',
-                `Bạn là trợ lý AI hỗ trợ sinh viên về khóa luận tốt nghiệp tại Đại học Công nghệ Thông tin - ĐHQG TP.HCM. Tất cả truy vấn của bạn sẽ đến từ sinh viên, giảng viên và ban chủ nhiệm khoa. 
+                `Bạn là trợ lý AI hỗ trợ sinh viên về khóa luận tốt nghiệp và nghiên cứu khoa học tại Đại học Công nghệ Thông tin - ĐHQG TP.HCM. Tất cả truy vấn của bạn sẽ đến từ sinh viên, giảng viên và ban chủ nhiệm khoa. 
 
 PHẠM VI HỖ TRỢ (CHỈ ĐƯỢC LÀM NHỮNG VIỆC SAU):
-1. Tìm kiếm ĐỀ TÀI (dùng tool: search_topics)
-2. Tìm kiếm TÀI LIỆU/QUY TRÌNH (dùng tool: search_documents)
-3. Tìm kiếm GIẢNG VIÊN (dùng tool: search_lecturers)
+1. Tìm kiếm ĐỀ TÀI ĐANG MỞ ĐĂNG KÝ (dùng tool: search_registering_topics)
+2. Tìm kiếm ĐỀ TÀI TRONG THƯ VIỆN (dùng tool: search_in_library_topics)
+3. Tìm kiếm TÀI LIỆU/QUY TRÌNH ĐĂNG KÝ THỰC HIỆN (dùng tool: search_documents) 
+4. Tìm kiếm GIẢNG VIÊN (dùng tool: search_lecturers)
 -> Nếu người dùng hỏi bên ngoài hãy từ chối khéo.
 
-NGUYÊN TẮC CỐT LÕI (QUAN TRỌNG):
-- CHỈ gọi tool khi người dùng đã cung cấp từ khóa rõ ràng (Ví dụ: "đề tài AI", "quy trình bảo vệ", "giảng viên mobile").
-- Chào hỏi hoặc không có ngữ cảnh rõ ràng thì không được gọi tool
-- Mọi câu trả lời không dùng tool BẮT BUỘC phải bắt đầu bằng "Final Answer:".
-
-
-NGOÀI PHẠM VI (TỪ CHỐI TRẢ LỜI):
-- Tra cứu điểm số, xem điểm rèn luyện.
-- Xem thời khóa biểu cá nhân, lịch thi cá nhân.
-- Đăng ký tín chỉ, hủy học phần.
--> Với các yêu cầu này, hãy trả lời là tính năng đang được phát triển.
-
+⚠️ QUY TẮC VIẾT QUERY CHO TOOL search_documents:
+- Nếu không chắc, hãy dùng nguyên văn câu hỏi của user làm query cho tool search_documents
+- KHÔNG viết query ngắn (1-3 từ) như "đăng ký", "quy trình", "bảo vệ"
+- Ví dụ ĐÚNG: "quy trình đăng ký đề tài khóa luận tốt nghiệp hướng dẫn bước thực hiện thủ tục hồ sơ" ✅
+- Tránh bịa đặt, dựa trên ngữ cảnh thực tế để viết query đầy đủ.
+- tham số "limit" trong Action Input nên để 10-15 để có kết quả tốt nhất.
 CÔNG CỤ CÓ SẴN:
 {tools}
 
 Tên các tool: {tool_names}
 
-QUY TRÌNH SUY LUẬN (ReAct):
-Question: Câu hỏi người dùng
-Thought: Phân loại câu hỏi:
-    1. Chào hỏi -> Final Answer.
-    2. Ngoài phạm vi hỗ trợ -> Final Answer (Từ chối khéo).
-    3. Trong phạm vi -> Chọn Tool (Action).
-Action: Tên tool (nếu cần)
-Action Input: Input JSON
-Observation: Kết quả từ tool
-Thought: Kiểm tra kết quả:
-    - Nếu có dữ liệu -> Trả lời.
-    - Nếu tool trả về rỗng/"Không tìm thấy" -> Final Answer (Xin lỗi).
-Final Answer: Câu trả lời cuối cùng.
+⚠️ QUY TẮC NGHIÊM NGẶT VỀ FORMAT OUTPUT:
+1. KHI GỌI TOOL: CHỈ được viết Thought, Action, Action Input. DỪNG LẠI NGAY SAU Action Input.
+2. KHÔNG ĐƯỢC viết Final Answer trước khi nhận Observation từ tool.
+3. KHÔNG ĐƯỢC tự tạo ra "Observation:" - đây là phần hệ thống tự động trả về.
+4. CHỈ được viết Final Answer SAU KHI đã có Observation.
+5. SAU KHI VIẾT "Action Input: {{...}}" - PHẢI DỪNG NGAY LẬP TỨC. KHÔNG VIẾT GÌ THÊM!
+
+QUY TRÌNH SUY LUẬN (ReAct) - TUÂN THỦ NGHIÊM NGẶT:
+
+▶ TRƯỜNG HỢP 1: KHÔNG CẦN TOOL (Chào hỏi, ngoài phạm vi)
+Question: [câu hỏi]
+Thought: [phân tích ngắn gọn]
+Final Answer: [câu trả lời]
+
+▶ TRƯỜNG HỢP 2: CẦN TOOL (QUAN TRỌNG!)
+Bước 1 - Output của bạn:
+Question: [câu hỏi]
+Thought: [phân tích và chọn tool]
+Action: [tên tool]
+Action Input: [JSON input]
+
+
+Bước 2 - Hệ thống sẽ trả về:
+Observation: [kết quả thực tế từ tool]
+
+Bước 3 - Output tiếp theo của bạn:
+Thought: [phân tích kết quả]
+Final Answer: [câu trả lời dựa trên Observation]
+Bước 3 - Output tiếp theo của bạn:
+Thought: [phân tích kết quả]
+Final Answer: [câu trả lời dựa trên Observation]
+
+LƯU Ý QUAN TRỌNG:
+- Mọi câu trả lời cuối cùng (kể cả chào hỏi, từ chối, v.v.) đều PHẢI bắt đầu bằng "Final Answer:".
+- Nếu không tuân thủ, hệ thống sẽ báo lỗi và không trả lời được cho người dùng.
 
 ---
 VÍ DỤ 1: CHÀO HỎI (KHÔNG GỌI TOOL)
 Question: Hi ad, chào bạn
-Thought: Chào hỏi xã giao.
+Thought: Chào hỏi xã giao, không cần tool.
 Final Answer: Chào bạn! Mình có thể giúp gì về đề tài khóa luận, tài liệu hoặc tìm giảng viên không ạ?
 
-VÍ DỤ 2: TÍNH NĂNG CHƯA CÓ (KHÔNG GỌI TOOL)
-Question: Xem giúp mình điểm rèn luyện học kỳ này
-Thought: Người dùng hỏi về điểm rèn luyện. Đây là tính năng tra cứu cá nhân, hiện tại chưa hỗ trợ (nằm ngoài phạm vi 3 tool search).
-Final Answer: Xin lỗi bạn, hiện tại mình chỉ hỗ trợ tra cứu thông tin về Khóa luận (Đề tài, Tài liệu, Giảng viên). Tính năng tra cứu điểm rèn luyện đang được team phát triển và sẽ ra mắt sau ạ!
+VÍ DỤ 2: GỌI TOOL ĐÚNG CÁCH 
+Question: Tìm giảng viên về AI
+Thought: Từ khóa "AI", cần tìm giảng viên -> search_lecturers.
+Action: search_lecturers
+Action Input: {{"query": "AI machine learning", "limit": 5}}
 
-VÍ DỤ 3: GỌI TOOL THÀNH CÔNG
-Question: Tìm đề tài về Blockchain
-Thought: Từ khóa "Blockchain", cần tìm đề tài -> search_topics.
-Action: search_topics
-Action Input: {{"query": "Blockchain", "limit": 5}}
-Observation: {{"total": 1, "topics": [...]}}
-Thought: Có kết quả, trả lời user.
-Final Answer: Mình tìm thấy 1 đề tài về Blockchain...
 
-VÍ DỤ 4: GỌI TOOL NHƯNG KHÔNG CÓ DỮ LIỆU
-Question: Quy trình đăng ký thực tập
-Thought: Hỏi quy trình -> search_documents.
+[Hệ thống trả về]
+Observation: {{"total": 2, "lecturers": [{{"name": "TS. Nguyễn Văn A", "email": "a@uit.edu.vn", ...}}]}}
+
+Thought: Có 2 giảng viên về AI, trình bày cho user.
+Final Answer: Mình tìm thấy 2 giảng viên chuyên về AI: TS. Nguyễn Văn A...
+
+VÍ DỤ 2B: TÌM TÀI LIỆU - QUERY DÀI 
+Question: Quy trình đăng ký đề tài như thế nào?
+Thought: Câu hỏi về quy trình -> search_documents. Phải viết query DÀI với từ khóa mở rộng.
 Action: search_documents
-Action Input: {{"query": "quy trình đăng ký thực tập", "limit": 5}}
-Observation: Không tìm thấy tài liệu phù hợp.
-Thought: Tool trả về rỗng.
-Final Answer: Xin lỗi, hiện tại hệ thống chưa cập nhật tài liệu về quy trình thực tập. Bạn vui lòng liên hệ phòng đào tạo để biết chi tiết nhé.
+Action Input: {{"query": "quy trình đăng ký đề tài khóa luận tốt nghiệp hướng dẫn bước thực hiện thủ tục hồ sơ yêu cầu", "limit": 5}}
 
-VÍ DỤ 5: CÂU HỎI KHÔNG ĐẦY ĐỦ NGỮ CẢNH (HỎI ĐỀ TÀI)
-Question: Có đề tài nào không?
-Thought: Câu hỏi chung chung, thiếu lĩnh vực cụ thể. Cần hỏi lại người dùng về lĩnh vực quan tâm.
-Final Answer: Bạn vui lòng cho biết lĩnh vực hoặc chủ đề bạn quan tâm để mình tìm đề tài phù hợp nhé (ví dụ: Trí tuệ nhân tạo, Blockchain, An ninh mạng, ...).
 
-VÍ DỤ 6: CÂU HỎI KHÔNG ĐẦY ĐỦ NGỮ CẢNH (HỎI GIẢNG VIÊN)
-Question: Có giảng viên nào hướng dẫn không?
-Thought: Câu hỏi chung chung, thiếu lĩnh vực nghiên cứu. Cần hỏi lại người dùng về lĩnh vực muốn tìm giảng viên.
-Final Answer: Bạn muốn tìm giảng viên hướng dẫn về lĩnh vực nào? Vui lòng cung cấp lĩnh vực nghiên cứu hoặc chủ đề bạn quan tâm để mình hỗ trợ nhé.
+VÍ DỤ 2C: TÌM TÀI LIỆU SAI - QUERY NGẮN 
+Question: Tiêu chí đánh giá?
+Thought: Tìm tài liệu -> search_documents
+Action: search_documents
+Action Input: {{"query": "đánh giá", "limit": 5}}  ❌SAI - QUERY QUÁ NGẮN!
+
+ĐÚNG PHẢI LÀ:
+Action Input: {{"query": "tiêu chí đánh giá khóa luận tốt nghiệp yêu cầu nội dung trình bày báo cáo kết quả nghiên cứu", "limit": 5}}
+
+VÍ DỤ 3: SAI CÁCH - KHÔNG ĐƯỢC LÀM THẾ NÀY ❌
+Question: Tìm giảng viên về Cloud
+Thought: Tìm giảng viên -> search_lecturers.
+Action: search_lecturers
+Action Input: {{"query": "Cloud", "limit": 5}}
+❌ SAI: Observation: {{...}}  <- KHÔNG ĐƯỢC tự viết Observation
+❌ SAI: Final Answer: Mình tìm thấy... <- KHÔNG ĐƯỢC viết Final Answer ngay
+
+✅ ĐÚNG: Sau "Action Input:" phải DỪNG NGAY và đợi hệ thống trả Observation.
+
+VÍ DỤ 4: TOOL TRẢ VỀ RỖNG
+Question: Giảng viên về quantum computing
+Thought: Tìm giảng viên -> search_lecturers.
+Action: search_lecturers
+Action Input: {{"query": "quantum computing", "limit": 5}}
+
+Observation: Không tìm thấy giảng viên phù hợp.
+
+Thought: Tool không tìm thấy, thông báo cho user.
+Final Answer: Xin lỗi, hiện tại hệ thống chưa có thông tin về giảng viên chuyên quantum computing. Bạn vui lòng liên hệ phòng đào tạo nhé.
 
 ---
 
@@ -176,7 +214,7 @@ Bắt đầu!`.trim()
             verbose: true, // Log chi tiết quá trình
             maxIterations: 3, // Chỉ 1 vòng để tránh multi-tool calling với Groq
             returnIntermediateSteps: true, // Trả về các bước trung gian,
-            earlyStoppingMethod: "force" // Dừng khi LLM tạo Final Answer
+            earlyStoppingMethod: 'force' // Dừng khi LLM tạo Final Answer
         })
 
         console.log('✅ Auto Agent initialized with', tools.length, 'tools')
@@ -253,6 +291,7 @@ Bắt đầu!`.trim()
 
         // Buffer để lưu topics data, chỉ gửi sau khi stream text xong
         let bufferedTopicsData: any = null
+        let bufferedLecturerData: any = null
 
         for await (const event of stream) {
             // Log event type để debug
@@ -272,7 +311,7 @@ Bắt đầu!`.trim()
                 const toolName = event.name
                 console.log('🔧 Tool finished:', toolName)
 
-                if (toolName === 'search_topics') {
+                if (toolName === 'search_registering_topics') {
                     const output = event.data?.output
                     if (output) {
                         try {
@@ -281,6 +320,19 @@ Bắt đầu!`.trim()
                             console.log('📦 Topics data buffered:', bufferedTopicsData.total || 0, 'topics')
                         } catch (error) {
                             console.error('❌ Failed to parse topics data:', error)
+                        }
+                    }
+                }
+
+                if (toolName === 'search_lecturers') {
+                    const output = event.data?.output
+                    if (output) {
+                        try {
+                            // Parse và lưu vào buffer
+                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
+                            console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
+                        } catch (error) {
+                            console.error('❌ Failed to parse lecturers data:', error)
                         }
                     }
                 }
@@ -293,6 +345,12 @@ Bắt đầu!`.trim()
             yield JSON.stringify(bufferedTopicsData)
             yield '\n__TOPICS_DATA_END__\n\n'
             console.log('📚 Topics data sent after text completion')
+        }
+        if (bufferedLecturerData) {
+            yield '\n\n__LECTURERS_DATA_START__\n'
+            yield JSON.stringify(bufferedLecturerData)
+            yield '\n__LECTURERS_DATA_END__\n\n'
+            console.log('📚 Lecturers data sent after text completion')
         }
     }
 }
