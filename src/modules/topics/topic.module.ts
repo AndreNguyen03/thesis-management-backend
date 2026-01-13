@@ -74,7 +74,7 @@ import { MilestonesModule } from '../milestones/milestones.module'
             { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
             { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
-            { name: UserSavedTopics.name, schema: UserSavedTopicsSchema },
+            { name: UserSavedTopics.name, schema: UserSavedTopicsSchema }
         ]),
         ConfigModule.forFeature(googleAIConfig),
         ConfigModule.forFeature(mongoConfig),
@@ -86,7 +86,7 @@ import { MilestonesModule } from '../milestones/milestones.module'
         forwardRef(() => PeriodsModule),
         forwardRef(() => GroupsModule),
         forwardRef(() => MilestonesModule),
-        TopicInteractionModule
+        forwardRef(() => TopicInteractionModule)
     ]
 })
 export class TopicModule {}

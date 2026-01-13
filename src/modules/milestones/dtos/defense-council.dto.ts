@@ -87,6 +87,15 @@ export class AddTopicToCouncilDto {
     defenseOrder?: number
 }
 
+// DTO thêm nhiều đề tài vào hội đồng cùng lúc
+export class AddMultipleTopicsToCouncilDto {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => AddTopicToCouncilDto)
+    @IsNotEmpty()
+    topics: AddTopicToCouncilDto[]
+}
+
 // DTO cập nhật bộ ba giảng viên cho đề tài
 export class UpdateTopicMembersDto {
     @IsArray()

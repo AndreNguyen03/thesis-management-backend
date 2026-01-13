@@ -1,5 +1,5 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
-import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
+import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider'
 import { GetEmbeddingProvider } from '../providers/get-embedding.provider'
 import { z } from 'zod'
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
@@ -20,7 +20,7 @@ export class DocumentSearchTool {
 Công cụ tìm kiếm TÀI LIỆU, HƯỚNG DẪN, QUY TRÌNH về khóa luận.
 
 SỬ DỤNG KHI:
-- Người dùng hỏi về quy trình, quy định
+- Người dùng hỏi về quy trình, quy định đăng ký, thực hiện khóa luận, nghiên cứu khoa học
 - Muốn tìm tài liệu tham khảo
 - Hỏi "cách đăng ký đề tài như thế nào?"
 - Hỏi "quy trình bảo vệ khóa luận?"
@@ -34,21 +34,28 @@ OUTPUT: Đoạn text trích dẫn từ tài liệu + link nguồn
             `.trim(),
             schema: z.object({
                 query: z.string().describe('Câu hỏi về tài liệu/quy trình'),
-                limit: z.number().optional().default(5)
+                limit: z.number().optional().default(20).describe('Số lượng tài liệu trả về tối đa')
             }) as any,
             func: async ({ query, limit }) => {
                 try {
                     console.log('📄 [DOCUMENT TOOL] Searching documents:', query)
 
-                    const queryVector = await this.embeddingProvider.getEmbedding(query)
+                    // Query expansion: tự động mở rộng nếu query quá ngắn
+                    let expandedQuery = query
+                    const wordCount = query.trim().split(/\s+/).length
+                    if (wordCount < 5) {
+                        expandedQuery = `${query} quy trình hướng dẫn thực hiện khóa luận tốt nghiệp nghiên cứu khoa học yêu cầu đăng ký bảo vệ báo cáo`
+                        console.log('📄 [DOCUMENT TOOL] Query expanded:', expandedQuery)
+                    }
+                    const queryVector = await this.embeddingProvider.getEmbedding(expandedQuery)
 
                     const results = await this.searchProvider.searchSimilarDocuments(queryVector, {
                         sourceTypes: [SourceType.URL, SourceType.FILE],
                         limit,
-                        scoreThreshold: 0.75 // Yêu cầu cao hơn cho documents
+                        scoreThreshold: 0.8 // Giữ threshold thấp như bạn đã chỉnh
                     })
                     if (results.length === 0) {
-                        console.log('📄 [DOCUMENT TOOL] No documents found for query:', query)
+                        console.log('📄 [DOCUMENT TOOL] No documents found for query:', expandedQuery)
                         return 'Không tìm thấy tài liệu phù hợp.'
                     }
                     const chunks = plainToInstance(GetKnowledgeChunkDto, results, {
@@ -58,7 +65,7 @@ OUTPUT: Đoạn text trích dẫn từ tài liệu + link nguồn
                     // Format: text + source link
                     const formattedDocs = chunks.map((chunk, idx) => ({
                         index: idx + 1,
-                        content: chunk.text,
+                        text: chunk.text,
                         score: chunk.score.toFixed(3),
                         sourceId: chunk.source_id
                     }))

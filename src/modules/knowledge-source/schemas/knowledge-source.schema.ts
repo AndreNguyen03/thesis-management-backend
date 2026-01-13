@@ -4,6 +4,28 @@ import { ProcessingStatus } from '../enums/processing-status.enum'
 import { SourceType } from '../enums/source_type.enum'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
+
+@Schema()
+export class KnowledgeMetadata {
+    @Prop({ required: false, default: 0 })
+    wordCount?: number
+
+    @Prop({ required: false, default: 0 })
+    chunkCount?: number
+
+    @Prop({ required: false, default: 0 })
+    fileSize?: number
+
+    @Prop({ required: false })
+    mimeType?: string
+
+    @Prop({ required: false, default: 0 })
+    progress?: number
+
+    @Prop({ required: false })
+    errorMessage?: string
+}
+
 @Schema({
     timestamps: {
         createdAt: 'created_at',
@@ -27,7 +49,7 @@ export class KnowledgeSource extends BaseEntity {
     @Prop({ enum: KnowledgeStatus, default: KnowledgeStatus.DISABLED })
     status: KnowledgeStatus
 
-    @Prop({ enum: ProcessingStatus, default: ProcessingStatus.COMPLETED })
+    @Prop({ enum: ProcessingStatus, default: ProcessingStatus.PENDING })
     processing_status: ProcessingStatus
 
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'User' })
@@ -35,5 +57,8 @@ export class KnowledgeSource extends BaseEntity {
 
     @Prop({ required: false, default: null })
     last_processed_at: Date
+
+    @Prop({ type: KnowledgeMetadata, required: false, default: {} })
+    metadata?: KnowledgeMetadata
 }
 export const KnowledgeSourceSchema = SchemaFactory.createForClass(KnowledgeSource)

@@ -3,6 +3,7 @@ import { DefenseCouncilRepository } from '../repository/defense-council.reposito
 import {
     CreateDefenseCouncilDto,
     AddTopicToCouncilDto,
+    AddMultipleTopicsToCouncilDto,
     UpdateTopicMembersDto,
     SubmitScoreDto,
     UpdateDefenseCouncilDto,
@@ -44,6 +45,11 @@ export class DefenseCouncilService {
     // Thêm đề tài vào hội đồng
     async addTopicToCouncil(councilId: string, dto: AddTopicToCouncilDto): Promise<DefenseCouncil> {
         return await this.defenseCouncilRepository.addTopicToCouncil(councilId, dto)
+    }
+
+    // Thêm nhiều đề tài vào hội đồng cùng lúc
+    async addMultipleTopicsToCouncil(councilId: string, dto: AddMultipleTopicsToCouncilDto): Promise<DefenseCouncil> {
+        return await this.defenseCouncilRepository.addMultipleTopicsToCouncil(councilId, dto)
     }
 
     // Xóa đề tài khỏi hội đồng

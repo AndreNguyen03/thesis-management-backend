@@ -19,6 +19,7 @@ import { FacultyModule } from '../faculties/faculty.module'
 import { PeriodGateway } from './gateways/period.gateway'
 import { PeriodsCronProvider } from './cron/periods-cron.provider'
 import { ScheduleModule } from '@nestjs/schedule'
+import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.module'
 
 @Module({
     controllers: [PeriodsController],
@@ -44,7 +45,8 @@ import { ScheduleModule } from '@nestjs/schedule'
         TopicVectorModule,
         NotificationsModule,
         GroupsModule,
-        FacultyModule
+        FacultyModule,
+        KnowledgeSourceModule
     ],
     exports: [PeriodsService, GetPeriodInfoProvider, PeriodGateway]
 })

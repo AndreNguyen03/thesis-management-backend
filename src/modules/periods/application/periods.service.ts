@@ -373,8 +373,13 @@ export class PeriodsService extends BaseServiceAbstract<Period> {
     ): Promise<{ success: boolean; message: string }> {
         return this.createPhaseProvider.configPhaseExecution(actorId, periodId, configExecutionPhaseDto, force)
     }
-    async configPhaseCompletion(actorId: string, periodId: string, configCompletionPhaseDto: ConfigCompletionPhaseDto) {
-        return this.createPhaseProvider.configCompletionPhase(actorId, periodId, configCompletionPhaseDto)
+    async configPhaseCompletion(
+        actorId: string,
+        periodId: string,
+        configCompletionPhaseDto: ConfigCompletionPhaseDto,
+        force: boolean = false
+    ) {
+        return this.createPhaseProvider.configCompletionPhase(actorId, periodId, configCompletionPhaseDto, force)
     }
 
     async updatePhase(periodId: string, phaseId: string, updatePhaseDto: UpdatePeriodPhaseDto) {

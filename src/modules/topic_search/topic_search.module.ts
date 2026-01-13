@@ -14,6 +14,7 @@ import { TopicVectorRepository } from './repository/impl/topic-vector.repository
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { TopicModule } from '../topics/topic.module'
 import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schemas/knowledge-chunk.schema'
+import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.module'
 
 @Module({
     imports: [
@@ -25,7 +26,8 @@ import { KnowledgeChunk, KnowledgeChunkSchema } from '../knowledge-source/schema
         forwardRef(() => PeriodsModule),
         BullModule.registerQueue({ name: 'vector-sync-queue' }),
         PaginationAnModule,
-        forwardRef(() => TopicModule)
+        forwardRef(() => TopicModule),
+        forwardRef(() => KnowledgeSourceModule)
     ],
     controllers: [TopicSearchController],
     providers: [

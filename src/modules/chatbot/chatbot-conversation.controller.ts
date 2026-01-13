@@ -51,8 +51,8 @@ export class ChatbotConversationController {
     @HttpCode(HttpStatus.CREATED)
     async createConversation(@Req() req: { user: ActiveUserData }, @Body() dto: CreateConversationDto) {
         const userId = req.user.sub
-        const conversation = await this.conversationService.createConversation(userId, dto)
-        return conversation?._id.toString()
+        const result = await this.conversationService.createConversation(userId, dto)
+        return { conversationId: result?.conversationId, messsage: result?.messsage }
     }
 
     /**

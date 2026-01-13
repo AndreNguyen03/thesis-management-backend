@@ -125,11 +125,16 @@ export class UpdateTopicsPhaseBatchProvider {
         })
         let updated = 0
         //chuyển pha của đề tài từ awaitingEvaluation sang completion
-        if (awaitingEvaluationTopics && awaitingEvaluationTopics.length > 0) {
-            updated = await this.topicRepository.updateTopicsToCompletion(
-                awaitingEvaluationTopics.map((topic) => topic._id.toString())
-            )
-        }
+        awaitingEvaluationTopics?.forEach(async (topic) => {
+            await this.topicRepository.update(topic._id.toString(), {
+                currentPhase: PeriodPhaseName.COMPLETION,
+                phaseHistories: [
+                    ...(topic.phaseHistories ?? []),
+                    this.createPhaseHistory(PeriodPhaseName.COMPLETION, TopicStatus.AwaitingEvaluation)
+                ]
+            })
+            console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Mở đăng ký thành công`)
+        })
         console.log(`----Tìm thấy ${awaitingEvaluationTopics?.length ?? 0} đề tài đang chờ đánh giá ${periodId}`)
         return updated
     }
@@ -139,7 +144,6 @@ export class UpdateTopicsPhaseBatchProvider {
         newPhaseHistory.status = currentStatus
         if (actor) newPhaseHistory.actor = actor
         else {
-            newPhaseHistory.actor = 'system'
             newPhaseHistory.note = 'Hệ thống tự động cập nhật trạng thái đề tài khi chuyển pha'
         }
         return newPhaseHistory
