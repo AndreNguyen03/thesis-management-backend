@@ -473,26 +473,18 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         }
     }
     //service tải file lên đề tài
-    public async uploadManyFiles(userId: string, topicId: string, files: Express.Multer.File[]) {
+    public async uploadManyFiles(userId: string, groupId: string, files: Express.Multer.File[]) {
         const filesId = await this.uploadManyFilesProvider
             .uploadManyFiles(userId, files, UploadFileTypes.DOCUMENT)
             .then((res) => res.map((file) => file._id.toString()))
 
-        return await this.topicRepository.storedFilesIn4ToTopic(topicId, filesId)
+        return await this.topicRepository.storedFilesIn4ToTopic(groupId, filesId)
     }
-    public async deleteManyFile(topicId: string, fileIds?: string[]): Promise<number> {
-        let neededDeleteFileIds: string[] = []
-        if (fileIds && fileIds.length > 0) {
-            const topic = await this.findOneByCondition({ _id: topicId, deleted_at: null })
-            if (!topic) {
-                throw new NotFoundException('Đề tài không tồn tại.')
-            }
-            neededDeleteFileIds = fileIds && fileIds.length > 0 ? fileIds : topic.fileIds
-        }
-
-        await this.deleteFileProvider.deleteMany(neededDeleteFileIds)
-        const res: boolean = await this.topicRepository.deleteManyFilesFromTopic(topicId, fileIds)
-        if (res) return neededDeleteFileIds.length
+    public async deleteManyFile(groupId: string, fileIds?: string[]): Promise<number> {
+        const res: boolean = await this.topicRepository.deleteManyFilesFromTopic(groupId, fileIds)
+        const fileIdsFromTopic = await this.topicRepository.getFileIdsByGroupId(groupId)
+        await this.deleteFileProvider.deleteMany(fileIds ? fileIds : fileIdsFromTopic)
+        if (res) return fileIdsFromTopic.length
         return 0
     }
     public async deleteFile(topicId: string, fileId: string): Promise<number> {
@@ -535,18 +527,11 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     public async getYearsOfTopicInLibrary() {
         return await this.topicRepository.getYearsOfTopicInLibrary()
     }
-    public async getDocumentsOfTopic(topicId: string) {
-        return await this.topicRepository.getDocumentsOfTopic(topicId)
+    public async getDocumentsOfTopic(groupId: string) {
+        return await this.topicRepository.getDocumentsOfTopic(groupId)
     }
-    public async downloadZip(topicId: string, res: Response): Promise<void> {
-        const topic = await this.topicRepository.findOneByCondition({
-            _id: new mongoose.Types.ObjectId(topicId),
-            deleted_at: null
-        })
-        if (!topic) {
-            throw new NotFoundException('Đề tài không tồn tại.')
-        }
-        const documentNames = (await this.topicRepository.getDocumentsOfTopic(topicId)).map((doc) => doc.fileUrl)
+    public async downloadZip(groupId: string, res: Response): Promise<void> {
+        const documentNames = (await this.topicRepository.getDocumentsOfTopic(groupId)).map((doc) => doc.fileUrl)
         return this.downLoadFileProvider.downloadZip(documentNames, res)
     }
 

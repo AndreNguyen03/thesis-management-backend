@@ -6,32 +6,55 @@ import { GetRequirementNameReponseDto } from '../../requirements/dtos/get-requir
 import { GetMajorMiniDto } from '../../majors/dtos/get-major.dto'
 import { ResponseMiniLecturerDto } from '../../../users/dtos/lecturer.dto'
 import { User } from '../../../users/schemas/users.schema'
+import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
+import { PublicationDto } from '../dtos/get-enough-knowledge-result.dto'
 
 export class TopicSnapshot {
-    @Prop({ required: true ,type: String})
+    @Prop({ required: true, type: String })
     _id: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     titleVN: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     titleEng: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     description: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     fields: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     requirements: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     major: string
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     lecturers: string
-    @Prop({ required: true , type: Number})
+    @Prop({ required: true, type: Number })
     maxStudents: number
-    @Prop({ required: true , type: String})
+    @Prop({ required: true, type: String })
     type: string
-    @Prop({ required: true , type: Number})
+    @Prop({ required: true, type: Number })
     similarityScore: number
 }
-
+export class LecturerSnapshot {
+    @Prop({ required: true, type: String })
+    _id: string
+    @Prop({ required: true, type: String })
+    fullName: string
+    @Prop({ required: true, type: String })
+    email: string
+    @Prop({ required: true, type: String })
+    bio?: string
+    @Prop({ required: true, type: String })
+    title: string
+    @Prop({ required: true, type: GetFacultyDto })
+    faculty?: GetFacultyDto
+    @Prop({ required: true, type: String })
+    areaInterest?: string[]
+    @Prop({ required: true, type: String })
+    researchInterests?: string[]
+    @Prop({ required: true, type: String })
+    publications?: PublicationDto[]
+    @Prop({ required: true, type: String })
+    similarityScore?: number
+}
 // Message trong conversation
 @Schema({ _id: false })
 export class ConversationMessage {
@@ -46,7 +69,8 @@ export class ConversationMessage {
 
     @Prop({ type: [TopicSnapshot], default: null })
     topics?: TopicSnapshot[] // Lưu topics từ search_topics tool
-
+    @Prop({ type: [LecturerSnapshot], default: null })
+    lecturers?: LecturerSnapshot[]
     @Prop({ default: Date.now })
     timestamp: Date
 }

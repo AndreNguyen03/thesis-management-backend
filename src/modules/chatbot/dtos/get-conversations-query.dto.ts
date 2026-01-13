@@ -1,6 +1,7 @@
 import { IsOptional, IsEnum, IsString } from 'class-validator'
 import { TopicSnapshot } from '../schemas/chatbot-conversation.schema'
 import { Expose, Type } from 'class-transformer'
+import { LecturerSnapshot } from './send-message.dto'
 
 export class GetConversationsQuery {
     @IsEnum(['active', 'archived'])
@@ -45,6 +46,9 @@ export class ConversationMessage {
     @Expose()
     @Type(() => TopicSnapshotDto)
     topics?: TopicSnapshotDto[] // Lưu topics từ search_topics tool
+    @Expose()
+    @Type(() => LecturerSnapshot)
+    lecturers?: LecturerSnapshot[]
     @Expose()
     timestamp: Date
 }

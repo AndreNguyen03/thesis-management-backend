@@ -10,18 +10,339 @@ import { CreateKnowledgeChunksProvider } from '../../knowledge-source/applicatio
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { KnowledgeChunk } from '../../knowledge-source/schemas/knowledge-chunk.schema'
 import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source.schema'
-import { SearchOptions, SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
+import {
+    SearchOptions,
+    SearchSimilarDocumentsProvider
+} from '../../knowledge-source/application/search-similar-documents.provider'
+import { UploadManyFilesProvider } from '../../upload-files/providers/upload-many-files.provider'
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { Canvas, createCanvas, Image } from 'canvas'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+import * as pdfPoppler from 'pdf-poppler'
+import * as Tesseract from 'tesseract.js'
+import { UploadFileTypes } from '../../upload-files/enum/upload-files.type.enum'
+import { CreateKnowledgeChunkDto } from '../../knowledge-source/dto/create-knowledge-chunk.dto'
+import { ChatbotGateway } from '../gateways/chatbot.gateway'
+import { ProcessingStatus } from '../../knowledge-source/enums/processing-status.enum'
+
+// NodeCanvasFactory để làm cầu nối giữa pdfjs và node-canvas
 
 @Injectable()
 export class RetrievalProvider {
     constructor(
         private readonly getEmbeddingProvider: GetEmbeddingProvider,
-        @Inject()
         private readonly knowledgeChunksProvider: CreateKnowledgeChunksProvider,
-        @Inject() private readonly knowledgeSourceProvider: CreateKnowledgeSourceProvider,
-        @Inject() private readonly searchSimilarDocumentsProvider: SearchSimilarDocumentsProvider,
-        @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue
+        private readonly knowledgeSourceProvider: CreateKnowledgeSourceProvider,
+        private readonly searchSimilarDocumentsProvider: SearchSimilarDocumentsProvider,
+        @InjectQueue('knowledge-processing') private readonly knowledgeQueue: Queue,
+        private readonly uploadManyFilesProvider: UploadManyFilesProvider,
+        private readonly chatbotGateway: ChatbotGateway
     ) {}
+
+    /**
+     * Phát hiện loại PDF: text-based hoặc scanned
+     */
+    private async detectPDFType(pdfBuffer: Buffer): Promise<'text' | 'scanned'> {
+        const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(pdfBuffer) }).promise
+        const page = await pdf.getPage(1)
+        const textContent = await page.getTextContent()
+
+        // Nếu có ít hơn 25 ký tự trong trang đầu → PDF scanned
+        return textContent.items.length < 10 ? 'scanned' : 'text'
+    }
+
+    /**
+     * Xử lý PDF text-based bằng PDFLoader
+     */
+    private async extractTextFromPDF(fileBuffer: Buffer): Promise<string> {
+        // Convert Node.js Buffer to Uint8Array for Blob compatibility
+        const loader = new PDFLoader(new Blob([new Uint8Array(fileBuffer)]))
+        const docs = await loader.load()
+        return docs.map((doc) => doc.pageContent).join('\n\n')
+    }
+
+    /**
+     * Xử lý PDF scanned bằng OCR (Tesseract)
+     * Uses pdf-poppler to convert PDF to images and tesseract.js for OCR
+     */
+    async extractFromScannedPdf(buffer: Buffer): Promise<string> {
+        // Sử dụng system temp directory để tránh vấn đề với Unicode trong đường dẫn
+        const tempDir = path.join(os.tmpdir(), 'pdf-ocr', Date.now().toString())
+
+        try {
+            // Tạo thư mục tạm
+            fs.mkdirSync(tempDir, { recursive: true })
+
+            // Lưu PDF vào file tạm
+            const pdfPath = path.join(tempDir, 'input.pdf')
+            fs.writeFileSync(pdfPath, buffer)
+
+            // Cấu hình pdf-poppler để convert PDF sang PNG
+            const options = {
+                format: 'png',
+                out_dir: tempDir,
+                out_prefix: 'page',
+                page: null // Convert all pages
+            }
+
+            // Convert PDF thành images
+            await pdfPoppler.convert(pdfPath, options)
+
+            // Khởi tạo Tesseract worker với tiếng Việt và tiếng Anh
+            const worker = await Tesseract.createWorker(['vie', 'eng'])
+            let extractedText = ''
+
+            // Đọc tất cả file PNG được tạo ra
+            const imageFiles = fs
+                .readdirSync(tempDir)
+                .filter((file) => file.endsWith('.png'))
+                .sort() // Sắp xếp theo thứ tự trang
+
+            console.log(`Found ${imageFiles.length} pages to process`)
+
+            // OCR từng ảnh
+            for (const imageFile of imageFiles) {
+                const imagePath = path.join(tempDir, imageFile)
+                console.log(`Processing: ${imageFile}`)
+
+                const { data } = await worker.recognize(imagePath)
+                extractedText += data.text + '\n\n'
+            }
+
+            // Dọn dẹp
+            await worker.terminate()
+
+            return extractedText.trim()
+        } catch (error) {
+            console.error('Error in extractFromScannedPdf:', error)
+            throw new BadRequestException(`Failed to extract text from scanned PDF: ${error.message}`)
+        } finally {
+            // Đảm bảo xóa thư mục tạm dù có lỗi hay không
+            if (fs.existsSync(tempDir)) {
+                fs.rmSync(tempDir, { recursive: true, force: true })
+            }
+        }
+    }
+
+    /**
+     * Trích xuất, phân mảnh, embedding và lưu trữ knowledge từ file upload
+     */
+    private async processFileToChunks(file: Express.Multer.File, knowledgeSourceIdLocal: string): Promise<void> {
+        try {
+            // Emit crawling progress
+            this.chatbotGateway.emitCrawlProgress({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'crawling',
+                progress: 10,
+                message: 'Đang trích xuất nội dung từ file...'
+            })
+
+            // Cập nhật processing status
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(
+                knowledgeSourceIdLocal,
+                ProcessingStatus.PENDING
+            )
+
+            let extractedText = ''
+
+            if (file.mimetype === 'application/pdf') {
+                const pdfType = await this.detectPDFType(file.buffer)
+                console.log('Detected PDF type:', pdfType)
+
+                this.chatbotGateway.emitCrawlProgress({
+                    resourceId: knowledgeSourceIdLocal,
+                    status: 'crawling',
+                    progress: 30,
+                    message: `Đang xử lý PDF ${pdfType}...`
+                })
+
+                if (pdfType === 'text') {
+                    extractedText = await this.extractTextFromPDF(file.buffer)
+                } else {
+                    extractedText = await this.extractFromScannedPdf(file.buffer)
+                }
+            } else if (file.mimetype.startsWith('image/')) {
+                // Xử lý ảnh trực tiếp
+                this.chatbotGateway.emitCrawlProgress({
+                    resourceId: knowledgeSourceIdLocal,
+                    status: 'crawling',
+                    progress: 30,
+                    message: 'Đang nhận dạng OCR cho ảnh...'
+                })
+
+                const worker = await Tesseract.createWorker('vie+eng')
+                const { data } = await worker.recognize(file.buffer)
+                await worker.terminate()
+                extractedText = data.text
+            }
+
+            console.log('Extracted Text:', extractedText.slice(0, 500))
+            const wordCount = extractedText.split(/\s+/).length
+
+            this.chatbotGateway.emitCrawlProgress({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'crawling',
+                progress: 50,
+                message: `Đã trích xuất ${wordCount} từ. Đang phân chia chunks...`
+            })
+
+            // 4. Split text thành chunks
+            const splitter = new RecursiveCharacterTextSplitter({
+                chunkSize: 1024,
+                chunkOverlap: 100,
+                separators: ['\n\n', '\n', '. ']
+            })
+            const chunks = await splitter.splitText(extractedText)
+
+            this.chatbotGateway.emitCrawlCompleted({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'completed',
+                progress: 60,
+                message: `Đã tạo ${chunks.length} chunks. Bắt đầu embedding...`
+            })
+
+            // 5. Embedding và lưu chunks (batch processing)
+            this.chatbotGateway.emitEmbeddingProgress({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'embedding',
+                progress: 60,
+                message: `Đang tạo embedding cho ${chunks.length} chunks...`
+            })
+
+            const knowledgeChunks: CreateKnowledgeChunkDto[] = []
+            let processedChunks = 0
+
+            for (const chunk of chunks) {
+                const vector = await this.getEmbeddingProvider.getEmbedding(chunk)
+                knowledgeChunks.push({
+                    source_id: knowledgeSourceIdLocal,
+                    text: chunk,
+                    plot_embedding_gemini_large: vector
+                })
+
+                processedChunks++
+                const embeddingProgress = 60 + (processedChunks / chunks.length) * 30
+
+                if (processedChunks % 5 === 0 || processedChunks === chunks.length) {
+                    this.chatbotGateway.emitEmbeddingProgress({
+                        resourceId: knowledgeSourceIdLocal,
+                        status: 'embedding',
+                        progress: Math.round(embeddingProgress),
+                        message: `Đã embedding ${processedChunks}/${chunks.length} chunks...`
+                    })
+                }
+            }
+
+            // Lưu tất cả chunks cùng lúc
+            await this.knowledgeChunksProvider.insertKnowledgeChunks(knowledgeChunks)
+
+            // Cập nhật metadata
+            await this.knowledgeSourceProvider.updateKnowledgeSourceMetadata(knowledgeSourceIdLocal, {
+                wordCount,
+                chunkCount: chunks.length,
+                fileSize: file.size,
+                mimeType: file.mimetype,
+                progress: 100
+            })
+
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(
+                knowledgeSourceIdLocal,
+                ProcessingStatus.COMPLETED
+            )
+
+            this.chatbotGateway.emitEmbeddingCompleted({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'completed',
+                progress: 100,
+                message: `Hoàn thành! Đã tạo ${chunks.length} chunks từ ${wordCount} từ.`
+            })
+
+            console.log(`Created ${chunks.length} chunks for knowledge source`)
+        } catch (error) {
+            console.error('Error processing file:', error)
+
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(
+                knowledgeSourceIdLocal,
+                ProcessingStatus.FAILED
+            )
+
+            await this.knowledgeSourceProvider.updateKnowledgeSourceMetadata(knowledgeSourceIdLocal, {
+                errorMessage: error.message
+            })
+
+            this.chatbotGateway.emitCrawlFailed({
+                resourceId: knowledgeSourceIdLocal,
+                status: 'failed',
+                progress: 0,
+                message: 'Xử lý file thất bại',
+                error: error.message
+            })
+
+            throw error
+        }
+    }
+    /**
+     * Xử lý file upload để tạo knowledge source mới
+     */
+    public async processUploadedFileInNewKnowledge(
+        userId: string,
+        file: Express.Multer.File,
+        sourceMetadata: { name: string; description?: string }
+    ): Promise<KnowledgeSource> {
+        // 1. Upload file lên MinIO
+        const files = await this.uploadManyFilesProvider.uploadManyFiles(userId, [file], UploadFileTypes.AI_KNOWLEDGE)
+
+        // 2. Tạo knowledge source với status PENDING
+        const newKnowledgeSource = await this.knowledgeSourceProvider.createKnowledgeSource(userId, {
+            name: sourceMetadata.name,
+            description: sourceMetadata.description,
+            source_type: SourceType.FILE,
+            source_location: files[0].fileUrl
+        })
+
+        // 3. Xử lý file async (không chờ đợi để response nhanh cho client)
+        this.processFileToChunks(file, newKnowledgeSource._id.toString()).catch((error) => {
+            console.error('Error processing file asynchronously:', error)
+        })
+
+        return newKnowledgeSource
+    }
+
+    /**
+     * Xử lý file upload cho knowledge source đã có sẵn
+     * - Upload file lên MinIO
+     * - Xử lý file để tạo chunks
+     * - Lưu chunks vào knowledge source đã có
+     */
+    public async processUploadedFileInAvailableKnowledge(
+        userId: string,
+        file: Express.Multer.File,
+        klid: string
+    ): Promise<KnowledgeSource> {
+        // 1. Kiểm tra knowledge source tồn tại
+        const existingKnowledgeSource = await this.knowledgeSourceProvider.getKnowledgeSourceById(klid)
+        if (!existingKnowledgeSource) {
+            throw new BadRequestException('Knowledge source không tồn tại')
+        }
+
+        // 2. Upload file lên MinIO và cập nhật source_location
+        const uploadedFiles = await this.uploadManyFilesProvider.uploadManyFiles(
+            userId,
+            [file],
+            UploadFileTypes.AI_KNOWLEDGE
+        )
+        await this.knowledgeSourceProvider.updateKnowledgeSourceLocation(klid, uploadedFiles[0].fileUrl)
+
+        // 3. Xử lý file async (không chờ đợi)
+        this.processFileToChunks(file, klid).catch((error) => {
+            console.error('Error processing file asynchronously:', error)
+        })
+
+        return existingKnowledgeSource
+    }
 
     public async searchSimilarDocuments(vectorSearch: number[], options: SearchOptions): Promise<KnowledgeChunk[]> {
         // Search similar documents in the database
@@ -63,44 +384,47 @@ export class RetrievalProvider {
 
         try {
             console.log(url)
-            const content = await scrapePage(url)
+            const content = await this.scrapePage(url)
             console.log('Scraped content length:', content)
             const chunks = await splitter.splitText(content)
-            for await (const chunk of chunks) {
+
+            // Batch processing: Thu thập tất cả embeddings trước
+            const knowledgeChunks: CreateKnowledgeChunkDto[] = []
+            for (const chunk of chunks) {
                 // Create embedding using Google
                 const vector = await this.getEmbeddingProvider.getEmbedding(chunk)
                 console.log('Created embedding for chunk', vector.length)
-                //console.log('Embedding dimension:', vector.length)
-                const res = await this.knowledgeChunksProvider.createKnowledgeChunks([
-                    {
-                        source_id: sourceId,
-                        text: chunk,
-                        plot_embedding_gemini_large: vector
-                    }
-                ])
-                console.log('Stored chunk result:', chunk)
-                console.log('result chunk saving', res)
+                knowledgeChunks.push({
+                    source_id: sourceId,
+                    text: chunk,
+                    plot_embedding_gemini_large: vector
+                })
             }
+
+            // Lưu tất cả chunks cùng lúc
+            const res = await this.knowledgeChunksProvider.createKnowledgeChunks(knowledgeChunks)
+            console.log(`Successfully stored ${knowledgeChunks.length} chunks`)
+            console.log('Batch insert result:', res)
         } catch (error) {
             throw new BadRequestException(error.message)
         }
     }
-}
-const scrapePage = async (url: string) => {
-    const loader = new PuppeteerWebBaseLoader(url, {
-        launchOptions: {
-            headless: true
-        },
-        gotoOptions: {
-            waitUntil: 'domcontentloaded'
-        },
-        evaluate: async (page, browser) => {
-            const result = await page.evaluate(() => {
-                return document.body.innerText
-            })
-            await browser.close()
-            return result
-        }
-    })
-    return (await loader.scrape())?.replace(/<[^>]*>?/gm, '')
+    scrapePage = async (url: string) => {
+        const loader = new PuppeteerWebBaseLoader(url, {
+            launchOptions: {
+                headless: true
+            },
+            gotoOptions: {
+                waitUntil: 'domcontentloaded'
+            },
+            evaluate: async (page, browser) => {
+                const result = await page.evaluate(() => {
+                    return document.body.innerText
+                })
+                await browser.close()
+                return result
+            }
+        })
+        return (await loader.scrape())?.replace(/<[^>]*>?/gm, '')
+    }
 }

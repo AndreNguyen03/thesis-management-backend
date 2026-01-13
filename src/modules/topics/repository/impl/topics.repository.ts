@@ -1218,7 +1218,21 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                                     $expr: {
                                         $and: [
                                             {
-                                                $in: ['$$topicId', '$topicSnaps._id']
+                                                $in: [
+                                                    '$$topicId',
+                                                    {
+                                                        $ifNull: [
+                                                            {
+                                                                $map: {
+                                                                    input: { $ifNull: ['$topicSnaps', []] },
+                                                                    as: 'snap',
+                                                                    in: '$$snap._id'
+                                                                }
+                                                            },
+                                                            []
+                                                        ]
+                                                    }
+                                                ]
                                             }
                                         ]
                                     }
@@ -3666,46 +3680,178 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             .findByIdAndUpdate(topicId, { createBy: userId, $pull: { requirementIds: requirementId } }, { new: true })
             .lean()
     }
-    async storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<GetUploadedFileDto[]> {
+    async storedFilesIn4ToTopic(groupId: string, fileIds: string[]): Promise<GetUploadedFileDto[]> {
         try {
-            const res = await this.topicRepository
+            const res = await this.topicRepository.aggregate([
+                {
+                    $lookup: {
+                        from: 'groups',
+                        let: { topicId: '$_id', groupId: new mongoose.Types.ObjectId(groupId) },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$groupId'] },
+                                            { $eq: ['$topicId', '$$topicId'] },
+                                            { $eq: ['$deleted_at', null] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: 'groupInfo'
+                    }
+                },
+                {
+                    $unwind: { path: '$groupInfo' }
+                },
+                {
+                    $project: {
+                        _id: 1
+                    }
+                }
+            ])
+            if (!res || res.length === 0) {
+                throw new BadRequestException('Nhóm đề tài không tồn tại')
+            }
+            await this.topicRepository
                 .findByIdAndUpdate(
-                    topicId,
+                    res[0]._id.toString(),
                     {
                         $push: { fileIds: { $each: fileIds } }
                     },
                     { new: true }
                 )
                 .lean()
-            return await this.getDocumentsOfTopic(topicId)
+            return await this.getDocumentsOfTopic(groupId)
         } catch (error) {
             throw new BadRequestException('Lỗi tải file lên đề tài')
         }
     }
-    async deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean> {
+    async deleteManyFilesFromTopic(groupId: string, fileIds?: string[]): Promise<boolean> {
         try {
-            const res = await this.topicRepository.updateMany(
-                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+            const res = await this.topicRepository.aggregate([
+                {
+                    $lookup: {
+                        from: 'groups',
+                        let: { topicId: '$_id', groupId: new mongoose.Types.ObjectId(groupId) },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$groupId'] },
+                                            { $eq: ['$topicId', '$$topicId'] },
+                                            { $eq: ['$deleted_at', null] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: 'groupInfo'
+                    }
+                },
+                {
+                    $unwind: { path: '$groupInfo' }
+                }
+            ])
+            if (!res || res.length === 0) {
+                throw new BadRequestException('Nhóm đề tài không tồn tại')
+            }
+            const result = await this.topicRepository.updateMany(
+                { _id: new mongoose.Types.ObjectId(res[0]._id), deleted_at: null },
                 fileIds
                     ? {
                           $pull: { fileIds: { $in: fileIds } }
                       }
                     : { $set: { fileIds: [] } }
             )
-            return res.modifiedCount > 0
+            return result.modifiedCount > 0
         } catch (error) {
             throw new BadRequestException('Lỗi xóa file khỏi đề tài')
         }
     }
-    async deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean> {
+    async getFileIdsByGroupId(groupId: string): Promise<string[]> {
+        const res = await this.topicRepository.aggregate([
+            {
+                $lookup: {
+                    from: 'groups',
+                    let: { topicId: '$_id', groupId: new mongoose.Types.ObjectId(groupId) },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$_id', '$$groupId'] },
+                                        { $eq: ['$topicId', '$$topicId'] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'groupInfo'
+                }
+            },
+            {
+                $unwind: { path: '$groupInfo' }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    fileIds: 1
+                }
+            }
+        ])
+        if (!res || res.length === 0) {
+            throw new BadRequestException('Nhóm đề tài không tồn tại')
+        }
+        return res[0].fileIds
+    }
+
+    async deleteFileFromTopic(groupId: string, fileId: string): Promise<boolean> {
         try {
-            const res = await this.topicRepository.updateMany(
-                { _id: new mongoose.Types.ObjectId(topicId), deleted_at: null },
+            const res = await this.topicRepository.aggregate([
+                {
+                    $lookup: {
+                        from: 'groups',
+                        let: { topicId: '$_id', groupId: new mongoose.Types.ObjectId(groupId) },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$groupId'] },
+                                            { $eq: ['$topicId', '$$topicId'] },
+                                            { $eq: ['$deleted_at', null] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: 'groupInfo'
+                    }
+                },
+                {
+                    $unwind: { path: '$groupInfo' }
+                },
+                {
+                    $project: {
+                        _id: 1
+                    }
+                }
+            ])
+            if (!res || res.length === 0) {
+                throw new BadRequestException('Nhóm đề tài không tồn tại')
+            }
+            const deleteResult = await this.topicRepository.updateMany(
+                { _id: new mongoose.Types.ObjectId(res[0]._id), deleted_at: null },
                 {
                     $pull: { fileIds: fileId }
                 }
             )
-            return res.modifiedCount > 0
+            return deleteResult.modifiedCount > 0
         } catch (error) {
             throw new BadRequestException('Lỗi xóa file khỏi đề tài')
         }
@@ -3984,8 +4130,31 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         const res = await this.topicRepository.aggregate(pipelineSub)
         return res.map((item) => item._id).filter((year) => year != null)
     }
-    async getDocumentsOfTopic(topicId: string): Promise<GetUploadedFileDto[]> {
+    async getDocumentsOfTopic(groupId: string): Promise<GetUploadedFileDto[]> {
         const res = await this.topicRepository.aggregate([
+            {
+                $lookup: {
+                    from: 'groups',
+                    let: { topicId: '$_id', groupId: new mongoose.Types.ObjectId(groupId) },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$_id', '$$groupId'] },
+                                        { $eq: ['$topicId', '$$topicId'] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'groupInfo'
+                }
+            },
+            {
+                $unwind: { path: '$groupInfo' }
+            },
             {
                 $lookup: {
                     from: 'files',
@@ -4072,7 +4241,6 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             },
             {
                 $match: {
-                    _id: new mongoose.Types.ObjectId(topicId),
                     deleted_at: null
                 }
             }
@@ -4102,7 +4270,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 titleVN: 1,
                 description: 1,
                 lecturers: 1,
-                students: '$studentsRegistered'
+                students: '$studentsRegistered',
+                majorName: '$major.name'
             }
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)

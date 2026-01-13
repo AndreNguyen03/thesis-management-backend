@@ -455,7 +455,7 @@ export class StudentRegTopicRepository
             console.log('Student already has an active registration for this topic.')
             throw new StudentAlreadyRegisteredException()
         }
-        
+
         // kiểm tra có đăng ký đề tài khóa luận khác không
         //riêng nghiên cứu khoa học thì không kiểm tra vì sinh viên có thể đăng ký được nhiều đề tài nghiên cứu khoa học
 
@@ -562,17 +562,12 @@ export class StudentRegTopicRepository
     async getRegisteredTopicsByUser(studentId: string): Promise<GetRegistrationDto[]> {
         const registrations = await this.studentRegTopicModel
             .find({
-                studentId: new mongoose.Types.ObjectId(studentId),
+                userId: new mongoose.Types.ObjectId(studentId),
                 deleted_at: null
             })
             .lean()
-        const newRegistrations = registrations.map((registration) => {
-            return {
-                ...registration,
-                topic: registration.topicId
-            }
-        })
-        return plainToInstance(GetRegistrationDto, newRegistrations, {
+
+        return plainToInstance(GetRegistrationDto, registrations, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true
         })
@@ -797,7 +792,9 @@ export class StudentRegTopicRepository
                                         $match: {
                                             $expr: {
                                                 $and: [
-                                                    { $eq: ['$_id', new mongoose.Types.ObjectId(registration.topicId)] },
+                                                    {
+                                                        $eq: ['$_id', new mongoose.Types.ObjectId(registration.topicId)]
+                                                    },
                                                     { $eq: ['$deleted_at', null] }
                                                 ]
                                             }

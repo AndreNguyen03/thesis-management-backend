@@ -13,9 +13,19 @@ export class CreateKnowledgeChunksProvider {
         //Create indexer when create knowledge chunks
         //Check if indexer exists and create if not exists
         try {
-            return await this.knowledgeChunkRepository.upsertKnowledgeChunks(createKnowledgeChunkDtos)
+            return await this.knowledgeChunkRepository.upsertSingleKnowledgeChunk(createKnowledgeChunkDtos)
         } catch (error) {
             console.error('Error creating knowledge chunks:', error)
+            throw error
+        }
+    }
+    public async insertKnowledgeChunks(createKnowledgeChunkDtos: CreateKnowledgeChunkDto[]): Promise<boolean> {
+        //Create indexer when create knowledge chunks
+        //Check if indexer exists and create if not exists
+        try {
+            return await this.knowledgeChunkRepository.insertManyKnowledgeChunks(createKnowledgeChunkDtos)
+        } catch (error) {
+            console.error('Error inserting knowledge chunks:', error)
             throw error
         }
     }

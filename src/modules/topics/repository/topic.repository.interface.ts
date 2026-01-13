@@ -92,9 +92,9 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     addRequirementToTopicQuick(topicId: string, fieldId: string, userId: string): Promise<Topic | null>
     removeRequirementFromTopicQuick(topicId: string, requirementId: string, userId: string): Promise<Topic | null>
     //file
-    storedFilesIn4ToTopic(topicId: string, fileIds: string[]): Promise<GetUploadedFileDto[]>
-    deleteManyFilesFromTopic(topicId: string, fileIds?: string[]): Promise<boolean>
-    deleteFileFromTopic(topicId: string, fileId: string): Promise<boolean>
+    storedFilesIn4ToTopic(groupId: string, fileIds: string[]): Promise<GetUploadedFileDto[]>
+    deleteManyFilesFromTopic(groupId: string, fileIds?: string[]): Promise<boolean>
+    deleteFileFromTopic(groupId: string, fileId: string): Promise<boolean>
     findDraftTopicsByLecturerId(lecturerId: string, query: PaginationDraftTopicsQueryParams): Promise<Paginated<Topic>>
     findSubmittedTopicsByLecturerId(lecturerId: string, query: SubmittedTopicParamsDto): Promise<Paginated<Topic>>
     getSubmittedTopicsNumber(lecturerId: string): Promise<number>
@@ -102,8 +102,9 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     copyToDraft(topicId: string, actorId: string): Promise<string>
     getMajorsOfTopicInLibrary()
     getYearsOfTopicInLibrary(): Promise<string[]>
+    getFileIdsByGroupId(groupId: string): Promise<string[]>
     //: Promise<GetMiniMiniMajorDto[]>
-    getDocumentsOfTopic(topicId: string): Promise<GetUploadedFileDto[]>
+    getDocumentsOfTopic(groupId: string): Promise<GetUploadedFileDto[]>
     findTopicsByStatusInPeriod(status: string, periodId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
     //get TOpic
     getOverDueTopics(periodId: string): Promise<OverdueTopicInfo[]>

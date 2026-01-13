@@ -93,7 +93,7 @@ export class Milestone extends BaseEntity {
     @Prop({ type: [Submission], default: [] })
     submissionHistory: Submission[]
 
-    @Prop({ default: [], type: mongoose.Schema.Types.ObjectId, ref: Task.name })
+    @Prop({ default: [], type: [mongoose.Schema.Types.ObjectId], ref: Task.name })
     taskIds: string[]
 
     @Prop({ default: null, type: mongoose.Schema.Types.ObjectId, ref: User.name })

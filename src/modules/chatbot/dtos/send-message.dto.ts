@@ -1,7 +1,10 @@
 import { IsString, IsNotEmpty, IsOptional, ValidateNested, IsEnum, IsNumber, IsArray } from 'class-validator'
-import { Type } from 'class-transformer'
+import { Expose, Type } from 'class-transformer'
 import { StandardStructureTopicDto } from '../../topics/dtos'
 import { ChatbotUserRole } from '../enums/chatbot-user-role.enum'
+import { LecturerKnowledgeDto, PublicationDto } from './get-enough-knowledge-result.dto'
+import { GetFacultyDto } from '../../faculties/dtos/faculty.dtos'
+import { Optional } from '@nestjs/common'
 
 export class TopicSnapshot {
     @IsNotEmpty()
@@ -16,19 +19,19 @@ export class TopicSnapshot {
     @IsNotEmpty()
     @IsString()
     description: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     fields: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     requirements: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     major: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     lecturers: string
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
     maxStudents: number
     @IsNotEmpty()
@@ -39,6 +42,44 @@ export class TopicSnapshot {
     similarityScore: number
 }
 
+export class LecturerSnapshot {
+    @Expose()
+    @IsNotEmpty()
+    @IsString()
+    _id: string
+    @Expose()
+    @IsNotEmpty()
+    @IsString()
+    fullName: string
+    @IsOptional()
+    @IsString()
+    @Expose()
+    email: string
+    @IsOptional()
+    @Expose()
+    bio?: string
+    @IsNotEmpty()
+    @IsString()
+    @Expose()
+    title: string
+    @IsNotEmpty()
+    @Type(() => GetFacultyDto)
+    @Expose()
+    faculty: GetFacultyDto
+    @IsOptional()
+    @Expose()
+    areaInterest: string[]
+    @Expose()
+    @IsOptional()
+    researchInterests: string[]
+    @Expose()
+    @IsOptional()
+    publications: PublicationDto[]
+    @IsNotEmpty()
+    @Expose()
+    @IsNumber()
+    similarityScore: number
+}
 export class SendMessageDto {
     @IsNotEmpty()
     @IsString()
@@ -54,4 +95,10 @@ export class SendMessageDto {
     @ValidateNested({ each: true })
     @Type(() => TopicSnapshot)
     topics?: TopicSnapshot[]
+
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => LecturerSnapshot)
+    lecturers?: LecturerSnapshot[]
 }

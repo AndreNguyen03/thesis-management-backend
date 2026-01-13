@@ -6,6 +6,7 @@ import { DefenseCouncil } from '../schemas/defense-council.schema'
 import {
     CreateDefenseCouncilDto,
     AddTopicToCouncilDto,
+    AddMultipleTopicsToCouncilDto,
     UpdateTopicMembersDto,
     SubmitScoreDto,
     UpdateDefenseCouncilDto,
@@ -156,17 +157,18 @@ export class DefenseCouncilRepository {
             throw new BadRequestException('Đề tài đã được thêm vào hội đồng này')
         }
 
-        // Validate bộ ba: phải có 1 chủ tịch, 1 thư ký, 1 ủy viên
+        // Validate: phải có 1 chủ tịch, 1 thư ký, 1 ủy viên, 1 phản biện
         const hasChairperson = dto.members.some((m) => m.role === 'chairperson')
         const hasSecretary = dto.members.some((m) => m.role === 'secretary')
         const hasMember = dto.members.some((m) => m.role === 'member')
+        const hasReviewer = dto.members.some((m) => m.role === 'reviewer')
 
-        if (!hasChairperson || !hasSecretary || !hasMember) {
-            throw new BadRequestException('Bộ ba phải có 1 chủ tịch, 1 thư ký, 1 ủy viên')
+        if (!hasChairperson || !hasSecretary || !hasMember || !hasReviewer) {
+            throw new BadRequestException('Phải có đủ 1 chủ tịch, 1 thư ký, 1 ủy viên và 1 phản biện')
         }
 
-        if (dto.members.length !== 3) {
-            throw new BadRequestException('Bộ ba phải có đúng 3 giảng viên')
+        if (dto.members.length !== 4) {
+            throw new BadRequestException('Mỗi đề tài phải có đúng 4 giảng viên (1 phản biện + 3 hội đồng)')
         }
 
         const topicAssignment = {
@@ -181,6 +183,60 @@ export class DefenseCouncilRepository {
         }
 
         councilDoc.topics.push(topicAssignment as any)
+        return await councilDoc.save()
+    }
+
+    // Thêm nhiều đề tài vào hội đồng cùng lúc
+    async addMultipleTopicsToCouncil(councilId: string, dto: AddMultipleTopicsToCouncilDto): Promise<DefenseCouncil> {
+        const councilDoc = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!councilDoc) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        // Validate từng đề tài
+        for (const topicDto of dto.topics) {
+            // Kiểm tra đề tài đã tồn tại chưa
+            const exists = councilDoc.topics.some((t) => t.topicId.toString() === topicDto.topicId)
+            if (exists) {
+                throw new BadRequestException(`Đề tài ${topicDto.titleVN} đã được thêm vào hội đồng này`)
+            }
+
+            // Validate: phải có 1 chủ tịch, 1 thư ký, 1 ủy viên, 1 phản biện
+            const hasChairperson = topicDto.members.some((m) => m.role === 'chairperson')
+            const hasSecretary = topicDto.members.some((m) => m.role === 'secretary')
+            const hasMember = topicDto.members.some((m) => m.role === 'member')
+            const hasReviewer = topicDto.members.some((m) => m.role === 'reviewer')
+
+            if (!hasChairperson || !hasSecretary || !hasMember || !hasReviewer) {
+                throw new BadRequestException(
+                    `Đề tài ${topicDto.titleVN} phải có đủ 1 chủ tịch, 1 thư ký, 1 ủy viên và 1 phản biện`
+                )
+            }
+
+            if (topicDto.members.length !== 4) {
+                throw new BadRequestException(
+                    `Đề tài ${topicDto.titleVN} phải có đúng 4 giảng viên (1 phản biện + 3 hội đồng)`
+                )
+            }
+        }
+
+        // Thêm tất cả đề tài
+        const topicAssignments = dto.topics.map((topicDto) => ({
+            topicId: topicDto.topicId,
+            titleVN: topicDto.titleVN,
+            titleEng: topicDto.titleEng || '',
+            studentNames: topicDto.studentNames || [],
+            members: topicDto.members,
+            defenseOrder: topicDto.defenseOrder || councilDoc.topics.length + 1,
+            scores: [],
+            finalScore: undefined
+        }))
+
+        councilDoc.topics.push(...(topicAssignments as any))
         return await councilDoc.save()
     }
 

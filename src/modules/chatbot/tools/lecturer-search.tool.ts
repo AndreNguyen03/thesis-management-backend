@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
-import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider copy'
+import { SearchSimilarDocumentsProvider } from '../../knowledge-source/application/search-similar-documents.provider'
 import { GetEmbeddingProvider } from '../providers/get-embedding.provider'
 import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { plainToInstance } from 'class-transformer'
@@ -12,6 +12,7 @@ import { KnowledgeSource } from '../../knowledge-source/schemas/knowledge-source
 import { Lecturer } from '../../../users/schemas/lecturer.schema'
 import { User } from '../../../users/schemas/users.schema'
 import mongoose from 'mongoose'
+import { LecturerKnowledgeDto } from '../dtos/get-enough-knowledge-result.dto'
 
 @Injectable()
 export class LecturerSearchTool {
@@ -27,7 +28,7 @@ export class LecturerSearchTool {
         return new DynamicStructuredTool({
             name: 'search_lecturers',
             description: `
-Công cụ tìm kiếm GIẢNG VIÊN hướng dẫn khóa luận.
+Công cụ tìm kiếm GIẢNG VIÊN hướng dẫn khóa luận hoặc nghiên cứu đề tài.
 
 SỬ DỤNG KHI:
 - Người dùng hỏi về giảng viên theo chuyên môn, lĩnh vực nghiên cứu
@@ -60,7 +61,6 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                         limit: limit * 2, // Lấy nhiều chunks để có nhiều lecturer
                         scoreThreshold: 0.7
                     })
-
                     if (res.length === 0) {
                         return 'Không tìm thấy giảng viên phù hợp với yêu cầu.'
                     }
@@ -75,47 +75,88 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                     const knowledgeSources = await this.knowledgeSourceModel
                         .find({ _id: { $in: sourceIds } })
                         .select('_id source_location')
-                   /// console.log('knowledgeSources', knowledgeSources)
+                    /// console.log('knowledgeSources', knowledgeSources)
                     const userIds = knowledgeSources.map((ks) => new mongoose.Types.ObjectId(ks.source_location))
 
                     // B4: Query lecturer bằng userId và populate thông tin user + faculty
-                    const lecturers = await this.lecturerModel
-                        .find({ userId: { $in: userIds } })
-                        .populate('userId', 'fullName email bio avatarUrl')
-                        .populate('facultyId', 'name')
-                        .limit(limit)
-                        .lean()
-
+                    let lecturers = await this.lecturerModel.aggregate([
+                        {
+                            $match: {
+                                userId: { $in: userIds }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'userId',
+                                foreignField: '_id',
+                                as: 'userInfo'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$userInfo',
+                                preserveNullAndEmptyArrays: true
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'faculties',
+                                localField: 'facultyId',
+                                foreignField: '_id',
+                                as: 'facultyInfo'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$facultyInfo',
+                                preserveNullAndEmptyArrays: true
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: '$userInfo._id',
+                                fullName: '$userInfo.fullName',
+                                email: '$userInfo.email',
+                                bio: '$userInfo.bio',
+                                title: 1,
+                                faculty: {
+                                    name: '$facultyInfo.name',
+                                    email: '$facultyInfo.email',
+                                    urlDirection: '$facultyInfo.urlDirection'
+                                },
+                                areaInterest: 1,
+                                researchInterests: 1,
+                                publications: 1
+                            }
+                        }
+                    ])
                     if (lecturers.length === 0) {
                         return 'Không tìm thấy thông tin giảng viên.'
                     }
+                    lecturers = plainToInstance(LecturerKnowledgeDto, lecturers, {
+                        excludeExtraneousValues: true,
+                        enableImplicitConversion: true
+                    })
                     // B5: Format kết quả cho LLM
-                    const formattedLecturers = lecturers.map((lecturer, idx) => {
-                        const user = lecturer.userId as any
-                        const faculty = lecturer.facultyId as any
-
+                    const formattedLecturers = lecturers.slice(0, limit).map((lecturer, idx) => {
                         // Tìm chunk tương ứng để lấy score
                         const matchingChunk = chunks.find((chunk) => {
                             const ks = knowledgeSources.find((ks) => ks._id.toString() === chunk.source_id)
-                            return ks?.source_location.toString() === (lecturer.userId as any)?._id?.toString()
+                            return ks?.source_location.toString() === (lecturer as any)._id?.toString()
                         })
 
                         return {
                             index: idx + 1,
                             _id: lecturer._id,
-                            fullName: user?.fullName || 'N/A',
-                            email: user?.email || 'N/A',
-                            title: lecturer.title || 'N/A', // Học hàm (Master, PhD, Professor)
-                            faculty: faculty?.name || 'N/A',
-                            bio: user?.bio || 'Chưa cập nhật',
-                            researchInterests: lecturer.researchInterests?.join(', ') || 'Chưa cập nhật',
-                            areaInterest: lecturer.areaInterest?.join(', ') || 'Chưa cập nhật',
-                            publications: lecturer.publications?.length || 0,
-                            topPublications:
-                                lecturer.publications
-                                    ?.slice(0, 3)
-                                    .map((p) => `${p.title} (${p.year})`)
-                                    .join(' | ') || 'Chưa có',
+                            fullName: lecturer.fullName,
+                            email: lecturer.email,
+                            bio: lecturer.bio,
+                            title: lecturer.title,
+                            faculty: lecturer.faculty,
+                            areaInterest: lecturer.areaInterest,
+                            researchInterests: lecturer.researchInterests,
+                            publications: lecturer.publications,
                             similarityScore: matchingChunk?.score || 0
                         }
                     })

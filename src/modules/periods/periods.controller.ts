@@ -163,9 +163,10 @@ export class PeriodsController {
     async configCompletionPhase(
         @Req() req: { user: ActiveUserData },
         @Param('periodId') periodId: string,
+        @Query('force') force: boolean,
         @Body() configCompletionPhaseDto: ConfigCompletionPhaseDto
     ) {
-        await this.periodsService.configPhaseCompletion(req.user.sub, periodId, configCompletionPhaseDto)
+        await this.periodsService.configPhaseCompletion(req.user.sub, periodId, configCompletionPhaseDto, force)
         return { message: 'Tạo giai đoạn "hoàn thành" thành công' }
     }
 

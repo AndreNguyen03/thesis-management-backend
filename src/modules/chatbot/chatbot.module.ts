@@ -18,7 +18,6 @@ import { KnowledgeProcessingProcessor } from './processors/knowledge-processing.
 import { PaginationAnModule } from '../../common/pagination-an/pagination.module'
 import { TopicModule } from '../topics/topic.module'
 import { AutoAgentService } from './application/auto-agent.service'
-import { TopicSearchTool } from './tools/topic-search.tool'
 import { DocumentSearchTool } from './tools/document-search.tool'
 import { LecturerSearchTool } from './tools/lecturer-search.tool'
 import { KnowledgeSource, KnowledgeSourceSchema } from '../knowledge-source/schemas/knowledge-source.schema'
@@ -32,6 +31,11 @@ import { User, UserSchema } from '../../users/schemas/users.schema'
 import { FieldsModule } from '../fields/fields.module'
 import { RequirementsModule } from '../requirements/requirements.module'
 import { TopicGenerationService } from './application/topic-generation.service'
+import { TopicRegisteringSearchTool } from './tools/topic-registering-search.tool'
+import { TopicInLibrarySearchTool } from './tools/topic-in-library-search.tool'
+import { PeriodsModule } from '../periods/periods.module'
+import { UploadFilesModule } from '../upload-files/upload-files.module'
+import { ChatbotGateway } from './gateways/chatbot.gateway'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
@@ -46,12 +50,14 @@ import { TopicGenerationService } from './application/topic-generation.service'
         },
         KnowledgeProcessingProcessor,
         AutoAgentService,
-        TopicSearchTool,
+        TopicRegisteringSearchTool,
+        TopicInLibrarySearchTool,
         DocumentSearchTool,
         LecturerSearchTool,
         ChatbotConversationService,
         ChatbotConversationRepository,
-        TopicGenerationService
+        TopicGenerationService,
+        ChatbotGateway
     ],
     imports: [
         ConfigModule.forFeature(googleAIConfig),
@@ -62,16 +68,17 @@ import { TopicGenerationService } from './application/topic-generation.service'
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: ChatbotConversation.name, schema: ChatbotConversationSchema },
             { name: Lecturer.name, schema: LecturerSchema },
-            { name: User.name, schema: UserSchema },
-
+            { name: User.name, schema: UserSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
         forwardRef(() => FieldsModule),
         forwardRef(() => RequirementsModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),
         PaginationAnModule,
-        TopicModule
+        forwardRef(() => TopicModule),
+        forwardRef(() => PeriodsModule),
+        forwardRef(() => UploadFilesModule)
     ],
-    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider, GenerationProvider]
+    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider, GenerationProvider, ChatbotGateway]
 })
 export class ChatBotModule {}
