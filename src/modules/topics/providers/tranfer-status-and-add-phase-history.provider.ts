@@ -30,6 +30,7 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             deleted_at: null
         })
 
+
         if (!existingTopic) {
             throw new TopicNotFoundException()
         }

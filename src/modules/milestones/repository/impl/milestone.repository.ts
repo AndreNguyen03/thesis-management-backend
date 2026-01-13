@@ -138,12 +138,13 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             {
                 $lookup: {
                     from: 'tasks',
-                    let: { taskIds: '$taskIds' },
+                    let: { milestonesId: '$_id' },
                     pipeline: [
                         {
                             $match: {
-                                $expr: { $in: ['$_id', { $ifNull: ['$$taskIds', []] }] },
-                                deleted_at: null
+                                $expr: {
+                                    $and: [{ $eq: ['$milestoneId', '$$milestonesId'] }, { $eq: ['$deleted_at', null] }]
+                                }
                             }
                         }
                     ],

@@ -193,6 +193,73 @@ export class NotificationPublisherService {
             }
         }
     }
+
+    async sendNeedAdjustmentNotification(
+        comment: string,
+        mainSupervisor: User | null,
+        actorId: string,
+        coSupervisors: User[] | null,
+        topicInfo: GetMiniTopicInfo,
+        facultyId: string
+    ) {
+        //Laasy faculty info
+        const facultyInfo = await this.facultyService.getFacultyById(facultyId)
+        const message = `Đề tài "${topicInfo.titleVN} (${topicInfo.titleEng})" yêu cầu điều chỉnh. `
+
+        if (mainSupervisor) {
+            await this.createAndSendNoti(
+                mainSupervisor._id.toString(),
+                NotificationTitleEnum.NEED_ADJUSTMENT_TOPIC,
+                message,
+                NotificationType.SUCCESS,
+                actorId,
+                {
+                    topicId: topicInfo._id.toString(),
+                    titleVN: topicInfo.titleVN,
+                    titleEng: topicInfo.titleEng,
+                    actionUrl: `/detail-topic/${topicInfo._id}`
+                }
+            )
+
+            await this.mailService.sendNeedAdjustmentNotification(
+                comment,
+                mainSupervisor,
+                topicInfo,
+                plainToInstance(GetFacultyDto, facultyInfo, {
+                    excludeExtraneousValues: true,
+                    enableImplicitConversion: true
+                })
+            )
+        }
+
+        const messageCoSupervisor = `Bạn đã được thêm làm Giảng viên đồng hướng dẫn cho đề tài ${topicInfo.titleVN} (${topicInfo.titleEng}). Hãy phối hợp cùng GVHD chính để hỗ trợ sinh viên tốt nhất nhé!`
+        if (coSupervisors) {
+            for (const coSupervisor of coSupervisors) {
+                await this.createAndSendNoti(
+                    coSupervisor._id.toString(),
+                    NotificationTitleEnum.ASSIGNED_CO_SUPERVISOR,
+                    messageCoSupervisor,
+                    NotificationType.SYSTEM,
+                    undefined,
+                    {
+                        topicId: topicInfo._id,
+                        titleVN: topicInfo.titleVN,
+                        titleEng: topicInfo.titleEng,
+                        actionUrl: `/detail-topic/${topicInfo._id}`
+                    }
+                )
+                await this.mailService.sendAssignedCoSupervisorNotification(
+                    coSupervisor,
+                    topicInfo,
+                    plainToInstance(GetFacultyDto, facultyInfo, {
+                        excludeExtraneousValues: true,
+                        enableImplicitConversion: true
+                    })
+                )
+            }
+        }
+    }
+
     //Khi đề tài đã được BCN từ chối
     async sendRejectedTopicNotification(recipientId: string, actorId: string, topicInfo: GetMiniTopicInfo) {
         const message = `Đề tài "${topicInfo.titleVN} (${topicInfo.titleEng})" của bạn đã bị Ban chủ nhiệm khoa từ chối.`
@@ -224,10 +291,10 @@ export class NotificationPublisherService {
         if (body.phaseName === PeriodPhaseName.SUBMIT_TOPIC) {
             list = (await this.periodsService.closePhase(body.periodId, body.phaseName)) as Phase1Response
             // duyệt qua tất cả giảng viên để gửi thông báo
-            console.log("rrrr", list)
+            console.log('rrrr', list)
             const { missingTopics: lecturers } = list
             for (const lecturer of lecturers) {
-                console.log("sdsad",lecturer.userId)
+                console.log('sdsad', lecturer.userId)
                 const newNotification: CreateNotification = {
                     recipientId: lecturer.userId,
                     senderId,

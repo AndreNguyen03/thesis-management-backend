@@ -211,6 +211,18 @@ export class MailService {
             })
         }
     }
+
+    async sendNeedAdjustmentNotification(comment:string, user: User, topicInfo: GetMiniTopicInfo, faculty: GetFacultyDto) {
+        if (user && user.email) {
+            await this.mailQueue.add('send-topic-need-adjustment', {
+                comment,
+                user,
+                topicInfo,
+                faculty
+            })
+        }
+    }
+
     async sendAssignedCoSupervisorNotification(
         coSupervisorUser: User,
         topicInfo: GetMiniTopicInfo,
@@ -326,7 +338,5 @@ export class MailService {
         }
     }
 
-    async send() {
-
-    }
+    async send() {}
 }

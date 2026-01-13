@@ -7,5 +7,6 @@ export enum NotificationTitleEnum {
     OPEN_REGISTRATION_PERIOD = 'Mở đợt đăng ký',
     OPEN_GENERAL_PERIOD = 'Học kỳ mới bắt đầu',
     APPROVED_TOPIC = 'Ban chủ nhiệm đã chấp thuận đề tài',
-    REJECTED_TOPIC = 'Ban chủ nhiệm đã từ chối đề tài'
+    REJECTED_TOPIC = 'Ban chủ nhiệm đã từ chối đề tài',
+    NEED_ADJUSTMENT_TOPIC = 'Đề tài yêu cầu điều chỉnh'
 }

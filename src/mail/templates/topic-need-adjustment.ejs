@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Yêu cầu chỉnh sửa đề tài</title>
+        <style>
+            /* Reset & Base */
+            body {
+                font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                background-color: #f9f9f9;
+                margin: 0;
+                padding: 0;
+                color: #333;
+            }
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+            }
+
+            /* Header đơn giản: Tên khoa + Trạng thái */
+            .header {
+                padding: 20px;
+                border-bottom: 1px solid #eee;
+            }
+            .faculty-label {
+                font-size: 12px;
+                color: #888;
+                text-transform: uppercase;
+                font-weight: bold;
+                letter-spacing: 0.5px;
+            }
+            .status-title {
+                margin: 5px 0 0 0;
+                font-size: 20px;
+                color: #d97706; /* orange for attention */
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .request-box {
+                background-color: #fff7ed;
+                padding: 12px;
+                border-radius: 4px;
+                margin-top: 10px;
+                border-left: 3px solid #f59e0b;
+                color: #333;
+                font-size: 14px;
+            }
+
+            .content {
+                padding: 20px;
+                line-height: 1.5;
+                font-size: 15px;
+            }
+
+            /* Box hiển thị đề tài tối giản */
+            .topic-box {
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 4px;
+                margin: 15px 0;
+                border-left: 3px solid #28a745; /* Điểm nhấn xanh lá nhẹ */
+            }
+            .topic-vn {
+                font-weight: bold;
+                color: #000;
+            }
+            .topic-en {
+                color: #666;
+                font-size: 13px;
+                margin-top: 4px;
+                font-style: italic;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #28a745;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 4px;
+                font-weight: 500;
+                font-size: 14px;
+            }
+
+            .footer {
+                padding: 15px 20px;
+                background-color: #f5f5f5;
+                font-size: 12px;
+                color: #999;
+                border-top: 1px solid #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+
+                <div class="header">
+                    <div class="faculty-label"><%= facultyName.toUpperCase() %></div>
+                    <h1 class="status-title">Đề tài của bạn được Ban Chủ nhiệm Khoa yêu cầu chỉnh sửa</h1>
+                </div>
+
+                <div class="content">
+                    <p>Chào Thầy/Cô <strong><%= name %></strong>,</p>
+
+                    <p>Hệ thống xin thông báo: đề tài của Thầy/Cô được Ban Chủ nhiệm Khoa yêu cầu chỉnh sửa. Vui lòng xem chi tiết yêu cầu bên dưới và cập nhật đề tài theo hướng dẫn.</p>
+
+                    <div class="topic-box">
+                        <div class="topic-vn"><%= titleVN %></div>
+                        <div class="topic-en"><%= titleEng %></div>
+                    </div>
+
+                    <% if (typeof comment !== 'undefined' && comment) { %>
+                        <div class="request-box">
+                            <strong>Yêu cầu chỉnh sửa:</strong>
+                            <div style="margin-top:8px; white-space:pre-wrap;"><%= comment %></div>
+                        </div>
+                    <% } %>
+
+                    <div style="margin-top: 25px">
+                        <a href="<%= link %>" class="btn">Kiểm tra trên hệ thống</a>
+                    </div>
+                </div>
+
+            <div class="footer">Email tự động từ Hệ thống Quản lý Khóa luận - UIT.</div>
+        </div>
+    </body>
+</html>

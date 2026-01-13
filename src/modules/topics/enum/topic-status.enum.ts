@@ -3,6 +3,7 @@ export enum TopicStatus {
     Draft = 'draft', //GV
     Submitted = 'submitted', //GV
     UnderReview = 'under_review', //BCN
+    NeedAdjust = 'need_adjust', //BCN // đề tài cần điều chỉnh theo yêu cầu của BCN hoặc GV
     Approved = 'approved', //BCN //đủ điều kiện để sang pha mở đăng ký
     Rejected = 'rejected', //BCN //Từ chối đề tài // đề tài sẽ không đi tiếp sang pha 2
 

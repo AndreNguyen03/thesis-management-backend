@@ -29,13 +29,17 @@ import {
     LecGetTopicStatisticInOpenRegPhaseDto,
     LecGetTopicStatisticInSubmitPhaseDto
 } from '../dtos/get-statistics-topics.dtos'
-import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from '../dtos/query-params.dtos'
+import {
+    PaginationDraftTopicsQueryParams,
+    PaginationRegisteredTopicsQueryParams,
+    SubmittedTopicParamsDto
+} from '../dtos/query-params.dtos'
 import { RequestGradeTopicDto } from '../dtos/request-grade-topic.dtos'
 import { Topic } from '../schemas/topic.schemas'
 
 export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic> {
-    getStandarStructureTopicsByTopicIds(topicIds: string[],limit:number): Promise<Topic[]>
-    getCurrentTopicsState(topicIds: string[],limit:number): Promise<Topic[]>
+    getStandarStructureTopicsByTopicIds(topicIds: string[], limit: number): Promise<Topic[]>
+    getCurrentTopicsState(topicIds: string[], limit: number): Promise<Topic[]>
     createTopic(topicData: CreateTopicDto): Promise<string>
     getTopicById(topicId: string, userId: string, role: string): Promise<GetTopicDetailResponseDto | null>
     getAllTopics(userId: string): Promise<Paginated<Topic>>
@@ -43,7 +47,10 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     updateTopic(id: string, topicData: PatchTopicDto): Promise<Topic | null>
     findByTitle(titleVN: string, titleEng: string, periodId: string): Promise<Topic | null>
     findSavedTopicsByUserId(userId: string, query: PaginationQueryDto): Promise<Paginated<Topic>>
-    findRegisteredTopicsByUserId(userId: string, query: PaginationRegisteredTopicsQueryParams): Promise<Paginated<Topic>>
+    findRegisteredTopicsByUserId(
+        userId: string,
+        query: PaginationRegisteredTopicsQueryParams
+    ): Promise<Paginated<Topic>>
     findCanceledRegisteredTopicsByUserId(
         userId: string,
         userRole: string
@@ -112,6 +119,10 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     ): Promise<Paginated<Topic>>
     batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
 
-    
-    getTopicRegistrationApprovalsOfLecturer(userId: string, query: RequestGetTopicsApprovalRegistrationPagination): Promise<Paginated<any>>
+    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>
+    >
+    getTopicRegistrationApprovalsOfLecturer(
+        userId: string,
+        query: RequestGetTopicsApprovalRegistrationPagination
+    ): Promise<Paginated<any>>
 }

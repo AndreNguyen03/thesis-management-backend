@@ -184,6 +184,34 @@ export class MailProcessor {
             console.error('Gửi mail duyệt đề tài thất bại:', e)
         }
     }
+
+    @Process('send-topic-need-adjustment')
+    async handleSendNeedAdjustment(
+        job: Job<{ comment: string; user: User; topicInfo: GetMiniTopicInfo; faculty: GetFacultyDto }>
+    ) {
+        try {
+            const { comment, user, topicInfo, faculty } = job.data
+            const frontendUrl = this.configService.get('appConfig.CLIENT_URL')
+
+            await this.mailerService.sendMail({
+                to: user.email,
+                from: `"Ban Chủ Nhiệm Khoa" <${faculty.email}>`,
+                subject: ` Đề tài của bạn được yêu cầu chỉnh sửa`,
+                template: './topic-need-adjustment',
+                context: {
+                    name: user.fullName,
+                    titleVN: topicInfo.titleVN,
+                    titleEng: topicInfo.titleEng,
+                    comment: comment,
+                    link: `${frontendUrl}/detail-topic/${topicInfo._id}`,
+                    facultyName: faculty.name
+                }
+            })
+        } catch (e) {
+            console.error('Gửi mail yêu cầu chỉnh sửa đề tài thất bại:', e)
+        }
+    }
+
     @Process('send-manual-email')
     async handleSendEmailManual(
         job: Job<{ to: string; subject: string; content: string; currentPeriod: GetPeriodDto }>

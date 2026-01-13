@@ -42,7 +42,11 @@ import { WithDrawSubmittedTopicQuery } from './dtos/tranfer-topic-status.dtos'
 import { GetMajorLibraryCombox } from '../majors/dtos/get-major.dto'
 import { GetDocumentsDto } from '../upload-files/dtos/upload-file.dtos'
 import { Response } from 'express'
-import { PaginationDraftTopicsQueryParams, PaginationRegisteredTopicsQueryParams, SubmittedTopicParamsDto } from './dtos/query-params.dtos'
+import {
+    PaginationDraftTopicsQueryParams,
+    PaginationRegisteredTopicsQueryParams,
+    SubmittedTopicParamsDto
+} from './dtos/query-params.dtos'
 import { PaginatedTopicInBatchMilestone } from '../milestones/dtos/response-milestone.dto'
 import { PeriodGateway } from '../periods/gateways/period.gateway'
 
@@ -62,6 +66,7 @@ export class TopicController {
             enableImplicitConversion: true
         })
     }
+
     @Patch('/mark-paused-topic')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
@@ -182,6 +187,18 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
+    @Get('/lecturer/get-all-submitted-topics')
+    async getAllSubmittedTopics(@Query() query: SubmittedTopicParamsDto) {
+        const res = await this.topicService.getAllSubmittedTopics(query)
+        return plainToInstance(PaginatedSubmittedTopics, res, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.LECTURER)
+    @UseGuards(RolesGuard)
     @Delete(':topicId/ref-fields-topic/:fieldId')
     async removeFieldFromTopicQuick(
         @Req() req: { user: ActiveUserData },
@@ -218,12 +235,12 @@ export class TopicController {
         return { message: 'Xóa yêu cầu cho đề tài thành công' }
     }
 
-    @Patch(':topicId/in-period/:periodId')
+    @Patch(':topicId/in-period/')
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async updateTopic(@Param('topicId') id: string, @Param('periodId') periodId: string, @Body() topic: PatchTopicDto) {
-        const result = await this.topicService.updateTopic(id, topic, periodId)
+    async updateTopic(@Param('topicId') id: string,  @Body() topic: PatchTopicDto) {
+        const result = await this.topicService.updateTopic(id, topic)
         return { topicId: result?._id, message: 'Cập nhật đề tài thành công' }
     }
 
@@ -270,7 +287,21 @@ export class TopicController {
     @UseGuards(RolesGuard)
     async facultyBoardApproveTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string) {
         await this.topicService.approveTopic(topicId, req.user.sub)
-        
+
+        // event refresh
+        this.periodGateway.emitPeriodDashboardUpdate({})
+
+        return { message: 'Duyệt đề tài thành công' }
+    }
+
+    @Patch('/faculty-board/request-edit-topic/:topicId')
+    @Auth(AuthType.Bearer)
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async facultyBoardRequestEditTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body() body: { comment: string }) {
+        console.log('request edit topic body :::', body)
+        await this.topicService.requestEditTopic(topicId, req.user.sub, body.comment)
+
         // event refresh
         this.periodGateway.emitPeriodDashboardUpdate({})
 

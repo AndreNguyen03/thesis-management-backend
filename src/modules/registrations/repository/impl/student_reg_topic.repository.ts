@@ -525,72 +525,7 @@ export class StudentRegTopicRepository
                     }
                 ])
                 .exec()
-            if (existingRegistration && existingRegistration.length > 0) {
-            const existingRegistration = await this.studentRegTopicModel
-                .aggregate([
-                    {
-                        $lookup: {
-                            from: 'topics',
-                            let: { topicId: '$topicId' },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [
-                                                { $eq: ['$_id', new mongoose.Types.ObjectId(topicId)] },
-                                                { $eq: ['$deleted_at', null] }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ],
-                            as: 'topicInfo'
-                        }
-                    },
-                    {
-                        $unwind: {
-                            path: '$topicInfo'
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: 'topics',
-                            let: { periodId: '$topicInfo.periodId' },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $and: [{ $eq: ['$periodId', '$$periodId'] }, { $eq: ['$deleted_at', null] }]
-                                        }
-                                    }
-                                }
-                            ],
-                            as: 'topicInfos'
-                        }
-                    },
-                    {
-                        $match: {
-                            $expr: {
-                                $and: [
-                                    { $eq: ['$userId', new mongoose.Types.ObjectId(studentId)] },
-                                    {
-                                        $in: [
-                                            '$topicId',
-                                            {
-                                                $ifNull: ['$topicInfos._id', []]
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        $in: ['$status', [StudentRegistrationStatus.APPROVED]]
-                                    },
-                                    { $eq: ['$deleted_at', null] }
-                                ]
-                            }
-                        }
-                    }
-                ])
-                .exec()
+           
             if (existingRegistration && existingRegistration.length > 0) {
                 throw new StudentJustRegisterOnlyOneTopicEachType(TopicTransfer[topic.type])
             }
@@ -928,6 +863,7 @@ export class StudentRegTopicRepository
             registration.processedBy = userId
             registration.lecturerResponse = lecturerResponse
             registration.studentRole = role
+            let actorId = registration.userId.toString()
 
             await topic.save({ session })
             await registration.save({ session })
@@ -940,16 +876,16 @@ export class StudentRegTopicRepository
                 await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
                     topic._id.toString(),
                     TopicStatus.Full,
-                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã đủ người đăng ký',
-                    'Giảng viên duyệt tham gia slot cuối cùng'
+                    actorId,
+                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã đủ người đăng ký : Giảng viên duyệt tham gia slot cuối cùng',
                 )
             } else if (topic.currentStatus === TopicStatus.PendingRegistration) {
                 topic.currentStatus = TopicStatus.Registered
                 await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
                     topic._id.toString(),
                     TopicStatus.Registered,
-                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã có người đăng ký',
-                    'Giảng viên duyệt tham gia slot đầu tiên'
+                    actorId,
+                    'Hệ thống tự động chuyển trạng thái đề tài sang Đã có người đăng ký : Giảng viên duyệt tham gia slot đầu tiên'
                 )
             }
             return registration

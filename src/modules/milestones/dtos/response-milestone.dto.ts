@@ -71,6 +71,10 @@ export class ResponseMilestone {
     isAbleEdit: boolean
     @Expose()
     creatorType: string
+    @Expose()
+    totalTasks: number
+    @Expose()
+    tasksCompleted:number
 }
 
 export class MilestoneDto {
