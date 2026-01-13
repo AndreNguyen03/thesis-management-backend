@@ -50,11 +50,8 @@ import {
     PendingLecturerReview
 } from '../../../periods/dtos/phase-resolve.dto'
 import { ParseDay } from '../../utils/transfer-function'
-import { promiseHooks } from 'v8'
-import { PeriodStatus } from '../../../periods copy/enums/periods.enum'
 import { StudentRegistrationStatus } from '../../../registrations/enum/student-registration-status.enum'
 import { MilestoneTemplate } from '../../../milestones/schemas/milestones-templates.schema'
-import { min } from 'class-validator'
 import { BadRequestException, Inject } from '@nestjs/common'
 
 export class TopicRepository extends BaseRepositoryAbstract<Topic> implements TopicRepositoryInterface {
@@ -3902,9 +3899,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 }
             }
         )
-        console.log('pipeline sub draft topics', JSON.stringify(pipelineSub))
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
+
     async findSubmittedTopicsByLecturerId(
         lecturerId: string,
         query: SubmittedTopicParamsDto
@@ -3922,6 +3919,21 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         })
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
+
+    async findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>> {
+        const pipelineSub: any = []
+        pipelineSub.push(...this.getTopicInfoPipelineAbstract())
+        pipelineSub.push(...this.pipelineSubmittedTopics())
+        pipelineSub.push({
+            $match: {
+                ...(query.periodId ? { periodId: new mongoose.Types.ObjectId(query.periodId) } : {})
+                //currentStatus: { $ne: TopicStatus.Draft },
+                //  deleted_at: null
+            }
+        })
+        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+    }
+
     private pipelineSubmittedTopics() {
         const pipelineSub: any = []
 

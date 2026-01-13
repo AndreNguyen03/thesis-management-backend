@@ -120,6 +120,8 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     ): Promise<Paginated<Topic>>
     batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
 
+    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>
+    >
     getTopicRegistrationApprovalsOfLecturer(
         userId: string,
         query: RequestGetTopicsApprovalRegistrationPagination

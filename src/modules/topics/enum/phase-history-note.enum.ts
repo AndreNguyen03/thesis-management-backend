@@ -3,6 +3,7 @@ export enum PhaseHistoryNote {
     LECTURER_INITIATED = 'Giảng viên tạo đề đề tài',
     TOPIC_SUBMITTED = 'Đề tài đã được nộp',
     TOPIC_APPROVED = 'Đề tài đã được duyệt bởi ban chủ nhiệm',
+    TOPIC_NEED_ADJUST = 'Đề tài cần được điều chỉnh',
     TOPIC_REJECTED = 'Đề tài bị từ chối',
     TOPIC_WITHDRAWN = 'Đề tài đã được rút về nháp',
     OPEN_REGISTRATION_STARTED = 'Bắt đầu pha mở đăng ký',

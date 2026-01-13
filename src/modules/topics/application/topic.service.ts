@@ -166,15 +166,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
         return topicId
     }
 
-    public async updateTopic(id: string, topicData: PatchTopicDto, periodId: string) {
-        const existingTopicName = await this.topicRepository.findByTitle(
-            topicData.titleVN,
-            topicData.titleEng,
-            periodId
-        )
-        if (existingTopicName) {
-            throw new BadRequestException('Tên đề tài đã tồn tại trong kì này.')
-        }
+    public async updateTopic(id: string, topicData: PatchTopicDto) {
         return this.topicRepository.updateTopic(id, topicData)
     }
     public async deleteTopics(ids: string[], ownerId: string) {
@@ -211,6 +203,22 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             }
         }
     }
+
+    public async getAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<PaginatedSubmittedTopics> {
+        const periodInfo = await this.periodsService.getPeriodById(query.periodId)
+        const paginatedTopics = await this.topicRepository.findAllSubmittedTopics(query)
+        return {
+            data: plainToInstance(GetSubmittedTopic, paginatedTopics.data, {
+                excludeExtraneousValues: true,
+                enableImplicitConversion: true
+            }),
+            meta: {
+                ...paginatedTopics.meta,
+                periodInfo: periodInfo
+            }
+        }
+    }
+
     public async assignSaveTopic(userId: string, topicId: string) {
         return await this.userSavedTopicRepository.assignSaveTopic(userId, topicId)
     }
@@ -259,6 +267,32 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             facultyId
         )
     }
+
+    public async requestEditTopic(topicId: string, actorId: string, comment: string) {
+        console.log('comment ne::::', comment)
+        await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.NeedAdjust,
+            actorId,
+            PhaseHistoryNote.TOPIC_NEED_ADJUST + ' với lí do: ' + comment,
+        )
+        //Gửi thông báo tới giảng viên HD chính createBy
+        //đồng thời thông báo cho giảng viên đồng hướng dẫn nữa
+        const topicInfor = await this.getMiniTopicInfoProvider.getMiniTopicInfo(topicId)
+        //thoogn tin hd chisnh
+        const mainSupervisor = await this.lecturerRegTopicService.getMainSupervisorInTopic(topicId)
+        const coSupervisors = await this.lecturerRegTopicService.getCoSupervisorsInTopic(topicId)
+        const facultyId = await this.getFacultyByUserIdProvider.getFacultyIdByUserId(actorId, UserRole.FACULTY_BOARD)
+        await this.notificationPublisherService.sendNeedAdjustmentNotification(
+            comment,
+            mainSupervisor,
+            actorId,
+            coSupervisors,
+            topicInfor,
+            facultyId
+        )
+    }
+
     public async approveTopics(topicIds: string[], actorId: string) {
         for (const topicId of topicIds) {
             await this.tranferStatusAndAddPhaseHistoryProvider.transferStatusAndAddPhaseHistory(
