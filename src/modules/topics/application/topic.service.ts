@@ -242,7 +242,6 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             TopicStatus.Submitted,
             actorId,
             PhaseHistoryNote.TOPIC_SUBMITTED,
-            periodId
         )
     }
     public async approveTopic(topicId: string, actorId: string) {

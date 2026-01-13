@@ -17,6 +17,7 @@ import { PaginationAnModule } from '../../../common/pagination-an/pagination.mod
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { pipeline } from 'stream'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class DefenseCouncilRepository {
@@ -75,23 +76,66 @@ export class DefenseCouncilRepository {
             },
             {
                 $unwind: { path: '$createdBy', preserveNullAndEmptyArrays: true }
+            },
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    foreignField: '_id',
+                    localField: 'milestoneTemplateId',
+                    as: 'defenseMilestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$defenseMilestonesInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'periods',
+                    foreignField: '_id',
+                    localField: 'defenseMilestonesInfo.periodId',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    foreignField: '_id',
+                    localField: 'periodInfo.faculty',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: { path: '$facultyInfo' }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    defenseMilestone: {
+                        title: '$defenseMilestonesInfo.title',
+                        description: '$defenseMilestonesInfo.description'
+                    },
+                    periodInfo: {
+                        _id: '$periodInfo._id',
+                        year: '$periodInfo.year',
+                        semester: '$periodInfo.semester',
+                        currentPhase: '$periodInfo.currentPhase',
+                        faculty: '$facultyInfo'
+                    },
+                    name: 1,
+                    location: 1,
+                    scheduledDate: 1,
+                    topicsNum: {
+                        $size: '$topics'
+                    },
+                    isCompleted: 1,
+                    isPublished: 1,
+                    createdBy: 1
+                }
             }
         )
-        pipelineSub.push({
-            $project: {
-                _id: 1,
-                milestoneTemplateId: 1,
-                name: 1,
-                location: 1,
-                scheduledDate: 1,
-                topicsNum: {
-                    $size: '$topics'
-                },
-                isCompleted: 1,
-                isPublished: 1,
-                createdBy: 1
-            }
-        })
 
         return await this.paginationQuery.paginateQuery<DefenseCouncil>(query, this.defenseCouncilModel, pipelineSub)
     }
@@ -142,6 +186,8 @@ export class DefenseCouncilRepository {
 
     // Thêm đề tài vào hội đồng
     async addTopicToCouncil(councilId: string, dto: AddTopicToCouncilDto): Promise<DefenseCouncil> {
+        console.log('topicAssignment dto', dto)
+
         const councilDoc = await this.defenseCouncilModel.findOne({
             _id: new mongoose.Types.ObjectId(councilId),
             deleted_at: null
@@ -176,12 +222,13 @@ export class DefenseCouncilRepository {
             titleVN: dto.titleVN,
             titleEng: dto.titleEng || '',
             studentNames: dto.studentNames || [],
+            lecturerNames: dto.lecturerNames || [],
             members: dto.members,
             defenseOrder: dto.defenseOrder || councilDoc.topics.length + 1,
             scores: [],
             finalScore: undefined
         }
-
+        console.log('topicAssignment', topicAssignment)
         councilDoc.topics.push(topicAssignment as any)
         return await councilDoc.save()
     }
@@ -230,6 +277,7 @@ export class DefenseCouncilRepository {
             titleVN: topicDto.titleVN,
             titleEng: topicDto.titleEng || '',
             studentNames: topicDto.studentNames || [],
+            lecturerNames: topicDto.lecturerNames || [],
             members: topicDto.members,
             defenseOrder: topicDto.defenseOrder || councilDoc.topics.length + 1,
             scores: [],
@@ -293,22 +341,38 @@ export class DefenseCouncilRepository {
 
     // Cập nhật thứ tự bảo vệ
     async updateTopicOrder(councilId: string, topicId: string, defenseOrder: number): Promise<DefenseCouncil> {
-        const council = await this.defenseCouncilModel
-            .findOneAndUpdate(
-                {
-                    _id: new mongoose.Types.ObjectId(councilId),
-                    'topics.topicId': new mongoose.Types.ObjectId(topicId),
-                    deleted_at: null
-                },
-                { $set: { 'topics.$.defenseOrder': defenseOrder } },
-                { new: true }
-            )
-            .exec()
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            'topics.topicId': new mongoose.Types.ObjectId(topicId),
+            deleted_at: null
+        })
 
         if (!council) {
             throw new NotFoundException('Không tìm thấy hội đồng hoặc đề tài')
         }
 
+        const topic = council.topics.find((t) => t.topicId.toString() === topicId)
+        if (!topic) {
+            throw new NotFoundException('Không tìm thấy đề tài trong hội đồng này')
+        }
+
+        const oldOrder = topic.defenseOrder
+
+        // Nếu defenseOrder không đổi thì không làm gì
+        if (oldOrder === defenseOrder) {
+            return council
+        }
+
+        // Đổi thứ tự: cập nhật đề tài được chọn và hoán đổi với đề tài đang ở vị trí mới (nếu có)
+        council.topics.forEach((t) => {
+            if (t.topicId.toString() === topicId) {
+                t.defenseOrder = defenseOrder
+            } else if (t.defenseOrder === defenseOrder) {
+                t.defenseOrder = oldOrder
+            }
+        })
+
+        await council.save()
         return council
     }
 
@@ -372,21 +436,65 @@ export class DefenseCouncilRepository {
         const pipelineSub: any[] = []
         pipelineSub.push(
             {
-                $match: { deleted_at: null },
-                'topics.members.memberId': new mongoose.Types.ObjectId(lecturerId)
+                $match: {
+                    deleted_at: null,
+                    'topics.members.memberId': new mongoose.Types.ObjectId(lecturerId)
+                }
             },
             {
                 $sort: { scheduledDate: 1 }
             },
             {
+                $lookup: {
+                    from: 'milestones_templates',
+                    foreignField: '_id',
+                    localField: 'milestoneTemplateId',
+                    as: 'defenseMilestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$defenseMilestonesInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'periods',
+                    foreignField: '_id',
+                    localField: 'defenseMilestonesInfo.periodId',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    foreignField: '_id',
+                    localField: 'periodInfo.faculty',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: { path: '$facultyInfo' }
+            },
+            {
                 $project: {
-                    milestoneTemplateId: 1,
+                    _id: 1,
+                    defenseMilestone: {
+                        title: '$defenseMilestonesInfo.title',
+                        description: '$defenseMilestonesInfo.description'
+                    },
+                    periodInfo: {
+                        _id: '$periodInfo._id',
+                        year: '$periodInfo.year',
+                        semester: '$periodInfo.semester',
+                        currentPhase: '$periodInfo.currentPhase',
+                        faculty: '$facultyInfo'
+                    },
                     name: 1,
                     location: 1,
                     scheduledDate: 1,
-                    topicsNum: {
-                        $size: '$topics'
-                    },
+                    topicsNum: { $size: '$topics' },
                     isCompleted: 1,
                     isPublished: 1,
                     createdBy: 1
@@ -411,5 +519,149 @@ export class DefenseCouncilRepository {
             scores: topic.scores,
             finalScore: topic.finalScore
         }
+    }
+    async getDetailAssignedDefenseCouncils(councilId: string, lecturerId: string): Promise<DefenseCouncil> {
+        const pipeline: any = []
+        pipeline.push(
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(councilId),
+                    'topics.members.memberId': new mongoose.Types.ObjectId(lecturerId),
+                    deleted_at: null
+                }
+            },
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    foreignField: '_id',
+                    localField: 'milestoneTemplateId',
+                    as: 'defenseMilestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$defenseMilestonesInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    foreignField: '_id',
+                    localField: 'createdBy',
+                    as: 'userInfo'
+                }
+            },
+            {
+                $unwind: { path: '$userInfo' }
+            },
+            {
+                $addFields: {
+                    topics: {
+                        $map: {
+                            input: '$topics',
+                            as: 'topic',
+                            in: {
+                                $mergeObjects: [
+                                    '$$topic',
+                                    {
+                                        isAssigned: {
+                                            $cond: {
+                                                if: {
+                                                    $eq: [
+                                                        {
+                                                            $size: {
+                                                                $filter: {
+                                                                    input: '$$topic.members',
+                                                                    as: 'member',
+                                                                    cond: {
+                                                                        $eq: [
+                                                                            '$$member.memberId',
+                                                                            new mongoose.Types.ObjectId(lecturerId)
+                                                                        ]
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        0
+                                                    ]
+                                                },
+                                                then: false,
+                                                else: true
+                                            }
+                                        },
+                                        yourRoles: {
+                                            $map: {
+                                                input: {
+                                                    $filter: {
+                                                        input: '$$topic.members',
+                                                        as: 'member',
+                                                        cond: {
+                                                            $eq: [
+                                                                '$$member.memberId',
+                                                                new mongoose.Types.ObjectId(lecturerId)
+                                                            ]
+                                                        }
+                                                    }
+                                                },
+                                                as: 'mem',
+                                                in: '$$mem.role'
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'periods',
+                    foreignField: '_id',
+                    localField: 'defenseMilestonesInfo.periodId',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    foreignField: '_id',
+                    localField: 'periodInfo.faculty',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: { path: '$facultyInfo' }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    defenseMilestone: '$defenseMilestonesInfo',
+                    name: 1,
+                    location: 1,
+                    scheduledDate: 1,
+                    topics: 1,
+                    isCompleted: 1,
+                    isPublished: 1,
+                    createdBy: {
+                        _id: '$userInfo._id',
+                        fullName: '$userInfo.fullName',
+                        email: '$userInfo.email',
+                        avatarUrl: '$userInfo.avatarUrl',
+                        avatarName: '$userInfo.avatarName'
+                    },
+                    periodInfo: {
+                        _id: '$periodInfo._id',
+                        year: '$periodInfo.year',
+                        semester: '$periodInfo.semester',
+                        currentPhase: '$periodInfo.currentPhase',
+                        faculty: '$facultyInfo'
+                    }
+                }
+            }
+        )
+        const res = await this.defenseCouncilModel.aggregate(pipeline).exec()
+        return res[0]
     }
 }

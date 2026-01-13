@@ -17,6 +17,7 @@ import {
     UpdateTopicOrderDto
 } from './dtos/defense-council.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
+import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 
 @Controller('defense-councils')
 @Auth(AuthType.Bearer)
@@ -99,9 +100,10 @@ export class DefenseCouncilController {
     @UseGuards(RolesGuard)
     async addMultipleTopicsToCouncil(
         @Param('councilId') councilId: string,
-        @Body() dto: AddMultipleTopicsToCouncilDto
+        @Body() dto: AddMultipleTopicsToCouncilDto,
+        @Req() req: { user: ActiveUserData }
     ) {
-        const council = await this.defenseCouncilService.addMultipleTopicsToCouncil(councilId, dto)
+        const council = await this.defenseCouncilService.addMultipleTopicsToCouncil(req.user.sub, councilId, dto)
         return {
             message: `Thêm ${dto.topics.length} đề tài vào hội đồng thành công`,
             data: council
@@ -112,8 +114,12 @@ export class DefenseCouncilController {
     @Delete(':councilId/topics/:topicId')
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async removeTopicFromCouncil(@Param('councilId') councilId: string, @Param('topicId') topicId: string) {
-        const council = await this.defenseCouncilService.removeTopicFromCouncil(councilId, topicId)
+    async removeTopicFromCouncil(
+        @Req() req: { user: ActiveUserData },
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string
+    ) {
+        const council = await this.defenseCouncilService.removeTopicFromCouncil(req.user.sub, councilId, topicId)
         return {
             message: 'Xóa đề tài khỏi hội đồng thành công',
             data: council
@@ -199,5 +205,12 @@ export class DefenseCouncilController {
             message: 'Hoàn thành hội đồng thành công',
             data: council
         }
+    }
+
+    @Get('lecturer/detail-assigned-defense/:councilId')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getAssignedDefenseCouncils(@Req() req: { user: ActiveUserData }, @Param('councilId') councilId: string) {
+        return await this.defenseCouncilService.getDetailAssignedDefenseCouncils(councilId, req.user.sub)
     }
 }

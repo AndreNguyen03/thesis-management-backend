@@ -37,6 +37,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
     ) {
         super(milestoneModel)
     }
+
     async getAllMilestones(userId: string): Promise<any> {
         // lay tat ca nhung milestone của user ở trong tất cả group
         // userId -> groupId -> milestone

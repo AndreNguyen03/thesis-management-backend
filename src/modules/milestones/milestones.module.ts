@@ -41,7 +41,7 @@ import { DefenseCouncilRepository } from './repository/defense-council.repositor
         GroupsModule,
         PaginationAnModule,
         forwardRef(() => PeriodsModule),
-        forwardRef(() => TopicModule)
+        forwardRef(() => TopicModule),
     ]
 })
 export class MilestonesModule {}

@@ -77,6 +77,11 @@ export class AddTopicToCouncilDto {
     studentNames?: string[]
 
     @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    lecturerNames?: string[]
+
+    @IsArray()
     @ValidateNested({ each: true })
     @Type(() => CouncilMemberDto)
     @IsNotEmpty()
@@ -94,6 +99,8 @@ export class AddMultipleTopicsToCouncilDto {
     @Type(() => AddTopicToCouncilDto)
     @IsNotEmpty()
     topics: AddTopicToCouncilDto[]
+    @IsNotEmpty()
+    periodId: string
 }
 
 // DTO cập nhật bộ ba giảng viên cho đề tài

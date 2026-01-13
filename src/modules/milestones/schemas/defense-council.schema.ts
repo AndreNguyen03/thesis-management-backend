@@ -83,6 +83,9 @@ export class TopicAssignment {
     @Prop({ type: [String], default: [] })
     studentNames: string[]
 
+    @Prop({ type: [String], default: [] })
+    lecturerNames: string[]
+
     @Prop({ type: Number, default: 0 })
     defenseOrder: number // Thứ tự bảo vệ (1, 2, 3...)
 

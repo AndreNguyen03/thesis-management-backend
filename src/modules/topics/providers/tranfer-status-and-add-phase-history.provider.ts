@@ -23,13 +23,12 @@ export class TranferStatusAndAddPhaseHistoryProvider {
         newStatus: string,
         actorId: string,
         note: string = '',
-        periodId?: string,
+        periodId?: string
     ) {
         const existingTopic = await this.topicRepository.findOneByCondition({
             _id: new mongoose.Types.ObjectId(topicId),
             deleted_at: null
         })
-
 
         if (!existingTopic) {
             throw new TopicNotFoundException()
@@ -43,7 +42,8 @@ export class TranferStatusAndAddPhaseHistoryProvider {
             throw new BadRequestException('Chuyển trạng thái đề tài không hợp lệ')
         }
         const newPhaseHistory = new PhaseHistory()
-        ;((newPhaseHistory.phaseName = periodId ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase),
+        ;((newPhaseHistory.phaseName =
+            existingTopic.currentPhase === 'empty' ? PeriodPhaseName.SUBMIT_TOPIC : existingTopic.currentPhase  ),
             (newPhaseHistory.status = newStatus))
         newPhaseHistory.actor = actorId
         if (existingTopic.phaseHistories == null || !Array.isArray(existingTopic.phaseHistories)) {

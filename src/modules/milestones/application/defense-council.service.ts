@@ -12,10 +12,16 @@ import {
 } from '../dtos/defense-council.dto'
 import { DefenseCouncil } from '../schemas/defense-council.schema'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
+import { TranferStatusAndAddPhaseHistoryProvider } from '../../topics/providers/tranfer-status-and-add-phase-history.provider'
+import { TopicStatus } from '../../topics/enum'
+import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
 @Injectable()
 export class DefenseCouncilService {
-    constructor(private readonly defenseCouncilRepository: DefenseCouncilRepository) {}
+    constructor(
+        private readonly defenseCouncilRepository: DefenseCouncilRepository,
+        private readonly tranferStatusAndAddHistory: TranferStatusAndAddPhaseHistoryProvider
+    ) {}
 
     // Tạo hội đồng mới
     async createCouncil(dto: CreateDefenseCouncilDto, userId: string): Promise<DefenseCouncil> {
@@ -48,13 +54,35 @@ export class DefenseCouncilService {
     }
 
     // Thêm nhiều đề tài vào hội đồng cùng lúc
-    async addMultipleTopicsToCouncil(councilId: string, dto: AddMultipleTopicsToCouncilDto): Promise<DefenseCouncil> {
-        return await this.defenseCouncilRepository.addMultipleTopicsToCouncil(councilId, dto)
+    async addMultipleTopicsToCouncil(
+        userId: string,
+        councilId: string,
+        dto: AddMultipleTopicsToCouncilDto
+    ): Promise<DefenseCouncil> {
+        const result = await this.defenseCouncilRepository.addMultipleTopicsToCouncil(councilId, dto)
+
+        for (const topic of dto.topics) {
+            await this.tranferStatusAndAddHistory.transferStatusAndAddPhaseHistory(
+                topic.topicId,
+                TopicStatus.AssignedDefense,
+                userId,
+                'Đề tài được thêm vào hội đồng bảo vệ'
+            )
+        }
+        console.log('Đã phân công ', dto.topics.length, ' đề tài vào hội đồng bảo vệ.')
+        return result
     }
 
     // Xóa đề tài khỏi hội đồng
-    async removeTopicFromCouncil(councilId: string, topicId: string): Promise<DefenseCouncil> {
-        return await this.defenseCouncilRepository.removeTopicFromCouncil(councilId, topicId)
+    async removeTopicFromCouncil(userId: string, councilId: string, topicId: string): Promise<DefenseCouncil> {
+        const result = await this.defenseCouncilRepository.removeTopicFromCouncil(councilId, topicId)
+        await this.tranferStatusAndAddHistory.transferStatusAndAddPhaseHistory(
+            topicId,
+            TopicStatus.AwaitingEvaluation,
+            userId,
+            'Đề tài bị loại bỏ khỏi hội đồng bảo vệ'
+        )
+        return result
     }
 
     // Cập nhật bộ ba giảng viên cho đề tài
@@ -98,5 +126,10 @@ export class DefenseCouncilService {
     // Khóa hội đồng (hoàn thành)
     async completeCouncil(councilId: string): Promise<DefenseCouncil> {
         return await this.defenseCouncilRepository.updateCouncil(councilId, { isCompleted: true })
+    }
+    // lấy danh sách các hojoio đồng mà người này được phân công chấm
+    // hiển thị cả đề tài không được phân công nhưng không active
+    async getDetailAssignedDefenseCouncils(councilId: string, lecturerId: string) {
+        return await this.defenseCouncilRepository.getDetailAssignedDefenseCouncils(councilId, lecturerId)
     }
 }
