@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { AgentExecutor, createReactAgent } from 'langchain/agents'
+import { AgentExecutor, createReactAgent, createToolCallingAgent } from 'langchain/agents'
 import { TopicRegisteringSearchTool } from '../tools/topic-registering-search.tool'
 import { DocumentSearchTool } from '../tools/document-search.tool'
 import { LecturerSearchTool } from '../tools/lecturer-search.tool'
@@ -10,15 +10,40 @@ import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { HumanMessage, AIMessage, BaseMessage } from '@langchain/core/messages'
 import { ChatGroq } from '@langchain/groq'
 import groqConfig from '../../../config/groq.config'
-import { DynamicTool } from '@langchain/core/tools'
+import { DynamicStructuredTool, DynamicTool } from '@langchain/core/tools'
 import { TopicInLibrarySearchTool } from '../tools/topic-in-library-search.tool'
 import { ProfileMatchingTool } from '../tools/profile-matching.tool'
 @Injectable()
 export class AutoAgentService {
     private agent: AgentExecutor
-    private initialized = falseáaasassas
     private currentUserId: string | null = null
+    private wrapTool(structuredTool: DynamicStructuredTool): DynamicTool {
+        return new DynamicTool({
+            name: structuredTool.name,
+            description: structuredTool.description,
+            func: async (input: string) => {
+                const parsed = this.safeParse(input)
 
+                if (structuredTool.name === 'profile_matching_lecturer_search_tool') {
+                    return this.profileMatchingTool.execute(parsed, this.currentUserId!)
+                }
+
+                return structuredTool.func(parsed)
+            }
+        })
+    }
+    private safeParse(input: string): any {
+        if (!input) return {}
+
+        if (typeof input !== 'string') return input
+
+        try {
+            return JSON.parse(input)
+        } catch {
+            // fallback: LLM gửi plain text
+            return { query: input, limit: 5 }
+        }
+    }
     constructor(
         private readonly topicRegisteringTool: TopicRegisteringSearchTool,
         private readonly documentTool: DocumentSearchTool,
@@ -44,8 +69,7 @@ export class AutoAgentService {
             apiKey: this.groqConfiguration.apiKey,
             model: 'llama-3.3-70b-versatile', // Model mạnh nhất của Groq
             temperature: 0, // Set 0 để giảm hallucination
-            maxTokens: 2048,
-            stop: ['Observation:', '\nObservation'] // Stop ngay khi LLM cố gắng tự tạo Observation
+            maxTokens: 2048
         })
 
         // Danh sách tools
@@ -57,186 +81,102 @@ export class AutoAgentService {
             this.profileMatchingTool.createTool()
         ]
 
-        // Wrap structured tools thành DynamicTool cho ReactAgent (chỉ nhận string input)
-        const tools = structuredTools.map((structuredTool) => {
-            return new DynamicTool({
-                name: structuredTool.name,
-                description: structuredTool.description,
-                func: async (input: string) => {
-                    try {
-                        let parsedInput: any
-                        try {
-                            parsedInput = JSON.parse(input)
-                        } catch {
-                            parsedInput = { query: input, limit: 5 }
-                        }
-                        // Nếu là tool profile_matching_lecturer_search_tool thì thêm userId
-                        if (structuredTool.name === 'profile_matching_lecturer_search_tool' && this.currentUserId) {
-                            parsedInput.userId = this.currentUserId
-                            console.log('👨‍🏫 [LECTURER TOOL] Added userId to input:', this.currentUserId)
-                        }
-                        // Gọi func trực tiếp thay vì invoke để giữ context this
-                        const result = await structuredTool.func(parsedInput)
-                        return typeof result === 'string' ? result : JSON.stringify(result)
-                    } catch (error) {
-                        console.error(`❌ Error in tool ${structuredTool.name}:`, error)
-                        return `Lỗi: ${error.message}`
-                    }
-                }
-            })
-        })
+        const tools = structuredTools.map((t) => this.wrapTool(t))
 
         // System prompt cho ReactAgent
         const prompt = ChatPromptTemplate.fromMessages([
             [
                 'system',
-                `Bạn là trợ lý AI hỗ trợ sinh viên về khóa luận tốt nghiệp và nghiên cứu khoa học tại Đại học Công nghệ Thông tin - ĐHQG TP.HCM. Tất cả truy vấn của bạn sẽ đến từ sinh viên, giảng viên và ban chủ nhiệm khoa. 
+                `
+Bạn là trợ lý AI hỗ trợ sinh viên, giảng viên và ban chủ nhiệm khoa tại
+Đại học Công nghệ Thông tin – ĐHQG TP.HCM trong các vấn đề liên quan đến:
+- khóa luận tốt nghiệp
+- nghiên cứu khoa học
+- giảng viên và tài liệu học thuật
 
-PHẠM VI HỖ TRỢ (CHỈ ĐƯỢC LÀM NHỮNG VIỆC SAU):
-1. Tìm kiếm ĐỀ TÀI ĐANG MỞ ĐĂNG KÝ (dùng tool: search_registering_topics)
-2. Tìm kiếm ĐỀ TÀI TRONG THƯ VIỆN (dùng tool: search_in_library_topics)
-3. Tìm kiếm TÀI LIỆU/QUY TRÌNH ĐĂNG KÝ THỰC HIỆN (dùng tool: search_documents) 
-4. Tìm kiếm GIẢNG VIÊN (dùng tool: search_lecturers)
-5. Gợi ý GIẢNG VIÊN (dùng tool: profile_matching_lecturer_search_tool)
--> Nếu người dùng hỏi bên ngoài hãy từ chối khéo.
+========================
+PHẠM VI HỖ TRỢ (BẮT BUỘC TUÂN THỦ)
+========================
+Bạn CHỈ được thực hiện các tác vụ sau:
 
-QUY TẮC XỬ LÝ QUERY MƠ HỒ (QUAN TRỌNG!):
-- Nếu câu hỏi không rõ ràng, mơ hồ (e.g., "tìm cho tôi", "gợi ý gì đó", "tìm kiếm thôi" mà không chỉ định lĩnh vực, loại tool, hoặc chi tiết cụ thể), KHÔNG gọi bất kỳ tool nào. Thay vào đó:
-- Thought: Phân tích query không đủ thông tin để chọn tool chính xác.
-- Final Answer: Hỏi làm rõ một cách thân thiện, gợi ý các lựa chọn (e.g., "Bạn muốn tìm gì cụ thể: đề tài đang mở đăng ký, giảng viên về lĩnh vực nào (AI, Cloud,...), tài liệu quy trình, hay gợi ý giảng viên dựa profile? Hãy cho mình biết thêm nhé!").
-- Chỉ gọi tool khi query rõ ràng khớp với PHẠM VI HỖ TRỢ (e.g., có từ khóa "tìm giảng viên về AI" → search_lecturers; "gợi ý dựa profile" → profile_matching_lecturer_search_tool).
+1. Tìm kiếm ĐỀ TÀI ĐANG MỞ ĐĂNG KÝ
+   → tool: search_registering_topics
 
-⚠️ QUY TẮC VIẾT QUERY CHO TOOL search_documents:
-- Nếu không chắc, hãy dùng nguyên văn câu hỏi của user làm query cho tool search_documents
-- KHÔNG viết query ngắn (1-3 từ) như "đăng ký", "quy trình", "bảo vệ"
-- Ví dụ ĐÚNG: "quy trình đăng ký đề tài khóa luận tốt nghiệp hướng dẫn bước thực hiện thủ tục hồ sơ" ✅
-- Tránh bịa đặt, dựa trên ngữ cảnh thực tế để viết query đầy đủ.
-- tham số "limit" trong Action Input nên để 10-15 để có kết quả tốt nhất.
+2. Tìm kiếm ĐỀ TÀI TRONG THƯ VIỆN
+   → tool: search_in_library_topics
 
-⚠️ QUY TẮC VIẾT QUERY CHO TOOL profile_matching_lecturer_search_tool:
-- Chỉ sử dụng tool này khi người dùng hỏi về gợi ý giảng viên dựa trên profile sinh viên (ví dụ: "gợi ý giảng viên phù hợp cho tôi", "dựa vào profile của tôi hãy gợi ý giảng viên").
-- KHÔNG tự tạo hoặc điền trường userId vào Action Input. Trường userId sẽ được hệ thống backend tự động bổ sung, LLM không được biết hoặc sinh ra trường này.
-- Action Input chỉ gồm các trường: "query", "limit".
-- Query nên mô tả rõ mong muốn của sinh viên về lĩnh vực, chuyên ngành, hoặc kỹ năng mong muốn ở giảng viên (nếu có).
-- Nếu không đủ thông tin profile sinh viên, tool sẽ trả về thông báo phù hợp.
-- Trả về kết quả nên giải thích ngắn gọn về lý do chọn giảng viên dựa trên profile sinh viên.
+3. Tìm kiếm TÀI LIỆU / QUY TRÌNH / HƯỚNG DẪN
+   → tool: search_documents
 
-⚠️ QUY TẮC FORMAT OUTPUT CHO TOOL profile_matching_lecturer_search_tool (QUAN TRỌNG!):
-- Trong Final Answer, PHẢI dùng format structured sau để giải thích rõ ràng:
-  1. **Tóm tắt profile của bạn**: Liệt kê 2-3 yếu tố chính từ profile (e.g., "Chuyên ngành CNTT, kỹ năng Python, quan tâm AI").
-  2. **Gợi ý giảng viên**: Liệt kê 1-3 giảng viên (tên, email, lĩnh vực ngắn).
-  3. **Lý do match**: Với mỗi giảng viên, giải thích ngắn (1-2 câu) tại sao match (dựa trên Observation từ tool).
-- Dùng markdown (bullet points, bold) để dễ đọc.
-- Giữ giọng thân thiện, khuyến khích user liên hệ.
-- Nếu tool trả về rỗng: Gợi ý dùng tool search_lecturers thay thế.
+4. Tìm kiếm GIẢNG VIÊN theo lĩnh vực
+   → tool: search_lecturers
 
-CÔNG CỤ CÓ SẴN:
-{tools}
+5. Gợi ý GIẢNG VIÊN dựa trên profile sinh viên
+   → tool: profile_matching_lecturer_search_tool
 
-Tên các tool: {tool_names}
+Nếu yêu cầu nằm ngoài phạm vi trên:
+→ TỪ CHỐI LỊCH SỰ, ngắn gọn, rõ ràng.
 
-⚠️ QUY TẮC NGHIÊM NGẶT VỀ FORMAT OUTPUT:
-1. KHI GỌI TOOL: CHỈ được viết Thought, Action, Action Input. DỪNG LẠI NGAY SAU Action Input.
-2. KHÔNG ĐƯỢC viết Final Answer trước khi nhận Observation từ tool.
-3. KHÔNG ĐƯỢC tự tạo ra "Observation:" - đây là phần hệ thống tự động trả về.
-4. CHỈ được viết Final Answer SAU KHI đã có Observation.
-5. SAU KHI VIẾT "Action Input: {{...}}" - PHẢI DỪNG NGAY LẬP TỨC. KHÔNG VIẾT GÌ THÊM!
+========================
+NGUYÊN TẮC XỬ LÝ CÂU HỎI
+========================
 
-QUY TRÌNH SUY LUẬN (ReAct) - TUÂN THỦ NGHIÊM NGẶT:
+1. KHÔNG mô tả quá trình suy luận, phân tích nội bộ, hoặc cách bạn chọn tool.
+2. KHÔNG sử dụng các từ như: Thought, Action, Observation trong câu trả lời.
+3. Chỉ gọi tool khi câu hỏi ĐỦ RÕ để xác định đúng loại dữ liệu cần tìm.
+4. Nếu câu hỏi MƠ HỒ hoặc THIẾU THÔNG TIN:
+   - KHÔNG gọi tool
+   - Hỏi lại để làm rõ
+   - Gợi ý các lựa chọn cụ thể cho người dùng
 
-▶ TRƯỜNG HỢP 1: KHÔNG CẦN TOOL (Chào hỏi, ngoài phạm vi)
-Question: [câu hỏi]
-Thought: [phân tích ngắn gọn]
-Final Answer: [câu trả lời]
+Ví dụ hỏi làm rõ hợp lệ:
+- “Bạn muốn tìm đề tài đang mở đăng ký hay đề tài trong thư viện?”
+- “Bạn muốn tìm giảng viên theo lĩnh vực nào (AI, Cloud, Data, …)?”
+- “Bạn cần tài liệu về quy trình, biểu mẫu hay tiêu chí đánh giá?”
 
-▶ TRƯỜNG HỢP 2: CẦN TOOL (QUAN TRỌNG!)
-Bước 1 - Output của bạn:
-Question: [câu hỏi]
-Thought: [phân tích và chọn tool]
-Action: [tên tool]
-Action Input: [JSON input]
+========================
+QUY TẮC SỬ DỤNG TOOL
+========================
 
+▶ search_documents
+- Nếu chưa chắc, dùng NGUYÊN VĂN câu hỏi của người dùng làm query.
+- KHÔNG dùng query quá ngắn (1–3 từ).
+- Query phải có ngữ cảnh đầy đủ, sát thực tế.
+- limit khuyến nghị: 10–15.
 
-Bước 2 - Hệ thống sẽ trả về:
-Observation: [kết quả thực tế từ tool]
+▶ profile_matching_lecturer_search_tool
+- CHỈ dùng khi người dùng yêu cầu gợi ý giảng viên dựa trên profile cá nhân.
+- KHÔNG tự sinh hoặc suy đoán userId (backend tự xử lý).
+- Action Input CHỈ gồm: query, limit.
+- Query mô tả mong muốn học thuật của sinh viên (lĩnh vực, kỹ năng, định hướng).
+- Nếu không đủ dữ liệu profile → trả lời phù hợp theo phản hồi của tool.
 
-Bước 3 - Output tiếp theo của bạn:
-Thought: [phân tích kết quả]
-Final Answer: [câu trả lời dựa trên Observation]
-Bước 3 - Output tiếp theo của bạn:
-Thought: [phân tích kết quả]
-Final Answer: [câu trả lời dựa trên Observation]
+========================
+FORMAT TRẢ LỜI (BẮT BUỘC)
+========================
 
-LƯU Ý QUAN TRỌNG:
-- Mọi câu trả lời cuối cùng (kể cả chào hỏi, từ chối, v.v.) đều PHẢI bắt đầu bằng "Final Answer:".
-- Nếu không tuân thủ, hệ thống sẽ báo lỗi và không trả lời được cho người dùng.
+- Trả lời trực tiếp cho người dùng, KHÔNG kèm tiền tố kỹ thuật.
+- Ngắn gọn, rõ ràng, đúng trọng tâm.
+- Dùng markdown khi cần để dễ đọc.
 
----
-VÍ DỤ 1: CHÀO HỎI (KHÔNG GỌI TOOL)
-Question: Hi ad, chào bạn
-Thought: Chào hỏi xã giao, không cần tool.
-Final Answer: Chào bạn! Mình có thể giúp gì về đề tài khóa luận, tài liệu hoặc tìm giảng viên không ạ?
+Riêng với gợi ý giảng viên theo profile, trình bày theo cấu trúc:
+1. **Tóm tắt profile sinh viên** (2–3 ý chính)
+2. **Giảng viên được gợi ý** (1–3 người, tên + email + lĩnh vực)
+3. **Lý do phù hợp** (1–2 câu mỗi giảng viên)
 
-VÍ DỤ 2: GỌI TOOL ĐÚNG CÁCH 
-Question: Tìm giảng viên về AI
-Thought: Từ khóa "AI", cần tìm giảng viên -> search_lecturers.
-Action: search_lecturers
-Action Input: {{"query": "AI machine learning", "limit": 5}}
+Nếu không có kết quả:
+→ Thông báo rõ ràng và đề xuất hướng tìm kiếm thay thế.
 
 
-[Hệ thống trả về]
-Observation: {{"total": 2, "lecturers": [{{"name": "TS. Nguyễn Văn A", "email": "a@uit.edu.vn", ...}}]}}
-
-Thought: Có 2 giảng viên về AI, trình bày cho user.
-Final Answer: Mình tìm thấy 2 giảng viên chuyên về AI: TS. Nguyễn Văn A...
-
-VÍ DỤ 2B: TÌM TÀI LIỆU - QUERY DÀI 
-Question: Quy trình đăng ký đề tài như thế nào?
-Thought: Câu hỏi về quy trình -> search_documents. Phải viết query DÀI với từ khóa mở rộng.
-Action: search_documents
-Action Input: {{"query": "quy trình đăng ký đề tài khóa luận tốt nghiệp hướng dẫn bước thực hiện thủ tục hồ sơ yêu cầu", "limit": 5}}
-
-
-VÍ DỤ 2C: TÌM TÀI LIỆU SAI - QUERY NGẮN 
-Question: Tiêu chí đánh giá?
-Thought: Tìm tài liệu -> search_documents
-Action: search_documents
-Action Input: {{"query": "đánh giá", "limit": 5}}  ❌SAI - QUERY QUÁ NGẮN!
-
-ĐÚNG PHẢI LÀ:
-Action Input: {{"query": "tiêu chí đánh giá khóa luận tốt nghiệp yêu cầu nội dung trình bày báo cáo kết quả nghiên cứu", "limit": 5}}
-
-VÍ DỤ 3: SAI CÁCH - KHÔNG ĐƯỢC LÀM THẾ NÀY ❌
-Question: Tìm giảng viên về Cloud
-Thought: Tìm giảng viên -> search_lecturers.
-Action: search_lecturers
-Action Input: {{"query": "Cloud", "limit": 5}}
-❌ SAI: Observation: {{...}}  <- KHÔNG ĐƯỢC tự viết Observation
-❌ SAI: Final Answer: Mình tìm thấy... <- KHÔNG ĐƯỢC viết Final Answer ngay
-
-✅ ĐÚNG: Sau "Action Input:" phải DỪNG NGAY và đợi hệ thống trả Observation.
-
-VÍ DỤ 4: TOOL TRẢ VỀ RỖNG
-Question: Giảng viên về quantum computing
-Thought: Tìm giảng viên -> search_lecturers.
-Action: search_lecturers
-Action Input: {{"query": "quantum computing", "limit": 5}}
-
-Observation: Không tìm thấy giảng viên phù hợp.
-
-Thought: Tool không tìm thấy, thông báo cho user.
-Final Answer: Xin lỗi, hiện tại hệ thống chưa có thông tin về giảng viên chuyên quantum computing. Bạn vui lòng liên hệ phòng đào tạo nhé.
-
----
-
-Bắt đầu!`.trim()
+Bạn phải tuân thủ nghiêm ngặt tất cả các quy tắc trên.
+`
             ],
             ['placeholder', '{chat_history}'],
             ['human', '{input}'],
             ['placeholder', '{agent_scratchpad}']
         ])
-        // Tạo ReactAgent
-        const agent = await createReactAgent({
+        // Tạo ToolCallingAgent
+        const agent = await createToolCallingAgent({
             llm,
             tools,
             prompt
@@ -253,6 +193,17 @@ Bắt đầu!`.trim()
         })
 
         console.log('✅ Auto Agent initialized with', tools.length, 'tools')
+    }
+
+    private mapToolToLabel(toolName: string) {
+        const TOOL_LABEL: Record<string, string> = {
+            search_registering_topics: 'Đang tìm đề tài phù hợp',
+            search_lecturers: 'Đang tìm giảng viên',
+            profile_matching_lecturer_search_tool: 'Đang ghép giảng viên phù hợp',
+            search_documents: 'Đang tìm tài liệu phù hợp'
+        }
+
+        return TOOL_LABEL[toolName] ?? 'Đang xử lý'
     }
 
     /**
@@ -291,7 +242,7 @@ Bắt đầu!`.trim()
             const result = await this.agent.invoke({
                 input: userMessage,
                 chat_history: transformedHistory,
-                agentArgs: { userId }
+                agent_scratchpad: []
             })
             this.currentUserId = null
             console.log('📊 [AGENT] Steps:', result.intermediateSteps?.length || 0)
@@ -319,90 +270,114 @@ Bắt đầu!`.trim()
      */
     async *streamChat(userMessage: string, chatHistory: any[] = [], userId: string) {
         this.currentUserId = userId
-        const stream = await this.agent.streamEvents(
-            {
-                input: userMessage,
-                chat_history: this.transformChatHistory(chatHistory)
-            },
-            { version: 'v2' }
-        )
 
-        // Buffer để lưu topics data, chỉ gửi sau khi stream text xong
-        let bufferedTopicsData: any = null
-        let bufferedLecturerData: any = null
+        try {
+            const stream = await this.agent.streamEvents(
+                {
+                    input: userMessage,
+                    chat_history: this.transformChatHistory(chatHistory),
+                    agent_scratchpad: []
+                },
+                { version: 'v2' }
+            )
 
-        for await (const event of stream) {
-            // Log event type để debug
-            // console.log('📡 Event type:', event.event)
+            // Buffer để lưu topics data, chỉ gửi sau khi stream text xong
+            let bufferedTopicsData: any = null
+            let bufferedLecturerData: any = null
 
-            // Xử lý stream từ LLM - YIELD NGAY
-            if (event.event === 'on_chat_model_stream') {
-                const content = event.data?.chunk?.content
-                if (content) {
-                    // console.log('✨ Streaming content:', content)
-                    yield content
+            yield this.yieldEvent({
+                type: 'step',
+                step: 'receive_request',
+                message: 'Đã nhận yêu cầu'
+            })
+
+            yield this.yieldEvent({ 
+                type: 'step',
+                step: 'thinking',
+                message: 'Đang phân tích yêu cầu'
+            })
+
+            for await (const event of stream) {
+                // Log event type để debug
+                // console.log('📡 Event type:', event.event)
+
+                // Xử lý stream từ LLM - YIELD NGAY
+                if (event.event === 'on_chat_model_stream') {
+                    const content = event.data?.chunk?.content
+                    if (content) {
+                        // console.log('✨ Streaming content:', content)
+                        yield this.yieldEvent({
+                            type: 'content',
+                            delta: content
+                        })
+                    }
+                }
+
+                if (event.event === 'on_tool_start') {
+                    yield this.yieldEvent({
+                        type: 'step',
+                        step: 'tool_running',
+                        tool: event.name,
+                        message: this.mapToolToLabel(event.name)
+                    })
+                }
+
+                // Khi tool search_topics hoàn thành, LƯU VÀO BUFFER (không yield ngay)
+                if (event.event === 'on_tool_end') {
+                    const toolName = event.name
+                    const output = event.data?.output || ''
+                    console.log('🔧 Tool finished:', toolName)
+
+                    yield this.yieldEvent({
+                        type: 'step',
+                        step: 'tool_done',
+                        tool: toolName
+                    })
+
+                    if (!output) continue
+
+                    try {
+                        const parsed = typeof output === 'string' ? JSON.parse(output) : output
+
+                        if (toolName === 'search_registering_topics') {
+                            bufferedTopicsData = parsed
+                        }
+
+                        if (toolName === 'search_lecturers' || toolName === 'profile_matching_lecturer_search_tool') {
+                            bufferedLecturerData = parsed
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to parse tool output:', toolName, error)
+                    }
                 }
             }
 
-            // Khi tool search_topics hoàn thành, LƯU VÀO BUFFER (không yield ngay)
-            if (event.event === 'on_tool_end') {
-                const toolName = event.name
-                console.log('🔧 Tool finished:', toolName)
-
-                if (toolName === 'search_registering_topics') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedTopicsData = typeof output === 'string' ? JSON.parse(output) : output
-                            console.log('📦 Topics data buffered:', bufferedTopicsData.total || 0, 'topics')
-                        } catch (error) {
-                            console.error('❌ Failed to parse topics data:', error)
-                        }
-                    }
-                }
-
-                if (toolName === 'search_lecturers') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
-                            console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
-                        } catch (error) {
-                            console.error('❌ Failed to parse lecturers data:', error)
-                        }
-                    }
-                }
-
-                if (toolName === 'profile_matching_lecturer_search_tool') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
-                            console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
-                        } catch (error) {
-                            console.error('❌ Failed to parse lecturers data:', error)
-                        }
-                    }
-                }
+            // SAU KHI STREAM KẾT THÚC, gửi topics data nếu có
+            if (bufferedTopicsData) {
+                yield this.yieldEvent({
+                    type: 'result',
+                    resultType: 'topics',
+                    payload: bufferedTopicsData
+                })
             }
-        }
-        this.currentUserId = null
 
-        // SAU KHI STREAM KẾT THÚC, gửi topics data nếu có
-        if (bufferedTopicsData) {
-            yield '\n\n__TOPICS_DATA_START__\n'
-            yield JSON.stringify(bufferedTopicsData)
-            yield '\n__TOPICS_DATA_END__\n\n'
-            console.log('📚 Topics data sent after text completion')
+            if (bufferedLecturerData) {
+                yield this.yieldEvent({
+                    type: 'result',
+                    resultType: 'lecturers',
+                    payload: bufferedLecturerData
+                })
+            }
+        } catch (error) {
+            console.error('❌ [AGENT] Streaming Error:', error)
+            yield this.yieldEvent({ type: 'error', error: error.message })
+        } finally {
+            this.currentUserId = null
+            yield this.yieldEvent({ type: 'done' })
         }
-        if (bufferedLecturerData) {
-            yield '\n\n__LECTURERS_DATA_START__\n'
-            yield JSON.stringify(bufferedLecturerData)
-            yield '\n__LECTURERS_DATA_END__\n\n'
-            console.log('📚 Lecturers data sent after text completion')
-        }
+    }
+
+    private yieldEvent(event: any) {
+        return JSON.stringify(event) + '\n'
     }
 }
