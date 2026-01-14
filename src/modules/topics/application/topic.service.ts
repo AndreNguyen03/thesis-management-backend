@@ -79,6 +79,46 @@ export class TopicService extends BaseServiceAbstract<Topic> {
     ) {
         super(topicRepository)
     }
+
+    async setHiddenInLibrary(topicId: string, adminId: string, hide: boolean): Promise<boolean> {
+        try {
+            const ok = await this.topicRepository.setHiddenInLibrary(topicId, adminId, hide)
+            if (!ok) throw new RequestTimeoutException('Cập nhật trạng thái ẩn thất bại')
+            // Optionally: create phaseHistory / audit log here
+            return ok
+        } catch (err) {
+            throw new RequestTimeoutException('Lỗi khi cập nhật trạng thái ẩn')
+        }
+    }
+
+    async getTrendingKeywords(limit: number = 10) {
+        return this.topicRepository.getTrendingKeywords(limit)
+    }
+
+    async getSystemOverviewStatistics() {
+        return this.topicRepository.getSystemOverviewStatistics()
+    }
+
+    async getSystemMonthlyViewsDownloads(lastMonths: number = 12) {
+        return this.topicRepository.getSystemMonthlyViewsDownloads(lastMonths)
+    }
+
+    async getSystemMajorDistribution() {
+        return this.topicRepository.getSystemMajorDistribution()
+    }
+
+    async getMonthlyViewsDownloads(periodId?: string, lastMonths: number = 12) {
+        return this.topicRepository.getMonthlyViewsDownloads(lastMonths, periodId)
+    }
+
+    async getOverviewStatistics(periodId?: string) {
+        return this.topicRepository.getOverviewStatistics(periodId)
+    }
+
+    async getMajorDistribution(periodId?: string) {
+        return this.topicRepository.getMajorDistribution(periodId)
+    }
+
     async batchPublishOrNotDefenseResults(topics: PublishTopic[], actorId: string, templateMilestoneId: string) {
         const bol = await this.topicRepository.batchPublishOrNotDefenseResults(topics)
         let i = 0
@@ -273,7 +313,7 @@ export class TopicService extends BaseServiceAbstract<Topic> {
             topicId,
             TopicStatus.NeedAdjust,
             actorId,
-            PhaseHistoryNote.TOPIC_NEED_ADJUST + ' với lí do: ' + comment,
+            PhaseHistoryNote.TOPIC_NEED_ADJUST + ' với lí do: ' + comment
         )
         //Gửi thông báo tới giảng viên HD chính createBy
         //đồng thời thông báo cho giảng viên đồng hướng dẫn nữa

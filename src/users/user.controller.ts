@@ -84,6 +84,7 @@ export class UserController {
                 return user ? this.lecturerService.toResponseLecturerProfile(user) : null
             case 'admin':
                 user = await this.adminService.getById(id)
+                console.log('Admin user:', user)
                 return user ? this.adminService.toResponseDto(user) : null
             case 'faculty_board':
                 user = await this.facultyBoardService.getById(id)

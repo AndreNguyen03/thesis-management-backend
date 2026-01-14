@@ -1,11 +1,12 @@
 // src/modules/chatbot/auto-agent.controller.ts
-import { Controller, Post, Body, Get, Res } from '@nestjs/common'
+import { Controller, Post, Body, Get, Res, Req } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
 import { AutoAgentService } from './application/auto-agent.service'
 import { ChatAgentRequestDto } from './dtos'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { Response } from 'express'
+import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 
 @ApiTags('AI Agent')
 @Controller('chatbot-agent')
@@ -16,7 +17,7 @@ export class AutoAgentController {
     @Auth(AuthType.None)
     @ApiOperation({ summary: 'Chat với AI Agent - Tự động chọn tool' })
     async chat(@Body() dto: ChatAgentRequestDto) {
-        return await this.agentService.chat(dto.message, dto.chatHistory || [])
+        return await this.agentService.chat(dto.message, dto.chatHistory || [], dto.userId)
     }
 
     @Post('stream-chat')
@@ -30,7 +31,7 @@ export class AutoAgentController {
         res.flushHeaders()
 
         try {
-            const stream = this.agentService.streamChat(dto.message, dto.chatHistory || [])
+            const stream = this.agentService.streamChat(dto.message, dto.chatHistory || [], dto.userId)
 
             for await (const chunk of stream) {
                 res.write(`data: ${JSON.stringify({ content: chunk, done: false })}\n\n`)
@@ -63,6 +64,11 @@ export class AutoAgentController {
                     name: 'search_lecturers',
                     description: 'Tìm kiếm giảng viên',
                     usage: 'Khi người dùng hỏi về giảng viên hướng dẫn'
+                },
+                {
+                    name: 'profile_matching_lecturer_search_tool',
+                    description: 'Gợi ý giảng viên phù hợp dựa trên hồ sơ người dùng',
+                    usage: 'Khi người dùng muốn tìm giảng viên phù hợp với hồ sơ của họ'
                 }
             ]
         }

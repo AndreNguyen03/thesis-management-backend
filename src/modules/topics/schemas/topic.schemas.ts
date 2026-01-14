@@ -166,7 +166,20 @@ export class Topic extends BaseEntity {
     @Prop({ type: Boolean, default: false, index: true })
     isPublishedToLibrary: boolean
 
+    // Admin-controlled soft-hide flag: when true topic stays in DB but hidden from regular users
+    @Prop({ type: Boolean, default: false, index: true })
+    isHiddenInLibrary: boolean
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: false, default: null })
+    hiddenByAdmin: string | null
+
+    @Prop({ type: Date, required: false, default: null })
+    hiddenAt: Date | null
+
     @Prop({ type: TopicStats, default: { views: 0, downloads: 0, averageRating: 0, reviewCount: 0 } })
     stats: TopicStats
 }
 export const TopicSchema = SchemaFactory.createForClass(Topic)
+// Index to speed up library visibility queries
+TopicSchema.index({ isPublishedToLibrary: 1, isHiddenInLibrary: 1 })
+TopicSchema.index({ isHiddenInLibrary: 1 })

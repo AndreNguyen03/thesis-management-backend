@@ -36,6 +36,8 @@ import { TopicInLibrarySearchTool } from './tools/topic-in-library-search.tool'
 import { PeriodsModule } from '../periods/periods.module'
 import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ChatbotGateway } from './gateways/chatbot.gateway'
+import { Student, StudentSchema } from '../../users/schemas/student.schema'
+import { ProfileMatchingTool } from './tools/profile-matching.tool'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
@@ -54,6 +56,7 @@ import { ChatbotGateway } from './gateways/chatbot.gateway'
         TopicInLibrarySearchTool,
         DocumentSearchTool,
         LecturerSearchTool,
+        ProfileMatchingTool,
         ChatbotConversationService,
         ChatbotConversationRepository,
         TopicGenerationService,
@@ -68,7 +71,8 @@ import { ChatbotGateway } from './gateways/chatbot.gateway'
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: ChatbotConversation.name, schema: ChatbotConversationSchema },
             { name: Lecturer.name, schema: LecturerSchema },
-            { name: User.name, schema: UserSchema }
+            { name: User.name, schema: UserSchema },
+            { name: Student.name, schema: StudentSchema }
         ]),
         forwardRef(() => KnowledgeSourceModule),
         forwardRef(() => FieldsModule),

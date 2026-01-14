@@ -138,7 +138,7 @@ export class ChatbotConversationService {
         let fullContent = ''
         let topics: any[] | undefined
 
-        for await (const chunk of this.agentService.streamChat(dto.content, chatHistory)) {
+        for await (const chunk of this.agentService.streamChat(dto.content, chatHistory, userId)) {
             fullContent += chunk
             yield chunk // Yield từng chunk
         }

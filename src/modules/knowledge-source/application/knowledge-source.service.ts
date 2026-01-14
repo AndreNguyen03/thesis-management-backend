@@ -19,6 +19,7 @@ import { buildProfileText } from '../utils/build-lecturer-profile.utils'
 import { KnowledgeStatus } from '../enums/knowledge-status.enum'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bull'
+import { UserRole } from '../../../auth/enum/user-role.enum'
 
 @Injectable()
 export class KnowledgeSourceService {
@@ -106,8 +107,8 @@ export class KnowledgeSourceService {
         const topicsInLibrary = await this.getTopicProvider.getTopicsInLibrary({
             page: 1,
             limit: 0,
-            status: TopicStatus.Archived
-        })
+            status: TopicStatus.Archived,
+        }, UserRole.FACULTY_BOARD)
         await this.knowledgeQueue.add('sync-topics-in-library-knowledge-source', {
             topicsInLibrary: topicsInLibrary.data,
             userId

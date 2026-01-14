@@ -5,10 +5,17 @@ import { Admin, AdminDocument } from '../schemas/admin.schema'
 import { AdminRepositoryInterface } from '../repository/admin.repository.interface'
 import { validateOrReject } from 'class-validator'
 import { BaseServiceAbstract } from '../../shared/base/service/base.service.abstract'
+import { Model } from 'mongoose'
+import { InjectModel } from '@nestjs/mongoose'
 
 @Injectable()
 export class AdminService extends BaseServiceAbstract<Admin> {
-    constructor(@Inject('AdminRepositoryInterface') private readonly adminRepository: AdminRepositoryInterface) {
+    constructor(
+        @Inject('AdminRepositoryInterface') private readonly adminRepository: AdminRepositoryInterface,
+
+        @InjectModel(Admin.name)
+        private readonly adminModel: Model<Admin>
+    ) {
         super(adminRepository)
     }
 
@@ -28,10 +35,9 @@ export class AdminService extends BaseServiceAbstract<Admin> {
     }
 
     async getById(id: string): Promise<Admin | null> {
-        const admin = await this.findOneById(id)
+        const admin = await this.adminModel.findOne({ _id: id, deleted_at: null }).exec()
         return admin
     }
-
     // len controller moi map sang dto
     async updateAdmin(id: string, dto: UpdateAdminDto): Promise<Admin | null> {
         const updateData: Partial<Admin> = {}

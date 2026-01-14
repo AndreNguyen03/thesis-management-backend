@@ -76,12 +76,16 @@ export class TopicSearchController {
     }
 
     @Get('/advance/topics-in-library')
-    async searchTopicsInLibrary(@Query() query: RequestGetTopicsInAdvanceSearchParams) {
+    @Auth(AuthType.Bearer)
+    async searchTopicsInLibrary(
+        @Query() query: RequestGetTopicsInAdvanceSearchParams,
+        @Req() req: { user: ActiveUserData }
+    ) {
         let topics
         // console.log('rulesPagination:', query.rulesPagination)
         //query.search_by = 'titleVN,titleEng'
         if (query.rulesPagination === 100) topics = await this.searchService.semanticSearchLibraryTopic(query)
-        else topics = await this.getTopicProvider.getTopicsInLibrary(query)
+        else topics = await this.getTopicProvider.getTopicsInLibrary(query, req.user.role as UserRole)
         return plainToInstance(PaginatedTopicsInLibrary, topics, {
             excludeExtraneousValues: true,
             enableImplicitConversion: true

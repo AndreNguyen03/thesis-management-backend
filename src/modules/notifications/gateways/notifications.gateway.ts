@@ -39,6 +39,8 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             // Lấy user đã xác thực từ socket
             const userId = this.extractUserId(client)
 
+            console.log('Notification client connecting, extracted userId:', userId)
+
             if (!userId) {
                 this.logger.warn(`Connection rejected: No userId found`)
                 client.disconnect()
@@ -54,6 +56,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             client.disconnect()
         }
     }
+
     async handleDisconnect(client: Socket) {
         const userId = this.extractUserId(client)
         this.logger.log(`User ${userId} disconnecting socket ${client.id}`)

@@ -15,7 +15,7 @@ import {
     RequestGetTopicsInPhaseParams
 } from '../../dtos'
 import { TopicRepositoryInterface } from '../topic.repository.interface'
-import mongoose, { Model, Types } from 'mongoose'
+import mongoose, { Model, Types, PipelineStage } from 'mongoose'
 import { UserRole } from '../../../../auth/enum/user-role.enum'
 import { PaginationProvider } from '../../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../../common/pagination-an/interfaces/paginated.interface'
@@ -66,6 +66,468 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         //   @InjectModel(UserSavedTopics.name) private readonly archiveRepository: Model<UserSavedTopics>
     ) {
         super(topicRepository)
+    }
+
+    async setHiddenInLibrary(topicId: string, adminId: string, hide: boolean): Promise<boolean> {
+        const res = await this.topicRepository
+            .updateOne({ _id: new mongoose.Types.ObjectId(topicId), deleted_at: null } as any, {
+                $set: {
+                    isHiddenInLibrary: hide,
+                    hiddenByAdmin: hide ? new mongoose.Types.ObjectId(adminId) : null,
+                    hiddenAt: hide ? new Date() : null
+                }
+            })
+            .exec()
+        return !!(res && (res.modifiedCount ?? 0) > 0)
+    }
+
+    async getSystemOverviewStatistics(): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+        totalStorageBytes: number
+    }> {
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+        const pipeline: PipelineStage[] = [
+            { $match: { deleted_at: null, isPublishedToLibrary: true } },
+            {
+                $facet: {
+                    totals: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalTopics: { $sum: 1 },
+                                totalViews: { $sum: { $ifNull: ['$stats.views', 0] } },
+                                totalDownloads: { $sum: { $ifNull: ['$stats.downloads', 0] } },
+                                sumRatingTimesCount: {
+                                    $sum: {
+                                        $multiply: [
+                                            { $ifNull: ['$stats.averageRating', 0] },
+                                            { $ifNull: ['$stats.reviewCount', 0] }
+                                        ]
+                                    }
+                                },
+                                totalReviewCount: { $sum: { $ifNull: ['$stats.reviewCount', 0] } }
+                            }
+                        }
+                    ],
+                    // count topics newly added to library this month = topics that have an 'archived' phaseHistory with createdAt >= startOfMonth
+                    newThisMonth: [
+                        {
+                            $match: {
+                                deleted_at: null,
+                                phaseHistories: {
+                                    $elemMatch: {
+                                        status: 'archived',
+                                        createdAt: { $gte: startOfMonth }
+                                    }
+                                }
+                            }
+                        },
+                        { $count: 'count' }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    totals: { $arrayElemAt: ['$totals', 0] },
+                    newThisMonth: { $arrayElemAt: ['$newThisMonth.count', 0] }
+                }
+            }
+        ]
+
+        const [res] = await this.topicRepository.aggregate(pipeline).exec()
+        const totals = res?.totals || {}
+        const ratingCount = totals?.totalReviewCount || 0
+        const averageRating =
+            ratingCount > 0 ? Math.round(((totals.sumRatingTimesCount || 0) / ratingCount) * 10) / 10 : 0
+
+        // Tổng dung lượng lưu trữ từ collection 'files' (bytes)
+        const filesAgg = await this.topicRepository.db
+            .collection('files')
+            .aggregate<{ totalSize?: number }>([
+                { $match: { deleted_at: null, isPublishedToLibrary: true } },
+                { $group: { _id: null, totalSize: { $sum: { $ifNull: ['$size', 0] } } } },
+                { $project: { _id: 0, totalSize: 1 } }
+            ])
+            .toArray()
+        const totalStorageBytes = filesAgg[0]?.totalSize || 0
+
+        return {
+            totalTopics: totals.totalTopics || 0,
+            totalViews: totals.totalViews || 0,
+            totalDownloads: totals.totalDownloads || 0,
+            averageRating,
+            ratingCount,
+            newTopicsThisMonth: res?.newThisMonth || 0,
+            totalStorageBytes
+        }
+    }
+
+    async getSystemMonthlyViewsDownloads(
+        lastMonths: number = 12
+    ): Promise<{ month: string; views: number; downloads: number }[]> {
+        const now = new Date()
+        const start = new Date(now.getFullYear(), now.getMonth() - (lastMonths - 1), 1)
+
+        // only include topics published to library
+        const match: Record<string, any> = { deleted_at: null, isPublishedToLibrary: true }
+
+        // aggregate by the archive date (topic was added to library) instead of createdAt
+        const pipeline: PipelineStage[] = [
+            { $match: match },
+            {
+                $project: {
+                    archiveEntry: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: '$phaseHistories',
+                                    as: 'ph',
+                                    cond: { $eq: ['$$ph.status', 'archived'] }
+                                }
+                            },
+                            -1
+                        ]
+                    },
+                    views: { $ifNull: ['$stats.views', 0] },
+                    downloads: { $ifNull: ['$stats.downloads', 0] }
+                }
+            },
+            // only topics that have been archived and archived within the period
+            { $match: { 'archiveEntry.createdAt': { $gte: start } } },
+            {
+                $project: {
+                    year: { $year: '$archiveEntry.createdAt' },
+                    month: { $month: '$archiveEntry.createdAt' },
+                    views: 1,
+                    downloads: 1
+                }
+            },
+            {
+                $group: {
+                    _id: { year: '$year', month: '$month' },
+                    views: { $sum: '$views' },
+                    downloads: { $sum: '$downloads' }
+                }
+            },
+            { $project: { _id: 0, year: '$_id.year', month: '$_id.month', views: 1, downloads: 1 } },
+            { $sort: { year: 1, month: 1 } }
+        ]
+
+        const agg = await this.topicRepository.aggregate(pipeline).exec()
+
+        const map = new Map<string, { views: number; downloads: number }>()
+        agg.forEach((r: any) => {
+            const key = `${r.year}-${String(r.month).padStart(2, '0')}`
+            map.set(key, { views: r.views || 0, downloads: r.downloads || 0 })
+        })
+
+        const res: { month: string; views: number; downloads: number }[] = []
+        for (let i = lastMonths - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+            const val = map.get(key) || { views: 0, downloads: 0 }
+            res.push({ month: key, views: val.views, downloads: val.downloads })
+        }
+        return res
+    }
+
+    async getSystemMajorDistribution(): Promise<{ majorId: string; label: string; count: number; percent: number }[]> {
+        const pipeline: PipelineStage[] = [
+            { $match: { deleted_at: null, isPublishedToLibrary: true } },
+            { $group: { _id: '$majorId', count: { $sum: 1 } } },
+            {
+                $lookup: {
+                    from: 'majors',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'major'
+                }
+            },
+            { $unwind: { path: '$major', preserveNullAndEmptyArrays: true } },
+            { $project: { majorId: { $toString: '$_id' }, label: { $ifNull: ['$major.name', 'Unknown'] }, count: 1 } },
+            { $sort: { count: -1 } }
+        ]
+
+        const rows = await this.topicRepository.aggregate(pipeline).exec()
+        const total = rows.reduce((s: number, r: any) => s + (r.count || 0), 0) || 1
+        return rows.map((r: any) => ({
+            majorId: r.majorId,
+            label: r.label,
+            count: r.count,
+            percent: Math.round((r.count / total) * 100)
+        }))
+    }
+
+    async getTrendingKeywords(
+        limit: number = 10
+    ): Promise<{ label: string; count: number; score: number; color?: string }[]> {
+        const pipeline: PipelineStage[] = [
+            { $match: { deleted_at: null, isPublishedToLibrary: true } },
+            {
+                $project: {
+                    fieldIds: 1,
+                    'stats.views': { $ifNull: ['$stats.views', 0] },
+                    'stats.downloads': { $ifNull: ['$stats.downloads', 0] }
+                }
+            },
+            { $unwind: '$fieldIds' },
+            {
+                $group: {
+                    _id: '$fieldIds',
+                    views: { $sum: '$stats.views' },
+                    downloads: { $sum: '$stats.downloads' },
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $addFields: {
+                    // score formula: views + downloads*2 + topics_count*10 (tunable)
+                    score: {
+                        $add: ['$views', { $multiply: ['$downloads', 2] }, { $multiply: ['$count', 10] }]
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'fields',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'field'
+                }
+            },
+            { $unwind: { path: '$field', preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    _id: 0,
+                    label: { $ifNull: ['$field.name', 'Unknown'] },
+                    count: 1,
+                    score: 1,
+                    color: '$field.color'
+                }
+            },
+            { $sort: { score: -1 } },
+            { $limit: limit }
+        ]
+
+        const rows = await this.topicRepository.aggregate(pipeline).exec()
+        return rows.map((r: any) => ({
+            label: r.label,
+            count: r.count || 0,
+            score: r.score || 0,
+            color: r.color
+        }))
+    }
+
+    // Thống kê lượt xem & tải theo tháng (last 12 tháng) — dùng topic.stats.views / downloads
+
+    async getMonthlyViewsDownloads(
+        lastMonths: number = 12,
+        periodId?: string
+    ): Promise<{ month: string; views: number; downloads: number }[]> {
+        const now = new Date()
+        const start = new Date(now.getFullYear(), now.getMonth() - (lastMonths - 1), 1)
+
+        const match: Record<string, any> = { deleted_at: null }
+        if (periodId) match.periodId = new mongoose.Types.ObjectId(periodId)
+
+        const pipeline: PipelineStage[] = [
+            { $match: match },
+            {
+                $lookup: {
+                    from: 'topicinteractions',
+                    let: { tid: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [{ $eq: ['$topicId', '$$tid'] }, { $gte: ['$createdAt', start] }]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                action: 1,
+                                year: { $year: '$createdAt' },
+                                month: { $month: '$createdAt' }
+                            }
+                        }
+                    ],
+                    as: 'interactions'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$interactions',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: '$interactions.year',
+                        month: '$interactions.month'
+                    },
+                    views: {
+                        $sum: {
+                            $cond: [{ $eq: ['$interactions.action', 'view'] }, 1, 0]
+                        }
+                    },
+                    downloads: {
+                        $sum: {
+                            $cond: [{ $eq: ['$interactions.action', 'download'] }, 1, 0]
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    year: '$_id.year',
+                    month: '$_id.month',
+                    views: 1,
+                    downloads: 1
+                }
+            },
+            { $sort: { year: 1, month: 1 } }
+        ]
+
+        const agg = await this.topicRepository.aggregate(pipeline).exec()
+
+        const map = new Map<string, { views: number; downloads: number }>()
+        agg.forEach((r: any) => {
+            const key = `${r.year}-${String(r.month).padStart(2, '0')}`
+            map.set(key, { views: r.views, downloads: r.downloads })
+        })
+
+        const res: { month: string; views: number; downloads: number }[] = []
+        for (let i = lastMonths - 1; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+            const val = map.get(key) || { views: 0, downloads: 0 }
+            res.push({ month: key, views: val.views, downloads: val.downloads })
+        }
+
+        return res
+    }
+
+    async getOverviewStatistics(periodId?: string): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+    }> {
+        const match: any = { deleted_at: null }
+        if (periodId) match.periodId = new mongoose.Types.ObjectId(periodId)
+
+        const now = new Date()
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+        const pipeline: any[] = [
+            { $match: match },
+            {
+                $facet: {
+                    totals: [
+                        {
+                            $group: {
+                                _id: null,
+                                totalTopics: { $sum: 1 },
+                                totalViews: { $sum: { $ifNull: ['$stats.views', 0] } },
+                                totalDownloads: { $sum: { $ifNull: ['$stats.downloads', 0] } },
+                                sumRatingTimesCount: {
+                                    $sum: {
+                                        $multiply: [
+                                            { $ifNull: ['$stats.averageRating', 0] },
+                                            { $ifNull: ['$stats.reviewCount', 0] }
+                                        ]
+                                    }
+                                },
+                                totalReviewCount: { $sum: { $ifNull: ['$stats.reviewCount', 0] } }
+                            }
+                        }
+                    ],
+                    newThisMonth: [{ $match: { createdAt: { $gte: startOfMonth } } }, { $count: 'count' }]
+                }
+            },
+            {
+                $project: {
+                    totals: { $arrayElemAt: ['$totals', 0] },
+                    newThisMonth: { $arrayElemAt: ['$newThisMonth.count', 0] }
+                }
+            }
+        ]
+
+        const [res] = await this.topicRepository.aggregate(pipeline).exec()
+        const totals = res?.totals || {}
+        const ratingCount = totals?.totalReviewCount || 0
+        const avg = ratingCount > 0 ? Math.round(((totals.sumRatingTimesCount || 0) / ratingCount) * 10) / 10 : 0
+
+        return {
+            totalTopics: totals.totalTopics || 0,
+            totalViews: totals.totalViews || 0,
+            totalDownloads: totals.totalDownloads || 0,
+            averageRating: avg,
+            ratingCount,
+            newTopicsThisMonth: res?.newThisMonth || 0
+        }
+    }
+
+    async getMajorDistribution(
+        periodId?: string
+    ): Promise<{ majorId: string; label: string; count: number; percent: number }[]> {
+        const match: Record<string, any> = { deleted_at: null }
+        if (periodId) match.periodId = new mongoose.Types.ObjectId(periodId)
+
+        const pipeline: PipelineStage[] = [
+            { $match: match },
+            {
+                $group: {
+                    _id: '$majorId',
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'majors',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'major'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$major',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    majorId: { $toString: '$_id' },
+                    label: { $ifNull: ['$major.name', 'Unknown'] },
+                    count: 1
+                }
+            },
+            { $sort: { count: -1 } }
+        ]
+
+        const rows = await this.topicRepository.aggregate(pipeline).exec()
+
+        const total = rows.reduce((sum: number, r: any) => sum + (r.count ?? 0), 0) || 1
+
+        return rows.map((r: any) => ({
+            majorId: r.majorId,
+            label: r.label,
+            count: r.count,
+            percent: Math.round((r.count / total) * 100)
+        }))
     }
 
     async getCurrentTopicsState(topicIds: string[], limit: number): Promise<Topic[]> {
@@ -1094,6 +1556,9 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 studentRef: 1,
                 stats: 1,
                 defenseResult: 1,
+                isHiddenInLibrary: 1,
+                hiddenByAdmin: 1,
+                hiddenAt: 1,
                 finalProduct: 1,
                 deleted_at: 1,
                 registrationStatus: { $arrayElemAt: [{ $ifNull: ['$studentRef.status', []] }, 0] }
@@ -1387,11 +1852,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
-    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
+    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams, role: UserRole): Promise<Paginated<Topic>> {
         const { lecturerIds, fieldIds, majorIds, year } = query
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
         pipelineSub.push(...this.buildStudentPipeline(StudentRegistrationStatus.APPROVED))
+        pipelineSub.push({
+            $match: {
+                currentStatus: TopicStatus.Archived,
+                deleted_at: null
+            }
+        })
         pipelineSub.push({
             $project: {
                 titleEng: 1,
@@ -1438,11 +1909,17 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 year: { $year: '$defenseResult.defenseDate' },
                 stats: 1,
                 defenseDate: '$defenseResult.defenseDate',
+                isHiddenInLibrary: {
+                    $ifNull: ['$isHiddenInLibrary', false]
+                },
+                hiddenByAdmin: 1,
+                hiddenAt: 1,
                 defenseResult: 1,
                 finalProduct: 1,
                 studentInTopics: 1
             }
         })
+
         //Phân trang phụ
         //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
@@ -1499,6 +1976,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         }
 
         //if (query.rulesPagination === 0)
+        // Exclude hidden topics for non-admin users
+        if (role !== UserRole.ADMIN) {
+            pipelineSub.push({
+                $match: {
+                    isHiddenInLibrary: { $ne: true }
+                }
+            })
+        }
+
         pipelineSub.push({
             $match: {
                 currentStatus: TopicStatus.Archived,
@@ -1506,7 +1992,8 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
             }
         })
 
-        return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+        const rawResult = await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
+        return rawResult
     }
 
     async getTopicRegistrationApprovalsOfLecturer(
