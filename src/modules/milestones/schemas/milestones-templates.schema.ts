@@ -24,7 +24,7 @@ export class MilestoneTemplate extends BaseEntity {
     isPublished: boolean // Đã công bố điểm
 
     @Prop({ type: Boolean, default: false })
-    isBlock: boolean // Đã khóa (không cho chỉnh sửa)
+    isLocked: boolean // Đã khóa (không cho chỉnh sửa)
 
     @Prop({ type: mongoose.Schema.Types.ObjectId })
     createdBy: string

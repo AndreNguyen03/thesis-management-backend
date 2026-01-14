@@ -14,6 +14,15 @@ export class MailProcessor {
         private readonly configService: ConfigService
     ) {}
 
+    // Helper to render a template to HTML
+    async renderTemplate(template: string, context: Record<string, any>): Promise<string> {
+        // @ts-ignore: access private method for rendering
+        if (typeof (this.mailerService as any).render === 'function') {
+            return (this.mailerService as any).render(template, context)
+        }
+        throw new Error('MailerService does not support template rendering.')
+    }
+
     @Process('send-user-welcome')
     async handleSendUserWelcome(job: Job<{ user: User }>) {
         try {
@@ -385,6 +394,48 @@ export class MailProcessor {
             })
         } catch (e) {
             console.error(`Gửi mail yêu cầu nộp đề tài thất bại cho ${job.data.to}:`, e)
+        }
+    }
+
+    @Process('send-defense-scores-published')
+    async handleDefenseScoresPublished(job: Job) {
+        const {
+            to,
+            studentName,
+            topicTitle,
+            councilName,
+            location,
+            defenseDate,
+            finalScore,
+            gradeText,
+            scores,
+            hasComments,
+            portalUrl,
+            facultyName
+        } = job.data
+
+        try {
+            const html = await this.renderTemplate('defense-scores-published', {
+                studentName,
+                topicTitle,
+                councilName,
+                location,
+                defenseDate,
+                finalScore,
+                gradeText,
+                scores,
+                hasComments,
+                portalUrl,
+                facultyName
+            })
+
+            await this.mailerService.sendMail({
+                to,
+                subject: `🎓 Thông báo điểm bảo vệ khóa luận - ${topicTitle}`,
+                html
+            })
+        } catch (e) {
+            console.error(`Gửi mail công bố điểm bảo vệ thất bại cho ${to}:`, e)
         }
     }
 }

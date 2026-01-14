@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Hội đồng Bảo vệ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.6;
+            color: #000;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+        
+        .header .info {
+            font-size: 12pt;
+            color: #555;
+            margin-top: 10px;
+        }
+        
+        .stats-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            page-break-inside: avoid;
+        }
+        
+        .stats-section h3 {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #3498db;
+        }
+        
+        .stat-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 11pt;
+        }
+        
+        .stat-value {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+        
+        .grade-distribution {
+            margin-top: 20px;
+        }
+        
+        .grade-bar-container {
+            margin: 10px 0;
+        }
+        
+        .grade-label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        
+        .grade-bar {
+            display: inline-block;
+            height: 25px;
+            background: #3498db;
+            border-radius: 4px;
+            padding: 0 10px;
+            color: white;
+            line-height: 25px;
+            font-weight: bold;
+        }
+        
+        .grade-xuatsac { background: #27ae60; }
+        .grade-gioi { background: #2ecc71; }
+        .grade-kha { background: #3498db; }
+        .grade-trungbinh { background: #f39c12; }
+        .grade-yeu { background: #e67e22; }
+        .grade-kem { background: #e74c3c; }
+        
+        .topics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 11pt;
+            page-break-inside: auto;
+        }
+        
+        .topics-table thead {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .topics-table th,
+        .topics-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .topics-table th {
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .topics-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .topics-table tbody tr:hover {
+            background: #e8f4f8;
+        }
+        
+        .score-cell {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .grade-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            font-size: 10pt;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            font-size: 10pt;
+            color: #777;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        
+        .signature-box .title {
+            font-weight: bold;
+            font-size: 12pt;
+            margin-bottom: 60px;
+        }
+        
+        .signature-box .name {
+            font-style: italic;
+        }
+        
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .topics-table {
+                page-break-inside: auto;
+            }
+            
+            .topics-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            .stats-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>BÁO CÁO HỘI ĐỒNG BẢO VỆ</h1>
+        <h2><%= council.name %></h2>
+        <div class="info">
+            <p><strong>Ngày bảo vệ:</strong> <%= formatDate(council.scheduledDate) %></p>
+            <p><strong>Địa điểm:</strong> <%= council.location %></p>
+            <p><strong>Ngày tạo báo cáo:</strong> <%= formatDateTime(generatedDate) %></p>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="stats-section">
+        <h3>THỐNG KÊ TỔNG QUAN</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Tổng số đề tài</div>
+                <div class="stat-value"><%= stats.totalTopics %></div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Đề tài đã chấm</div>
+                <div class="stat-value"><%= stats.completedTopics %></div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Điểm trung bình</div>
+                <div class="stat-value"><%= stats.averageScore.toFixed(2) %></div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Tỷ lệ hoàn thành</div>
+                <div class="stat-value"><%= ((stats.completedTopics / stats.totalTopics) * 100).toFixed(1) %>%</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Điểm cao nhất</div>
+                <div class="stat-value"><%= stats.highestScore.toFixed(2) %></div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-label">Điểm thấp nhất</div>
+                <div class="stat-value"><%= stats.lowestScore.toFixed(2) %></div>
+            </div>
+        </div>
+        
+        <!-- Grade Distribution -->
+        <div class="grade-distribution">
+            <h4 style="margin-bottom: 15px; color: #2c3e50;">Phân bố xếp loại:</h4>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Xuất sắc (≥ 9.0):</span>
+                <div class="grade-bar grade-xuatsac" style="width: <%= (stats.gradeDistribution.xuatSac / stats.totalTopics * 300) %>px;">
+                    <%= stats.gradeDistribution.xuatSac %> (<%= ((stats.gradeDistribution.xuatSac / stats.totalTopics) * 100).toFixed(1) %>%)
+                </div>
+            </div>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Giỏi (8.0 - 8.9):</span>
+                <div class="grade-bar grade-gioi" style="width: <%= (stats.gradeDistribution.gioi / stats.totalTopics * 300) %>px;">
+                    <%= stats.gradeDistribution.gioi %> (<%= ((stats.gradeDistribution.gioi / stats.totalTopics) * 100).toFixed(1) %>%)
+                </div>
+            </div>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Khá (7.0 - 7.9):</span>
+                <div class="grade-bar grade-kha" style="width: <%= (stats.gradeDistribution.kha / stats.totalTopics * 300) %>px;">
+                    <%= stats.gradeDistribution.kha %> (<%= ((stats.gradeDistribution.kha / stats.totalTopics) * 100).toFixed(1) %>%)
+                </div>
+            </div>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Trung bình (5.5 - 6.9):</span>
+                <div class="grade-bar grade-trungbinh" style="width: <%= stats.totalTopics ? (stats.gradeDistribution.trungBinh / stats.totalTopics * 300) : 0 %>px;">
+                    <%= stats.gradeDistribution.trungBinh %> (<%= stats.totalTopics ? ((stats.gradeDistribution.trungBinh / stats.totalTopics) * 100).toFixed(1) : '0.0' %>%)
+                </div>
+            </div>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Yếu (4.0 - 5.4):</span>
+                <div class="grade-bar grade-yeu" style="width: <%= (stats.gradeDistribution.yeu / stats.totalTopics * 300) %>px;">
+                    <%= stats.gradeDistribution.yeu %> (<%= ((stats.gradeDistribution.yeu / stats.totalTopics) * 100).toFixed(1) %>%)
+                </div>
+            </div>
+            
+            <div class="grade-bar-container">
+                <span class="grade-label">Kém (< 4.0):</span>
+                <div class="grade-bar grade-kem" style="width: <%= (stats.gradeDistribution.kem / stats.totalTopics * 300) %>px;">
+                    <%= stats.gradeDistribution.kem %> (<%= ((stats.gradeDistribution.kem / stats.totalTopics) * 100).toFixed(1) %>%)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topics Table -->
+    <div style="margin-top: 30px;">
+        <h3 style="font-size: 16pt; margin-bottom: 15px; color: #2c3e50;">CHI TIẾT ĐIỂM CÁC ĐỀ TÀI</h3>
+        <p style="font-size: 10pt; color: #666; margin-bottom: 10px;">
+            <em>Công thức tính điểm: ((GVHD + GVPB) × 2 + Thư ký + Chủ tịch) / 6</em>
+        </p>
+        
+        <table class="topics-table">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">STT</th>
+                    <th style="width: 300px;">Tên đề tài</th>
+                    <th style="width: 150px;">Sinh viên</th>
+                    <th>GVHD</th>
+                    <th>GVPB</th>
+                    <th>Thư ký</th>
+                    <th>Chủ tịch</th>
+                    <th style="width: 80px;">Điểm TB</th>
+                    <th style="width: 100px;">Xếp loại</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% 
+                const sortedTopics = council.topics.sort((a, b) => (a.defenseOrder || 0) - (b.defenseOrder || 0));
+                sortedTopics.forEach((topic, index) => { 
+                    const supervisor = topic.scores.find(s => s.scoreType === 'supervisor');
+                    const reviewer = topic.scores.find(s => s.scoreType === 'reviewer');
+                    const secretary = topic.scores.find(s => s.scoreType === 'secretary');
+                    const chairperson = topic.scores.find(s => s.scoreType === 'chairperson');
+                %>
+                <tr>
+                    <td style="text-align: center;"><%= topic.defenseOrder || index + 1 %></td>
+                    <td><%= topic.titleVN %></td>
+                    <td><%= topic.studentNames.join(', ') %></td>
+                    <td class="score-cell"><%= supervisor ? supervisor.total.toFixed(1) : '-' %></td>
+                    <td class="score-cell"><%= reviewer ? reviewer.total.toFixed(1) : '-' %></td>
+                    <td class="score-cell"><%= secretary ? secretary.total.toFixed(1) : '-' %></td>
+                    <td class="score-cell"><%= chairperson ? chairperson.total.toFixed(1) : '-' %></td>
+                    <td class="score-cell" style="font-size: 13pt;">
+                        <strong><%= topic.finalScore ? topic.finalScore.toFixed(2) : '-' %></strong>
+                    </td>
+                    <td style="text-align: center;">
+                        <% 
+                        let badgeClass = 'grade-trungbinh';
+                        if (topic.gradeText === 'Xuất sắc') badgeClass = 'grade-xuatsac';
+                        else if (topic.gradeText === 'Giỏi') badgeClass = 'grade-gioi';
+                        else if (topic.gradeText === 'Khá') badgeClass = 'grade-kha';
+                        else if (topic.gradeText === 'Yếu') badgeClass = 'grade-yeu';
+                        else if (topic.gradeText === 'Kém') badgeClass = 'grade-kem';
+                        %>
+                        <span class="grade-badge <%= badgeClass %>"><%= topic.gradeText || '-' %></span>
+                    </td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="title">THƯ KÝ HỘI ĐỒNG</div>
+            <div class="name">(Ký và ghi rõ họ tên)</div>
+        </div>
+        
+        <div class="signature-box">
+            <div class="title">CHỦ TỊCH HỘI ĐỒNG</div>
+            <div class="name">(Ký và ghi rõ họ tên)</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Báo cáo được tạo tự động bởi Hệ thống Quản lý Khóa luận</p>
+        <p>Ngày tạo: <%= formatDateTime(generatedDate) %></p>
+    </div>
+</body>
+</html>

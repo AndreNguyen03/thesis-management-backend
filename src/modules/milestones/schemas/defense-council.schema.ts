@@ -8,7 +8,8 @@ export enum CouncilMemberRole {
     CHAIRPERSON = 'chairperson',
     SECRETARY = 'secretary',
     MEMBER = 'member',
-    REVIEWER = 'reviewer'
+    REVIEWER = 'reviewer',
+    SUPERVISOR = 'supervisor'
 }
 // Thành viên hội đồng (CHUNG cho tất cả đề tài trong hội đồng)
 @Schema({ _id: false })
@@ -64,6 +65,13 @@ export class Score {
 
     @Prop({ type: Date, default: Date.now })
     scoredAt: Date
+
+    // Audit trail
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+    lastModifiedBy?: string
+
+    @Prop({ type: Date })
+    lastModifiedAt?: Date
 }
 
 export const ScoreSchema = SchemaFactory.createForClass(Score)
@@ -94,6 +102,13 @@ export class TopicAssignment {
 
     @Prop({ type: Number })
     finalScore: number // Điểm tổng kết
+
+    @Prop({ type: String })
+    gradeText: string // "Xuất sắc", "Giỏi", "Khá", "Trung bình", "Yếu"
+
+    @Prop({ default: false })
+    isLocked: boolean // Đã khóa điểm chưa?
+
     @Prop({ type: [CouncilMember], default: [] })
     members: CouncilMember[]
 }
@@ -118,6 +133,7 @@ export class DefenseCouncil extends BaseEntity {
     @Prop({ type: [TopicAssignment], default: [] })
     topics: TopicAssignment[] // Các đề tài trong hội đồng, mỗi đề tài có bộ ba riêng
 
+    //đề tài sẽ chuyển sang hoàn thành khi mà tất cả các đề tài trong hội đồng đều đã được chấm điểm và khóa
     @Prop({ default: false })
     isCompleted: boolean // Đã hoàn thành chấm điểm
 
@@ -126,6 +142,18 @@ export class DefenseCouncil extends BaseEntity {
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
     createdBy: string
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+    completedBy?: string // Thư ký nào khóa
+
+    @Prop({ type: Date })
+    completedAt?: Date
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
+    publishedBy?: string // BCN nào công bố
+
+    @Prop({ type: Date })
+    publishedAt?: Date
 }
 
 export const DefenseCouncilSchema = SchemaFactory.createForClass(DefenseCouncil)

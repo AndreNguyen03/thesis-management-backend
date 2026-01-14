@@ -16,6 +16,12 @@ import { DefenseCouncil, DefenseCouncilSchema } from './schemas/defense-council.
 import { DefenseCouncilController } from './defense-council.controller'
 import { DefenseCouncilService } from './application/defense-council.service'
 import { DefenseCouncilRepository } from './repository/defense-council.repository'
+import { DefensePdfProvider } from './providers/defense-pdf.provider'
+import { DefenseAnalyticsProvider } from './providers/defense-analytics.provider'
+import { CouncilRoleGuard } from './guards/council-role.guard'
+import { MailModule } from '../../mail/mail.module'
+import { StudentRegisterTopic, StudentRegisterTopicSchema } from '../registrations/schemas/ref_students_topics.schemas'
+import { UsersModule } from '../../users/users.module'
 
 @Module({
     controllers: [MilestonesController, DefenseCouncilController],
@@ -23,6 +29,9 @@ import { DefenseCouncilRepository } from './repository/defense-council.repositor
         MilestonesService,
         DefenseCouncilService,
         DefenseCouncilRepository,
+        DefensePdfProvider,
+        DefenseAnalyticsProvider,
+        CouncilRoleGuard,
         {
             provide: 'IMilestoneRepository',
             useClass: MilestoneRepository
@@ -34,14 +43,17 @@ import { DefenseCouncilRepository } from './repository/defense-council.repositor
             { name: Milestone.name, schema: MilestoneSchema },
             { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
             { name: Topic.name, schema: TopicSchema },
-            { name: DefenseCouncil.name, schema: DefenseCouncilSchema }
+            { name: DefenseCouncil.name, schema: DefenseCouncilSchema },
+            { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema }
         ]),
         UploadFilesModule,
         TodolistsModule,
         GroupsModule,
         PaginationAnModule,
+        UsersModule,
+        forwardRef(() => MailModule),
         forwardRef(() => PeriodsModule),
-        forwardRef(() => TopicModule),
+        forwardRef(() => TopicModule)
     ]
 })
 export class MilestonesModule {}

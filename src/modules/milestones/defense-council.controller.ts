@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { Response } from 'express'
 import { Auth } from '../../auth/decorator/auth.decorator'
 import { AuthType } from '../../auth/enum/auth-type.enum'
 import { DefenseCouncilService } from './application/defense-council.service'
@@ -14,10 +15,12 @@ import {
     SubmitScoreDto,
     UpdateDefenseCouncilDto,
     UpdateTopicMembersDto,
-    UpdateTopicOrderDto
+    UpdateTopicOrderDto,
+    SubmitTopicScoresDto
 } from './dtos/defense-council.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
+import { CouncilRoleGuard, CouncilRoles } from './guards/council-role.guard'
 
 @Controller('defense-councils')
 @Auth(AuthType.Bearer)
@@ -206,11 +209,169 @@ export class DefenseCouncilController {
             data: council
         }
     }
-
-    @Get('lecturer/detail-assigned-defense/:councilId')
+    //lấy chi tiết chấm điểm hội đồng
+    //giảng viên chi xem được hội đồng mà minhf được phân công
+    //BCN xem được tất cả
+    @Get('/detail-scoring-council/:councilId')
     @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async getAssignedDefenseCouncils(@Req() req: { user: ActiveUserData }, @Param('councilId') councilId: string) {
-        return await this.defenseCouncilService.getDetailAssignedDefenseCouncils(councilId, req.user.sub)
+    async getDetailScoringDefenseCouncil(@Req() req: { user: ActiveUserData }, @Param('councilId') councilId: string) {
+        const _id = req.user.role === UserRole.LECTURER ? req.user.sub : undefined
+        return await this.defenseCouncilService.getDetailScoringDefenseCouncil(councilId, _id)
+    }
+
+    // === NEW ENDPOINTS FOR SECRETARY SCORING WORKFLOW ===
+
+    // Thư ký nhập điểm cho đề tài (tất cả thành viên cùng lúc)
+    @Post(':councilId/topics/:topicId/submit-scores')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard, CouncilRoleGuard)
+    @CouncilRoles('secretary') // Chỉ thư ký mới được nhập điểm
+    async submitTopicScores(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Body() dto: SubmitTopicScoresDto,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const council = await this.defenseCouncilService.submitTopicScores(councilId, topicId, dto, req.user.sub)
+        return {
+            message: 'Nhập điểm thành công',
+            data: council
+        }
+    }
+
+    // Khóa điểm một đề tài
+    @Post(':councilId/topics/:topicId/lock')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async lockTopicScores(@Param('councilId') councilId: string, @Param('topicId') topicId: string) {
+        const council = await this.defenseCouncilService.lockTopicScores(councilId, topicId)
+        return {
+            message: 'Khóa điểm đề tài thành công',
+            data: council
+        }
+    }
+
+    // Mở khóa điểm một đề tài (BCN)
+    @Post(':councilId/topics/:topicId/unlock')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async unlockTopicScores(@Param('councilId') councilId: string, @Param('topicId') topicId: string) {
+        const council = await this.defenseCouncilService.unlockTopicScores(councilId, topicId)
+        return {
+            message: 'Mở khóa điểm đề tài thành công',
+            data: council
+        }
+    }
+
+    // Khóa hội đồng với validation (Thư ký/BCN)
+    @Post(':councilId/complete-with-validation')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async completeCouncilWithValidation(@Param('councilId') councilId: string, @Req() req: { user: ActiveUserData }) {
+        const council = await this.defenseCouncilService.completeCouncilWithValidation(councilId, req.user.sub)
+        return {
+            message: 'Khóa hội đồng thành công',
+            data: council
+        }
+    }
+
+    // Công bố điểm (BCN)
+    @Post(':councilId/publish-scores')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async publishCouncilScores(@Param('councilId') councilId: string, @Req() req: { user: ActiveUserData }) {
+        const council = await this.defenseCouncilService.publishCouncilScores(councilId, req.user.sub)
+        return {
+            message: 'Công bố điểm thành công',
+            data: council
+        }
+    }
+
+    // Get student's own defense scores
+    @Get('student/my-scores')
+    @Roles(UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async getMyDefenseScores(@Req() req: { user: ActiveUserData }) {
+        const scores = await this.defenseCouncilService.getStudentDefenseScores(req.user.sub)
+        return {
+            message: 'Lấy điểm bảo vệ thành công',
+            data: scores
+        }
+    }
+
+    @Get(':councilId/export-scores-template')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async exportScoresTemplate(@Param('councilId') councilId: string, @Query('includeScores') includeScores?: string) {
+        const buffer = await this.defenseCouncilService.exportScoresTemplate(councilId, includeScores === 'true')
+
+        return {
+            message: 'Export thành công',
+            data: {
+                buffer: buffer.toString('base64'),
+                filename: `HoiDong_${councilId}_BangDiem.xlsx`
+            }
+        }
+    }
+
+    @Post(':councilId/import-scores')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async importScores(
+        @Param('councilId') councilId: string,
+        @Body() importData: { data: any[] },
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const result = await this.defenseCouncilService.importScoresFromExcel(councilId, importData.data, req.user.sub)
+        return {
+            message: `Import thành công ${result.successCount}/${result.totalCount} đề tài`,
+            data: result
+        }
+    }
+
+    // Phase 4: PDF Export
+    @Get(':councilId/export-pdf-report')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async exportPdfReport(@Param('councilId') councilId: string, @Res() res: Response) {
+        const pdf = await this.defenseCouncilService.generateCouncilPdfReport(councilId)
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="HoiDong_${councilId}_BaoCao.pdf"`,
+            'Content-Length': pdf.length
+        })
+        res.end(pdf)
+    }
+
+    @Get(':councilId/topics/:topicId/score-card-pdf')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER, UserRole.STUDENT)
+    @UseGuards(RolesGuard)
+    async exportTopicScoreCard(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Res() res: Response
+    ) {
+        const pdf = await this.defenseCouncilService.generateTopicScoreCard(councilId, topicId)
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="PhieuDiem_${topicId}.pdf"`,
+            'Content-Length': pdf.length
+        })
+        res.end(pdf)
+    }
+
+    // Phase 4: Analytics
+    @Get(':councilId/analytics')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getCouncilAnalytics(@Param('councilId') councilId: string) {
+        const analytics = await this.defenseCouncilService.getCouncilAnalytics(councilId)
+        return {
+            message: 'Lấy thống kê thành công',
+            data: analytics
+        }
     }
 }

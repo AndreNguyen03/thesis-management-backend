@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo điểm bảo vệ</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background: #f4f4f4; }
+        .container { background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 3px solid #2563eb; margin-bottom: 30px; }
+        .score-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 8px; text-align: center; margin: 20px 0; }
+        .score-value { font-size: 48px; font-weight: bold; }
+        .grade-text { font-size: 24px; font-weight: 600; margin-top: 10px; }
+        .info-row { padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+        .scores-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .scores-table th, .scores-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .scores-table th { background-color: #f3f4f6; font-weight: 600; }
+        .button { display: inline-block; padding: 12px 30px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h1>🎓 THÔNG BÁO ĐIỂM BẢO VỆ</h1></div>
+        <p>Kính gửi <strong><%= studentName %></strong>,</p>
+        <p>Kết quả bảo vệ khóa luận của bạn đã được công bố:</p>
+        
+        <div class="info-row"><strong>Đề tài:</strong> <%= topicTitle %></div>
+        <div class="info-row"><strong>Hội đồng:</strong> <%= councilName %></div>
+        <div class="info-row"><strong>Ngày bảo vệ:</strong> <%= defenseDate %></div>
+        
+        <div class="score-box">
+            <div>ĐIỂM TỔNG KẾT</div>
+            <div class="score-value"><%= finalScore %></div>
+            <div class="grade-text"><%= gradeText %></div>
+        </div>
+
+        <h3>Chi tiết điểm</h3>
+        <table class="scores-table">
+            <thead><tr><th>Vai trò</th><th>Giảng viên</th><th>Điểm</th></tr></thead>
+            <tbody>
+                <% scores.forEach(function(score) { %>
+                <tr><td><%= score.roleLabel %></td><td><%= score.scorerName %></td><td><strong><%= score.total %></strong></td></tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <center><a href="<%= portalUrl %>" class="button">Xem chi tiết</a></center>
+        
+        <div style="margin-top:30px; padding-top:20px; border-top:1px solid #e5e7eb; text-align:center; color:#6b7280; font-size:14px;">
+            <p><strong><%= facultyName %></strong></p>
+            <p>Email tự động - Vui lòng không trả lời</p>
+        </div>
+    </div>
+</body>
+</html>

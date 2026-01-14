@@ -46,15 +46,32 @@ export class TaskRepository extends BaseRepositoryAbstract<Task> implements ITas
             },
             { $sort: { created_at: -1 } }
         )
-
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'columns.items.assignees',
+                foreignField: '_id',
+                as: 'assigneeUsers',
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            fullName: 1,
+                            email: 1,
+                            avatarUrl: 1
+                        }
+                    }
+                ]
+            }
+        })
         pipeline.push({
             $project: {
                 _id: 1,
                 title: 1,
                 description: 1,
                 status: 1,
-                createdAt: "$created_at",
-                updatedAt: "$updated_at",
+                createdAt: '$created_at',
+                updatedAt: '$updated_at',
                 columns: 1,
                 milestone: {
                     _id: 1,

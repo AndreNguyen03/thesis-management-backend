@@ -933,7 +933,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         if (!existingMilestone) {
             throw new NotFoundException('Không tìm thấy mốc bảo vệ')
         }
-        existingMilestone.isBlock = true
+        existingMilestone.isLocked = true
         await existingMilestone.save()
         return existingMilestone
     }
@@ -1179,6 +1179,28 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 }
             },
             {
+                $lookup: {
+                    from: 'periods',
+                    foreignField: '_id',
+                    localField: 'periodId',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    foreignField: '_id',
+                    localField: 'periodInfo.faculty',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: { path: '$facultyInfo' }
+            },
+            {
                 $project: {
                     title: 1,
                     description: 1,
@@ -1187,7 +1209,14 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     periodId: 1,
                     isPublished: 1,
                     isBlock: 1,
-                    createdBy: 1
+                    createdBy: 1,
+                    periodInfo: {
+                        _id: '$periodInfo._id',
+                        year: '$periodInfo.year',
+                        semester: '$periodInfo.semester',
+                        currentPhase: '$periodInfo.currentPhase',
+                        faculty: '$facultyInfo'
+                    }
                 }
             }
         )

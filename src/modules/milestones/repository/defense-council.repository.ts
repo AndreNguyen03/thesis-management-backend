@@ -11,13 +11,15 @@ import {
     SubmitScoreDto,
     UpdateDefenseCouncilDto,
     QueryDefenseCouncilsDto,
-    GetDefenseCouncilsQuery
+    GetDefenseCouncilsQuery,
+    SubmitTopicScoresDto
 } from '../dtos/defense-council.dto'
 import { PaginationAnModule } from '../../../common/pagination-an/pagination.module'
 import { PaginationProvider } from '../../../common/pagination-an/providers/pagination.provider'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { pipeline } from 'stream'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
+import { StudentRegistrationStatus } from '../../registrations/enum/student-registration-status.enum'
 
 @Injectable()
 export class DefenseCouncilRepository {
@@ -142,15 +144,91 @@ export class DefenseCouncilRepository {
 
     // Lấy chi tiết hội đồng
     async getCouncilById(councilId: string): Promise<DefenseCouncil> {
-        const council = await this.defenseCouncilModel
-            .findOne({ _id: new mongoose.Types.ObjectId(councilId), deleted_at: null })
-            .exec()
-
-        if (!council) {
+        const pipeline: any[] = []
+        pipeline.push(
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(councilId),
+                    deleted_at: null
+                }
+            },
+            {
+                $lookup: {
+                    from: 'milestones_templates',
+                    foreignField: '_id',
+                    localField: 'milestoneTemplateId',
+                    as: 'defenseMilestonesInfo'
+                }
+            },
+            {
+                $unwind: { path: '$defenseMilestonesInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    foreignField: '_id',
+                    localField: 'createdBy',
+                    as: 'userInfo'
+                }
+            },
+            {
+                $unwind: { path: '$userInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'periods',
+                    foreignField: '_id',
+                    localField: 'defenseMilestonesInfo.periodId',
+                    as: 'periodInfo'
+                }
+            },
+            {
+                $unwind: { path: '$periodInfo' }
+            },
+            {
+                $lookup: {
+                    from: 'faculties',
+                    foreignField: '_id',
+                    localField: 'periodInfo.faculty',
+                    as: 'facultyInfo'
+                }
+            },
+            {
+                $unwind: { path: '$facultyInfo' }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    defenseMilestone: '$defenseMilestonesInfo',
+                    name: 1,
+                    location: 1,
+                    scheduledDate: 1,
+                    topics: 1,
+                    isCompleted: 1,
+                    isPublished: 1,
+                    createdBy: {
+                        _id: '$userInfo._id',
+                        fullName: '$userInfo.fullName',
+                        email: '$userInfo.email',
+                        avatarUrl: '$userInfo.avatarUrl',
+                        avatarName: '$userInfo.avatarName'
+                    },
+                    periodInfo: {
+                        _id: '$periodInfo._id',
+                        year: '$periodInfo.year',
+                        semester: '$periodInfo.semester',
+                        currentPhase: '$periodInfo.currentPhase',
+                        faculty: '$facultyInfo'
+                    }
+                }
+            }
+        )
+        const council = await this.defenseCouncilModel.aggregate(pipeline).exec()
+        if (!council || council.length === 0) {
             throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
         }
 
-        return council
+        return council[0]
     }
 
     // Cập nhật thông tin hội đồng
@@ -313,11 +391,11 @@ export class DefenseCouncilRepository {
         const hasMember = dto.members.some((m) => m.role === 'member')
 
         if (!hasChairperson || !hasSecretary || !hasMember) {
-            throw new BadRequestException('Bộ ba phải có 1 chủ tịch, 1 thư ký, 1 ủy viên')
+            throw new BadRequestException('Bộ ba phải có 1 chủ tịch, 1 thư ký, 1 ủy viên, 1 phản biện')
         }
 
-        if (dto.members.length !== 3) {
-            throw new BadRequestException('Bộ ba phải có đúng 3 giảng viên')
+        if (dto.members.length !== 4) {
+            throw new BadRequestException('Bộ ba phải có đúng 4 giảng viên')
         }
 
         const council = await this.defenseCouncilModel
@@ -433,6 +511,7 @@ export class DefenseCouncilRepository {
         lecturerId: string,
         query: GetDefenseCouncilsQuery
     ): Promise<Paginated<DefenseCouncil>> {
+        const lecturerObjectId = new mongoose.Types.ObjectId(lecturerId)
         const pipelineSub: any[] = []
         pipelineSub.push(
             {
@@ -478,6 +557,43 @@ export class DefenseCouncilRepository {
                 $unwind: { path: '$facultyInfo' }
             },
             {
+                $addFields: {
+                    yourRoles: {
+                        $reduce: {
+                            input: '$topics',
+                            initialValue: [],
+                            in: {
+                                $concatArrays: [
+                                    '$$value',
+                                    // Với mỗi topic, filter để lấy members có memberId = lecturerId
+                                    {
+                                        $map: {
+                                            input: {
+                                                $filter: {
+                                                    input: '$$this.members',
+                                                    as: 'member',
+                                                    cond: {
+                                                        $eq: ['$$member.memberId', lecturerObjectId]
+                                                    }
+                                                }
+                                            },
+                                            as: 'filteredMember',
+                                            // Lấy ra role của member đó
+                                            in: '$$filteredMember.role'
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    yourRoles: { $setUnion: ['$yourRoles', []] } // Set operation để loại bỏ duplicate
+                }
+            },
+            {
                 $project: {
                     _id: 1,
                     defenseMilestone: {
@@ -497,7 +613,8 @@ export class DefenseCouncilRepository {
                     topicsNum: { $size: '$topics' },
                     isCompleted: 1,
                     isPublished: 1,
-                    createdBy: 1
+                    createdBy: 1,
+                    yourRoles: 1
                 }
             }
         )
@@ -520,13 +637,13 @@ export class DefenseCouncilRepository {
             finalScore: topic.finalScore
         }
     }
-    async getDetailAssignedDefenseCouncils(councilId: string, lecturerId: string): Promise<DefenseCouncil> {
+    async getDetailScoringDefenseCouncil(councilId: string, lecturerId?: string): Promise<DefenseCouncil> {
         const pipeline: any = []
         pipeline.push(
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(councilId),
-                    'topics.members.memberId': new mongoose.Types.ObjectId(lecturerId),
+                    ...(lecturerId && { 'topics.members.memberId': new mongoose.Types.ObjectId(lecturerId) }),
                     deleted_at: null
                 }
             },
@@ -663,5 +780,459 @@ export class DefenseCouncilRepository {
         )
         const res = await this.defenseCouncilModel.aggregate(pipeline).exec()
         return res[0]
+    }
+
+    // Thư ký nhập điểm cho đề tài (tất cả thành viên cùng lúc)
+    async submitTopicScores(
+        councilId: string,
+        topicId: string,
+        dto: SubmitTopicScoresDto,
+        submittedBy: string
+    ): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        if (council.isCompleted) {
+            throw new BadRequestException('Hội đồng đã được khóa, không thể sửa điểm')
+        }
+
+        const topicIndex = council.topics.findIndex((t) => t.topicId.toString() === topicId)
+        if (topicIndex === -1) {
+            throw new NotFoundException('Không tìm thấy đề tài trong hội đồng này')
+        }
+
+        if (council.topics[topicIndex].isLocked) {
+            throw new BadRequestException('Điểm đề tài này đã được khóa')
+        }
+
+        // Thay thế toàn bộ điểm với điểm mới
+        council.topics[topicIndex].scores = dto.scores.map((score) => ({
+            scorerId: score.scorerId,
+            scorerName: score.scorerName,
+            scoreType: score.scoreType,
+            total: score.total,
+            comment: score.comment || '',
+            scoredAt: new Date(),
+            lastModifiedBy: submittedBy,
+            lastModifiedAt: new Date()
+        })) as any
+
+        // Tính điểm tổng kết (trung bình tất cả điểm)
+        const allScores = council.topics[topicIndex].scores
+        if (allScores.length > 0) {
+            const supervisorScore = allScores.find((s) => s.scoreType === 'supervisor')
+            const reviewerScore = allScores.find((s) => s.scoreType === 'reviewer')
+            const secretaryScore = allScores.find((s) => s.scoreType === 'secretary')
+            const chairpersonScore = allScores.find((s) => s.scoreType === 'chairperson')
+
+            // Công thức: ((supervisor + reviewer) * 2 + secretary + chairperson) / 6
+            const supervisor = supervisorScore?.total || 0
+            const reviewer = reviewerScore?.total || 0
+            const secretary = secretaryScore?.total || 0
+            const chairperson = chairpersonScore?.total || 0
+
+            const weightedTotal = (supervisor + reviewer) * 2 + secretary + chairperson
+            council.topics[topicIndex].finalScore = Math.round((weightedTotal / 6) * 100) / 100
+
+            // Xếp loại (giữ nguyên)
+            const finalScore = council.topics[topicIndex].finalScore
+            if (finalScore >= 9.0) {
+                council.topics[topicIndex].gradeText = 'Xuất sắc'
+            } else if (finalScore >= 8.0) {
+                council.topics[topicIndex].gradeText = 'Giỏi'
+            } else if (finalScore >= 7.0) {
+                council.topics[topicIndex].gradeText = 'Khá'
+            } else if (finalScore >= 5.5) {
+                council.topics[topicIndex].gradeText = 'Trung bình'
+            } else if (finalScore >= 4.0) {
+                council.topics[topicIndex].gradeText = 'Yếu'
+            } else {
+                council.topics[topicIndex].gradeText = 'Kém'
+            }
+        }
+
+        return await council.save()
+    }
+
+    // Khóa điểm một đề tài
+    async lockTopicScores(councilId: string, topicId: string): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        const topicIndex = council.topics.findIndex((t) => t.topicId.toString() === topicId)
+        if (topicIndex === -1) {
+            throw new NotFoundException('Không tìm thấy đề tài trong hội đồng này')
+        }
+
+        council.topics[topicIndex].isLocked = true
+        return await council.save()
+    }
+
+    // Mở khóa điểm một đề tài (BCN)
+    async unlockTopicScores(councilId: string, topicId: string): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        const topicIndex = council.topics.findIndex((t) => t.topicId.toString() === topicId)
+        if (topicIndex === -1) {
+            throw new NotFoundException('Không tìm thấy đề tài trong hội đồng này')
+        }
+
+        council.topics[topicIndex].isLocked = false
+        return await council.save()
+    }
+
+    // Khóa hội đồng (Thư ký/BCN)
+    async completeCouncil(councilId: string, userId: string): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        // Kiểm tra tất cả đề tài đã có điểm chưa
+        const topicsWithoutScores = council.topics.filter((t) => !t.scores || t.scores.length === 0)
+        if (topicsWithoutScores.length > 0) {
+            throw new BadRequestException(
+                `Còn ${topicsWithoutScores.length} đề tài chưa có điểm. Vui lòng nhập điểm trước khi khóa hội đồng.`
+            )
+        }
+
+        // Khóa tất cả đề tài
+        council.topics.forEach((topic) => {
+            topic.isLocked = true
+        })
+
+        council.isCompleted = true
+        council.completedBy = userId as any
+        council.completedAt = new Date()
+
+        return await council.save()
+    }
+
+    // Công bố điểm (BCN)
+    async publishCouncil(councilId: string, userId: string): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        if (!council.isCompleted) {
+            throw new BadRequestException('Hội đồng chưa được khóa, không thể công bố điểm')
+        }
+
+        council.isPublished = true
+        council.publishedBy = userId as any
+        council.publishedAt = new Date()
+
+        const savedCouncil = await council.save()
+        return savedCouncil
+    }
+
+    async getStudentDefenseScores(studentId: string) {
+        const councils = await this.defenseCouncilModel
+            .aggregate([
+                {
+                    $match: {
+                        isPublished: true,
+                        deleted_at: null
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'ref_students_topics',
+                        let: { studentId: new mongoose.Types.ObjectId(studentId) },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            {
+                                                $eq: ['$userId', '$$studentId']
+                                            },
+                                            {
+                                                $eq: ['status', StudentRegistrationStatus.APPROVED]
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $project: {
+                                    topicId: 1
+                                }
+                            }
+                        ],
+                        as: 'studentTopics'
+                    }
+                },
+                {
+                    $match: {
+                        $expr: {
+                            $gt: [{ $size: '$studentTopics' }, 0]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        name: 1,
+                        location: 1,
+                        scheduledDate: 1,
+                        topics: 1,
+                        stuTopicIds: {
+                            $map: {
+                                input: '$studentTopics',
+                                as: 'stuRef',
+                                in: '$$stuRef.topicId'
+                            }
+                        }
+                    }
+                }
+            ])
+            .exec()
+        let result = []
+        for (const council of councils) {
+            for (const topic of council.topics) {
+                // result.push({
+                //     councilName: council.name,
+                //     location: council.location,
+                //     defenseDate: council.scheduledDate,
+                //     topicTitle: topic.titleVN,
+                //     finalScore: topic.finalScore,
+                //     gradeText: topic.gradeText,
+                //     scores: topic.scores,
+                //     isPublished: council.isPublished
+                // })
+            }
+        }
+
+        return councils
+    }
+
+    async exportScoresTemplate(councilId: string, includeScores: boolean = false): Promise<Buffer> {
+        const ExcelJS = require('exceljs')
+        const council = await this.getCouncilById(councilId)
+
+        const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('Bảng điểm')
+
+        // Header info
+        worksheet.addRow(['HỘI ĐỒNG BẢO VỆ', council.name])
+        worksheet.addRow(['Ngày bảo vệ', new Date(council.scheduledDate).toLocaleDateString('vi-VN')])
+        worksheet.addRow(['Địa điểm', council.location])
+        worksheet.addRow([]) // Empty row
+
+        // Define columns
+        const columns: any[] = [
+            { header: 'STT', key: 'order', width: 8 },
+            { header: 'Tên đề tài', key: 'titleVN', width: 40 },
+            { header: 'Sinh viên', key: 'students', width: 25 }
+        ]
+
+        // Dynamically add columns for each topic's members
+        const roleLabels = {
+            supervisor: 'GVHD',
+            reviewer: 'GVPB',
+            secretary: 'Thư ký',
+            chairperson: 'Chủ tịch',
+            member: 'Ủy viên'
+        }
+
+        // Add score columns (each topic has different members)
+        Object.keys(roleLabels).forEach((role) => {
+            columns.push(
+                { header: roleLabels[role], key: `${role}_score`, width: 12 },
+                { header: `Ghi chú ${roleLabels[role]}`, key: `${role}_comment`, width: 20 }
+            )
+        })
+
+        columns.push(
+            { header: 'Điểm TB\n(Công thức)', key: 'finalScore', width: 12 },
+            { header: 'Xếp loại', key: 'gradeText', width: 12 }
+        )
+
+        worksheet.addRow([]) // For header
+        const headerRow = worksheet.lastRow
+        columns.forEach((col, idx) => {
+            headerRow.getCell(idx + 1).value = col.header
+            headerRow.getCell(idx + 1).font = { bold: true, color: { argb: 'FFFFFFFF' } }
+            headerRow.getCell(idx + 1).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF4472C4' }
+            }
+            headerRow.getCell(idx + 1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+        })
+        headerRow.height = 40
+
+        // Add data rows
+        council.topics
+            .sort((a, b) => (a.defenseOrder || 0) - (b.defenseOrder || 0))
+            .forEach((topic, index) => {
+                const row: any = {
+                    order: topic.defenseOrder || index + 1,
+                    titleVN: topic.titleVN,
+                    students: topic.studentNames.join(', ')
+                }
+
+                // Add member names and scores
+                topic.members.forEach((member) => {
+                    const role = member.role
+                    const score = includeScores
+                        ? topic.scores.find((s) => s.scorerId.toString() === member.memberId.toString())
+                        : null
+
+                    row[`${role}_score`] = score?.total || ''
+                    row[`${role}_comment`] = score?.comment || ''
+                })
+
+                if (includeScores) {
+                    row.finalScore = topic.finalScore || ''
+                    row.gradeText = topic.gradeText || ''
+                } else {
+                    row.finalScore = '' // Will be calculated
+                    row.gradeText = ''
+                }
+
+                const dataRow = worksheet.addRow(row)
+                dataRow.eachCell((cell) => {
+                    cell.border = {
+                        top: { style: 'thin' },
+                        left: { style: 'thin' },
+                        bottom: { style: 'thin' },
+                        right: { style: 'thin' }
+                    }
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' }
+                })
+            })
+
+        // Add formula note
+        worksheet.addRow([])
+        const formulaRow = worksheet.addRow(['', 'Công thức tính điểm: ((GVHD + GVPB) × 2 + Thư ký + Chủ tịch) / 6'])
+        formulaRow.getCell(2).font = { italic: true, color: { argb: 'FF666666' } }
+        worksheet.mergeCells(formulaRow.number, 2, formulaRow.number, 5)
+
+        return await workbook.xlsx.writeBuffer()
+    }
+
+    async importScoresFromExcel(councilId: string, data: any[], userId: string) {
+        const council = await this.defenseCouncilModel.findOne({
+            _id: new mongoose.Types.ObjectId(councilId),
+            deleted_at: null
+        })
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng')
+        }
+
+        if (council.isCompleted) {
+            throw new BadRequestException('Hội đồng đã khóa')
+        }
+
+        let successCount = 0
+        const errors: string[] = []
+
+        for (const row of data) {
+            try {
+                const topicIndex = council.topics.findIndex((t) => t.titleVN === row.titleVN)
+
+                if (topicIndex === -1) {
+                    errors.push(`Không tìm thấy: ${row.titleVN}`)
+                    continue
+                }
+
+                if (council.topics[topicIndex].isLocked) {
+                    errors.push(`Đã khóa: ${row.titleVN}`)
+                    continue
+                }
+
+                const topic = council.topics[topicIndex]
+                const scores: any[] = []
+
+                // Parse scores from each role
+                topic.members.forEach((member) => {
+                    const role = member.role
+                    const scoreValue = parseFloat(row[`${role}_score`])
+
+                    if (!isNaN(scoreValue) && scoreValue >= 0 && scoreValue <= 10) {
+                        scores.push({
+                            scorerId: member.memberId,
+                            scorerName: member.fullName,
+                            scoreType: role,
+                            total: scoreValue,
+                            comment: row[`${role}_comment`] || '',
+                            scoredAt: new Date(),
+                            lastModifiedBy: userId,
+                            lastModifiedAt: new Date()
+                        })
+                    }
+                })
+
+                if (scores.length === 0) {
+                    errors.push(`Không có điểm hợp lệ: ${row.titleVN}`)
+                    continue
+                }
+
+                // Update scores
+                council.topics[topicIndex].scores = scores as any
+
+                // Calculate finalScore with new formula
+                const supervisor = scores.find((s) => s.scoreType === 'supervisor')?.total || 0
+                const reviewer = scores.find((s) => s.scoreType === 'reviewer')?.total || 0
+                const secretary = scores.find((s) => s.scoreType === 'secretary')?.total || 0
+                const chairperson = scores.find((s) => s.scoreType === 'chairperson')?.total || 0
+
+                const weightedTotal = (supervisor + reviewer) * 2 + secretary + chairperson
+                council.topics[topicIndex].finalScore = Math.round((weightedTotal / 6) * 100) / 100
+
+                // Calculate grade
+                const finalScore = council.topics[topicIndex].finalScore
+                if (finalScore >= 9.0) council.topics[topicIndex].gradeText = 'Xuất sắc'
+                else if (finalScore >= 8.0) council.topics[topicIndex].gradeText = 'Giỏi'
+                else if (finalScore >= 7.0) council.topics[topicIndex].gradeText = 'Khá'
+                else if (finalScore >= 5.5) council.topics[topicIndex].gradeText = 'Trung bình'
+                else if (finalScore >= 4.0) council.topics[topicIndex].gradeText = 'Yếu'
+                else council.topics[topicIndex].gradeText = 'Kém'
+
+                successCount++
+            } catch (error) {
+                errors.push(`Lỗi: ${row.titleVN} - ${error.message}`)
+            }
+        }
+
+        await council.save()
+
+        return {
+            totalCount: data.length,
+            successCount,
+            errorCount: data.length - successCount,
+            errors
+        }
     }
 }

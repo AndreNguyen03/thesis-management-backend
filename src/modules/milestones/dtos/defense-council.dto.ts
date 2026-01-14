@@ -112,7 +112,32 @@ export class UpdateTopicMembersDto {
     members: CouncilMemberDto[]
 }
 
-// DTO chấm điểm
+// DTO chấm điểm đơn lẻ (1 người chấm)
+export class ScoreItemDto {
+    @IsMongoId()
+    @IsNotEmpty()
+    scorerId: string
+
+    @IsString()
+    @IsNotEmpty()
+    scorerName: string
+
+    @IsEnum(ScoreType)
+    @IsNotEmpty()
+    scoreType: ScoreType
+
+    @IsNumber()
+    @Min(0)
+    @Max(10)
+    @IsNotEmpty()
+    total: number
+
+    @IsString()
+    @IsOptional()
+    comment?: string
+}
+
+// DTO chấm điểm (giảng viên tự chấm)
 export class SubmitScoreDto {
     @IsMongoId()
     @IsNotEmpty()
@@ -131,6 +156,29 @@ export class SubmitScoreDto {
     @IsString()
     @IsOptional()
     comment?: string
+}
+
+// DTO thư ký nhập điểm cho đề tài (tất cả thành viên cùng lúc)
+export class SubmitTopicScoresDto {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ScoreItemDto)
+    @IsNotEmpty()
+    scores: ScoreItemDto[]
+}
+
+// DTO khóa hội đồng
+export class CompleteCouncilDto {
+    @IsString()
+    @IsOptional()
+    note?: string
+}
+
+// DTO công bố điểm
+export class PublishCouncilDto {
+    @IsBoolean()
+    @IsOptional()
+    sendEmail?: boolean = true
 }
 
 // DTO cập nhật thông tin hội đồng
