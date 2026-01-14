@@ -16,7 +16,7 @@ import { ProfileMatchingTool } from '../tools/profile-matching.tool'
 @Injectable()
 export class AutoAgentService {
     private agent: AgentExecutor
-
+    private initialized = falseáaasassas
     private currentUserId: string | null = null
 
     constructor(
