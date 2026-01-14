@@ -18,7 +18,32 @@ export class AutoAgentService {
     private agent: AgentExecutor
 
     private currentUserId: string | null = null
+    private safeParse(input: string): any {
+        if (!input) return {}
 
+        if (typeof input !== 'string') return input
+
+        try {
+            return JSON.parse(input)
+        } catch {
+            // fallback: LLM gửi plain text
+            return { query: input, limit: 5 }
+        }
+    }
+    private yieldEvent(event: any) {
+        return JSON.stringify(event) + '\n'
+    }
+    private mapToolToLabel(toolName: string) {
+        const TOOL_LABEL: Record<string, string> = {
+            search_registering_topics: 'Đang tìm đề tài phù hợp',
+            search_lecturers: 'Đang tìm giảng viên',
+            profile_matching_lecturer_search_tool: 'Đang ghép giảng viên phù hợp',
+            search_documents: 'Đang tìm tài liệu phù hợp',
+            search_in_library_topics: 'Đang tìm đề tài trong thư viện'
+        }
+
+        return TOOL_LABEL[toolName] ?? 'Đang xử lý'
+    }
     constructor(
         private readonly topicRegisteringTool: TopicRegisteringSearchTool,
         private readonly documentTool: DocumentSearchTool,
@@ -248,7 +273,7 @@ Bắt đầu!`.trim()
             tools,
             verbose: true, // Log chi tiết quá trình
             maxIterations: 3, // Chỉ 1 vòng để tránh multi-tool calling với Groq
-            returnIntermediateSteps: true, // Trả về các bước trung gian,
+            // returnIntermediateSteps: true, // Trả về các bước trung gian,
             earlyStoppingMethod: 'force' // Dừng khi LLM tạo Final Answer
         })
 
@@ -319,90 +344,112 @@ Bắt đầu!`.trim()
      */
     async *streamChat(userMessage: string, chatHistory: any[] = [], userId: string) {
         this.currentUserId = userId
-        const stream = await this.agent.streamEvents(
-            {
-                input: userMessage,
-                chat_history: this.transformChatHistory(chatHistory)
-            },
-            { version: 'v2' }
-        )
+        try {
+            const stream = await this.agent.streamEvents(
+                {
+                    input: userMessage,
+                    chat_history: this.transformChatHistory(chatHistory)
+                },
+                { version: 'v2' }
+            )
 
-        // Buffer để lưu topics data, chỉ gửi sau khi stream text xong
-        let bufferedTopicsData: any = null
-        let bufferedLecturerData: any = null
+            // Buffer để lưu topics data, chỉ gửi sau khi stream text xong
+            let bufferedTopicsData: any = null
+            let bufferedLecturerData: any = null
 
-        for await (const event of stream) {
-            // Log event type để debug
-            // console.log('📡 Event type:', event.event)
+            yield this.yieldEvent({
+                type: 'step',
+                step: 'receive_request',
+                message: 'Đã nhận yêu cầu'
+            })
 
-            // Xử lý stream từ LLM - YIELD NGAY
-            if (event.event === 'on_chat_model_stream') {
-                const content = event.data?.chunk?.content
-                if (content) {
-                    // console.log('✨ Streaming content:', content)
-                    yield content
+            yield this.yieldEvent({
+                type: 'step',
+                step: 'thinking',
+                message: 'Đang phân tích yêu cầu'
+            })
+
+            for await (const event of stream) {
+                // Log event type để debug
+                // console.log('📡 Event type:', event.event)
+
+                // Xử lý stream từ LLM - YIELD NGAY
+                if (event.event === 'on_chat_model_stream') {
+                    const content = event.data?.chunk?.content
+                    if (content) {
+                        // console.log('✨ Streaming content:', content)
+                        yield this.yieldEvent({
+                            type: 'content',
+                            delta: content
+                        })
+                    }
                 }
-            }
 
-            // Khi tool search_topics hoàn thành, LƯU VÀO BUFFER (không yield ngay)
-            if (event.event === 'on_tool_end') {
-                const toolName = event.name
-                console.log('🔧 Tool finished:', toolName)
+                if (event.event === 'on_tool_start') {
+                    yield this.yieldEvent({
+                        type: 'step',
+                        step: 'tool_running',
+                        tool: event.name,
+                        message: this.mapToolToLabel(event.name)
+                    })
+                }
 
-                if (toolName === 'search_registering_topics') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedTopicsData = typeof output === 'string' ? JSON.parse(output) : output
+                // Khi tool search_topics hoàn thành, LƯU VÀO BUFFER (không yield ngay)
+                if (event.event === 'on_tool_end') {
+                    const toolName = event.name
+                    const output = event.data?.output || ''
+
+                    yield this.yieldEvent({
+                        type: 'step',
+                        step: 'tool_done',
+                        tool: toolName
+                    })
+
+                    if (!output) continue
+
+                    try {
+                        const parseOutput = typeof output === 'string' ? JSON.parse(output) : output
+
+                        if (toolName === 'search_registering_topics') {
+                            bufferedTopicsData = parseOutput
                             console.log('📦 Topics data buffered:', bufferedTopicsData.total || 0, 'topics')
-                        } catch (error) {
-                            console.error('❌ Failed to parse topics data:', error)
-                        }
-                    }
-                }
-
-                if (toolName === 'search_lecturers') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
+                        } else if (
+                            toolName === 'search_lecturers' ||
+                            toolName === 'profile_matching_lecturer_search_tool'
+                        ) {
+                            bufferedLecturerData = parseOutput
                             console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
-                        } catch (error) {
-                            console.error('❌ Failed to parse lecturers data:', error)
                         }
-                    }
-                }
-
-                if (toolName === 'profile_matching_lecturer_search_tool') {
-                    const output = event.data?.output
-                    if (output) {
-                        try {
-                            // Parse và lưu vào buffer
-                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
-                            console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
-                        } catch (error) {
-                            console.error('❌ Failed to parse lecturers data:', error)
-                        }
+                    } catch (error) {
+                        yield this.yieldEvent({ type: 'error', error: error.message })
                     }
                 }
             }
-        }
-        this.currentUserId = null
 
-        // SAU KHI STREAM KẾT THÚC, gửi topics data nếu có
-        if (bufferedTopicsData) {
-            yield '\n\n__TOPICS_DATA_START__\n'
-            yield JSON.stringify(bufferedTopicsData)
-            yield '\n__TOPICS_DATA_END__\n\n'
-            console.log('📚 Topics data sent after text completion')
-        }
-        if (bufferedLecturerData) {
-            yield '\n\n__LECTURERS_DATA_START__\n'
-            yield JSON.stringify(bufferedLecturerData)
-            yield '\n__LECTURERS_DATA_END__\n\n'
-            console.log('📚 Lecturers data sent after text completion')
+            // SAU KHI STREAM KẾT THÚC, gửi topics data nếu có
+            if (bufferedTopicsData) {
+                yield this.yieldEvent({
+                    type: 'result',
+                    resultType: 'topics',
+                    payload: bufferedTopicsData
+                })
+            }
+            if (bufferedLecturerData) {
+                yield this.yieldEvent({
+                    type: 'result',
+                    resultType: 'lecturers',
+                    payload: bufferedLecturerData
+                })
+            }
+
+            yield this.yieldEvent({ type: 'done' })
+        } catch (error) {
+            yield this.yieldEvent({
+                type: 'error',
+                message: 'Xin lỗi, đã có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.' + error
+            })
+        } finally {
+            this.currentUserId = null
         }
     }
 }

@@ -34,14 +34,13 @@ export class AutoAgentController {
             const stream = this.agentService.streamChat(dto.message, dto.chatHistory || [], dto.userId)
 
             for await (const chunk of stream) {
-                res.write(`data: ${JSON.stringify({ content: chunk, done: false })}\n\n`)
+                res.write(`data: ${chunk} \n`)
             }
 
-            res.write(`data: ${JSON.stringify({ done: true })}\n\n`)
             res.end()
         } catch (error) {
             console.error('❌ Stream error:', error)
-            res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`)
+            res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })} \n`)
             res.end()
         }
     }
