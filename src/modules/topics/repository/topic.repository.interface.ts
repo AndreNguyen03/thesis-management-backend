@@ -1,6 +1,7 @@
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { UserRole } from '../../../users/enums/user-role'
 import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
 import { OverdueTopicInfo, PausedOrDelayedTopicInfo, PendingLecturerReview } from '../../periods/dtos/phase-resolve.dto'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
@@ -61,7 +62,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         query: RequestGetTopicsInPhaseParams,
         ownerId?: string
     ): Promise<Paginated<Topic>>
-    getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
+    getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams, role: UserRole): Promise<Paginated<Topic>>
     getRegisteringTopics(periodId: string, query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>

@@ -1852,7 +1852,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         return await this.paginationProvider.paginateQuery<Topic>(query, this.topicRepository, pipelineSub)
     }
 
-    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>> {
+    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams, role: UserRole): Promise<Paginated<Topic>> {
         const { lecturerIds, fieldIds, majorIds, year } = query
         const pipelineSub: any = []
         pipelineSub.push(...this.getTopicInfoPipelineAbstract())
@@ -1919,7 +1919,7 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
                 studentInTopics: 1
             }
         })
- 
+
         //Phân trang phụ
         //rule 99 nghĩa là phân trang để lọc với các trường cụ thể/ đặc thù
         if (query.rulesPagination === 99) {
@@ -1976,6 +1976,15 @@ export class TopicRepository extends BaseRepositoryAbstract<Topic> implements To
         }
 
         //if (query.rulesPagination === 0)
+        // Exclude hidden topics for non-admin users
+        if (role !== UserRole.ADMIN) {
+            pipelineSub.push({
+                $match: {
+                    isHiddenInLibrary: { $ne: true }
+                }
+            })
+        }
+
         pipelineSub.push({
             $match: {
                 currentStatus: TopicStatus.Archived,

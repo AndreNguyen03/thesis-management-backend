@@ -63,6 +63,7 @@ export class TopicController {
     @UseGuards(RolesGuard)
     async hideTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body('hide') hide: boolean) {
         await this.topicService.setHiddenInLibrary(topicId, req.user.sub, hide)
+        this.periodGateway.emitLibraryUpdate({}) 
         return { message: hide ? 'Đã ẩn đề tài khỏi thư viện' : 'Đã hiện lại đề tài trong thư viện' }
     }
 
