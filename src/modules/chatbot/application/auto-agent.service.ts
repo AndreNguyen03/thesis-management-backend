@@ -12,15 +12,19 @@ import { ChatGroq } from '@langchain/groq'
 import groqConfig from '../../../config/groq.config'
 import { DynamicTool } from '@langchain/core/tools'
 import { TopicInLibrarySearchTool } from '../tools/topic-in-library-search.tool'
+import { ProfileMatchingTool } from '../tools/profile-matching.tool'
 @Injectable()
 export class AutoAgentService {
     private agent: AgentExecutor
+
+    private currentUserId: string | null = null
 
     constructor(
         private readonly topicRegisteringTool: TopicRegisteringSearchTool,
         private readonly documentTool: DocumentSearchTool,
         private readonly lecturerTool: LecturerSearchTool,
         private readonly topicInLibraryTool: TopicInLibrarySearchTool,
+        private readonly profileMatchingTool: ProfileMatchingTool,
         @Inject(googleAIConfig.KEY)
         private readonly googleConfig: ConfigType<typeof googleAIConfig>,
         @Inject(groqConfig.KEY)
@@ -49,7 +53,8 @@ export class AutoAgentService {
             this.topicRegisteringTool.createTool(),
             this.documentTool.createTool(),
             this.lecturerTool.createTool(),
-            this.topicInLibraryTool.createTool()
+            this.topicInLibraryTool.createTool(),
+            this.profileMatchingTool.createTool()
         ]
 
         // Wrap structured tools thành DynamicTool cho ReactAgent (chỉ nhận string input)
@@ -64,6 +69,11 @@ export class AutoAgentService {
                             parsedInput = JSON.parse(input)
                         } catch {
                             parsedInput = { query: input, limit: 5 }
+                        }
+                        // Nếu là tool profile_matching_lecturer_search_tool thì thêm userId
+                        if (structuredTool.name === 'profile_matching_lecturer_search_tool' && this.currentUserId) {
+                            parsedInput.userId = this.currentUserId
+                            console.log('👨‍🏫 [LECTURER TOOL] Added userId to input:', this.currentUserId)
                         }
                         // Gọi func trực tiếp thay vì invoke để giữ context this
                         const result = await structuredTool.func(parsedInput)
@@ -87,7 +97,14 @@ PHẠM VI HỖ TRỢ (CHỈ ĐƯỢC LÀM NHỮNG VIỆC SAU):
 2. Tìm kiếm ĐỀ TÀI TRONG THƯ VIỆN (dùng tool: search_in_library_topics)
 3. Tìm kiếm TÀI LIỆU/QUY TRÌNH ĐĂNG KÝ THỰC HIỆN (dùng tool: search_documents) 
 4. Tìm kiếm GIẢNG VIÊN (dùng tool: search_lecturers)
+5. Gợi ý GIẢNG VIÊN (dùng tool: profile_matching_lecturer_search_tool)
 -> Nếu người dùng hỏi bên ngoài hãy từ chối khéo.
+
+QUY TẮC XỬ LÝ QUERY MƠ HỒ (QUAN TRỌNG!):
+- Nếu câu hỏi không rõ ràng, mơ hồ (e.g., "tìm cho tôi", "gợi ý gì đó", "tìm kiếm thôi" mà không chỉ định lĩnh vực, loại tool, hoặc chi tiết cụ thể), KHÔNG gọi bất kỳ tool nào. Thay vào đó:
+- Thought: Phân tích query không đủ thông tin để chọn tool chính xác.
+- Final Answer: Hỏi làm rõ một cách thân thiện, gợi ý các lựa chọn (e.g., "Bạn muốn tìm gì cụ thể: đề tài đang mở đăng ký, giảng viên về lĩnh vực nào (AI, Cloud,...), tài liệu quy trình, hay gợi ý giảng viên dựa profile? Hãy cho mình biết thêm nhé!").
+- Chỉ gọi tool khi query rõ ràng khớp với PHẠM VI HỖ TRỢ (e.g., có từ khóa "tìm giảng viên về AI" → search_lecturers; "gợi ý dựa profile" → profile_matching_lecturer_search_tool).
 
 ⚠️ QUY TẮC VIẾT QUERY CHO TOOL search_documents:
 - Nếu không chắc, hãy dùng nguyên văn câu hỏi của user làm query cho tool search_documents
@@ -95,6 +112,24 @@ PHẠM VI HỖ TRỢ (CHỈ ĐƯỢC LÀM NHỮNG VIỆC SAU):
 - Ví dụ ĐÚNG: "quy trình đăng ký đề tài khóa luận tốt nghiệp hướng dẫn bước thực hiện thủ tục hồ sơ" ✅
 - Tránh bịa đặt, dựa trên ngữ cảnh thực tế để viết query đầy đủ.
 - tham số "limit" trong Action Input nên để 10-15 để có kết quả tốt nhất.
+
+⚠️ QUY TẮC VIẾT QUERY CHO TOOL profile_matching_lecturer_search_tool:
+- Chỉ sử dụng tool này khi người dùng hỏi về gợi ý giảng viên dựa trên profile sinh viên (ví dụ: "gợi ý giảng viên phù hợp cho tôi", "dựa vào profile của tôi hãy gợi ý giảng viên").
+- KHÔNG tự tạo hoặc điền trường userId vào Action Input. Trường userId sẽ được hệ thống backend tự động bổ sung, LLM không được biết hoặc sinh ra trường này.
+- Action Input chỉ gồm các trường: "query", "limit".
+- Query nên mô tả rõ mong muốn của sinh viên về lĩnh vực, chuyên ngành, hoặc kỹ năng mong muốn ở giảng viên (nếu có).
+- Nếu không đủ thông tin profile sinh viên, tool sẽ trả về thông báo phù hợp.
+- Trả về kết quả nên giải thích ngắn gọn về lý do chọn giảng viên dựa trên profile sinh viên.
+
+⚠️ QUY TẮC FORMAT OUTPUT CHO TOOL profile_matching_lecturer_search_tool (QUAN TRỌNG!):
+- Trong Final Answer, PHẢI dùng format structured sau để giải thích rõ ràng:
+  1. **Tóm tắt profile của bạn**: Liệt kê 2-3 yếu tố chính từ profile (e.g., "Chuyên ngành CNTT, kỹ năng Python, quan tâm AI").
+  2. **Gợi ý giảng viên**: Liệt kê 1-3 giảng viên (tên, email, lĩnh vực ngắn).
+  3. **Lý do match**: Với mỗi giảng viên, giải thích ngắn (1-2 câu) tại sao match (dựa trên Observation từ tool).
+- Dùng markdown (bullet points, bold) để dễ đọc.
+- Giữ giọng thân thiện, khuyến khích user liên hệ.
+- Nếu tool trả về rỗng: Gợi ý dùng tool search_lecturers thay thế.
+
 CÔNG CỤ CÓ SẴN:
 {tools}
 
@@ -244,8 +279,9 @@ Bắt đầu!`.trim()
     /**
      * Chat với agent - Tự động chọn tool và trả lời
      */
-    async chat(userMessage: string, chatHistory: any[] = []) {
+    async chat(userMessage: string, chatHistory: any[] = [], userId: string) {
         try {
+            this.currentUserId = userId
             console.log('\n🤖 [AGENT] User:', userMessage)
             console.log('📝 [AGENT] Chat history length:', chatHistory.length)
 
@@ -254,9 +290,10 @@ Bắt đầu!`.trim()
 
             const result = await this.agent.invoke({
                 input: userMessage,
-                chat_history: transformedHistory
+                chat_history: transformedHistory,
+                agentArgs: { userId }
             })
-
+            this.currentUserId = null
             console.log('📊 [AGENT] Steps:', result.intermediateSteps?.length || 0)
 
             return {
@@ -280,7 +317,8 @@ Bắt đầu!`.trim()
     /**
      * Stream response (cho UI real-time)
      */
-    async *streamChat(userMessage: string, chatHistory: any[] = []) {
+    async *streamChat(userMessage: string, chatHistory: any[] = [], userId: string) {
+        this.currentUserId = userId
         const stream = await this.agent.streamEvents(
             {
                 input: userMessage,
@@ -295,13 +333,13 @@ Bắt đầu!`.trim()
 
         for await (const event of stream) {
             // Log event type để debug
-            console.log('📡 Event type:', event.event)
+            // console.log('📡 Event type:', event.event)
 
             // Xử lý stream từ LLM - YIELD NGAY
             if (event.event === 'on_chat_model_stream') {
                 const content = event.data?.chunk?.content
                 if (content) {
-                    console.log('✨ Streaming content:', content)
+                    // console.log('✨ Streaming content:', content)
                     yield content
                 }
             }
@@ -336,8 +374,22 @@ Bắt đầu!`.trim()
                         }
                     }
                 }
+
+                if (toolName === 'profile_matching_lecturer_search_tool') {
+                    const output = event.data?.output
+                    if (output) {
+                        try {
+                            // Parse và lưu vào buffer
+                            bufferedLecturerData = typeof output === 'string' ? JSON.parse(output) : output
+                            console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
+                        } catch (error) {
+                            console.error('❌ Failed to parse lecturers data:', error)
+                        }
+                    }
+                }
             }
         }
+        this.currentUserId = null
 
         // SAU KHI STREAM KẾT THÚC, gửi topics data nếu có
         if (bufferedTopicsData) {

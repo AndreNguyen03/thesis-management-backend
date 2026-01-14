@@ -120,10 +120,45 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     ): Promise<Paginated<Topic>>
     batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
 
-    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>
-    >
+    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>>
     getTopicRegistrationApprovalsOfLecturer(
         userId: string,
         query: RequestGetTopicsApprovalRegistrationPagination
     ): Promise<Paginated<any>>
+
+    getMajorDistribution(
+        periodId?: string
+    ): Promise<{ majorId: string; label: string; count: number; percent: number }[]>
+
+    getOverviewStatistics(periodId?: string): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+    }>
+
+    getMonthlyViewsDownloads(
+        lastMonths: number,
+        periodId?: string
+    ): Promise<{ month: string; views: number; downloads: number }[]>
+
+    getSystemOverviewStatistics(): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+        totalStorageBytes: number
+    }>
+
+    getSystemMonthlyViewsDownloads(lastMonths?: number): Promise<{ month: string; views: number; downloads: number }[]>
+
+    getSystemMajorDistribution(): Promise<{ majorId: string; label: string; count: number; percent: number }[]>
+
+    getTrendingKeywords(limit: number): Promise<{ label: string; count: number; score: number; color?: string }[]>
+    setHiddenInLibrary(topicId: string, adminId: string, hide: boolean): Promise<boolean>
+
 }

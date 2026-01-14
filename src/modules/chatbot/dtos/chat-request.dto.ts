@@ -50,4 +50,6 @@ export class ChatAgentRequestDto {
     message: string
     @IsOptional()
     chatHistory?: any[]
+    @IsOptional()
+    userId: string
 }

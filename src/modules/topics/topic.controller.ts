@@ -57,6 +57,61 @@ export class TopicController {
         private readonly topicService: TopicService,
         private readonly periodGateway: PeriodGateway
     ) {}
+
+    @Patch(':topicId/hide')
+    @Roles(UserRole.ADMIN)
+    @UseGuards(RolesGuard)
+    async hideTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body('hide') hide: boolean) {
+        await this.topicService.setHiddenInLibrary(topicId, req.user.sub, hide)
+        return { message: hide ? 'Đã ẩn đề tài khỏi thư viện' : 'Đã hiện lại đề tài trong thư viện' }
+    }
+
+    @Get('trending-keywords')
+    @Auth(AuthType.Bearer)
+    async getTrendingKeywords(@Query('limit') limit?: number) {
+        const l = limit ? Number(limit) : 10
+        return await this.topicService.getTrendingKeywords(l)
+    }
+
+    @Get('stats/overview-system')
+    @Auth(AuthType.Bearer)
+    async getSystemOverviewStats() {
+        return await this.topicService.getSystemOverviewStatistics()
+    }
+
+    @Get('stats/monthly-system')
+    @Auth(AuthType.Bearer)
+    async getSystemMonthlyStats(@Query('months') months?: number) {
+        const m = months ? Number(months) : 12
+        return await this.topicService.getSystemMonthlyViewsDownloads(m)
+    }
+
+    @Get('stats/majors-system')
+    @Auth(AuthType.Bearer)
+    async getSystemMajorDistribution() {
+        return await this.topicService.getSystemMajorDistribution()
+    }
+
+    @Get('stats/monthly')
+    @Auth(AuthType.Bearer)
+    async getMonthlyStats(@Query('periodId') periodId?: string, @Query('months') months?: number) {
+        const m = months ? Number(months) : 12
+        return await this.topicService.getMonthlyViewsDownloads(periodId, m)
+    }
+
+    @Get('stats/majors')
+    @Auth(AuthType.Bearer)
+    async getMajorDistribution(@Query('periodId') periodId?: string) {
+        const res = await this.topicService.getMajorDistribution(periodId)
+        return res
+    }
+
+    @Get('stats/overview')
+    @Auth(AuthType.Bearer)
+    async getOverviewStats(@Query('periodId') periodId?: string) {
+        return await this.topicService.getOverviewStatistics(periodId)
+    }
+
     @Get()
     @Auth(AuthType.Bearer)
     async getTopicList(@Req() req: { user: ActiveUserData }) {
@@ -239,7 +294,7 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.LECTURER)
     @UseGuards(RolesGuard)
-    async updateTopic(@Param('topicId') id: string,  @Body() topic: PatchTopicDto) {
+    async updateTopic(@Param('topicId') id: string, @Body() topic: PatchTopicDto) {
         const result = await this.topicService.updateTopic(id, topic)
         return { topicId: result?._id, message: 'Cập nhật đề tài thành công' }
     }
@@ -298,7 +353,11 @@ export class TopicController {
     @Auth(AuthType.Bearer)
     @Roles(UserRole.FACULTY_BOARD)
     @UseGuards(RolesGuard)
-    async facultyBoardRequestEditTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body() body: { comment: string }) {
+    async facultyBoardRequestEditTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Body() body: { comment: string }
+    ) {
         console.log('request edit topic body :::', body)
         await this.topicService.requestEditTopic(topicId, req.user.sub, body.comment)
 

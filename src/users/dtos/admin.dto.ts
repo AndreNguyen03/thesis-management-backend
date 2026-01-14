@@ -24,9 +24,8 @@ export class UpdateAdminDto extends PartialType(CreateAdminDto) {
 
 export class AdminResponseDto {
     @Expose()
-    @Transform(({ obj }) => obj._id.toString())
-    id: string
-
+    @Transform(({ obj }) => obj._id?.toString())
+    _id: string
     @Expose()
     fullName: string
     @Expose()
