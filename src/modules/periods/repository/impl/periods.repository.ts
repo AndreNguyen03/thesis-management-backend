@@ -195,7 +195,6 @@ export class PeriodRepository extends BaseRepositoryAbstract<Period> implements 
 
         const [result] = await this.periodModel.aggregate(pipelineMain).exec()
 
-        console.log('thesis dashboard pipeline', result.thesisPipeline[0])
 
         return {
             latestThesisPeriod: result.thesisPipeline[0],

@@ -15,7 +15,7 @@ export class TopicInteraction extends BaseEntity {
 
   @Prop({
     type: String,
-    enum: ['view', 'click', 'bookmark', 'register'],
+    enum: ['view', 'click', 'bookmark', 'register', 'download'],
     required: true,
     index: true
   })

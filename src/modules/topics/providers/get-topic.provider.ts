@@ -17,6 +17,7 @@ import { Topic } from '../schemas/topic.schemas'
 import { PeriodsService } from '../../periods/application/periods.service'
 import { BaseServiceAbstract } from '../../../shared/base/service/base.service.abstract'
 import { OverdueTopicInfo, PausedOrDelayedTopicInfo, PendingLecturerReview } from '../../periods/dtos/phase-resolve.dto'
+import { UserRole } from '../../../users/enums/user-role'
 
 @Injectable()
 export class GetTopicProvider extends BaseServiceAbstract<Topic> {
@@ -59,8 +60,8 @@ export class GetTopicProvider extends BaseServiceAbstract<Topic> {
             }
         }
     }
-    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<PaginatedTopicsInLibrary> {
-        const result = await this.topicRepositoryInterface.getTopicsInLibrary(query)
+    async getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams, userRole: UserRole): Promise<PaginatedTopicsInLibrary> {
+        const result = await this.topicRepositoryInterface.getTopicsInLibrary(query, userRole)
         return {
             data: plainToInstance(TopicsInLibrary, result.data, {
                 excludeExtraneousValues: true,

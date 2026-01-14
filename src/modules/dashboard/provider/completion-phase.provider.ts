@@ -30,17 +30,51 @@ export class CompletionPhaseProvider {
         pipeline.push({ $match: match })
 
         // 6. Chọn các trường trả về
-        pipeline.push({
-            $project: {
-                _id: 1,
-                titleVN: 1,
-                type: 1,
-                maxStudents: 1,
-                isPublishedToLibrary: 1,
-                defenseResult: 1,
-                deleted_at: 1
+        pipeline.push(
+            {
+                $lookup: {
+                    from: 'groups', // hoặc conversations / chat_rooms
+                    let: { topicId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$topicId', '$$topicId'] },
+                                        { $eq: ['$type', 'group'] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1
+                            }
+                        }
+                    ],
+                    as: 'group'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$group',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    titleVN: 1,
+                    type: 1,
+                    maxStudents: 1,
+                    isPublishedToLibrary: 1,
+                    defenseResult: 1,
+                    groupId: '$group._id',
+                    deleted_at: 1
+                }
             }
-        })
+        )
 
         return this.topicModel.aggregate(pipeline).exec()
     }
@@ -163,12 +197,44 @@ export class CompletionPhaseProvider {
                 }
             },
             {
+                $lookup: {
+                    from: 'groups', // hoặc conversations / chat_rooms
+                    let: { topicId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$topicId', '$$topicId'] },
+                                        { $eq: ['$type', 'group'] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1
+                            }
+                        }
+                    ],
+                    as: 'group'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$group',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $project: {
                     _id: 1,
                     titleVN: 1,
                     type: 1,
                     defenseResult: 1,
                     isPublishedToLibrary: 1,
+                    groupId: '$group._id',
                     lecturer: 1
                 }
             }

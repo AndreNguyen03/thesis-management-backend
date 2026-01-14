@@ -130,7 +130,7 @@ export class UpdateTopicsPhaseBatchProvider {
                 currentPhase: PeriodPhaseName.COMPLETION,
                 phaseHistories: [
                     ...(topic.phaseHistories ?? []),
-                    this.createPhaseHistory(PeriodPhaseName.COMPLETION, TopicStatus.AwaitingEvaluation)
+                    this.createPhaseHistory(PeriodPhaseName.COMPLETION, TopicStatus.AwaitingEvaluation, actorId)
                 ]
             })
             console.log(`----Cập nhật đề tài ${topic._id} sang trạng thái Mở đăng ký thành công`)

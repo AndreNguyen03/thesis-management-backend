@@ -1,6 +1,7 @@
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 import { Paginated } from '../../../common/pagination-an/interfaces/paginated.interface'
 import { BaseRepositoryInterface } from '../../../shared/base/repository/base.repository.interface'
+import { UserRole } from '../../../users/enums/user-role'
 import { GetMiniMiniMajorDto } from '../../majors/dtos/get-major.dto'
 import { OverdueTopicInfo, PausedOrDelayedTopicInfo, PendingLecturerReview } from '../../periods/dtos/phase-resolve.dto'
 import { GetUploadedFileDto } from '../../upload-files/dtos/upload-file.dtos'
@@ -61,7 +62,7 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
         query: RequestGetTopicsInPhaseParams,
         ownerId?: string
     ): Promise<Paginated<Topic>>
-    getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
+    getTopicsInLibrary(query: RequestGetTopicsInAdvanceSearchParams, role: UserRole): Promise<Paginated<Topic>>
     getRegisteringTopics(periodId: string, query: RequestGetTopicsInAdvanceSearchParams): Promise<Paginated<Topic>>
     getCurrentStatusTopic(topicId: string): Promise<string>
     addTopicGrade(topicId: string, actorId: string, body: RequestGradeTopicDto): Promise<number>
@@ -120,10 +121,45 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
     ): Promise<Paginated<Topic>>
     batchPublishOrNotDefenseResults(topics: PublishTopic[]): Promise<boolean>
 
-    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>
-    >
+    findAllSubmittedTopics(query: SubmittedTopicParamsDto): Promise<Paginated<Topic>>
     getTopicRegistrationApprovalsOfLecturer(
         userId: string,
         query: RequestGetTopicsApprovalRegistrationPagination
     ): Promise<Paginated<any>>
+
+    getMajorDistribution(
+        periodId?: string
+    ): Promise<{ majorId: string; label: string; count: number; percent: number }[]>
+
+    getOverviewStatistics(periodId?: string): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+    }>
+
+    getMonthlyViewsDownloads(
+        lastMonths: number,
+        periodId?: string
+    ): Promise<{ month: string; views: number; downloads: number }[]>
+
+    getSystemOverviewStatistics(): Promise<{
+        totalTopics: number
+        totalViews: number
+        totalDownloads: number
+        averageRating: number
+        ratingCount: number
+        newTopicsThisMonth: number
+        totalStorageBytes: number
+    }>
+
+    getSystemMonthlyViewsDownloads(lastMonths?: number): Promise<{ month: string; views: number; downloads: number }[]>
+
+    getSystemMajorDistribution(): Promise<{ majorId: string; label: string; count: number; percent: number }[]>
+
+    getTrendingKeywords(limit: number): Promise<{ label: string; count: number; score: number; color?: string }[]>
+    setHiddenInLibrary(topicId: string, adminId: string, hide: boolean): Promise<boolean>
+
 }

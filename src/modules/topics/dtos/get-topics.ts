@@ -219,7 +219,14 @@ export class TopicsInLibrary extends AbstractTopic {
     @Expose()
     @Type(() => ResponseMiniStudentDto)
     studentsRegistered: ResponseMiniStudentDto[]
+    @Expose()
+    isHiddenInLibrary?: boolean
 
+    @Expose()
+    hiddenByAdmin?: string
+
+    @Expose()
+    hiddenAt?: Date
     //kết quả bảo vệ
     @Expose()
     defenseResult: DefenseResult
