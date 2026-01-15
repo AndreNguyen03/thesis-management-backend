@@ -1,6 +1,7 @@
 // application/recommendation.service.ts
 import { Injectable, Logger } from '@nestjs/common'
 import { ContentBasedPipeline } from '../pipelines/content-based-v2.pipeline'
+import { ConceptBasedTopicPipeline } from '../pipelines/concept-based-topic.pipeline'
 import { RecommendationResult } from '../dto/recommendation-response.dto'
 
 export interface RecommendationResponse {
@@ -19,19 +20,28 @@ export interface RecommendationResponse {
 export class RecommendationService {
     private readonly logger = new Logger(RecommendationService.name)
 
-    constructor(private readonly pipeline: ContentBasedPipeline) {}
+    constructor(
+        private readonly conceptPipeline: ConceptBasedTopicPipeline,
+        private readonly semanticPipeline: ContentBasedPipeline
+    ) {}
 
     async getRecommendationsForStudent(
         studentId: string,
         periodId: string,
-        options?: { limit?: number }
+        options?: { limit?: number; useSemantic?: boolean }
     ): Promise<RecommendationResponse> {
         const startTime = Date.now()
 
         try {
             this.logger.log(`Getting recommendations for student ${studentId}`)
 
-            const results = await this.pipeline.runPipeline(studentId, periodId)
+            // Default to concept-based pipeline
+            const useSemantic = options?.useSemantic ?? false
+            const pipeline = useSemantic ? this.semanticPipeline : this.conceptPipeline
+
+            this.logger.debug(`Using ${useSemantic ? 'SEMANTIC' : 'CONCEPT'} pipeline`)
+
+            const results = await pipeline.runPipeline(studentId, periodId)
 
             const limitedResults = options?.limit ? results.slice(0, options.limit) : results
 

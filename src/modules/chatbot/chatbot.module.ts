@@ -38,6 +38,7 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ChatbotGateway } from './gateways/chatbot.gateway'
 import { Student, StudentSchema } from '../../users/schemas/student.schema'
 import { ProfileMatchingTool } from './tools/profile-matching.tool'
+import { MatchingModule } from '../matching/matching.module'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
@@ -77,6 +78,7 @@ import { ProfileMatchingTool } from './tools/profile-matching.tool'
         forwardRef(() => KnowledgeSourceModule),
         forwardRef(() => FieldsModule),
         forwardRef(() => RequirementsModule),
+        forwardRef(() => MatchingModule),
         BullModule.registerQueue({ name: 'knowledge-processing' }),
         PaginationAnModule,
         forwardRef(() => TopicModule),

@@ -1,0 +1,509 @@
+[
+  {
+    "_id": "6965f6fb11774e2d4b1a8238",
+    "key": "it",
+    "label": "Information Technology",
+    "level": 0,
+    "parentId": null,
+    "aliases": [
+      "IT",
+      "Công nghệ thông tin"
+    ],
+    "createdAt": "2026-01-13T07:40:43.475Z",
+    "updatedAt": "2026-01-13T07:40:43.475Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fc11774e2d4b1a823a",
+    "key": "it.ai",
+    "label": "Artificial Intelligence",
+    "level": 1,
+    "parentId": "6965f6fb11774e2d4b1a8238",
+    "aliases": [
+      "AI",
+      "Trí tuệ nhân tạo"
+    ],
+    "createdAt": "2026-01-13T07:40:44.324Z",
+    "updatedAt": "2026-01-13T07:40:44.324Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fc11774e2d4b1a823c",
+    "key": "it.data",
+    "label": "Data Engineering & Analytics",
+    "level": 1,
+    "parentId": "6965f6fb11774e2d4b1a8238",
+    "aliases": [
+      "Data Science",
+      "Dữ liệu"
+    ],
+    "createdAt": "2026-01-13T07:40:44.648Z",
+    "updatedAt": "2026-01-13T07:40:44.648Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a823e",
+    "key": "it.software",
+    "label": "Software Engineering",
+    "level": 1,
+    "parentId": "6965f6fb11774e2d4b1a8238",
+    "aliases": [
+      "Công nghệ phần mềm",
+      "Software Engineering"
+    ],
+    "createdAt": "2026-01-13T07:40:45.014Z",
+    "updatedAt": "2026-01-13T07:40:45.014Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8240",
+    "key": "it.system",
+    "label": "Systems & Infrastructure",
+    "level": 1,
+    "parentId": "6965f6fb11774e2d4b1a8238",
+    "aliases": [
+      "Hệ thống",
+      "Infrastructure"
+    ],
+    "createdAt": "2026-01-13T07:40:45.342Z",
+    "updatedAt": "2026-01-13T07:40:45.342Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8242",
+    "key": "it.network",
+    "label": "Networking & Communications",
+    "level": 1,
+    "parentId": "6965f6fb11774e2d4b1a8238",
+    "aliases": [
+      "Networking",
+      "Mạng máy tính"
+    ],
+    "createdAt": "2026-01-13T07:40:45.653Z",
+    "updatedAt": "2026-01-13T07:40:45.653Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8244",
+    "key": "it.ai.machine-learning",
+    "label": "Machine Learning",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823a",
+    "aliases": [
+      "ML",
+      "Học máy"
+    ],
+    "createdAt": "2026-01-13T07:40:45.979Z",
+    "updatedAt": "2026-01-13T07:40:45.979Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a8246",
+    "key": "it.ai.machine-learning.supervised",
+    "label": "Supervised Learning",
+    "level": 3,
+    "parentId": "6965f6fd11774e2d4b1a8244",
+    "aliases": [
+      "Supervised ML"
+    ],
+    "createdAt": "2026-01-13T07:40:46.323Z",
+    "updatedAt": "2026-01-13T07:40:46.323Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a8248",
+    "key": "it.ai.machine-learning.unsupervised",
+    "label": "Unsupervised Learning",
+    "level": 3,
+    "parentId": "6965f6fd11774e2d4b1a8244",
+    "aliases": [
+      "Unsupervised ML"
+    ],
+    "createdAt": "2026-01-13T07:40:46.659Z",
+    "updatedAt": "2026-01-13T07:40:46.659Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a824a",
+    "key": "it.ai.machine-learning.reinforcement",
+    "label": "Reinforcement Learning",
+    "level": 3,
+    "parentId": "6965f6fd11774e2d4b1a8244",
+    "aliases": [
+      "RL"
+    ],
+    "createdAt": "2026-01-13T07:40:46.978Z",
+    "updatedAt": "2026-01-13T07:40:46.978Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6ff11774e2d4b1a824c",
+    "key": "it.ai.machine-learning.federated",
+    "label": "Federated Learning",
+    "level": 3,
+    "parentId": "6965f6fd11774e2d4b1a8244",
+    "aliases": [
+      "Federated ML"
+    ],
+    "createdAt": "2026-01-13T07:40:47.395Z",
+    "updatedAt": "2026-01-13T07:40:47.395Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f6ff11774e2d4b1a824e",
+    "key": "it.ai.deep-learning",
+    "label": "Deep Learning",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823a",
+    "aliases": [
+      "DL"
+    ],
+    "createdAt": "2026-01-13T07:40:47.754Z",
+    "updatedAt": "2026-01-13T07:40:47.754Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8250",
+    "key": "it.ai.deep-learning.cnn",
+    "label": "Convolutional Neural Networks",
+    "level": 3,
+    "parentId": "6965f6ff11774e2d4b1a824e",
+    "aliases": [
+      "CNN"
+    ],
+    "createdAt": "2026-01-13T07:40:48.083Z",
+    "updatedAt": "2026-01-13T07:40:48.083Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8252",
+    "key": "it.ai.deep-learning.rnn",
+    "label": "Recurrent Neural Networks",
+    "level": 3,
+    "parentId": "6965f6ff11774e2d4b1a824e",
+    "aliases": [
+      "RNN"
+    ],
+    "createdAt": "2026-01-13T07:40:48.437Z",
+    "updatedAt": "2026-01-13T07:40:48.437Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8254",
+    "key": "it.ai.deep-learning.transformer",
+    "label": "Transformer Models",
+    "level": 3,
+    "parentId": "6965f6ff11774e2d4b1a824e",
+    "aliases": [
+      "Transformer"
+    ],
+    "createdAt": "2026-01-13T07:40:48.752Z",
+    "updatedAt": "2026-01-13T07:40:48.752Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70111774e2d4b1a8256",
+    "key": "it.ai.nlp",
+    "label": "Natural Language Processing",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823a",
+    "aliases": [
+      "NLP",
+      "Xử lý ngôn ngữ tự nhiên"
+    ],
+    "createdAt": "2026-01-13T07:40:49.085Z",
+    "updatedAt": "2026-01-13T07:40:49.085Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70111774e2d4b1a8258",
+    "key": "it.ai.nlp.llm",
+    "label": "Large Language Models",
+    "level": 3,
+    "parentId": "6965f70111774e2d4b1a8256",
+    "aliases": [
+      "LLM",
+      "Large Language Model"
+    ],
+    "createdAt": "2026-01-13T07:40:49.403Z",
+    "updatedAt": "2026-01-13T07:40:49.403Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70111774e2d4b1a825a",
+    "key": "it.ai.computer-vision",
+    "label": "Computer Vision",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823a",
+    "aliases": [
+      "CV",
+      "Thị giác máy tính"
+    ],
+    "createdAt": "2026-01-13T07:40:49.728Z",
+    "updatedAt": "2026-01-13T07:40:49.728Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70211774e2d4b1a825c",
+    "key": "it.data.data-science",
+    "label": "Data Science",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823c",
+    "aliases": [
+      "Data Scientist"
+    ],
+    "createdAt": "2026-01-13T07:40:50.042Z",
+    "updatedAt": "2026-01-13T07:40:50.042Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70211774e2d4b1a825e",
+    "key": "it.data.big-data",
+    "label": "Big Data",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823c",
+    "aliases": [
+      "Dữ liệu lớn"
+    ],
+    "createdAt": "2026-01-13T07:40:50.375Z",
+    "updatedAt": "2026-01-13T07:40:50.375Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70211774e2d4b1a8260",
+    "key": "it.data.big-data.streaming",
+    "label": "Streaming Data Processing",
+    "level": 3,
+    "parentId": "6965f70211774e2d4b1a825e",
+    "aliases": [
+      "Streaming"
+    ],
+    "createdAt": "2026-01-13T07:40:50.691Z",
+    "updatedAt": "2026-01-13T07:40:50.691Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8262",
+    "key": "it.data.data-mining",
+    "label": "Data Mining",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823c",
+    "aliases": [
+      "Khai phá dữ liệu"
+    ],
+    "createdAt": "2026-01-13T07:40:51.032Z",
+    "updatedAt": "2026-01-13T07:40:51.032Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8264",
+    "key": "it.data.data-analysis",
+    "label": "Data Analysis",
+    "level": 2,
+    "parentId": "6965f6fc11774e2d4b1a823c",
+    "aliases": [
+      "Phân tích dữ liệu"
+    ],
+    "createdAt": "2026-01-13T07:40:51.354Z",
+    "updatedAt": "2026-01-13T07:40:51.354Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8266",
+    "key": "it.software.architecture",
+    "label": "Software Architecture",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a823e",
+    "aliases": [
+      "Architecture"
+    ],
+    "createdAt": "2026-01-13T07:40:51.684Z",
+    "updatedAt": "2026-01-13T07:40:51.684Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70411774e2d4b1a8268",
+    "key": "it.software.architecture.microservices",
+    "label": "Microservices Architecture",
+    "level": 3,
+    "parentId": "6965f70311774e2d4b1a8266",
+    "aliases": [
+      "Microservices"
+    ],
+    "createdAt": "2026-01-13T07:40:52.012Z",
+    "updatedAt": "2026-01-13T07:40:52.012Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70411774e2d4b1a826a",
+    "key": "it.software.web",
+    "label": "Web Development",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a823e",
+    "aliases": [
+      "Web",
+      "Phát triển web"
+    ],
+    "createdAt": "2026-01-13T07:40:52.330Z",
+    "updatedAt": "2026-01-13T07:40:52.330Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70411774e2d4b1a826c",
+    "key": "it.software.web.frontend",
+    "label": "Frontend Development",
+    "level": 3,
+    "parentId": "6965f70411774e2d4b1a826a",
+    "aliases": [
+      "Frontend"
+    ],
+    "createdAt": "2026-01-13T07:40:52.734Z",
+    "updatedAt": "2026-01-13T07:40:52.734Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70511774e2d4b1a826e",
+    "key": "it.software.web.backend",
+    "label": "Backend Development",
+    "level": 3,
+    "parentId": "6965f70411774e2d4b1a826a",
+    "aliases": [
+      "Backend"
+    ],
+    "createdAt": "2026-01-13T07:40:53.177Z",
+    "updatedAt": "2026-01-13T07:40:53.177Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70511774e2d4b1a8270",
+    "key": "it.software.mobile",
+    "label": "Mobile Application Development",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a823e",
+    "aliases": [
+      "Mobile"
+    ],
+    "createdAt": "2026-01-13T07:40:53.499Z",
+    "updatedAt": "2026-01-13T07:40:53.499Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70511774e2d4b1a8272",
+    "key": "it.software.devops",
+    "label": "DevOps & Automation",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a823e",
+    "aliases": [
+      "DevOps",
+      "CI/CD"
+    ],
+    "createdAt": "2026-01-13T07:40:53.899Z",
+    "updatedAt": "2026-01-13T07:40:53.899Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8274",
+    "key": "it.system.distributed",
+    "label": "Distributed Systems",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8240",
+    "aliases": [
+      "Hệ thống phân tán"
+    ],
+    "createdAt": "2026-01-13T07:40:54.353Z",
+    "updatedAt": "2026-01-13T07:40:54.353Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8276",
+    "key": "it.system.cloud",
+    "label": "Cloud Computing",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8240",
+    "aliases": [
+      "Cloud",
+      "Điện toán đám mây"
+    ],
+    "createdAt": "2026-01-13T07:40:54.659Z",
+    "updatedAt": "2026-01-13T07:40:54.659Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8278",
+    "key": "it.system.large-scale",
+    "label": "Large-scale Systems",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8240",
+    "aliases": [
+      "Hệ thống lớn"
+    ],
+    "createdAt": "2026-01-13T07:40:54.966Z",
+    "updatedAt": "2026-01-13T07:40:54.966Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70711774e2d4b1a827a",
+    "key": "it.system.performance",
+    "label": "Performance Optimization",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8240",
+    "aliases": [
+      "Tối ưu hiệu năng"
+    ],
+    "createdAt": "2026-01-13T07:40:55.339Z",
+    "updatedAt": "2026-01-13T07:40:55.339Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70711774e2d4b1a827c",
+    "key": "it.network.computer-network",
+    "label": "Computer Networking",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8242",
+    "aliases": [
+      "Mạng máy tính"
+    ],
+    "createdAt": "2026-01-13T07:40:55.870Z",
+    "updatedAt": "2026-01-13T07:40:55.870Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70811774e2d4b1a827e",
+    "key": "it.network.communication-systems",
+    "label": "Communication Systems",
+    "level": 2,
+    "parentId": "6965f6fd11774e2d4b1a8242",
+    "aliases": [
+      "Hệ thống truyền thông"
+    ],
+    "createdAt": "2026-01-13T07:40:56.303Z",
+    "updatedAt": "2026-01-13T07:40:56.303Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70811774e2d4b1a8280",
+    "key": "it.network.communication.vlc",
+    "label": "Visible Light Communication",
+    "level": 3,
+    "parentId": "6965f70811774e2d4b1a827e",
+    "aliases": [
+      "VLC"
+    ],
+    "createdAt": "2026-01-13T07:40:56.732Z",
+    "updatedAt": "2026-01-13T07:40:56.732Z",
+    "__v": 0
+  },
+  {
+    "_id": "6965f70911774e2d4b1a8282",
+    "key": "it.network.communication.vehicle",
+    "label": "Vehicle Communication & Sensing",
+    "level": 3,
+    "parentId": "6965f70811774e2d4b1a827e",
+    "aliases": [
+      "Vehicle Communication"
+    ],
+    "createdAt": "2026-01-13T07:40:57.053Z",
+    "updatedAt": "2026-01-13T07:40:57.053Z",
+    "__v": 0
+  }
+]

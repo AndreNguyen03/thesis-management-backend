@@ -21,6 +21,11 @@ import { DynamicThresholdService } from './services/dynamic-threshold.service'
 import { RerankerService } from './services/reranker.service'
 import { TopicVectorModule } from '../topic_search/topic_search.module'
 import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.module'
+import { MatchingModule } from '../matching/matching.module'
+import { ConceptBasedTopicPipeline } from './pipelines/concept-based-topic.pipeline'
+import { MongooseModule } from '@nestjs/mongoose'
+import { Student, StudentSchema } from '../../users/schemas/student.schema'
+import { User, UserSchema } from '../../users/schemas/users.schema'
 
 @Module({
     imports: [
@@ -34,11 +39,16 @@ import { KnowledgeSourceModule } from '../knowledge-source/knowledge-source.modu
         RedisModule,
         TopicVectorModule,
         KnowledgeSourceModule,
-        ChatBotModule
+        MatchingModule,
+        MongooseModule.forFeature([
+            { name: Student.name, schema: StudentSchema },
+            { name: User.name, schema: UserSchema }
+        ])
     ],
     providers: [
         RecommendationService,
-        ContentBasedPipeline, // ✅ Add this
+        ContentBasedPipeline,
+        ConceptBasedTopicPipeline,
         PopularityBasedPipeline,
         GetEmbeddingProvider,
         Reranker,

@@ -1,0 +1,1341 @@
+[
+  {
+    "_id": "6908785b8de51cf12b091b52",
+    "deleted_at": null,
+    "userId": "6908785b8de51cf12b091b50",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Cloud Computing (Điện toán đám mây)",
+      "Digital Transformation (Chuyển đổi số)",
+      "Software Engineering (Công nghệ phần mềm)",
+      "Large-scale Computing (Hệ thống lớn)",
+      "Smart Application Development (Phát triển ứng dụng thông minh)"
+    ],
+    "researchInterests": [
+      "Artificial Intelligence (AI)",
+      "Data Science",
+      "Big Data",
+      "Large Language Model"
+    ],
+    "publications": [
+      {
+        "title": "Scalable Cloud-based Solutions for Enterprise Digital Transformation",
+        "journal": "Journal of Cloud Computing",
+        "conference": "Journal of Cloud Computing",
+        "year": "2022",
+        "type": "Journal",
+        "citations": 15,
+        "link": "https://an-phu.atlassian.net/jira/software/projects/FTMS/boards/67"
+      },
+      {
+        "title": "Intelligent Application Frameworks for Large-scale Systems",
+        "journal": "IEEE International Conference on Software Engineering",
+        "conference": "IEEE International Conference on Software Engineering",
+        "year": "2021",
+        "type": "Conference",
+        "citations": 10,
+        "link": "https://an-phu.atlassian.net/jira/software/projects/FTMS/boards/67"
+      },
+      {
+        "title": "Leveraging Big Data and AI in Smart Applications",
+        "journal": "International Journal of Data Science",
+        "conference": "International Journal of Data Science",
+        "year": "2023",
+        "type": "Journal",
+        "citations": 8,
+        "link": "https://an-phu.atlassian.net/jira/software/projects/FTMS/boards/67"
+      }
+    ],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-03T09:39:39.646Z",
+    "updatedAt": "2026-01-08T08:46:15.889Z",
+    "__v": 6,
+    "vectorPointId": "c4c30070-94ce-4399-9665-9bf34527d28b"
+  },
+  {
+    "_id": "6922c8ac7158a8fa4e6cf73a",
+    "deleted_at": null,
+    "userId": "6922c8ac7158a8fa4e6cf738",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Trí tuệ nhân tạo",
+      "Khoa học dữ liệu",
+      "Deep Learning",
+      "Phân tích dữ liệu truyền thông",
+      "Dữ liệu lớn",
+      "Phát triển ứng dụng thông minh"
+    ],
+    "researchInterests": [
+      "Data Science",
+      "Big Data",
+      "Visible light communication",
+      "Optical camera communication",
+      "Vehicle communication and sensing"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T08:41:16.447Z",
+    "updatedAt": "2026-01-08T08:50:59.533Z",
+    "__v": 1,
+    "vectorPointId": "ab1bde3f-b2d6-487d-a380-7aee5548ce33"
+  },
+  {
+    "_id": "6922c8ac7158a8fa4e6cf73f",
+    "deleted_at": null,
+    "userId": "6922c8ac7158a8fa4e6cf73d",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Data Mining"
+    ],
+    "researchInterests": [
+      "Các phương pháp thiết kế và phát triển Web"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T08:41:16.705Z",
+    "updatedAt": "2026-01-08T08:50:41.545Z",
+    "__v": 1,
+    "vectorPointId": "e8311849-a436-412e-a217-9dd78e85a902"
+  },
+  {
+    "_id": "6922c8ac7158a8fa4e6cf744",
+    "deleted_at": null,
+    "userId": "6922c8ac7158a8fa4e6cf742",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Natural Language Processing",
+      "Machine learning"
+    ],
+    "researchInterests": [
+      "Phát triển ứng dụng Web và Mobile",
+      "Phương pháp và công cụ phát triển phần mềm",
+      "Data Analysis"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T08:41:16.948Z",
+    "updatedAt": "2026-01-08T08:50:03.778Z",
+    "__v": 1,
+    "vectorPointId": "1095e35e-4b85-411f-b581-db3be8818c7b"
+  },
+  {
+    "_id": "6922c8ad7158a8fa4e6cf749",
+    "deleted_at": null,
+    "userId": "6922c8ad7158a8fa4e6cf747",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [],
+    "researchInterests": [],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T08:41:17.194Z",
+    "updatedAt": "2025-11-23T08:41:17.194Z",
+    "__v": 0
+  },
+  {
+    "_id": "6922d7635f710fdb263a5cff",
+    "deleted_at": null,
+    "userId": "6922d7635f710fdb263a5cfd",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Data Mining",
+      "Big Data"
+    ],
+    "researchInterests": [
+      "Phương pháp và công cụ phát triển phần mềm",
+      ".NET",
+      "Java",
+      "AI"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:44:03.691Z",
+    "updatedAt": "2026-01-08T08:49:21.331Z",
+    "__v": 1,
+    "vectorPointId": "75fcb95f-a882-44e4-a2cb-d883237bf462"
+  },
+  {
+    "_id": "6922d7635f710fdb263a5d04",
+    "deleted_at": null,
+    "userId": "6922d7635f710fdb263a5d02",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Các kĩ thuật đồ họa nâng cao trong game 3D",
+      "các giải pháp server cho game trực tuyến"
+    ],
+    "researchInterests": [
+      " Quy trình và công nghệ sản xuất game"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:44:03.991Z",
+    "updatedAt": "2026-01-13T11:27:32.733Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d7645f710fdb263a5d09",
+    "deleted_at": null,
+    "userId": "6922d7645f710fdb263a5d07",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Search Engine"
+    ],
+    "researchInterests": [
+      "Lập trình trên thiết bị di động",
+      "Lập trình Game",
+      "Công nghệ .Net"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:44:04.330Z",
+    "updatedAt": "2026-01-13T11:28:22.675Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8e9b169b4e98c8d5c7a",
+    "deleted_at": null,
+    "userId": "6922d8e9b169b4e98c8d5c78",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [],
+    "researchInterests": [],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:33.589Z",
+    "updatedAt": "2025-11-23T09:50:33.589Z",
+    "__v": 0
+  },
+  {
+    "_id": "6922d8e9b169b4e98c8d5c7f",
+    "deleted_at": null,
+    "userId": "6922d8e9b169b4e98c8d5c7d",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [],
+    "researchInterests": [],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:33.841Z",
+    "updatedAt": "2025-11-23T09:50:33.841Z",
+    "__v": 0
+  },
+  {
+    "_id": "6922d8eab169b4e98c8d5c84",
+    "deleted_at": null,
+    "userId": "6922d8eab169b4e98c8d5c82",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [],
+    "researchInterests": [],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:34.090Z",
+    "updatedAt": "2025-11-23T09:50:34.090Z",
+    "__v": 0
+  },
+  {
+    "_id": "6922d8eab169b4e98c8d5c89",
+    "deleted_at": null,
+    "userId": "6922d8eab169b4e98c8d5c87",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      " Quy trình, phương pháp phát triển phần mềm (Agile,Scrum, XP,..)",
+      "bài toán tối ưu trong quản lý "
+    ],
+    "researchInterests": [
+      "Công nghệ lập trình Web",
+      "Open Source liên quan đến hướng nghiên cứu quản lý dự án, ",
+      " CRM/ERP, CMS,.."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:34.349Z",
+    "updatedAt": "2026-01-13T11:34:17.507Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eab169b4e98c8d5c8e",
+    "deleted_at": null,
+    "userId": "6922d8eab169b4e98c8d5c8c",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1b",
+    "areaInterest": [
+      "Computer Security"
+    ],
+    "researchInterests": [
+      "Deep Learning",
+      "AI",
+      "Artificial Immune System",
+      "Machine Learning"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:34.598Z",
+    "updatedAt": "2026-01-13T11:35:19.790Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eab169b4e98c8d5c93",
+    "deleted_at": null,
+    "userId": "6922d8eab169b4e98c8d5c91",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Xử lý tín hiệu số trong xử lý ảnh",
+      "FPGA",
+      "SoC"
+    ],
+    "researchInterests": [
+      "xử lý video tốc độ cao",
+      "Xử lý tín hiệu số trong truyền thông tin tốc độ cao",
+      "Thiết kế vi mạch"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:34.875Z",
+    "updatedAt": "2026-01-13T12:00:00.556Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ebb169b4e98c8d5c98",
+    "deleted_at": null,
+    "userId": "6922d8ebb169b4e98c8d5c96",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "AI for IoT",
+      "Smart Classroom/SmartHome/SmartBuilding"
+    ],
+    "researchInterests": [
+      "System on Chip",
+      "IC Design"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:35.124Z",
+    "updatedAt": "2026-01-13T12:01:51.565Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ebb169b4e98c8d5c9d",
+    "deleted_at": null,
+    "userId": "6922d8ebb169b4e98c8d5c9b",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Robotics"
+    ],
+    "researchInterests": [
+      "Embedded Systems"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:35.389Z",
+    "updatedAt": "2026-01-13T12:03:59.530Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ebb169b4e98c8d5ca2",
+    "deleted_at": null,
+    "userId": "6922d8ebb169b4e98c8d5ca0",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [],
+    "researchInterests": [
+      "Thiết bị giao tiếp không dây LoRa,",
+      "Mạng diện rộng công suất thấp",
+      "Thiết kế mạch/vi mạch cao tần"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:35.703Z",
+    "updatedAt": "2026-01-13T12:05:55.422Z",
+    "__v": 3
+  },
+  {
+    "_id": "6922d8ebb169b4e98c8d5ca7",
+    "deleted_at": null,
+    "userId": "6922d8ebb169b4e98c8d5ca5",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Computer Vision",
+      "AI for IoT"
+    ],
+    "researchInterests": [
+      "Smart Classroom/SmartHome/SmartBuilding"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:35.959Z",
+    "updatedAt": "2026-01-13T12:17:00.343Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ecb169b4e98c8d5cac",
+    "deleted_at": null,
+    "userId": "6922d8ecb169b4e98c8d5caa",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Thiết kế vi mạch"
+    ],
+    "researchInterests": [
+      " FPGA",
+      "SoC"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:36.206Z",
+    "updatedAt": "2026-01-13T12:06:48.511Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ecb169b4e98c8d5cb1",
+    "deleted_at": null,
+    "userId": "6922d8ecb169b4e98c8d5caf",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Thiết kế hệ thống nhúng"
+    ],
+    "researchInterests": [
+      "IoT",
+      "Smart Systems"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:36.463Z",
+    "updatedAt": "2026-01-13T12:19:50.818Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ecb169b4e98c8d5cb6",
+    "deleted_at": null,
+    "userId": "6922d8ecb169b4e98c8d5cb4",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Post-Quantum Cryptography",
+      "Coarse-Grained Reconfigurable Architecture",
+      "Stochastic Computing for CNN,"
+    ],
+    "researchInterests": [
+      "RISC-V-based Cryptographic Processor"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:36.751Z",
+    "updatedAt": "2026-01-13T12:09:21.087Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8ecb169b4e98c8d5cbb",
+    "deleted_at": null,
+    "userId": "6922d8ecb169b4e98c8d5cb9",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Kiến trúc Máy tính",
+      "Thiết kế Hệ thống Số"
+    ],
+    "researchInterests": [
+      "Tương tác Phần cứng / Phần mềm"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:36.992Z",
+    "updatedAt": "2026-01-13T12:11:18.118Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8edb169b4e98c8d5cc0",
+    "deleted_at": null,
+    "userId": "6922d8edb169b4e98c8d5cbe",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Robotics",
+      "Smart Devices",
+      "Intelligent Algorithms "
+    ],
+    "researchInterests": [
+      ""
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:37.244Z",
+    "updatedAt": "2026-01-13T12:13:07.205Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8edb169b4e98c8d5cc5",
+    "deleted_at": null,
+    "userId": "6922d8edb169b4e98c8d5cc3",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Mô hình hóa hệ thống thông tin doanh nghiệp (ERP integration).",
+      "Phân tích dữ liệu quản lý cho tối ưu hóa nguồn lực.",
+      "Ứng dụng BI (Business Intelligence) trong doanh nghiệp nhỏ."
+    ],
+    "researchInterests": [
+      "Công cụ ERP/CRM (SAP, Oracle).",
+      "Tích hợp hệ thống thông tin với IoT.",
+      "Đạo đức dữ liệu trong quản lý kinh doanh."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:37.516Z",
+    "updatedAt": "2026-01-13T13:43:26.938Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8edb169b4e98c8d5cca",
+    "deleted_at": null,
+    "userId": "6922d8edb169b4e98c8d5cc8",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Thiết kế nền tảng e-commerce scalable.",
+      "Blockchain cho thanh toán an toàn trực tuyến.",
+      "Phân tích hành vi người dùng trong thương mại điện tử."
+    ],
+    "researchInterests": [
+      "Frameworks web e-commerce (Magento, Shopify).",
+      "Digital marketing và SEO cho nền tảng trực tuyến.",
+      "Tích hợp AI khuyến nghị sản phẩm."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:37.765Z",
+    "updatedAt": "2026-01-13T13:44:06.719Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eeb169b4e98c8d5ccf",
+    "deleted_at": null,
+    "userId": "6922d8edb169b4e98c8d5ccd",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "AI trong hệ thống thông tin quản lý (predictive analytics).",
+      "IoT cho quản trị điện tử thông minh.",
+      "Tối ưu hóa quy trình tự động hóa doanh nghiệp."
+    ],
+    "researchInterests": [
+      "Công cụ AI (TensorFlow, scikit-learn).",
+      "Hệ thống ERP thông minh.",
+      "Bảo mật dữ liệu trong hệ thống tự động."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:38.028Z",
+    "updatedAt": "2026-01-13T13:44:46.334Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eeb169b4e98c8d5cd4",
+    "deleted_at": null,
+    "userId": "6922d8eeb169b4e98c8d5cd2",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Phát hiện xâm nhập trong hệ thống thông tin (IDS/IPS).",
+      "Mã hóa dữ liệu cho thương mại điện tử.",
+      "Rủi ro bảo mật trong quản trị điện tử."
+    ],
+    "researchInterests": [
+      "Tiêu chuẩn bảo mật (ISO 27001).",
+      "Công cụ firewall và encryption tools.",
+      "Ứng dụng blockchain cho an ninh dữ liệu."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:38.285Z",
+    "updatedAt": "2026-01-13T13:45:27.809Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eeb169b4e98c8d5cd9",
+    "deleted_at": null,
+    "userId": "6922d8eeb169b4e98c8d5cd7",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Data mining cho hệ thống thông tin quản lý.",
+      "Phân tích dữ liệu lớn trong thương mại điện tử.",
+      "Mô hình dự báo xu hướng thị trường."
+    ],
+    "researchInterests": [
+      "Công cụ big data (Hadoop, Spark).",
+      "Visualization tools (Tableau, Power BI).",
+      "Tích hợp dữ liệu từ nguồn đa kênh."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:38.540Z",
+    "updatedAt": "2026-01-13T13:46:10.557Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8eeb169b4e98c8d5cde",
+    "deleted_at": null,
+    "userId": "6922d8eeb169b4e98c8d5cdc",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Thiết kế app mobile e-commerce hybrid.",
+      "Tối ưu hóa UX/UI cho thương mại di động.",
+      "Tích hợp thanh toán số và ví điện tử."
+    ],
+    "researchInterests": [
+      "Frameworks mobile (React Native, Flutter).",
+      "AR/VR cho trải nghiệm mua sắm.",
+      "Bảo mật giao dịch di động."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:38.785Z",
+    "updatedAt": "2026-01-13T13:46:50.469Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8efb169b4e98c8d5ce3",
+    "deleted_at": null,
+    "userId": "6922d8eeb169b4e98c8d5ce1",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "E-government platforms và dịch vụ công trực tuyến.",
+      "Tích hợp hệ thống thông minh cho quản trị hành chính.",
+      "Đánh giá hiệu quả quản trị điện tử."
+    ],
+    "researchInterests": [
+      "Công nghệ blockchain cho e-gov.",
+      "Cloud services cho hệ thống công.",
+      "Tiêu chuẩn quốc tế về digital governance."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:39.035Z",
+    "updatedAt": "2026-01-13T13:47:36.803Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8efb169b4e98c8d5ce8",
+    "deleted_at": null,
+    "userId": "6922d8efb169b4e98c8d5ce6",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "AI khuyến nghị sản phẩm trong e-commerce.",
+      "Chatbots và trợ lý ảo cho dịch vụ khách hàng.",
+      "Machine learning cho dự báo nhu cầu thị trường."
+    ],
+    "researchInterests": [
+      "Mô hình NLP cho chat e-commerce.",
+      "Tích hợp AI với hệ thống ERP.",
+      "Đạo đức AI trong kinh doanh."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:39.278Z",
+    "updatedAt": "2026-01-13T13:48:25.098Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8efb169b4e98c8d5ced",
+    "deleted_at": null,
+    "userId": "6922d8efb169b4e98c8d5ceb",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Big data analytics cho quyết định chiến lược.",
+      "Tích hợp dữ liệu từ nguồn đa dạng trong MIS.",
+      "Tối ưu hóa lưu trữ dữ liệu doanh nghiệp."
+    ],
+    "researchInterests": [
+      "Công cụ NoSQL và data warehouses.",
+      "Ứng dụng big data trong logistics.",
+      "Bảo mật dữ liệu lớn trong quản lý."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:39.537Z",
+    "updatedAt": "2026-01-13T13:49:24.823Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8efb169b4e98c8d5cf2",
+    "deleted_at": null,
+    "userId": "6922d8efb169b4e98c8d5cf0",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1f",
+    "areaInterest": [
+      "Blockchain cho hợp đồng thông minh trong thương mại.",
+      "Tích hợp blockchain vào hệ thống thông tin quản lý.",
+      "An ninh và traceability trong chuỗi cung ứng."
+    ],
+    "researchInterests": [
+      "Platforms blockchain (Ethereum, Hyperledger).",
+      "NFT và tokenization cho e-commerce.",
+      "Quy định pháp lý blockchain Việt Nam."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:39.789Z",
+    "updatedAt": "2026-01-13T13:50:15.878Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f0b169b4e98c8d5cf7",
+    "deleted_at": null,
+    "userId": "6922d8efb169b4e98c8d5cf5",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Công nghệ tri thức",
+      "máy học",
+      "kiến trúc phần mềm",
+      "an ninh máy tính"
+    ],
+    "researchInterests": [
+      "Quy trình phát triển phần mềm",
+      "kiến trúc phần mềm"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:40.039Z",
+    "updatedAt": "2026-01-13T11:37:25.825Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f0b169b4e98c8d5cfc",
+    "deleted_at": null,
+    "userId": "6922d8f0b169b4e98c8d5cfa",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      " Knowledge Representation & Reasoning"
+    ],
+    "researchInterests": [
+      "Software Architecture",
+      "Web developing"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:40.381Z",
+    "updatedAt": "2026-01-13T11:39:49.870Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f0b169b4e98c8d5d01",
+    "deleted_at": null,
+    "userId": "6922d8f0b169b4e98c8d5cff",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Security",
+      "Natural language processing"
+    ],
+    "researchInterests": [
+      "Machine Learning",
+      "Deep Learning",
+      "Large Language Models"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:40.638Z",
+    "updatedAt": "2026-01-13T11:41:33.688Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f0b169b4e98c8d5d06",
+    "deleted_at": null,
+    "userId": "6922d8f0b169b4e98c8d5d04",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Computer Vision",
+      "Deep Learning"
+    ],
+    "researchInterests": [
+      "Phương pháp và công cụ phát triển phần mềm",
+      "Lập trình trên thiết bị di động"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:40.897Z",
+    "updatedAt": "2026-01-13T11:43:11.357Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f1b169b4e98c8d5d0b",
+    "deleted_at": null,
+    "userId": "6922d8f1b169b4e98c8d5d09",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Xử lý ngôn ngữ tự nhiên và tìm kiếm thông tin"
+    ],
+    "researchInterests": [
+      " CASE Tools (Computer Aided Software Engineering)",
+      "quản lý và đảm bảo chất lượng phần mềm"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:41.157Z",
+    "updatedAt": "2026-01-13T11:44:16.856Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f1b169b4e98c8d5d10",
+    "deleted_at": null,
+    "userId": "6922d8f1b169b4e98c8d5d0e",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Deep Learning",
+      "Image and Video Processing",
+      " Big Data"
+    ],
+    "researchInterests": [
+      "2D-3D Game Development"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:41.439Z",
+    "updatedAt": "2026-01-13T11:45:57.640Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f1b169b4e98c8d5d15",
+    "deleted_at": null,
+    "userId": "6922d8f1b169b4e98c8d5d13",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Natural Language Processing",
+      "Machine learning"
+    ],
+    "researchInterests": [
+      "Phát triển ứng dụng Web và Mobile",
+      "Phương pháp và công cụ phát triển phần mềm",
+      "Data Analysis"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:41.706Z",
+    "updatedAt": "2026-01-13T11:47:59.747Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f1b169b4e98c8d5d1a",
+    "deleted_at": null,
+    "userId": "6922d8f1b169b4e98c8d5d18",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1d",
+    "areaInterest": [
+      "Embedded Systems",
+      "NIR Spectroscopy"
+    ],
+    "researchInterests": [
+      "Machine Learning"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:41.958Z",
+    "updatedAt": "2026-01-13T12:14:32.001Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f2b169b4e98c8d5d1f",
+    "deleted_at": null,
+    "userId": "6922d8f2b169b4e98c8d5d1d",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Scientific visualization",
+      "real-time visualization",
+      "Information system",
+      "software engineering",
+      "model-driven engineering (MDE)"
+    ],
+    "researchInterests": [
+      "model-based testing (MBT)",
+      "modelbased vulnerability testing (MBVT)",
+      "Human-computer interaction (HCI)",
+      "Internet of things",
+      "AI",
+      "Machine Learning",
+      "Deep Learning",
+      "Smart systems"
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:42.232Z",
+    "updatedAt": "2026-01-13T11:50:38.151Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f2b169b4e98c8d5d24",
+    "deleted_at": null,
+    "userId": "6922d8f2b169b4e98c8d5d22",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1c",
+    "areaInterest": [
+      "Tính toán lượng tử",
+      "Lập trình hàm"
+    ],
+    "researchInterests": [
+      "Thiết kế vi mạch",
+      "Công nghệ Phần mềm   "
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:42.483Z",
+    "updatedAt": "2026-01-13T11:52:05.335Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f2b169b4e98c8d5d29",
+    "deleted_at": null,
+    "userId": "6922d8f2b169b4e98c8d5d27",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Phát hiện xâm nhập dựa trên AI (IDS/IPS).",
+      "Mã hóa dữ liệu cho truyền thông an toàn.",
+      "Bảo mật IoT trong môi trường phân tán."
+    ],
+    "researchInterests": [
+      "Công cụ SIEM (Splunk, ELK Stack).",
+      "Ethical hacking và penetration testing.",
+      "Tiêu chuẩn bảo mật quốc tế (ISO 27001)."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:42.747Z",
+    "updatedAt": "2026-01-13T13:52:26.841Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f2b169b4e98c8d5d2e",
+    "deleted_at": null,
+    "userId": "6922d8f2b169b4e98c8d5d2c",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Giao thức định tuyến nâng cao (BGP, OSPF).",
+      "Tối ưu hóa hiệu suất mạng (QoS, load balancing).",
+      "Mô phỏng mạng (NS-3, OMNeT++)."
+    ],
+    "researchInterests": [
+      "Công nghệ 5G/6G cho truyền thông dữ liệu.",
+      "Cloud networking (AWS VPC, Azure VNets).",
+      "An ninh mạng cơ bản (firewall, VPN)."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:42.994Z",
+    "updatedAt": "2026-01-13T13:53:04.648Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f3b169b4e98c8d5d33",
+    "deleted_at": null,
+    "userId": "6922d8f3b169b4e98c8d5d31",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [],
+    "researchInterests": [],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:43.249Z",
+    "updatedAt": "2025-11-23T09:50:43.249Z",
+    "__v": 0
+  },
+  {
+    "_id": "6922d8f3b169b4e98c8d5d38",
+    "deleted_at": null,
+    "userId": "6922d8f3b169b4e98c8d5d36",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Giao thức IoT (MQTT, CoAP).",
+      "Truyền thông LPWAN (LoRa, NB-IoT).",
+      "Tích hợp IoT với edge computing."
+    ],
+    "researchInterests": [
+      "Thiết bị IoT hardware (Arduino, Raspberry Pi).",
+      "Bảo mật IoT (device authentication).",
+      "Ứng dụng IoT trong smart city."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:43.487Z",
+    "updatedAt": "2026-01-13T13:53:41.019Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f3b169b4e98c8d5d3d",
+    "deleted_at": null,
+    "userId": "6922d8f3b169b4e98c8d5d3b",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Hợp đồng thông minh cho mạng phân tán.",
+      "Blockchain trong an toàn thông tin (traceability).",
+      "Tối ưu hóa consensus algorithms."
+    ],
+    "researchInterests": [
+      "Platforms blockchain (Ethereum, Hyperledger).",
+      "Smart contracts security auditing.",
+      "Ứng dụng blockchain trong truyền thông."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:43.742Z",
+    "updatedAt": "2026-01-13T13:54:25.640Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f3b169b4e98c8d5d42",
+    "deleted_at": null,
+    "userId": "6922d8f3b169b4e98c8d5d40",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Kiến trúc SDN (OpenFlow, NFV).",
+      "Tối ưu hóa SDN cho data centers.",
+      "SDN cho an toàn thông tin (dynamic firewalls)."
+    ],
+    "researchInterests": [
+      "Công cụ SDN (Mininet, Ryu controller).",
+      "Tích hợp SDN với 5G.",
+      "Mô phỏng mạng ảo hóa."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:44.000Z",
+    "updatedAt": "2026-01-13T13:55:02.621Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f4b169b4e98c8d5d47",
+    "deleted_at": null,
+    "userId": "6922d8f4b169b4e98c8d5d45",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Thiết kế SDR cho 5G/6G.",
+      "Xử lý tín hiệu số trong SDR.",
+      "Ứng dụng SDR trong an ninh mạng."
+    ],
+    "researchInterests": [
+      "Công cụ SDR (GNU Radio, USRP).",
+      "Truyền thông cognitive radio.",
+      "Tích hợp SDR với IoT."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:44.255Z",
+    "updatedAt": "2026-01-13T13:55:41.282Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f4b169b4e98c8d5d4c",
+    "deleted_at": null,
+    "userId": "6922d8f4b169b4e98c8d5d4a",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "ML cho phát hiện tấn công mạng.",
+      "AI trong phân tích lưu lượng (traffic anomaly).",
+      "Deep learning cho mã hóa động."
+    ],
+    "researchInterests": [
+      "Frameworks AI (TensorFlow, PyTorch).",
+      "AI ethics trong cybersecurity.",
+      "Tích hợp AI với SDN."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:44.518Z",
+    "updatedAt": "2026-01-13T13:56:21.743Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f4b169b4e98c8d5d51",
+    "deleted_at": null,
+    "userId": "6922d8f4b169b4e98c8d5d4f",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Giao thức TCP/IP nâng cao (QUIC, HTTP/3).",
+      "Tối ưu hóa truyền dữ liệu (compression, caching).",
+      "Truyền thông dữ liệu cho cloud-edge."
+    ],
+    "researchInterests": [
+      "Công cụ phân tích mạng (Wireshark).",
+      "Data compression algorithms.",
+      "Ứng dụng trong video streaming."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:44.786Z",
+    "updatedAt": "2026-01-13T13:57:06.662Z",
+    "__v": 1
+  },
+  {
+    "_id": "6922d8f5b169b4e98c8d5d56",
+    "deleted_at": null,
+    "userId": "6922d8f4b169b4e98c8d5d54",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa20",
+    "areaInterest": [
+      "Bảo mật end-to-end cho IoT networks.",
+      "Phát hiện lỗ hổng IoT (vulnerability scanning).",
+      "Zero-trust architecture cho truyền thông."
+    ],
+    "researchInterests": [
+      "Công cụ IoT security (Shodan, Nessus).",
+      "Blockchain cho IoT authentication.",
+      "Quy định an ninh IoT quốc tế."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-11-23T09:50:45.029Z",
+    "updatedAt": "2026-01-13T13:57:48.050Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0d33059b2ca43a2925",
+    "deleted_at": null,
+    "userId": "69440f0d33059b2ca43a2923",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Hệ thống phân tán cho big data (Hadoop, Spark).",
+      "Tối ưu hóa lưu trữ dữ liệu thời gian thực.",
+      "Phân tích dữ liệu lớn cho môi trường đô thị."
+    ],
+    "researchInterests": [
+      "Công cụ ETL và data pipelines.",
+      "Ứng dụng big data trong kinh tế số.",
+      "Tích hợp cloud cho dữ liệu địa lý."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:21.339Z",
+    "updatedAt": "2026-01-13T13:03:11.137Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0d33059b2ca43a292a",
+    "deleted_at": null,
+    "userId": "69440f0d33059b2ca43a2928",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Mô hình dự báo thời gian thực (time-series forecasting).",
+      "Phân tích rủi ro dữ liệu lớn.",
+      "Ứng dụng predictive trong y tế dự phòng."
+    ],
+    "researchInterests": [
+      "Công cụ thống kê nâng cao (R, Python stats).",
+      "Tích hợp predictive với IoT sensors.",
+      "Đạo đức trong mô hình dự báo."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:21.573Z",
+    "updatedAt": "2026-01-13T13:04:00.893Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0d33059b2ca43a292f",
+    "deleted_at": null,
+    "userId": "69440f0d33059b2ca43a292d",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Kỹ thuật anonymization dữ liệu (differential privacy).",
+      "Bảo mật dữ liệu phân tán.",
+      "Phát hiện lỗ hổng trong data lakes."
+    ],
+    "researchInterests": [
+      "Tiêu chuẩn GDPR và bảo mật Việt Nam.",
+      "Blockchain cho data integrity.",
+      "Tích hợp privacy vào ML pipelines."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:21.816Z",
+    "updatedAt": "2026-01-13T13:04:41.383Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0e33059b2ca43a2934",
+    "deleted_at": null,
+    "userId": "69440f0e33059b2ca43a2932",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Topic modeling và sentiment analysis.",
+      "Xử lý dữ liệu văn bản đa ngôn ngữ.",
+      "Ứng dụng text mining trong giáo dục."
+    ],
+    "researchInterests": [
+      "Công cụ NLP open-source (spaCy, NLTK).",
+      "Tích hợp text data với big data tools.",
+      "Phân tích xu hướng xã hội từ dữ liệu lớn."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:22.068Z",
+    "updatedAt": "2026-01-13T13:05:23.811Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0e33059b2ca43a2939",
+    "deleted_at": null,
+    "userId": "69440f0e33059b2ca43a2937",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Mô hình hóa dữ liệu không gian (spatial regression).",
+      "Phân tích GIS cho biến đổi khí hậu.",
+      "Tích hợp geospatial với dữ liệu thời gian thực."
+    ],
+    "researchInterests": [
+      "Công cụ GIS (ArcGIS, QGIS).",
+      "Ứng dụng geospatial trong nông nghiệp.",
+      "Dữ liệu mở cho phân tích môi trường."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:22.314Z",
+    "updatedAt": "2026-01-13T13:06:03.676Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0e33059b2ca43a293e",
+    "deleted_at": null,
+    "userId": "69440f0e33059b2ca43a293c",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Thiết kế viz cho dữ liệu đa chiều.",
+      "Trực quan hóa thời gian thực (streaming viz).",
+      "Ứng dụng viz trong báo cáo kinh tế."
+    ],
+    "researchInterests": [
+      "Thư viện viz (D3.js, Tableau).",
+      "Tích hợp viz với ML insights.",
+      "UX/UI cho data storytelling."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:22.547Z",
+    "updatedAt": "2026-01-13T13:06:41.377Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0e33059b2ca43a2943",
+    "deleted_at": null,
+    "userId": "69440f0e33059b2ca43a2941",
+    "title": "Phó Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Kiến trúc serverless cho data processing.",
+      "Tối ưu hóa chi phí cloud data.",
+      "Ứng dụng cloud cho dữ liệu y tế lớn."
+    ],
+    "researchInterests": [
+      "Nền tảng cloud (AWS S3, Google BigQuery).",
+      "Data migration và hybrid cloud.",
+      "Bảo mật dữ liệu đám mây."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:22.782Z",
+    "updatedAt": "2026-01-13T13:07:22.013Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0f33059b2ca43a2948",
+    "deleted_at": null,
+    "userId": "69440f0e33059b2ca43a2946",
+    "title": "Giáo sư",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Clustering và anomaly detection.",
+      "Dimensionality reduction cho dữ liệu cao chiều.",
+      "Ứng dụng unsupervised trong phát hiện gian lận."
+    ],
+    "researchInterests": [
+      "Thuật toán unsupervised (k-means, autoencoders).",
+      "Tích hợp với dữ liệu thời gian.",
+      "Đánh giá chất lượng mô hình unsupervised."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:23.018Z",
+    "updatedAt": "2026-01-13T13:07:59.698Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0f33059b2ca43a294d",
+    "deleted_at": null,
+    "userId": "69440f0f33059b2ca43a294b",
+    "title": "Thạc sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Frameworks đánh giá data quality.",
+      "Cleansing và imputation dữ liệu lớn.",
+      "Tích hợp quality checks vào pipelines."
+    ],
+    "researchInterests": [
+      "Công cụ DQ (Great Expectations, Deequ).",
+      "Data governance trong doanh nghiệp.",
+      "Ứng dụng quality cho dữ liệu xã hội."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:23.255Z",
+    "updatedAt": "2026-01-13T13:08:35.767Z",
+    "__v": 1
+  },
+  {
+    "_id": "69440f0f33059b2ca43a2952",
+    "deleted_at": null,
+    "userId": "69440f0f33059b2ca43a2950",
+    "title": "Tiến sĩ",
+    "facultyId": "690f9116ab1eb63a1566aa1e",
+    "areaInterest": [
+      "Federated learning cho dữ liệu y tế.",
+      "Privacy-preserving ML techniques.",
+      "Tối ưu hóa federated cho edge devices."
+    ],
+    "researchInterests": [
+      "Frameworks federated (TensorFlow Federated).",
+      "Ứng dụng trong dữ liệu địa lý phân tán.",
+      "Đạo đức và quy định federated data."
+    ],
+    "publications": [],
+    "supervisedThesisIds": [],
+    "createdAt": "2025-12-18T14:26:23.500Z",
+    "updatedAt": "2026-01-13T13:09:45.932Z",
+    "__v": 1
+  }
+]

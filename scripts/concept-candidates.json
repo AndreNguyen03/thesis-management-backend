@@ -1,0 +1,6004 @@
+[
+  {
+    "canonical": "cong",
+    "variants": [
+      "cong",
+      "thong",
+      "ung",
+      "dung",
+      "phuong phap va cong cu phat trien phan mem",
+      "nang",
+      "quy trinh va cong nghe san xuat game",
+      "dong",
+      "cong nghe net",
+      "cong nghe lap trinh web",
+      "huong",
+      "khong",
+      "mang",
+      "rong",
+      "tuong",
+      "cung",
+      "cong cu erp crm sap oracle",
+      "cong cu ai tensorflow scikit-learn",
+      "cong cu firewall va encryption tools",
+      "e-government platforms va dich vu cong truc tuyen",
+      "cong nghe blockchain cho e-gov",
+      "cloud services cho he thong cong",
+      "hang",
+      "cong cu nosql va data warehouses",
+      "cong nghe tri thuc",
+      "luong",
+      "cong cu siem splunk elk stack",
+      "phong",
+      "cong nghe 5g 6g cho truyen thong du lieu",
+      "cong cu sdn mininet ryu controller",
+      "cong cu sdr gnu radio usrp",
+      "ml cho phat hien tan cong mang",
+      "cong cu phan tich mang wireshark",
+      "hong",
+      "cong cu iot security shodan nessus",
+      "cong cu etl va data pipelines",
+      "cong cu thong ke nang cao r python stats",
+      "cong cu nlp open-source spacy nltk",
+      "cong cu gis arcgis qgis",
+      "nong",
+      "cong cu dq great expectations deequ"
+    ],
+    "frequency": 29,
+    "examples": [
+      {
+        "token": "cong",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thong",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ung",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "dung",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thong",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "internet of things",
+    "variants": [
+      "internet of things",
+      "internet",
+      "things"
+    ],
+    "frequency": 11,
+    "examples": [
+      {
+        "token": "internet of things",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet of things",
+        "profileId": "6922d8ebb169b4e98c8d5ca7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet of things",
+        "profileId": "6922d8ecb169b4e98c8d5cb1",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet of things",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet of things",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "internet van vat",
+    "variants": [
+      "internet van vat"
+    ],
+    "frequency": 11,
+    "examples": [
+      {
+        "token": "internet van vat",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet van vat",
+        "profileId": "6922d8ebb169b4e98c8d5ca7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet van vat",
+        "profileId": "6922d8ecb169b4e98c8d5cb1",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet van vat",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "internet van vat",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toan",
+    "variants": [
+      "toan",
+      "phan",
+      "lon",
+      "nhan",
+      "tao",
+      "hoa",
+      "san",
+      "bai toan toi uu trong quan ly",
+      "toi",
+      "quan",
+      "toc",
+      "thap",
+      "tan",
+      "tac",
+      "doanh",
+      "tang",
+      "blockchain cho thanh toan an toan truc tuyen",
+      "thanh",
+      "trai",
+      "tinh toan luong tu",
+      "ma hoa du lieu cho truyen thong an toan",
+      "load",
+      "ban",
+      "coap",
+      "blockchain trong an toan thong tin traceability",
+      "sdn cho an toan thong tin dynamic firewalls",
+      "an toan thong tin",
+      "van",
+      "thuat toan unsupervised k-means autoencoders"
+    ],
+    "frequency": 9,
+    "examples": [
+      {
+        "token": "toan",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phan",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lon",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nhan",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tao",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dien",
+    "variants": [
+      "dien",
+      "trien",
+      "lieu",
+      "open",
+      "lien",
+      "den",
+      "hieu",
+      "tiep",
+      "mang dien rong cong suat thap",
+      "kien",
+      "nen",
+      "phan tich hanh vi nguoi dung trong thuong mai dien tu",
+      "iot cho quan tri dien tu thong minh",
+      "hien",
+      "ma hoa du lieu cho thuong mai dien tu",
+      "rui ro bao mat trong quan tri dien tu",
+      "tieu",
+      "phan tich du lieu lon trong thuong mai dien tu",
+      "tich hop thanh toan so va vi dien tu",
+      "dich",
+      "danh gia hieu qua quan tri dien tu",
+      "dinh",
+      "chien",
+      "viet",
+      "nhien",
+      "kiem",
+      "siem",
+      "gian",
+      "dia",
+      "bien",
+      "vien"
+    ],
+    "frequency": 8,
+    "examples": [
+      {
+        "token": "dien",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "trien",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lieu",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "trien",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "trien",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nghe",
+    "variants": [
+      "nghe",
+      "nghien",
+      "nghiep",
+      "nho",
+      "nghi",
+      "nghiem",
+      "nhu",
+      "ngon"
+    ],
+    "frequency": 8,
+    "examples": [
+      {
+        "token": "nghe",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nghe",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nghe",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nghe",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nghien",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "hoc sau",
+    "variants": [
+      "hoc sau"
+    ],
+    "frequency": 7,
+    "examples": [
+      {
+        "token": "hoc sau",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc sau",
+        "profileId": "6922d8eab169b4e98c8d5c8e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc sau",
+        "profileId": "6922d8f0b169b4e98c8d5d01",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc sau",
+        "profileId": "6922d8f0b169b4e98c8d5d06",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc sau",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "trinh",
+    "variants": [
+      "trinh",
+      "lap trinh tren thiet bi di dong",
+      "lap trinh game",
+      "quy trinh phuong phap phat trien phan mem agile scrum xp",
+      "tinh",
+      "kinh",
+      "toi uu hoa quy trinh tu dong hoa doanh nghiep",
+      "ninh",
+      "chinh",
+      "quy trinh phat trien phan mem",
+      "lap trinh ham"
+    ],
+    "frequency": 7,
+    "examples": [
+      {
+        "token": "trinh",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lap trinh tren thiet bi di dong",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "trinh",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lap trinh game",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "quy trinh phuong phap phat trien phan mem agile scrum xp",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "blockchain",
+    "variants": [
+      "blockchain",
+      "ung dung blockchain cho an ninh du lieu",
+      "blockchain cho hop dong thong minh trong thuong mai",
+      "tich hop blockchain vao he thong thong tin quan ly",
+      "platforms blockchain ethereum hyperledger",
+      "quy dinh phap ly blockchain viet nam",
+      "ung dung blockchain trong truyen thong",
+      "blockchain cho iot authentication",
+      "blockchain cho data integrity"
+    ],
+    "frequency": 7,
+    "examples": [
+      {
+        "token": "blockchain",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ung dung blockchain cho an ninh du lieu",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "blockchain",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "blockchain",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "blockchain cho hop dong thong minh trong thuong mai",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "frameworks",
+    "variants": [
+      "frameworks",
+      "frameworks web e-commerce magento shopify",
+      "frameworks mobile react native flutter",
+      "frameworks ai tensorflow pytorch",
+      "frameworks danh gia data quality",
+      "frameworks federated tensorflow federated"
+    ],
+    "frequency": 6,
+    "examples": [
+      {
+        "token": "frameworks",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "frameworks web e-commerce magento shopify",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "frameworks",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "frameworks mobile react native flutter",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "frameworks",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thuong",
+    "variants": [
+      "thuong",
+      "truong",
+      "toi uu hoa ux ui cho thuong mai di dong"
+    ],
+    "frequency": 5,
+    "examples": [
+      {
+        "token": "thuong",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thuong",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thuong",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "truong",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "toi uu hoa ux ui cho thuong mai di dong",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke vi mach",
+    "variants": [
+      "thiet ke vi mach"
+    ],
+    "frequency": 4,
+    "examples": [
+      {
+        "token": "thiet ke vi mach",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thiet ke vi mach",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thiet ke vi mach",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thiet ke vi mach",
+        "profileId": "6922d8f2b169b4e98c8d5d24",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ic design",
+    "variants": [
+      "ic design",
+      "design"
+    ],
+    "frequency": 4,
+    "examples": [
+      {
+        "token": "ic design",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ic design",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "design",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ic design",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ic design",
+        "profileId": "6922d8f2b169b4e98c8d5d24",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tools",
+    "variants": [
+      "tools",
+      "visualization tools tableau power bi"
+    ],
+    "frequency": 4,
+    "examples": [
+      {
+        "token": "tools",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "visualization tools tableau power bi",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tools",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tools",
+        "profileId": "6922d8f1b169b4e98c8d5d0b",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tools",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dam",
+    "variants": [
+      "dam",
+      "may",
+      "doi",
+      "mem",
+      "cac",
+      "cao",
+      "game",
+      "lap",
+      "bai",
+      "crm",
+      "day",
+      "sap",
+      "dao",
+      "duc",
+      "mai",
+      "pham",
+      "bao",
+      "xam",
+      "sam",
+      "danh",
+      "cau",
+      "dang",
+      "vao",
+      "nam",
+      "quan ly va dam bao chat luong phan mem",
+      "ham",
+      "dua",
+      "hau",
+      "bao mat du lieu dam may"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "dam",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "may",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "doi",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "mem",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cac",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "khoa hoc du lieu",
+    "variants": [
+      "khoa hoc du lieu",
+      "khoa",
+      "hoc"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "khoa hoc du lieu",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khoa hoc du lieu",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khoa",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hoc",
+        "profileId": "6922d8f0b169b4e98c8d5cf7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "soc",
+    "variants": [
+      "soc",
+      "iot",
+      "hop",
+      "seo",
+      "iso",
+      "quoc",
+      "luoc",
+      "moi",
+      "qos",
+      "vpc",
+      "sdn",
+      "sdr",
+      "hoi"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "soc",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "iot",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "soc",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "iot",
+        "profileId": "6922d8ebb169b4e98c8d5ca7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "soc",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "system on chip",
+    "variants": [
+      "system on chip",
+      "chip"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "system on chip",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "system on chip",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chip",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "system on chip",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "algorithms",
+    "variants": [
+      "algorithms",
+      "toi uu hoa consensus algorithms",
+      "data compression algorithms"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "algorithms",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "toi uu hoa consensus algorithms",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "algorithms",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "data compression algorithms",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "algorithms",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tensorflow",
+    "variants": [
+      "tensorflow"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "tensorflow",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tensorflow",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tensorflow",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "platforms",
+    "variants": [
+      "platforms"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "platforms",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "platforms",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "platforms",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "pipelines",
+    "variants": [
+      "pipelines",
+      "tich hop privacy vao ml pipelines",
+      "tich hop quality checks vao pipelines"
+    ],
+    "frequency": 3,
+    "examples": [
+      {
+        "token": "pipelines",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tich hop privacy vao ml pipelines",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "pipelines",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tich hop quality checks vao pipelines",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "pipelines",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "intelligent",
+    "variants": [
+      "intelligent",
+      "intelligent algorithms"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "intelligent",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "intelligent algorithms",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "intelligent",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phat trien ung dung web va mobile",
+    "variants": [
+      "phat trien ung dung web va mobile"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "phat trien ung dung web va mobile",
+        "profileId": "6922c8ac7158a8fa4e6cf744",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phat trien ung dung web va mobile",
+        "profileId": "6922d8f1b169b4e98c8d5d15",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "fpga",
+    "variants": [
+      "fpga"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "fpga",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "fpga",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "field programmable gate array",
+    "variants": [
+      "field programmable gate array"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "field programmable gate array",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "field programmable gate array",
+        "profileId": "6922d8ecb169b4e98c8d5cac",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai for iot",
+    "variants": [
+      "ai for iot"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "ai for iot",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ai for iot",
+        "profileId": "6922d8ebb169b4e98c8d5ca7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "smart classroom smarthome smartbuilding",
+    "variants": [
+      "smart classroom smarthome smartbuilding",
+      "classroom",
+      "smarthome",
+      "smartbuilding"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "smart classroom smarthome smartbuilding",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "classroom",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "smarthome",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "smartbuilding",
+        "profileId": "6922d8ebb169b4e98c8d5c98",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "smart classroom smarthome smartbuilding",
+        "profileId": "6922d8ebb169b4e98c8d5ca7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "robotics",
+    "variants": [
+      "robotics"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "robotics",
+        "profileId": "6922d8ebb169b4e98c8d5c9d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "robotics",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "embedded systems",
+    "variants": [
+      "embedded systems",
+      "embedded"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "embedded systems",
+        "profileId": "6922d8ebb169b4e98c8d5c9d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "embedded",
+        "profileId": "6922d8ebb169b4e98c8d5c9d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "embedded systems",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "embedded",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "he thong nhung",
+    "variants": [
+      "he thong nhung",
+      "thiet ke he thong nhung",
+      "nhung"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "he thong nhung",
+        "profileId": "6922d8ebb169b4e98c8d5c9d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thiet ke he thong nhung",
+        "profileId": "6922d8ecb169b4e98c8d5cb1",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nhung",
+        "profileId": "6922d8ecb169b4e98c8d5cb1",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "he thong nhung",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "smart systems",
+    "variants": [
+      "smart systems"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "smart systems",
+        "profileId": "6922d8ecb169b4e98c8d5cb1",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "smart systems",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "hanh",
+    "variants": [
+      "hanh",
+      "kenh",
+      "tich hop he thong thong minh cho quan tri hanh chinh",
+      "khach"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "hanh",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "kenh",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tich hop he thong thong minh cho quan tri hanh chinh",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hanh",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khach",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "firewall",
+    "variants": [
+      "firewall",
+      "an ninh mang co ban firewall vpn",
+      "firewalls"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "firewall",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "an ninh mang co ban firewall vpn",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "firewall",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "firewalls",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "hadoop",
+    "variants": [
+      "hadoop"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "hadoop",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hadoop",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "spark",
+    "variants": [
+      "spark",
+      "stack",
+      "spacy"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "spark",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "stack",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "spark",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "spacy",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "visualization",
+    "variants": [
+      "visualization",
+      "scientific visualization",
+      "real-time visualization"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "visualization",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "scientific visualization",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "visualization",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "real-time visualization",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tableau",
+    "variants": [
+      "tableau",
+      "thu vien viz d3 js tableau"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "tableau",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thu vien viz d3 js tableau",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tableau",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ethereum",
+    "variants": [
+      "ethereum"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "ethereum",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ethereum",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "hyperledger",
+    "variants": [
+      "hyperledger",
+      "edge"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "hyperledger",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "edge",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hyperledger",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "edge",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "python",
+    "variants": [
+      "python"
+    ],
+    "frequency": 2,
+    "examples": [
+      {
+        "token": "python",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "python",
+        "profileId": "student-001",
+        "profileType": "student",
+        "source": "skills+interests"
+      }
+    ]
+  },
+  {
+    "canonical": "digital transformation chuyen doi so",
+    "variants": [
+      "digital transformation chuyen doi so",
+      "digital",
+      "transformation",
+      "chuyen"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "digital transformation chuyen doi so",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "digital",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "transformation",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chuyen",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "digital",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "large-scale computing he thong lon",
+    "variants": [
+      "large-scale computing he thong lon"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "large-scale computing he thong lon",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "smart application development phat trien ung dung thong minh",
+    "variants": [
+      "smart application development phat trien ung dung thong minh",
+      "smart",
+      "phat",
+      "minh",
+      "phat trien ung dung thong minh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "smart application development phat trien ung dung thong minh",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "smart",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phat",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "minh",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phat trien ung dung thong minh",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh ngon ngu lon",
+    "variants": [
+      "mo hinh ngon ngu lon",
+      "hinh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh ngon ngu lon",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hinh",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hinh",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hinh",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hinh",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "scalable cloud-based solutions for enterprise digital transformation",
+    "variants": [
+      "scalable cloud-based solutions for enterprise digital transformation",
+      "scalable",
+      "cloud-based",
+      "solutions",
+      "enterprise",
+      "erp"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "scalable cloud-based solutions for enterprise digital transformation",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "scalable",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cloud-based",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "solutions",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "enterprise",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "leveraging",
+    "variants": [
+      "leveraging"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "leveraging",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "applications",
+    "variants": [
+      "applications"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "applications",
+        "profileId": "6908785b8de51cf12b091b52",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tue",
+    "variants": [
+      "tue",
+      "tuyen",
+      "quy",
+      "cuu",
+      "luc",
+      "rui",
+      "thi",
+      "mua",
+      "qua",
+      "tro",
+      "luu",
+      "thuc",
+      "mde",
+      "tcp",
+      "thu"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tue",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tuyen",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "quy",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "quy",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cuu",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich du lieu truyen thong",
+    "variants": [
+      "phan tich du lieu truyen thong",
+      "tich",
+      "truyen"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich du lieu truyen thong",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tich",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "truyen",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "truyen",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tich",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "optical camera communication",
+    "variants": [
+      "optical camera communication",
+      "optical",
+      "camera"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "optical camera communication",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "optical",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "camera",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "vehicle communication and sensing",
+    "variants": [
+      "vehicle communication and sensing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "vehicle communication and sensing",
+        "profileId": "6922c8ac7158a8fa4e6cf73a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cac phuong phap thiet ke va phat trien web",
+    "variants": [
+      "cac phuong phap thiet ke va phat trien web",
+      "phuong",
+      "phap",
+      "thiet"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cac phuong phap thiet ke va phat trien web",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phuong",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phap",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thiet",
+        "profileId": "6922c8ac7158a8fa4e6cf73f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phuong",
+        "profileId": "6922c8ac7158a8fa4e6cf744",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "java",
+    "variants": [
+      "java"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "java",
+        "profileId": "6922d7635f710fdb263a5cff",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cac ki thuat do hoa nang cao trong game 3d",
+    "variants": [
+      "cac ki thuat do hoa nang cao trong game 3d",
+      "thuat"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cac ki thuat do hoa nang cao trong game 3d",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thuat",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thuat",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thuat",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cac giai phap server cho game truc tuyen",
+    "variants": [
+      "cac giai phap server cho game truc tuyen",
+      "giai",
+      "server",
+      "gia"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cac giai phap server cho game truc tuyen",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "giai",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "server",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "gia",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "gia",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xuat",
+    "variants": [
+      "xuat",
+      "suat",
+      "chat"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xuat",
+        "profileId": "6922d7635f710fdb263a5d04",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "suat",
+        "profileId": "6922d8ebb169b4e98c8d5ca2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chat",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chat",
+        "profileId": "6922d8f1b169b4e98c8d5d0b",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "suat",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "search engine",
+    "variants": [
+      "search engine",
+      "search"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "search engine",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "search",
+        "profileId": "6922d7645f710fdb263a5d09",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "agile",
+    "variants": [
+      "agile"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "agile",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "scrum",
+    "variants": [
+      "scrum"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "scrum",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "open source lien quan den huong nghien cuu quan ly du an",
+    "variants": [
+      "open source lien quan den huong nghien cuu quan ly du an",
+      "source"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "open source lien quan den huong nghien cuu quan ly du an",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "source",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "crm erp cms",
+    "variants": [
+      "crm erp cms",
+      "cms"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "crm erp cms",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cms",
+        "profileId": "6922d8eab169b4e98c8d5c89",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "computer security",
+    "variants": [
+      "computer security",
+      "security"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "computer security",
+        "profileId": "6922d8eab169b4e98c8d5c8e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "security",
+        "profileId": "6922d8eab169b4e98c8d5c8e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "security",
+        "profileId": "6922d8f0b169b4e98c8d5d01",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "security",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "security",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "artificial immune system",
+    "variants": [
+      "artificial immune system",
+      "immune"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "artificial immune system",
+        "profileId": "6922d8eab169b4e98c8d5c8e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "immune",
+        "profileId": "6922d8eab169b4e98c8d5c8e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly tin hieu so trong xu ly anh",
+    "variants": [
+      "xu ly tin hieu so trong xu ly anh",
+      "anh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly tin hieu so trong xu ly anh",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "anh",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly video toc do cao",
+    "variants": [
+      "xu ly video toc do cao",
+      "video"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly video toc do cao",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "video",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "video",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "video",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly tin hieu so trong truyen thong tin toc do cao",
+    "variants": [
+      "xu ly tin hieu so trong truyen thong tin toc do cao"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly tin hieu so trong truyen thong tin toc do cao",
+        "profileId": "6922d8eab169b4e98c8d5c93",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet bi giao tiep khong day lora",
+    "variants": [
+      "thiet bi giao tiep khong day lora",
+      "giao",
+      "lora"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet bi giao tiep khong day lora",
+        "profileId": "6922d8ebb169b4e98c8d5ca2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "giao",
+        "profileId": "6922d8ebb169b4e98c8d5ca2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lora",
+        "profileId": "6922d8ebb169b4e98c8d5ca2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "giao",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "giao",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke mach vi mach cao tan",
+    "variants": [
+      "thiet ke mach vi mach cao tan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke mach vi mach cao tan",
+        "profileId": "6922d8ebb169b4e98c8d5ca2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "post-quantum cryptography",
+    "variants": [
+      "post-quantum cryptography",
+      "post-quantum",
+      "cryptography"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "post-quantum cryptography",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "post-quantum",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cryptography",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ma hoa",
+    "variants": [
+      "ma hoa",
+      "may hoc"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ma hoa",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "may hoc",
+        "profileId": "6922d8f0b169b4e98c8d5cf7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "coarse-grained reconfigurable architecture",
+    "variants": [
+      "coarse-grained reconfigurable architecture",
+      "coarse-grained",
+      "reconfigurable"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "coarse-grained reconfigurable architecture",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "coarse-grained",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "reconfigurable",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "stochastic computing for cnn",
+    "variants": [
+      "stochastic computing for cnn",
+      "stochastic"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "stochastic computing for cnn",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "stochastic",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "risc-v-based cryptographic processor",
+    "variants": [
+      "risc-v-based cryptographic processor",
+      "risc-v-based",
+      "cryptographic",
+      "processor",
+      "phi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "risc-v-based cryptographic processor",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "risc-v-based",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cryptographic",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "processor",
+        "profileId": "6922d8ecb169b4e98c8d5cb6",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "phi",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "kien truc may tinh",
+    "variants": [
+      "kien truc may tinh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "kien truc may tinh",
+        "profileId": "6922d8ecb169b4e98c8d5cbb",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke he thong so",
+    "variants": [
+      "thiet ke he thong so"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke he thong so",
+        "profileId": "6922d8ecb169b4e98c8d5cbb",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tuong tac phan cung phan mem",
+    "variants": [
+      "tuong tac phan cung phan mem"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tuong tac phan cung phan mem",
+        "profileId": "6922d8ecb169b4e98c8d5cbb",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "smart devices",
+    "variants": [
+      "smart devices",
+      "devices",
+      "device"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "smart devices",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "devices",
+        "profileId": "6922d8edb169b4e98c8d5cc0",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "device",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "devices",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh hoa he thong thong tin doanh nghiep erp integration",
+    "variants": [
+      "mo hinh hoa he thong thong tin doanh nghiep erp integration",
+      "integration"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh hoa he thong thong tin doanh nghiep erp integration",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "integration",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich du lieu quan ly cho toi uu hoa nguon luc",
+    "variants": [
+      "phan tich du lieu quan ly cho toi uu hoa nguon luc",
+      "nguon"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich du lieu quan ly cho toi uu hoa nguon luc",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nguon",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nguon",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nguon",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung bi business intelligence trong doanh nghiep nho",
+    "variants": [
+      "ung dung bi business intelligence trong doanh nghiep nho",
+      "business"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung bi business intelligence trong doanh nghiep nho",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "business",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "oracle",
+    "variants": [
+      "oracle"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "oracle",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop he thong thong tin voi iot",
+    "variants": [
+      "tich hop he thong thong tin voi iot"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop he thong thong tin voi iot",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dao duc du lieu trong quan ly kinh doanh",
+    "variants": [
+      "dao duc du lieu trong quan ly kinh doanh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dao duc du lieu trong quan ly kinh doanh",
+        "profileId": "6922d8edb169b4e98c8d5cc5",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke nen tang e-commerce scalable",
+    "variants": [
+      "thiet ke nen tang e-commerce scalable",
+      "e-commerce"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke nen tang e-commerce scalable",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "e-commerce",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "e-commerce",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "e-commerce",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "e-commerce",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nguoi",
+    "variants": [
+      "nguoi",
+      "chuoi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nguoi",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chuoi",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "magento",
+    "variants": [
+      "magento"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "magento",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "shopify",
+    "variants": [
+      "shopify"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "shopify",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "digital marketing va seo cho nen tang truc tuyen",
+    "variants": [
+      "digital marketing va seo cho nen tang truc tuyen",
+      "marketing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "digital marketing va seo cho nen tang truc tuyen",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "marketing",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop ai khuyen nghi san pham",
+    "variants": [
+      "tich hop ai khuyen nghi san pham",
+      "khuyen"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop ai khuyen nghi san pham",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khuyen",
+        "profileId": "6922d8edb169b4e98c8d5cca",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khuyen",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai trong he thong thong tin quan ly predictive analytics",
+    "variants": [
+      "ai trong he thong thong tin quan ly predictive analytics",
+      "predictive"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ai trong he thong thong tin quan ly predictive analytics",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "predictive",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "predictive",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "scikit-learn",
+    "variants": [
+      "scikit-learn"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "scikit-learn",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "he thong erp thong minh",
+    "variants": [
+      "he thong erp thong minh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "he thong erp thong minh",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat du lieu trong he thong tu dong",
+    "variants": [
+      "bao mat du lieu trong he thong tu dong"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat du lieu trong he thong tu dong",
+        "profileId": "6922d8eeb169b4e98c8d5ccf",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phat hien xam nhap trong he thong thong tin ids ips",
+    "variants": [
+      "phat hien xam nhap trong he thong thong tin ids ips",
+      "nhap",
+      "ids",
+      "ips"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phat hien xam nhap trong he thong thong tin ids ips",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nhap",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ids",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ips",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nhap",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tieu chuan bao mat iso 27001",
+    "variants": [
+      "tieu chuan bao mat iso 27001",
+      "chuan",
+      "27001"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tieu chuan bao mat iso 27001",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chuan",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "27001",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chuan",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chuan",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "encryption",
+    "variants": [
+      "encryption"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "encryption",
+        "profileId": "6922d8eeb169b4e98c8d5cd4",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh du bao xu huong thi truong",
+    "variants": [
+      "mo hinh du bao xu huong thi truong"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh du bao xu huong thi truong",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "power",
+    "variants": [
+      "power"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "power",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop du lieu tu nguon da kenh",
+    "variants": [
+      "tich hop du lieu tu nguon da kenh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop du lieu tu nguon da kenh",
+        "profileId": "6922d8eeb169b4e98c8d5cd9",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke app mobile e-commerce hybrid",
+    "variants": [
+      "thiet ke app mobile e-commerce hybrid",
+      "hybrid"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke app mobile e-commerce hybrid",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hybrid",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hybrid",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "react",
+    "variants": [
+      "react",
+      "great"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "react",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "great",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "native",
+    "variants": [
+      "native"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "native",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "flutter",
+    "variants": [
+      "flutter"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "flutter",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ar vr cho trai nghiem mua sam",
+    "variants": [
+      "ar vr cho trai nghiem mua sam"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ar vr cho trai nghiem mua sam",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat giao dich di dong",
+    "variants": [
+      "bao mat giao dich di dong"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat giao dich di dong",
+        "profileId": "6922d8eeb169b4e98c8d5cde",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "e-government",
+    "variants": [
+      "e-government",
+      "e-gov"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "e-government",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "e-gov",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tieu chuan quoc te ve digital governance",
+    "variants": [
+      "tieu chuan quoc te ve digital governance",
+      "governance"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tieu chuan quoc te ve digital governance",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "governance",
+        "profileId": "6922d8efb169b4e98c8d5ce3",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "governance",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai khuyen nghi san pham trong e-commerce",
+    "variants": [
+      "ai khuyen nghi san pham trong e-commerce"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ai khuyen nghi san pham trong e-commerce",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "chatbots va tro ly ao cho dich vu khach hang",
+    "variants": [
+      "chatbots va tro ly ao cho dich vu khach hang",
+      "chatbots"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "chatbots va tro ly ao cho dich vu khach hang",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chatbots",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh nlp cho chat e-commerce",
+    "variants": [
+      "mo hinh nlp cho chat e-commerce"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh nlp cho chat e-commerce",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop ai voi he thong erp",
+    "variants": [
+      "tich hop ai voi he thong erp"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop ai voi he thong erp",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dao duc ai trong kinh doanh",
+    "variants": [
+      "dao duc ai trong kinh doanh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dao duc ai trong kinh doanh",
+        "profileId": "6922d8efb169b4e98c8d5ce8",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "quyet",
+    "variants": [
+      "quyet"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "quyet",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop du lieu tu nguon da dang trong mis",
+    "variants": [
+      "tich hop du lieu tu nguon da dang trong mis",
+      "mis"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop du lieu tu nguon da dang trong mis",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "mis",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa luu tru du lieu doanh nghiep",
+    "variants": [
+      "toi uu hoa luu tru du lieu doanh nghiep"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa luu tru du lieu doanh nghiep",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nosql",
+    "variants": [
+      "nosql"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nosql",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "warehouses",
+    "variants": [
+      "warehouses"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "warehouses",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "logistics",
+    "variants": [
+      "logistics",
+      "gis"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "logistics",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "gis",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat du lieu lon trong quan ly",
+    "variants": [
+      "bao mat du lieu lon trong quan ly"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat du lieu lon trong quan ly",
+        "profileId": "6922d8efb169b4e98c8d5ced",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "an ninh va traceability trong chuoi cung ung",
+    "variants": [
+      "an ninh va traceability trong chuoi cung ung",
+      "traceability"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "an ninh va traceability trong chuoi cung ung",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "traceability",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "traceability",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nft va tokenization cho e-commerce",
+    "variants": [
+      "nft va tokenization cho e-commerce",
+      "nft",
+      "tokenization"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nft va tokenization cho e-commerce",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nft",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "tokenization",
+        "profileId": "6922d8efb169b4e98c8d5cf2",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "kien truc phan mem",
+    "variants": [
+      "kien truc phan mem"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "kien truc phan mem",
+        "profileId": "6922d8f0b169b4e98c8d5cf7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "an ninh may tinh",
+    "variants": [
+      "an ninh may tinh"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "an ninh may tinh",
+        "profileId": "6922d8f0b169b4e98c8d5cf7",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "knowledge representation reasoning",
+    "variants": [
+      "knowledge representation reasoning",
+      "knowledge",
+      "representation",
+      "reasoning"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "knowledge representation reasoning",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "knowledge",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "representation",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "reasoning",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "web developing",
+    "variants": [
+      "web developing",
+      "developing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "web developing",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "developing",
+        "profileId": "6922d8f0b169b4e98c8d5cfc",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly ngon ngu tu nhien va tim kiem thong tin",
+    "variants": [
+      "xu ly ngon ngu tu nhien va tim kiem thong tin"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly ngon ngu tu nhien va tim kiem thong tin",
+        "profileId": "6922d8f1b169b4e98c8d5d0b",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "case",
+    "variants": [
+      "case"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "case",
+        "profileId": "6922d8f1b169b4e98c8d5d0b",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "aided",
+    "variants": [
+      "aided"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "aided",
+        "profileId": "6922d8f1b169b4e98c8d5d0b",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "image and video processing",
+    "variants": [
+      "image and video processing",
+      "image"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "image and video processing",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "image",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "2d-3d game development",
+    "variants": [
+      "2d-3d game development",
+      "2d-3d"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "2d-3d game development",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "2d-3d",
+        "profileId": "6922d8f1b169b4e98c8d5d10",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nir spectroscopy",
+    "variants": [
+      "nir spectroscopy",
+      "nir",
+      "spectroscopy"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nir spectroscopy",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nir",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "spectroscopy",
+        "profileId": "6922d8f1b169b4e98c8d5d1a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "scientific",
+    "variants": [
+      "scientific"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "scientific",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "real-time",
+    "variants": [
+      "real-time"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "real-time",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "information system",
+    "variants": [
+      "information system"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "information system",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "model-driven engineering mde",
+    "variants": [
+      "model-driven engineering mde",
+      "model-driven"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "model-driven engineering mde",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "model-driven",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "model-based testing mbt",
+    "variants": [
+      "model-based testing mbt",
+      "model-based",
+      "testing",
+      "mbt"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "model-based testing mbt",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "model-based",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "testing",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "mbt",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "testing",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "modelbased vulnerability testing mbvt",
+    "variants": [
+      "modelbased vulnerability testing mbvt",
+      "modelbased",
+      "vulnerability",
+      "mbvt"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "modelbased vulnerability testing mbvt",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "modelbased",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "vulnerability",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "mbvt",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "vulnerability",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "human-computer interaction hci",
+    "variants": [
+      "human-computer interaction hci",
+      "human-computer",
+      "interaction",
+      "hci"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "human-computer interaction hci",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "human-computer",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "interaction",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hci",
+        "profileId": "6922d8f2b169b4e98c8d5d1f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phat hien xam nhap dua tren ai ids ips",
+    "variants": [
+      "phat hien xam nhap dua tren ai ids ips"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phat hien xam nhap dua tren ai ids ips",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat iot trong moi truong phan tan",
+    "variants": [
+      "bao mat iot trong moi truong phan tan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat iot trong moi truong phan tan",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "splunk",
+    "variants": [
+      "splunk"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "splunk",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "elk",
+    "variants": [
+      "elk",
+      "etl",
+      "nltk"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "elk",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "etl",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nltk",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ethical hacking va penetration testing",
+    "variants": [
+      "ethical hacking va penetration testing",
+      "ethical",
+      "hacking",
+      "penetration"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ethical hacking va penetration testing",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ethical",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hacking",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "penetration",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tieu chuan bao mat quoc te iso 27001",
+    "variants": [
+      "tieu chuan bao mat quoc te iso 27001"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tieu chuan bao mat quoc te iso 27001",
+        "profileId": "6922d8f2b169b4e98c8d5d29",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "giao thuc dinh tuyen nang cao bgp ospf",
+    "variants": [
+      "giao thuc dinh tuyen nang cao bgp ospf",
+      "bgp",
+      "ospf"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "giao thuc dinh tuyen nang cao bgp ospf",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "bgp",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ospf",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa hieu suat mang qos load balancing",
+    "variants": [
+      "toi uu hoa hieu suat mang qos load balancing",
+      "balancing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa hieu suat mang qos load balancing",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "balancing",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo phong mang ns-3 omnet",
+    "variants": [
+      "mo phong mang ns-3 omnet",
+      "ns-3",
+      "omnet"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo phong mang ns-3 omnet",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ns-3",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "omnet",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cloud networking aws vpc azure vnets",
+    "variants": [
+      "cloud networking aws vpc azure vnets",
+      "aws",
+      "azure",
+      "vnets"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cloud networking aws vpc azure vnets",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "aws",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "azure",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "vnets",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "aws",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "vpn",
+    "variants": [
+      "vpn",
+      "viz"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "vpn",
+        "profileId": "6922d8f2b169b4e98c8d5d2e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "viz",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "giao thuc iot mqtt coap",
+    "variants": [
+      "giao thuc iot mqtt coap",
+      "mqtt"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "giao thuc iot mqtt coap",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "mqtt",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "truyen thong lpwan lora nb-iot",
+    "variants": [
+      "truyen thong lpwan lora nb-iot",
+      "lpwan",
+      "nb-iot"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "truyen thong lpwan lora nb-iot",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lpwan",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nb-iot",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop iot voi edge computing",
+    "variants": [
+      "tich hop iot voi edge computing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop iot voi edge computing",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet bi iot hardware arduino raspberry pi",
+    "variants": [
+      "thiet bi iot hardware arduino raspberry pi",
+      "hardware",
+      "arduino",
+      "raspberry"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet bi iot hardware arduino raspberry pi",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "hardware",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "arduino",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "raspberry",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat iot device authentication",
+    "variants": [
+      "bao mat iot device authentication",
+      "authentication"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat iot device authentication",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "authentication",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "authentication",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung iot trong smart city",
+    "variants": [
+      "ung dung iot trong smart city",
+      "city"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung iot trong smart city",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "city",
+        "profileId": "6922d8f3b169b4e98c8d5d38",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "hop dong thong minh cho mang phan tan",
+    "variants": [
+      "hop dong thong minh cho mang phan tan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "hop dong thong minh cho mang phan tan",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "consensus",
+    "variants": [
+      "consensus"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "consensus",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "smart contracts security auditing",
+    "variants": [
+      "smart contracts security auditing",
+      "contracts",
+      "auditing"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "smart contracts security auditing",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "contracts",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "auditing",
+        "profileId": "6922d8f3b169b4e98c8d5d3d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "kien truc sdn openflow nfv",
+    "variants": [
+      "kien truc sdn openflow nfv",
+      "openflow",
+      "nfv"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "kien truc sdn openflow nfv",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "openflow",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "nfv",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa sdn cho data centers",
+    "variants": [
+      "toi uu hoa sdn cho data centers",
+      "centers"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa sdn cho data centers",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "centers",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dynamic",
+    "variants": [
+      "dynamic"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dynamic",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mininet",
+    "variants": [
+      "mininet"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mininet",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ryu",
+    "variants": [
+      "ryu",
+      "gnu"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ryu",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "gnu",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "controller",
+    "variants": [
+      "controller"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "controller",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop sdn voi 5g",
+    "variants": [
+      "tich hop sdn voi 5g"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop sdn voi 5g",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo phong mang ao hoa",
+    "variants": [
+      "mo phong mang ao hoa"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo phong mang ao hoa",
+        "profileId": "6922d8f3b169b4e98c8d5d42",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke sdr cho 5g 6g",
+    "variants": [
+      "thiet ke sdr cho 5g 6g"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke sdr cho 5g 6g",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly tin hieu so trong sdr",
+    "variants": [
+      "xu ly tin hieu so trong sdr"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly tin hieu so trong sdr",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung sdr trong an ninh mang",
+    "variants": [
+      "ung dung sdr trong an ninh mang",
+      "an ninh mang"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung sdr trong an ninh mang",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "an ninh mang",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "radio",
+    "variants": [
+      "radio",
+      "truyen thong cognitive radio"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "radio",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "truyen thong cognitive radio",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "usrp",
+    "variants": [
+      "usrp"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "usrp",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cognitive",
+    "variants": [
+      "cognitive"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cognitive",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop sdr voi iot",
+    "variants": [
+      "tich hop sdr voi iot"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop sdr voi iot",
+        "profileId": "6922d8f4b169b4e98c8d5d47",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai trong phan tich luu luong traffic anomaly",
+    "variants": [
+      "ai trong phan tich luu luong traffic anomaly",
+      "traffic",
+      "anomaly"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ai trong phan tich luu luong traffic anomaly",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "traffic",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "anomaly",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "anomaly",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "pytorch",
+    "variants": [
+      "pytorch"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "pytorch",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai ethics trong cybersecurity",
+    "variants": [
+      "ai ethics trong cybersecurity",
+      "ethics",
+      "cybersecurity"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ai ethics trong cybersecurity",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ethics",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cybersecurity",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop ai voi sdn",
+    "variants": [
+      "tich hop ai voi sdn"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop ai voi sdn",
+        "profileId": "6922d8f4b169b4e98c8d5d4c",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "giao thuc tcp ip nang cao quic http 3",
+    "variants": [
+      "giao thuc tcp ip nang cao quic http 3",
+      "quic",
+      "http"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "giao thuc tcp ip nang cao quic http 3",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "quic",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "http",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa truyen du lieu compression caching",
+    "variants": [
+      "toi uu hoa truyen du lieu compression caching",
+      "compression",
+      "caching"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa truyen du lieu compression caching",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "compression",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "caching",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "truyen thong du lieu cho cloud-edge",
+    "variants": [
+      "truyen thong du lieu cho cloud-edge",
+      "cloud-edge"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "truyen thong du lieu cho cloud-edge",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cloud-edge",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "wireshark",
+    "variants": [
+      "wireshark"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "wireshark",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung trong video streaming",
+    "variants": [
+      "ung dung trong video streaming"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung trong video streaming",
+        "profileId": "6922d8f4b169b4e98c8d5d51",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat end-to-end cho iot networks",
+    "variants": [
+      "bao mat end-to-end cho iot networks",
+      "end-to-end"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat end-to-end cho iot networks",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "end-to-end",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phat hien lo hong iot vulnerability scanning",
+    "variants": [
+      "phat hien lo hong iot vulnerability scanning",
+      "scanning"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phat hien lo hong iot vulnerability scanning",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "scanning",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "zero-trust architecture cho truyen thong",
+    "variants": [
+      "zero-trust architecture cho truyen thong",
+      "zero-trust"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "zero-trust architecture cho truyen thong",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "zero-trust",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "shodan",
+    "variants": [
+      "shodan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "shodan",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nessus",
+    "variants": [
+      "nessus"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nessus",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "quy dinh an ninh iot quoc te",
+    "variants": [
+      "quy dinh an ninh iot quoc te"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "quy dinh an ninh iot quoc te",
+        "profileId": "6922d8f5b169b4e98c8d5d56",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa luu tru du lieu thoi gian thuc",
+    "variants": [
+      "toi uu hoa luu tru du lieu thoi gian thuc",
+      "thoi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa luu tru du lieu thoi gian thuc",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thoi",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thoi",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thoi",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "thoi",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich du lieu lon cho moi truong do thi",
+    "variants": [
+      "phan tich du lieu lon cho moi truong do thi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich du lieu lon cho moi truong do thi",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop cloud cho du lieu dia ly",
+    "variants": [
+      "tich hop cloud cho du lieu dia ly"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop cloud cho du lieu dia ly",
+        "profileId": "69440f0d33059b2ca43a2925",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh du bao thoi gian thuc time-series forecasting",
+    "variants": [
+      "mo hinh du bao thoi gian thuc time-series forecasting",
+      "time-series",
+      "forecasting"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh du bao thoi gian thuc time-series forecasting",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "time-series",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "forecasting",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich rui ro du lieu lon",
+    "variants": [
+      "phan tich rui ro du lieu lon"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich rui ro du lieu lon",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung predictive trong y te du phong",
+    "variants": [
+      "ung dung predictive trong y te du phong"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung predictive trong y te du phong",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "stats",
+    "variants": [
+      "stats"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "stats",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop predictive voi iot sensors",
+    "variants": [
+      "tich hop predictive voi iot sensors",
+      "sensors"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop predictive voi iot sensors",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "sensors",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dao duc trong mo hinh du bao",
+    "variants": [
+      "dao duc trong mo hinh du bao"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dao duc trong mo hinh du bao",
+        "profileId": "69440f0d33059b2ca43a292a",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ky thuat anonymization du lieu differential privacy",
+    "variants": [
+      "ky thuat anonymization du lieu differential privacy",
+      "anonymization",
+      "differential",
+      "privacy"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ky thuat anonymization du lieu differential privacy",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "anonymization",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "differential",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "privacy",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "bao mat du lieu phan tan",
+    "variants": [
+      "bao mat du lieu phan tan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "bao mat du lieu phan tan",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phat hien lo hong trong data lakes",
+    "variants": [
+      "phat hien lo hong trong data lakes",
+      "lakes"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phat hien lo hong trong data lakes",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "lakes",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tieu chuan gdpr va bao mat viet nam",
+    "variants": [
+      "tieu chuan gdpr va bao mat viet nam",
+      "gdpr"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tieu chuan gdpr va bao mat viet nam",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "gdpr",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "integrity",
+    "variants": [
+      "integrity"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "integrity",
+        "profileId": "69440f0d33059b2ca43a292f",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "topic modeling va sentiment analysis",
+    "variants": [
+      "topic modeling va sentiment analysis",
+      "topic",
+      "modeling",
+      "sentiment"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "topic modeling va sentiment analysis",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "topic",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "modeling",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "sentiment",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "xu ly du lieu van ban da ngon ngu",
+    "variants": [
+      "xu ly du lieu van ban da ngon ngu"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "xu ly du lieu van ban da ngon ngu",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung text mining trong giao duc",
+    "variants": [
+      "ung dung text mining trong giao duc",
+      "text"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung text mining trong giao duc",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "text",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "open-source",
+    "variants": [
+      "open-source"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "open-source",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich xu huong xa hoi tu du lieu lon",
+    "variants": [
+      "phan tich xu huong xa hoi tu du lieu lon"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich xu huong xa hoi tu du lieu lon",
+        "profileId": "69440f0e33059b2ca43a2934",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "mo hinh hoa du lieu khong gian spatial regression",
+    "variants": [
+      "mo hinh hoa du lieu khong gian spatial regression",
+      "spatial",
+      "regression"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "mo hinh hoa du lieu khong gian spatial regression",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "spatial",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "regression",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "phan tich gis cho bien doi khi hau",
+    "variants": [
+      "phan tich gis cho bien doi khi hau",
+      "khi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "phan tich gis cho bien doi khi hau",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "khi",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop geospatial voi du lieu thoi gian thuc",
+    "variants": [
+      "tich hop geospatial voi du lieu thoi gian thuc",
+      "geospatial"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop geospatial voi du lieu thoi gian thuc",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "geospatial",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "arcgis",
+    "variants": [
+      "arcgis"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "arcgis",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "qgis",
+    "variants": [
+      "qgis"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "qgis",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung geospatial trong nong nghiep",
+    "variants": [
+      "ung dung geospatial trong nong nghiep"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung geospatial trong nong nghiep",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "du lieu mo cho phan tich moi truong",
+    "variants": [
+      "du lieu mo cho phan tich moi truong"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "du lieu mo cho phan tich moi truong",
+        "profileId": "69440f0e33059b2ca43a2939",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "thiet ke viz cho du lieu da chieu",
+    "variants": [
+      "thiet ke viz cho du lieu da chieu",
+      "chieu"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "thiet ke viz cho du lieu da chieu",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chieu",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "chieu",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "truc quan hoa thoi gian thuc streaming viz",
+    "variants": [
+      "truc quan hoa thoi gian thuc streaming viz"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "truc quan hoa thoi gian thuc streaming viz",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung viz trong bao cao kinh te",
+    "variants": [
+      "ung dung viz trong bao cao kinh te"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung viz trong bao cao kinh te",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop viz voi ml insights",
+    "variants": [
+      "tich hop viz voi ml insights",
+      "insights"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop viz voi ml insights",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "insights",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ux ui cho data storytelling",
+    "variants": [
+      "ux ui cho data storytelling",
+      "storytelling"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ux ui cho data storytelling",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "storytelling",
+        "profileId": "69440f0e33059b2ca43a293e",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "kien truc serverless cho data processing",
+    "variants": [
+      "kien truc serverless cho data processing",
+      "serverless"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "kien truc serverless cho data processing",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "serverless",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa chi phi cloud data",
+    "variants": [
+      "toi uu hoa chi phi cloud data"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa chi phi cloud data",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung cloud cho du lieu y te lon",
+    "variants": [
+      "ung dung cloud cho du lieu y te lon"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung cloud cho du lieu y te lon",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "nen tang cloud aws s3 google bigquery",
+    "variants": [
+      "nen tang cloud aws s3 google bigquery",
+      "google",
+      "bigquery"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "nen tang cloud aws s3 google bigquery",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "google",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "bigquery",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "data migration va hybrid cloud",
+    "variants": [
+      "data migration va hybrid cloud",
+      "migration"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "data migration va hybrid cloud",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "migration",
+        "profileId": "69440f0e33059b2ca43a2943",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "clustering va anomaly detection",
+    "variants": [
+      "clustering va anomaly detection",
+      "clustering",
+      "detection"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "clustering va anomaly detection",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "clustering",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "detection",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dimensionality reduction cho du lieu cao chieu",
+    "variants": [
+      "dimensionality reduction cho du lieu cao chieu",
+      "dimensionality",
+      "reduction"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dimensionality reduction cho du lieu cao chieu",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "dimensionality",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "reduction",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung unsupervised trong phat hien gian lan",
+    "variants": [
+      "ung dung unsupervised trong phat hien gian lan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung unsupervised trong phat hien gian lan",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "k-means",
+    "variants": [
+      "k-means"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "k-means",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "autoencoders",
+    "variants": [
+      "autoencoders"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "autoencoders",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "tich hop voi du lieu thoi gian",
+    "variants": [
+      "tich hop voi du lieu thoi gian"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "tich hop voi du lieu thoi gian",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "danh gia chat luong mo hinh unsupervised",
+    "variants": [
+      "danh gia chat luong mo hinh unsupervised"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "danh gia chat luong mo hinh unsupervised",
+        "profileId": "69440f0f33059b2ca43a2948",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "quality",
+    "variants": [
+      "quality",
+      "ung dung quality cho du lieu xa hoi"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "quality",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "ung dung quality cho du lieu xa hoi",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "cleansing va imputation du lieu lon",
+    "variants": [
+      "cleansing va imputation du lieu lon",
+      "cleansing",
+      "imputation"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "cleansing va imputation du lieu lon",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "cleansing",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "imputation",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "checks",
+    "variants": [
+      "checks"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "checks",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "expectations",
+    "variants": [
+      "expectations"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "expectations",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "deequ",
+    "variants": [
+      "deequ"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "deequ",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "data governance trong doanh nghiep",
+    "variants": [
+      "data governance trong doanh nghiep"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "data governance trong doanh nghiep",
+        "profileId": "69440f0f33059b2ca43a294d",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "privacy-preserving ml techniques",
+    "variants": [
+      "privacy-preserving ml techniques",
+      "privacy-preserving",
+      "techniques"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "privacy-preserving ml techniques",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "privacy-preserving",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      },
+      {
+        "token": "techniques",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "toi uu hoa federated cho edge devices",
+    "variants": [
+      "toi uu hoa federated cho edge devices"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "toi uu hoa federated cho edge devices",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ung dung trong du lieu dia ly phan tan",
+    "variants": [
+      "ung dung trong du lieu dia ly phan tan"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ung dung trong du lieu dia ly phan tan",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "dao duc va quy dinh federated data",
+    "variants": [
+      "dao duc va quy dinh federated data"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "dao duc va quy dinh federated data",
+        "profileId": "69440f0f33059b2ca43a2952",
+        "profileType": "lecturer",
+        "source": "areaInterest+researchInterests"
+      }
+    ]
+  },
+  {
+    "canonical": "ai for healthcare",
+    "variants": [
+      "ai for healthcare",
+      "healthcare"
+    ],
+    "frequency": 1,
+    "examples": [
+      {
+        "token": "ai for healthcare",
+        "profileId": "student-001",
+        "profileType": "student",
+        "source": "skills+interests"
+      },
+      {
+        "token": "healthcare",
+        "profileId": "student-001",
+        "profileType": "student",
+        "source": "skills+interests"
+      }
+    ]
+  }
+]
