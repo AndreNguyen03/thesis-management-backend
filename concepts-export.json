@@ -1,0 +1,319 @@
+[
+  {
+    "_id": "6965f6fb11774e2d4b1a8238",
+    "key": "it",
+    "label": "Information Technology",
+    "aliases": [
+      "IT",
+      "Công nghệ thông tin"
+    ]
+  },
+  {
+    "_id": "6965f6fc11774e2d4b1a823a",
+    "key": "it.ai",
+    "label": "Artificial Intelligence",
+    "aliases": [
+      "AI",
+      "Trí tuệ nhân tạo"
+    ]
+  },
+  {
+    "_id": "6965f6fc11774e2d4b1a823c",
+    "key": "it.data",
+    "label": "Data Engineering & Analytics",
+    "aliases": [
+      "Data Science",
+      "Dữ liệu"
+    ]
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a823e",
+    "key": "it.software",
+    "label": "Software Engineering",
+    "aliases": [
+      "Công nghệ phần mềm",
+      "Software Engineering"
+    ]
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8240",
+    "key": "it.system",
+    "label": "Systems & Infrastructure",
+    "aliases": [
+      "Hệ thống",
+      "Infrastructure"
+    ]
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8242",
+    "key": "it.network",
+    "label": "Networking & Communications",
+    "aliases": [
+      "Networking",
+      "Mạng máy tính"
+    ]
+  },
+  {
+    "_id": "6965f6fd11774e2d4b1a8244",
+    "key": "it.ai.machine-learning",
+    "label": "Machine Learning",
+    "aliases": [
+      "ML",
+      "Học máy"
+    ]
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a8246",
+    "key": "it.ai.machine-learning.supervised",
+    "label": "Supervised Learning",
+    "aliases": [
+      "Supervised ML"
+    ]
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a8248",
+    "key": "it.ai.machine-learning.unsupervised",
+    "label": "Unsupervised Learning",
+    "aliases": [
+      "Unsupervised ML"
+    ]
+  },
+  {
+    "_id": "6965f6fe11774e2d4b1a824a",
+    "key": "it.ai.machine-learning.reinforcement",
+    "label": "Reinforcement Learning",
+    "aliases": [
+      "RL"
+    ]
+  },
+  {
+    "_id": "6965f6ff11774e2d4b1a824c",
+    "key": "it.ai.machine-learning.federated",
+    "label": "Federated Learning",
+    "aliases": [
+      "Federated ML"
+    ]
+  },
+  {
+    "_id": "6965f6ff11774e2d4b1a824e",
+    "key": "it.ai.deep-learning",
+    "label": "Deep Learning",
+    "aliases": [
+      "DL"
+    ]
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8250",
+    "key": "it.ai.deep-learning.cnn",
+    "label": "Convolutional Neural Networks",
+    "aliases": [
+      "CNN"
+    ]
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8252",
+    "key": "it.ai.deep-learning.rnn",
+    "label": "Recurrent Neural Networks",
+    "aliases": [
+      "RNN"
+    ]
+  },
+  {
+    "_id": "6965f70011774e2d4b1a8254",
+    "key": "it.ai.deep-learning.transformer",
+    "label": "Transformer Models",
+    "aliases": [
+      "Transformer"
+    ]
+  },
+  {
+    "_id": "6965f70111774e2d4b1a8256",
+    "key": "it.ai.nlp",
+    "label": "Natural Language Processing",
+    "aliases": [
+      "NLP",
+      "Xử lý ngôn ngữ tự nhiên"
+    ]
+  },
+  {
+    "_id": "6965f70111774e2d4b1a8258",
+    "key": "it.ai.nlp.llm",
+    "label": "Large Language Models",
+    "aliases": [
+      "LLM",
+      "Large Language Model"
+    ]
+  },
+  {
+    "_id": "6965f70111774e2d4b1a825a",
+    "key": "it.ai.computer-vision",
+    "label": "Computer Vision",
+    "aliases": [
+      "CV",
+      "Thị giác máy tính"
+    ]
+  },
+  {
+    "_id": "6965f70211774e2d4b1a825c",
+    "key": "it.data.data-science",
+    "label": "Data Science",
+    "aliases": [
+      "Data Scientist"
+    ]
+  },
+  {
+    "_id": "6965f70211774e2d4b1a825e",
+    "key": "it.data.big-data",
+    "label": "Big Data",
+    "aliases": [
+      "Dữ liệu lớn"
+    ]
+  },
+  {
+    "_id": "6965f70211774e2d4b1a8260",
+    "key": "it.data.big-data.streaming",
+    "label": "Streaming Data Processing",
+    "aliases": [
+      "Streaming"
+    ]
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8262",
+    "key": "it.data.data-mining",
+    "label": "Data Mining",
+    "aliases": [
+      "Khai phá dữ liệu"
+    ]
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8264",
+    "key": "it.data.data-analysis",
+    "label": "Data Analysis",
+    "aliases": [
+      "Phân tích dữ liệu"
+    ]
+  },
+  {
+    "_id": "6965f70311774e2d4b1a8266",
+    "key": "it.software.architecture",
+    "label": "Software Architecture",
+    "aliases": [
+      "Architecture"
+    ]
+  },
+  {
+    "_id": "6965f70411774e2d4b1a8268",
+    "key": "it.software.architecture.microservices",
+    "label": "Microservices Architecture",
+    "aliases": [
+      "Microservices"
+    ]
+  },
+  {
+    "_id": "6965f70411774e2d4b1a826a",
+    "key": "it.software.web",
+    "label": "Web Development",
+    "aliases": [
+      "Web",
+      "Phát triển web"
+    ]
+  },
+  {
+    "_id": "6965f70411774e2d4b1a826c",
+    "key": "it.software.web.frontend",
+    "label": "Frontend Development",
+    "aliases": [
+      "Frontend"
+    ]
+  },
+  {
+    "_id": "6965f70511774e2d4b1a826e",
+    "key": "it.software.web.backend",
+    "label": "Backend Development",
+    "aliases": [
+      "Backend"
+    ]
+  },
+  {
+    "_id": "6965f70511774e2d4b1a8270",
+    "key": "it.software.mobile",
+    "label": "Mobile Application Development",
+    "aliases": [
+      "Mobile"
+    ]
+  },
+  {
+    "_id": "6965f70511774e2d4b1a8272",
+    "key": "it.software.devops",
+    "label": "DevOps & Automation",
+    "aliases": [
+      "DevOps",
+      "CI/CD"
+    ]
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8274",
+    "key": "it.system.distributed",
+    "label": "Distributed Systems",
+    "aliases": [
+      "Hệ thống phân tán"
+    ]
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8276",
+    "key": "it.system.cloud",
+    "label": "Cloud Computing",
+    "aliases": [
+      "Cloud",
+      "Điện toán đám mây"
+    ]
+  },
+  {
+    "_id": "6965f70611774e2d4b1a8278",
+    "key": "it.system.large-scale",
+    "label": "Large-scale Systems",
+    "aliases": [
+      "Hệ thống lớn"
+    ]
+  },
+  {
+    "_id": "6965f70711774e2d4b1a827a",
+    "key": "it.system.performance",
+    "label": "Performance Optimization",
+    "aliases": [
+      "Tối ưu hiệu năng"
+    ]
+  },
+  {
+    "_id": "6965f70711774e2d4b1a827c",
+    "key": "it.network.computer-network",
+    "label": "Computer Networking",
+    "aliases": [
+      "Mạng máy tính"
+    ]
+  },
+  {
+    "_id": "6965f70811774e2d4b1a827e",
+    "key": "it.network.communication-systems",
+    "label": "Communication Systems",
+    "aliases": [
+      "Hệ thống truyền thông"
+    ]
+  },
+  {
+    "_id": "6965f70811774e2d4b1a8280",
+    "key": "it.network.communication.vlc",
+    "label": "Visible Light Communication",
+    "aliases": [
+      "VLC"
+    ]
+  },
+  {
+    "_id": "6965f70911774e2d4b1a8282",
+    "key": "it.network.communication.vehicle",
+    "label": "Vehicle Communication & Sensing",
+    "aliases": [
+      "Vehicle Communication"
+    ]
+  }
+]

@@ -1,0 +1,1876 @@
+[
+    {
+        "key": "ai_data_science",
+        "label": "Artificial Intelligence and Data Science",
+        "aliases": [
+            "ai",
+            "artificial intelligence",
+            "data science",
+            "tri tue nhan tao",
+            "khoa hoc du lieu",
+            "AI/DS",
+            "ai ds"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence",
+        "label": "Artificial Intelligence",
+        "aliases": [
+            "artificial intelligence",
+            "ai",
+            "tri tue nhan tao",
+            "intelligent systems",
+            "he thong thong minh"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "ai_data_science.data_science",
+        "label": "Data Science",
+        "aliases": [
+            "data science",
+            "khoa hoc du lieu",
+            "data analytics",
+            "phan tich du lieu",
+            "DS"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems",
+        "label": "Applied AI Systems",
+        "aliases": [
+            "applied ai",
+            "ai applications",
+            "ung dung ai",
+            "practical ai",
+            "he thong ai ung dung"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning",
+        "label": "Machine Learning",
+        "aliases": [
+            "machine learning",
+            "ml",
+            "hoc may",
+            "hoc may thong ke",
+            "statistical learning",
+            "may hoc"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning",
+        "label": "Deep Learning",
+        "aliases": [
+            "deep learning",
+            "dl",
+            "hoc sau",
+            "neural networks",
+            "mang noron",
+            "deep neural networks"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing",
+        "label": "Natural Language Processing",
+        "aliases": [
+            "natural language processing",
+            "nlp",
+            "xu ly ngon ngu tu nhien",
+            "text processing",
+            "computational linguistics",
+            "ngon ngu hoc tinh toan"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision",
+        "label": "Computer Vision",
+        "aliases": [
+            "computer vision",
+            "cv",
+            "thi giac may tinh",
+            "visual computing",
+            "tinh toan thi giac",
+            "image understanding"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.signal_processing",
+        "label": "Signal Processing",
+        "aliases": [
+            "signal processing",
+            "xu ly tin hieu",
+            "digital signal processing",
+            "dsp",
+            "xu ly tin hieu so"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.supervised_learning",
+        "label": "Supervised Learning",
+        "aliases": [
+            "supervised learning",
+            "hoc co giam sat",
+            "classification",
+            "phan loai",
+            "regression",
+            "hoi quy"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.unsupervised_learning",
+        "label": "Unsupervised Learning",
+        "aliases": [
+            "unsupervised learning",
+            "hoc khong giam sat",
+            "clustering",
+            "phan cum",
+            "dimensionality reduction"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.reinforcement_learning",
+        "label": "Reinforcement Learning",
+        "aliases": [
+            "reinforcement learning",
+            "rl",
+            "hoc tang cuong",
+            "hoc cu chi",
+            "reward-based learning"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.federated_learning",
+        "label": "Federated Learning",
+        "aliases": [
+            "federated learning",
+            "hoc lien hop",
+            "distributed learning",
+            "privacy-preserving learning",
+            "hoc phan tan"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.cnn",
+        "label": "Convolutional Neural Networks",
+        "aliases": [
+            "convolutional neural networks",
+            "cnn",
+            "mang noron tich chap",
+            "convnet",
+            "convolutional networks"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.rnn",
+        "label": "Recurrent Neural Networks",
+        "aliases": [
+            "recurrent neural networks",
+            "rnn",
+            "mang noron hoi quy",
+            "lstm",
+            "gru",
+            "sequential models"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.transformer_models",
+        "label": "Transformer Models",
+        "aliases": [
+            "transformer",
+            "transformer models",
+            "attention mechanisms",
+            "kien truc transformer",
+            "self-attention",
+            "mo hinh transformer"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.generative_models",
+        "label": "Generative Models",
+        "aliases": [
+            "generative models",
+            "mo hinh sinh",
+            "gan",
+            "vae",
+            "diffusion models"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.information_retrieval",
+        "label": "Information Retrieval",
+        "aliases": [
+            "information retrieval",
+            "truy xuat thong tin",
+            "search engines",
+            "document retrieval",
+            "tim kiem thong tin"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.text_classification",
+        "label": "Text Classification",
+        "aliases": [
+            "text classification",
+            "phan loai van ban",
+            "sentiment analysis",
+            "phan tich cam xuc",
+            "text categorization"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.large_language_models",
+        "label": "Large Language Models",
+        "aliases": [
+            "large language models",
+            "llm",
+            "mo hinh ngon ngu lon",
+            "foundation models",
+            "mo hinh nen tang"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.machine_translation",
+        "label": "Machine Translation",
+        "aliases": [
+            "machine translation",
+            "dich may",
+            "neural machine translation",
+            "nmt",
+            "automatic translation"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_processing",
+        "label": "Image Processing",
+        "aliases": [
+            "image processing",
+            "xu ly anh",
+            "digital image processing",
+            "image analysis",
+            "phan tich anh"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_segmentation",
+        "label": "Image Segmentation",
+        "aliases": [
+            "image segmentation",
+            "phan doan anh",
+            "semantic segmentation",
+            "instance segmentation",
+            "phan vung anh"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.object_detection",
+        "label": "Object Detection",
+        "aliases": [
+            "object detection",
+            "phat hien doi tuong",
+            "object recognition",
+            "nhan dang doi tuong",
+            "visual object detection"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.video_analysis",
+        "label": "Video Analysis",
+        "aliases": [
+            "video analysis",
+            "phan tich video",
+            "video understanding",
+            "action recognition",
+            "nhan dang hanh dong"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.data_science.data_analysis",
+        "label": "Data Analysis",
+        "aliases": [
+            "data analysis",
+            "phan tich du lieu",
+            "statistical analysis",
+            "phan tich thong ke",
+            "exploratory data analysis"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.data_science.data_mining",
+        "label": "Data Mining",
+        "aliases": [
+            "data mining",
+            "khai pha du lieu",
+            "knowledge discovery",
+            "khai thac du lieu",
+            "pattern discovery"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.data_science.big_data",
+        "label": "Big Data",
+        "aliases": [
+            "big data",
+            "du lieu lon",
+            "large-scale data",
+            "massive data",
+            "du lieu quy mo lon"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering",
+        "label": "Data Engineering",
+        "aliases": [
+            "data engineering",
+            "ky thuat du lieu",
+            "data infrastructure",
+            "ha tang du lieu",
+            "data operations"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.distributed_data_processing",
+        "label": "Distributed Data Processing",
+        "aliases": [
+            "distributed data processing",
+            "xu ly du lieu phan tan",
+            "parallel data processing",
+            "xu ly du lieu song song",
+            "distributed computing"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.streaming_data_processing",
+        "label": "Streaming Data Processing",
+        "aliases": [
+            "streaming data",
+            "real-time data processing",
+            "xu ly du lieu thoi gian thuc",
+            "data streams",
+            "dong du lieu"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering.data_pipeline",
+        "label": "Data Pipeline",
+        "aliases": [
+            "data pipeline",
+            "duong ong du lieu",
+            "etl pipeline",
+            "data flow",
+            "luong du lieu"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering.data_warehouse",
+        "label": "Data Warehouse",
+        "aliases": [
+            "data warehouse",
+            "kho du lieu",
+            "data warehousing",
+            "enterprise data warehouse",
+            "kho du lieu doanh nghiep"
+        ],
+        "depth": 3
+    },
+    {
+        "key": "ai_data_science.data_science.data_visualization",
+        "label": "Data Visualization",
+        "aliases": [
+            "data visualization",
+            "truc quan hoa du lieu",
+            "visual analytics",
+            "phan tich truc quan",
+            "information visualization"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.recommendation_systems",
+        "label": "Recommendation Systems",
+        "aliases": [
+            "recommendation systems",
+            "he thong goi y",
+            "recommender systems",
+            "collaborative filtering",
+            "loc cong tac"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.intelligent_information_systems",
+        "label": "Intelligent Information Systems",
+        "aliases": [
+            "intelligent information systems",
+            "he thong thong tin thong minh",
+            "smart systems",
+            "he thong thong minh",
+            "information systems"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.ai_in_industry",
+        "label": "AI in Industry",
+        "aliases": [
+            "ai in industry",
+            "industrial ai",
+            "ai cong nghiep",
+            "applied industrial ai",
+            "ai ung dung trong cong nghiep"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.decision_support_systems",
+        "label": "Decision Support Systems",
+        "aliases": [
+            "decision support systems",
+            "he thong ho tro quyet dinh",
+            "dss",
+            "intelligent decision systems",
+            "he thong quyet dinh thong minh"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering",
+        "label": "Software Engineering",
+        "aliases": [
+            "software engineering",
+            "ky thuat phan mem",
+            "software development",
+            "phat trien phan mem",
+            "SE"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "software_engineering.web_development",
+        "label": "Web Development",
+        "aliases": [
+            "web development",
+            "phat trien web",
+            "web engineering",
+            "ky thuat web",
+            "web applications"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.mobile_development",
+        "label": "Mobile Development",
+        "aliases": [
+            "mobile development",
+            "phat trien ung dung di dong",
+            "di dong",
+            "thiet bi di dong",
+            "mobile app",
+            "ung dung di dong",
+            "lap trinh tren thiet bi di dong",
+            "mobile applications",
+            "ung dung mobile",
+            "mobile engineering"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.software_architecture",
+        "label": "Software Architecture",
+        "aliases": [
+            "software architecture",
+            "kien truc phan mem",
+            "system architecture",
+            "kien truc he thong",
+            "architectural design"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.distributed_systems",
+        "label": "Distributed Systems",
+        "aliases": [
+            "distributed systems",
+            "he thong phan tan",
+            "distributed computing",
+            "tinh toan phan tan",
+            "decentralized systems"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.devops_and_operations",
+        "label": "DevOps and Operations",
+        "aliases": [
+            "devops",
+            "operations",
+            "van hanh he thong",
+            "software operations",
+            "devops practices"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.web_development.frontend_development",
+        "label": "Frontend Development",
+        "aliases": [
+            "frontend development",
+            "phat trien giao dien",
+            "frontend engineering",
+            "client-side development",
+            "ui development"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.web_development.backend_development",
+        "label": "Backend Development",
+        "aliases": [
+            "backend development",
+            "phat trien server",
+            "server-side development",
+            "backend engineering",
+            "api development"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.web_development.fullstack_development",
+        "label": "Full Stack Development",
+        "aliases": [
+            "fullstack development",
+            "full stack",
+            "phat trien toan dien",
+            "full-stack engineering",
+            "end-to-end development"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.web_development.web_security",
+        "label": "Web Security",
+        "aliases": [
+            "web security",
+            "an ninh web",
+            "application security",
+            "an ninh ung dung",
+            "web application security"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.mobile_development.ios_development",
+        "label": "iOS Development",
+        "aliases": [
+            "ios development",
+            "phat trien ios",
+            "iphone development",
+            "apple mobile development",
+            "ios engineering"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.mobile_development.android_development",
+        "label": "Android Development",
+        "aliases": [
+            "android development",
+            "phat trien android",
+            "android engineering",
+            "google mobile development",
+            "ung dung android"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.mobile_development.cross_platform_mobile",
+        "label": "Cross-Platform Mobile Development",
+        "aliases": [
+            "cross-platform mobile",
+            "hybrid mobile development",
+            "phat trien da nen tang",
+            "multiplatform mobile",
+            "mobile cross-platform"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_architecture.microservices_architecture",
+        "label": "Microservices Architecture",
+        "aliases": [
+            "microservices",
+            "kien truc vi dich vu",
+            "microservices architecture",
+            "service-oriented architecture",
+            "kien truc microservices"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_architecture.monolithic_architecture",
+        "label": "Monolithic Architecture",
+        "aliases": [
+            "monolithic architecture",
+            "kien truc nguyen khoi",
+            "monolith",
+            "traditional architecture",
+            "single-tier architecture"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_architecture.event_driven_architecture",
+        "label": "Event-Driven Architecture",
+        "aliases": [
+            "event-driven architecture",
+            "kien truc huong su kien",
+            "eda",
+            "event-based systems",
+            "message-driven architecture"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_architecture.serverless_architecture",
+        "label": "Serverless Architecture",
+        "aliases": [
+            "serverless",
+            "serverless architecture",
+            "kien truc khong server",
+            "function as a service",
+            "faas"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.distributed_systems.distributed_computing",
+        "label": "Distributed Computing",
+        "aliases": [
+            "distributed computing",
+            "tinh toan phan tan",
+            "parallel computing",
+            "tinh toan song song",
+            "distributed processing"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.distributed_systems.cloud_computing",
+        "label": "Cloud Computing",
+        "aliases": [
+            "cloud computing",
+            "dien toan dam may",
+            "cloud services",
+            "dich vu dam may",
+            "cloud infrastructure"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.distributed_systems.large_scale_systems",
+        "label": "Large-Scale Systems",
+        "aliases": [
+            "large-scale systems",
+            "he thong quy mo lon",
+            "scalable systems",
+            "he thong mo rong",
+            "distributed large systems"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.distributed_systems.system_performance_optimization",
+        "label": "System Performance Optimization",
+        "aliases": [
+            "performance optimization",
+            "toi uu hieu nang",
+            "system optimization",
+            "toi uu he thong",
+            "performance tuning"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.devops_and_operations.devops_practices",
+        "label": "DevOps Practices",
+        "aliases": [
+            "devops practices",
+            "thuc hanh devops",
+            "devops methodology",
+            "phuong phap devops",
+            "continuous delivery"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.devops_and_operations.ci_cd",
+        "label": "Continuous Integration and Deployment",
+        "aliases": [
+            "ci cd",
+            "continuous integration",
+            "tich hop lien tuc",
+            "continuous deployment",
+            "trien khai lien tuc"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.devops_and_operations.system_monitoring",
+        "label": "System Monitoring",
+        "aliases": [
+            "system monitoring",
+            "giam sat he thong",
+            "observability",
+            "kha nang quan sat",
+            "monitoring and logging"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.devops_and_operations.infrastructure_automation",
+        "label": "Infrastructure Automation",
+        "aliases": [
+            "infrastructure automation",
+            "tu dong hoa ha tang",
+            "infrastructure as code",
+            "ha tang dang ma",
+            "automated provisioning"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.devops_and_operations.containerization",
+        "label": "Containerization",
+        "aliases": [
+            "containerization",
+            "container technology",
+            "cong nghe container",
+            "application containers",
+            "dong goi ung dung"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.database_systems",
+        "label": "Database Systems",
+        "aliases": [
+            "database systems",
+            "he thong co so du lieu",
+            "databases",
+            "co so du lieu",
+            "data storage"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.database_systems.relational_databases",
+        "label": "Relational Databases",
+        "aliases": [
+            "relational databases",
+            "co so du lieu quan he",
+            "sql databases",
+            "rdbms",
+            "he quan tri co so du lieu quan he"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.database_systems.nosql_databases",
+        "label": "NoSQL Databases",
+        "aliases": [
+            "nosql databases",
+            "co so du lieu nosql",
+            "non-relational databases",
+            "document databases",
+            "co so du lieu phi quan he"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.database_systems.database_design",
+        "label": "Database Design",
+        "aliases": [
+            "database design",
+            "thiet ke co so du lieu",
+            "data modeling",
+            "mo hinh hoa du lieu",
+            "schema design"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_testing",
+        "label": "Software Testing",
+        "aliases": [
+            "software testing",
+            "kiem thu phan mem",
+            "quality assurance",
+            "dam bao chat luong",
+            "test engineering"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.software_testing.automated_testing",
+        "label": "Automated Testing",
+        "aliases": [
+            "automated testing",
+            "kiem thu tu dong",
+            "test automation",
+            "tu dong hoa kiem thu",
+            "continuous testing"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.software_testing.performance_testing",
+        "label": "Performance Testing",
+        "aliases": [
+            "performance testing",
+            "kiem thu hieu nang",
+            "load testing",
+            "kiem thu tai",
+            "stress testing"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.security_engineering",
+        "label": "Security Engineering",
+        "aliases": [
+            "security engineering",
+            "ky thuat bao mat",
+            "cybersecurity",
+            "an ninh mang",
+            "application security"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "software_engineering.security_engineering.secure_coding",
+        "label": "Secure Coding",
+        "aliases": [
+            "secure coding",
+            "lap trinh bao mat",
+            "secure development",
+            "phat trien bao mat",
+            "security best practices"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "software_engineering.security_engineering.cryptography",
+        "label": "Cryptography",
+        "aliases": [
+            "cryptography",
+            "ma hoa",
+            "encryption",
+            "ma hoa du lieu",
+            "cryptographic systems"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger",
+        "label": "Blockchain and Distributed Ledger Technology",
+        "aliases": [
+            "blockchain",
+            "distributed ledger",
+            "cong nghe blockchain",
+            "so cai phan tan",
+            "dlt"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "blockchain_distributed_ledger.blockchain_fundamentals",
+        "label": "Blockchain Fundamentals",
+        "aliases": [
+            "blockchain fundamentals",
+            "co ban blockchain",
+            "blockchain basics",
+            "blockchain technology",
+            "cong nghe blockchain"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "blockchain_distributed_ledger.cryptocurrency",
+        "label": "Cryptocurrency",
+        "aliases": [
+            "cryptocurrency",
+            "tien dien tu",
+            "crypto",
+            "digital currency",
+            "tien so"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "blockchain_distributed_ledger.smart_contracts",
+        "label": "Smart Contracts",
+        "aliases": [
+            "smart contracts",
+            "hop dong thong minh",
+            "blockchain contracts",
+            "self-executing contracts",
+            "hop dong tu dong"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "blockchain_distributed_ledger.decentralized_applications",
+        "label": "Decentralized Applications",
+        "aliases": [
+            "decentralized applications",
+            "dapp",
+            "ung dung phan tan",
+            "decentralized apps",
+            "blockchain applications"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "blockchain_distributed_ledger.blockchain_fundamentals.consensus_mechanisms",
+        "label": "Consensus Mechanisms",
+        "aliases": [
+            "consensus mechanisms",
+            "co che dong thuan",
+            "blockchain consensus",
+            "proof of work",
+            "proof of stake"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger.blockchain_fundamentals.distributed_ledger_systems",
+        "label": "Distributed Ledger Systems",
+        "aliases": [
+            "distributed ledger",
+            "he thong so cai phan tan",
+            "ledger technology",
+            "immutable ledger",
+            "so cai bat bien"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger.cryptocurrency.bitcoin_systems",
+        "label": "Bitcoin and Cryptocurrency Systems",
+        "aliases": [
+            "bitcoin",
+            "cryptocurrency systems",
+            "he thong tien dien tu",
+            "digital assets",
+            "tai san so"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger.cryptocurrency.tokenomics",
+        "label": "Tokenomics",
+        "aliases": [
+            "tokenomics",
+            "kinh te token",
+            "token economics",
+            "crypto economics",
+            "kinh te tien dien tu"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger.smart_contracts.defi",
+        "label": "Decentralized Finance",
+        "aliases": [
+            "decentralized finance",
+            "defi",
+            "tai chinh phi tap trung",
+            "blockchain finance",
+            "tai chinh blockchain"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "blockchain_distributed_ledger.smart_contracts.nft",
+        "label": "Non-Fungible Tokens",
+        "aliases": [
+            "nft",
+            "non-fungible tokens",
+            "token khong the thay the",
+            "digital collectibles",
+            "tai san so doc nhat"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "iot_embedded_systems",
+        "label": "Internet of Things and Embedded Systems",
+        "aliases": [
+            "iot",
+            "internet of things",
+            "embedded systems",
+            "internet van vat",
+            "he thong nhung"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "iot_embedded_systems.iot_systems",
+        "label": "IoT Systems",
+        "aliases": [
+            "iot systems",
+            "he thong iot",
+            "connected devices",
+            "thiet bi ket noi",
+            "smart devices"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "iot_embedded_systems.embedded_computing",
+        "label": "Embedded Computing",
+        "aliases": [
+            "embedded computing",
+            "tinh toan nhung",
+            "embedded systems",
+            "he thong nhung",
+            "microcontroller systems"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "iot_embedded_systems.sensor_networks",
+        "label": "Sensor Networks",
+        "aliases": [
+            "sensor networks",
+            "mang cam bien",
+            "wireless sensor networks",
+            "wsn",
+            "mang cam bien khong day"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "iot_embedded_systems.iot_systems.industrial_iot",
+        "label": "Industrial IoT",
+        "aliases": [
+            "industrial iot",
+            "iiot",
+            "iot cong nghiep",
+            "industry 4.0",
+            "cach mang cong nghiep 4.0"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "iot_embedded_systems.iot_systems.smart_home",
+        "label": "Smart Home Systems",
+        "aliases": [
+            "smart home",
+            "nha thong minh",
+            "home automation",
+            "tu dong hoa gia dinh",
+            "connected home"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "iot_embedded_systems.iot_systems.edge_computing",
+        "label": "Edge Computing",
+        "aliases": [
+            "edge computing",
+            "tinh toan bien",
+            "edge intelligence",
+            "fog computing",
+            "tinh toan suong mu"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "iot_embedded_systems.embedded_computing.real_time_systems",
+        "label": "Real-Time Embedded Systems",
+        "aliases": [
+            "real-time systems",
+            "he thong thoi gian thuc",
+            "rtos",
+            "embedded real-time",
+            "he nhung thoi gian thuc"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "iot_embedded_systems.embedded_computing.firmware_development",
+        "label": "Firmware Development",
+        "aliases": [
+            "firmware development",
+            "phat trien firmware",
+            "embedded software",
+            "phan mem nhung",
+            "low-level programming"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "quantum_computing",
+        "label": "Quantum Computing",
+        "aliases": [
+            "quantum computing",
+            "tinh toan luong tu",
+            "quantum information",
+            "thong tin luong tu",
+            "quantum algorithms"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "quantum_computing.quantum_algorithms",
+        "label": "Quantum Algorithms",
+        "aliases": [
+            "quantum algorithms",
+            "thuat toan luong tu",
+            "quantum computation",
+            "tinh toan luong tu",
+            "quantum programming"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "quantum_computing.quantum_cryptography",
+        "label": "Quantum Cryptography",
+        "aliases": [
+            "quantum cryptography",
+            "ma hoa luong tu",
+            "quantum security",
+            "an ninh luong tu",
+            "quantum key distribution"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "quantum_computing.quantum_machine_learning",
+        "label": "Quantum Machine Learning",
+        "aliases": [
+            "quantum machine learning",
+            "hoc may luong tu",
+            "quantum ai",
+            "ai luong tu",
+            "quantum neural networks"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "game_development",
+        "label": "Game Development",
+        "aliases": [
+            "game development",
+            "phat trien game",
+            "game programming",
+            "lap trinh game",
+            "video game development"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "game_development.game_design",
+        "label": "Game Design",
+        "aliases": [
+            "game design",
+            "thiet ke game",
+            "game mechanics",
+            "co che game",
+            "gameplay design"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "game_development.game_engines",
+        "label": "Game Engine Development",
+        "aliases": [
+            "game engines",
+            "dong co game",
+            "engine development",
+            "phat trien dong co",
+            "game engine architecture"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "game_development.game_graphics",
+        "label": "Game Graphics and Rendering",
+        "aliases": [
+            "game graphics",
+            "do hoa game",
+            "game rendering",
+            "render game",
+            "3d graphics"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "game_development.game_ai",
+        "label": "Game AI",
+        "aliases": [
+            "game ai",
+            "ai trong game",
+            "npc behavior",
+            "hanh vi npc",
+            "game artificial intelligence"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "game_development.game_design.level_design",
+        "label": "Level Design",
+        "aliases": [
+            "level design",
+            "thiet ke cap do",
+            "game level design",
+            "environment design",
+            "thiet ke moi truong"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "game_development.game_design.narrative_design",
+        "label": "Narrative Design",
+        "aliases": [
+            "narrative design",
+            "thiet ke cau chuyen",
+            "storytelling in games",
+            "ke chuyen trong game",
+            "game writing"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "game_development.game_graphics.real_time_rendering",
+        "label": "Real-Time Rendering",
+        "aliases": [
+            "real-time rendering",
+            "render thoi gian thuc",
+            "graphics rendering",
+            "render do hoa",
+            "game rendering techniques"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "game_development.game_graphics.shader_programming",
+        "label": "Shader Programming",
+        "aliases": [
+            "shader programming",
+            "lap trinh shader",
+            "graphics shaders",
+            "shader development",
+            "phat trien shader"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "network_engineering",
+        "label": "Network Engineering",
+        "aliases": [
+            "network engineering",
+            "ky thuat mang",
+            "computer networks",
+            "mang may tinh",
+            "networking"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "network_engineering.network_protocols",
+        "label": "Network Protocols",
+        "aliases": [
+            "network protocols",
+            "giao thuc mang",
+            "communication protocols",
+            "giao thuc truyen thong",
+            "tcp ip"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "network_engineering.network_security",
+        "label": "Network Security",
+        "aliases": [
+            "network security",
+            "an ninh mang",
+            "network protection",
+            "bao ve mang",
+            "cybersecurity infrastructure"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "network_engineering.wireless_networks",
+        "label": "Wireless Networks",
+        "aliases": [
+            "wireless networks",
+            "mang khong day",
+            "wifi networks",
+            "mobile networks",
+            "mang di dong"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "network_engineering.network_protocols.routing_switching",
+        "label": "Routing and Switching",
+        "aliases": [
+            "routing and switching",
+            "dinh tuyen va chuyen mach",
+            "network routing",
+            "dinh tuyen mang",
+            "layer 3 switching"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "network_engineering.network_protocols.network_performance",
+        "label": "Network Performance Optimization",
+        "aliases": [
+            "network performance",
+            "toi uu hieu nang mang",
+            "network optimization",
+            "toi uu mang",
+            "qos"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "network_engineering.network_security.intrusion_detection",
+        "label": "Intrusion Detection Systems",
+        "aliases": [
+            "intrusion detection",
+            "phat hien xam nhap",
+            "ids",
+            "ips",
+            "he thong phat hien xam nhap"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "network_engineering.network_security.firewall_systems",
+        "label": "Firewall Systems",
+        "aliases": [
+            "firewall",
+            "tuong lua",
+            "network firewall",
+            "firewall configuration",
+            "cau hinh tuong lua"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "human_computer_interaction",
+        "label": "Human-Computer Interaction",
+        "aliases": [
+            "human computer interaction",
+            "hci",
+            "tuong tac nguoi may",
+            "user interaction",
+            "tuong tac nguoi dung"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "human_computer_interaction.user_experience",
+        "label": "User Experience Design",
+        "aliases": [
+            "user experience",
+            "ux design",
+            "trai nghiem nguoi dung",
+            "ux",
+            "thiet ke trai nghiem"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "human_computer_interaction.user_interface",
+        "label": "User Interface Design",
+        "aliases": [
+            "user interface",
+            "ui design",
+            "giao dien nguoi dung",
+            "interface design",
+            "thiet ke giao dien"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "human_computer_interaction.interaction_design",
+        "label": "Interaction Design",
+        "aliases": [
+            "interaction design",
+            "thiet ke tuong tac",
+            "ixd",
+            "interactive design",
+            "thiet ke tuong tac"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "human_computer_interaction.user_experience.usability_testing",
+        "label": "Usability Testing",
+        "aliases": [
+            "usability testing",
+            "kiem tra kha dung",
+            "user testing",
+            "kiem tra nguoi dung",
+            "usability evaluation"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "human_computer_interaction.user_experience.accessibility",
+        "label": "Accessibility Design",
+        "aliases": [
+            "accessibility",
+            "kha nang truy cap",
+            "inclusive design",
+            "thiet ke bao trum",
+            "universal design"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "human_computer_interaction.user_interface.visual_design",
+        "label": "Visual Design",
+        "aliases": [
+            "visual design",
+            "thiet ke thi giac",
+            "graphic design",
+            "thiet ke do hoa",
+            "interface aesthetics"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "extended_reality",
+        "label": "Extended Reality",
+        "aliases": [
+            "extended reality",
+            "xr",
+            "thuc tai mo rong",
+            "immersive technology",
+            "cong nghe dam chat"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "extended_reality.virtual_reality",
+        "label": "Virtual Reality",
+        "aliases": [
+            "virtual reality",
+            "vr",
+            "thuc tai ao",
+            "immersive vr",
+            "vr technology"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "extended_reality.augmented_reality",
+        "label": "Augmented Reality",
+        "aliases": [
+            "augmented reality",
+            "ar",
+            "thuc tai tang cuong",
+            "ar technology",
+            "cong nghe ar"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "extended_reality.mixed_reality",
+        "label": "Mixed Reality",
+        "aliases": [
+            "mixed reality",
+            "mr",
+            "thuc tai hon hop",
+            "hybrid reality",
+            "merged reality"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "extended_reality.virtual_reality.vr_applications",
+        "label": "VR Applications",
+        "aliases": [
+            "vr applications",
+            "ung dung vr",
+            "virtual reality apps",
+            "immersive applications",
+            "ung dung thuc tai ao"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "extended_reality.virtual_reality.vr_interaction",
+        "label": "VR Interaction Design",
+        "aliases": [
+            "vr interaction",
+            "tuong tac vr",
+            "virtual interaction",
+            "3d interaction",
+            "tuong tac 3d"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "extended_reality.augmented_reality.ar_applications",
+        "label": "AR Applications",
+        "aliases": [
+            "ar applications",
+            "ung dung ar",
+            "augmented apps",
+            "ar development",
+            "phat trien ar"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "bioinformatics",
+        "label": "Bioinformatics and Computational Biology",
+        "aliases": [
+            "bioinformatics",
+            "tin sinh hoc",
+            "computational biology",
+            "sinh hoc tinh toan",
+            "biological computing"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "bioinformatics.genomics",
+        "label": "Genomics and Genome Analysis",
+        "aliases": [
+            "genomics",
+            "gene hoc",
+            "genome analysis",
+            "phan tich gene",
+            "computational genomics"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "bioinformatics.proteomics",
+        "label": "Proteomics",
+        "aliases": [
+            "proteomics",
+            "protein hoc",
+            "protein analysis",
+            "phan tich protein",
+            "computational proteomics"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "bioinformatics.systems_biology",
+        "label": "Systems Biology",
+        "aliases": [
+            "systems biology",
+            "sinh hoc he thong",
+            "biological systems",
+            "he thong sinh hoc",
+            "integrative biology"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "bioinformatics.genomics.sequence_analysis",
+        "label": "Sequence Analysis",
+        "aliases": [
+            "sequence analysis",
+            "phan tich chuoi",
+            "dna sequencing",
+            "gene sequence",
+            "phan tich chuoi gene"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "bioinformatics.genomics.structural_biology",
+        "label": "Structural Biology",
+        "aliases": [
+            "structural biology",
+            "sinh hoc cau truc",
+            "protein structure",
+            "cau truc protein",
+            "molecular structure"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "robotics",
+        "label": "Robotics",
+        "aliases": [
+            "robotics",
+            "robot hoc",
+            "robotic systems",
+            "he thong robot",
+            "autonomous robots"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "robotics.mobile_robotics",
+        "label": "Mobile Robotics",
+        "aliases": [
+            "mobile robotics",
+            "robot di dong",
+            "autonomous navigation",
+            "dieu huong tu dong",
+            "robot navigation"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "robotics.manipulation",
+        "label": "Robot Manipulation",
+        "aliases": [
+            "robot manipulation",
+            "thao tac robot",
+            "robotic arms",
+            "tay robot",
+            "manipulation systems"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "robotics.human_robot_interaction",
+        "label": "Human-Robot Interaction",
+        "aliases": [
+            "human robot interaction",
+            "tuong tac nguoi robot",
+            "hri",
+            "collaborative robotics",
+            "robot cong tac"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "robotics.mobile_robotics.autonomous_vehicles",
+        "label": "Autonomous Vehicles",
+        "aliases": [
+            "autonomous vehicles",
+            "xe tu lai",
+            "self-driving cars",
+            "xe tu dong",
+            "autonomous driving"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "robotics.mobile_robotics.slam",
+        "label": "Simultaneous Localization and Mapping",
+        "aliases": [
+            "slam",
+            "localization and mapping",
+            "dinh vi va anh xa",
+            "robot mapping",
+            "ban do robot"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "robotics.manipulation.motion_planning",
+        "label": "Motion Planning",
+        "aliases": [
+            "motion planning",
+            "lap ke hoach chuyen dong",
+            "path planning",
+            "lap ke hoach duong di",
+            "trajectory planning"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "information_systems",
+        "label": "Information Systems",
+        "aliases": [
+            "information systems",
+            "he thong thong tin",
+            "is",
+            "enterprise systems",
+            "he thong doanh nghiep"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "information_systems.enterprise_resource_planning",
+        "label": "Enterprise Resource Planning",
+        "aliases": [
+            "erp",
+            "enterprise resource planning",
+            "lap ke hoach tai nguyen doanh nghiep",
+            "erp systems",
+            "he thong erp"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "information_systems.business_intelligence",
+        "label": "Business Intelligence",
+        "aliases": [
+            "business intelligence",
+            "tri thue kinh doanh",
+            "bi",
+            "business analytics",
+            "phan tich kinh doanh"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "information_systems.knowledge_management",
+        "label": "Knowledge Management",
+        "aliases": [
+            "knowledge management",
+            "quan ly tri thuc",
+            "km",
+            "knowledge systems",
+            "he thong tri thuc"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "information_systems.business_intelligence.data_warehousing",
+        "label": "Data Warehousing",
+        "aliases": [
+            "data warehousing",
+            "kho du lieu",
+            "data warehouse systems",
+            "he thong kho du lieu",
+            "enterprise data warehouse"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "information_systems.business_intelligence.reporting_analytics",
+        "label": "Reporting and Analytics",
+        "aliases": [
+            "reporting and analytics",
+            "bao cao va phan tich",
+            "business reporting",
+            "bao cao kinh doanh",
+            "analytics reporting"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "multimedia_systems",
+        "label": "Multimedia Systems",
+        "aliases": [
+            "multimedia systems",
+            "he thong da phuong tien",
+            "multimedia processing",
+            "xu ly da phuong tien",
+            "digital media"
+        ],
+        "depth": 0
+    },
+    {
+        "key": "multimedia_systems.audio_processing",
+        "label": "Audio Processing",
+        "aliases": [
+            "audio processing",
+            "xu ly am thanh",
+            "sound processing",
+            "digital audio",
+            "am thanh so"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "multimedia_systems.video_processing",
+        "label": "Video Processing",
+        "aliases": [
+            "video processing",
+            "xu ly video",
+            "video analysis",
+            "phan tich video",
+            "digital video"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "multimedia_systems.graphics_animation",
+        "label": "Graphics and Animation",
+        "aliases": [
+            "graphics and animation",
+            "do hoa va hoat hinh",
+            "computer graphics",
+            "do hoa may tinh",
+            "3d animation"
+        ],
+        "depth": 1
+    },
+    {
+        "key": "multimedia_systems.audio_processing.speech_recognition",
+        "label": "Speech Recognition",
+        "aliases": [
+            "speech recognition",
+            "nhan dang giong noi",
+            "voice recognition",
+            "nhan dang tieng noi",
+            "speech to text"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "multimedia_systems.audio_processing.audio_synthesis",
+        "label": "Audio Synthesis",
+        "aliases": [
+            "audio synthesis",
+            "tong hop am thanh",
+            "sound synthesis",
+            "music synthesis",
+            "tong hop am nhac"
+        ],
+        "depth": 2
+    },
+    {
+        "key": "multimedia_systems.video_processing.video_compression",
+        "label": "Video Compression",
+        "aliases": [
+            "video compression",
+            "nen video",
+            "video encoding",
+            "ma hoa video",
+            "video codecs"
+        ],
+        "depth": 2
+    }
+]

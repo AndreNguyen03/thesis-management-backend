@@ -1,7 +1,6 @@
 // application/recommendation.service.ts
 import { Injectable, Logger } from '@nestjs/common'
 import { ContentBasedPipeline } from '../pipelines/content-based-v2.pipeline'
-import { ConceptBasedTopicPipeline } from '../pipelines/concept-based-topic.pipeline'
 import { RecommendationResult } from '../dto/recommendation-response.dto'
 
 export interface RecommendationResponse {
@@ -21,7 +20,6 @@ export class RecommendationService {
     private readonly logger = new Logger(RecommendationService.name)
 
     constructor(
-        private readonly conceptPipeline: ConceptBasedTopicPipeline,
         private readonly semanticPipeline: ContentBasedPipeline
     ) {}
 
@@ -37,7 +35,7 @@ export class RecommendationService {
 
             // Default to concept-based pipeline
             const useSemantic = options?.useSemantic ?? false
-            const pipeline = useSemantic ? this.semanticPipeline : this.conceptPipeline
+            const pipeline = useSemantic ? this.semanticPipeline : this.semanticPipeline
 
             this.logger.debug(`Using ${useSemantic ? 'SEMANTIC' : 'CONCEPT'} pipeline`)
 

@@ -1,0 +1,789 @@
+[
+    {
+        "key": "ai_data_science",
+        "label": "Artificial Intelligence and Data Science",
+        "aliases": [
+            "ai",
+            "data science",
+            "artificial intelligence",
+            "tri tue nhan tao",
+            "khoa hoc du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence",
+        "label": "Artificial Intelligence",
+        "aliases": [
+            "artificial intelligence",
+            "ai",
+            "tri tue nhan tao"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning",
+        "label": "Machine Learning",
+        "aliases": [
+            "machine learning",
+            "ml",
+            "hoc may"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.supervised_learning",
+        "label": "Supervised Learning",
+        "aliases": [
+            "supervised learning",
+            "hoc co giam sat"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.unsupervised_learning",
+        "label": "Unsupervised Learning",
+        "aliases": [
+            "unsupervised learning",
+            "hoc khong giam sat"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.reinforcement_learning",
+        "label": "Reinforcement Learning",
+        "aliases": [
+            "reinforcement learning",
+            "rl",
+            "hoc tang cuong"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.federated_learning",
+        "label": "Federated Learning",
+        "aliases": [
+            "federated learning"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning",
+        "label": "Deep Learning",
+        "aliases": [
+            "deep learning",
+            "dl"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.cnn",
+        "label": "Convolutional Neural Networks",
+        "aliases": [
+            "cnn",
+            "convolutional neural network"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.rnn",
+        "label": "Recurrent Neural Networks",
+        "aliases": [
+            "rnn",
+            "recurrent neural network"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.transformer_models",
+        "label": "Transformer Models",
+        "aliases": [
+            "transformer",
+            "attention model",
+            "transformer architecture"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing",
+        "label": "Natural Language Processing",
+        "aliases": [
+            "nlp",
+            "natural language processing",
+            "xu ly ngon ngu tu nhien"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.large_language_models",
+        "label": "Large Language Models",
+        "aliases": [
+            "llm",
+            "large language model"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision",
+        "label": "Computer Vision",
+        "aliases": [
+            "computer vision",
+            "cv",
+            "thi giac may tinh"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science",
+        "label": "Data Science",
+        "aliases": [
+            "data science",
+            "khoa hoc du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_analysis",
+        "label": "Data Analysis",
+        "aliases": [
+            "data analysis",
+            "phan tich du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_mining",
+        "label": "Data Mining",
+        "aliases": [
+            "data mining",
+            "khai pha du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data",
+        "label": "Big Data",
+        "aliases": [
+            "big data",
+            "du lieu lon"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.streaming_data_processing",
+        "label": "Streaming Data Processing",
+        "aliases": [
+            "streaming",
+            "stream processing",
+            "real time data"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering",
+        "label": "Data Engineering",
+        "aliases": [
+            "data engineering",
+            "ky thuat du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems",
+        "label": "Applied AI Systems",
+        "aliases": [
+            "applied ai",
+            "ung dung ai",
+            "intelligent systems"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.recommendation_systems",
+        "label": "Recommendation Systems",
+        "aliases": [
+            "recommendation system",
+            "he thong goi y"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.intelligent_information_systems",
+        "label": "Intelligent Information Systems",
+        "aliases": [
+            "intelligent information system"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.ai_in_industry",
+        "label": "AI in Industry",
+        "aliases": [
+            "ai in industry",
+            "industrial ai"
+        ]
+    },
+    {
+        "key": "software_engineering",
+        "label": "Software Engineering",
+        "aliases": [
+            "software engineering",
+            "cong nghe phan mem",
+            "ky thuat phan mem"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development",
+        "label": "Web Development",
+        "aliases": [
+            "web development",
+            "phat trien web",
+            "web application",
+            "ung dung web"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.frontend_development",
+        "label": "Frontend Development",
+        "aliases": [
+            "frontend",
+            "frontend development",
+            "client side",
+            "ui development",
+            "react",
+            "vue",
+            "angular",
+            "next.js"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.backend_development",
+        "label": "Backend Development",
+        "aliases": [
+            "backend",
+            "backend development",
+            "server side",
+            "api development",
+            "nodejs",
+            "nestjs",
+            "spring boot",
+            "django",
+            "flask"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.fullstack_development",
+        "label": "Full-stack Development",
+        "aliases": [
+            "fullstack",
+            "full stack",
+            "frontend backend",
+            "end to end web"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development",
+        "label": "Mobile Application Development",
+        "aliases": [
+            "mobile development",
+            "ung dung di dong",
+            "android",
+            "ios",
+            "mobile app",
+            "flutter",
+            "react native"
+        ]
+    },
+    {
+        "key": "software_engineering.game_development",
+        "label": "Game Development",
+        "aliases": [
+            "game development",
+            "lap trinh game",
+            "phat trien game",
+            "unity",
+            "unreal engine",
+            "game engine"
+        ]
+    },
+    {
+        "key": "software_engineering.desktop_application",
+        "label": "Desktop Application Development",
+        "aliases": [
+            "desktop application",
+            "phan mem desktop",
+            "ung dung may tinh",
+            "electron",
+            "qt",
+            "wpf",
+            "winforms"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture",
+        "label": "Software Architecture",
+        "aliases": [
+            "software architecture",
+            "kien truc phan mem",
+            "thiet ke he thong",
+            "system architecture",
+            "microservices",
+            "monolithic architecture"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems",
+        "label": "Distributed Systems",
+        "aliases": [
+            "distributed systems",
+            "he thong phan tan",
+            "distributed computing",
+            "phan tan"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems",
+        "label": "Blockchain Systems",
+        "aliases": [
+            "blockchain",
+            "blockchain systems",
+            "distributed ledger",
+            "he thong blockchain",
+            "cong nghe blockchain",
+            "web3"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.smart_contracts",
+        "label": "Smart Contracts",
+        "aliases": [
+            "smart contract",
+            "hop dong thong minh",
+            "on-chain contract"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.decentralized_applications",
+        "label": "Decentralized Applications",
+        "aliases": [
+            "decentralized application",
+            "dapp",
+            "ung dung phan tan"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.consensus_mechanisms",
+        "label": "Consensus Mechanisms",
+        "aliases": [
+            "consensus mechanism",
+            "dong thuan",
+            "proof of work",
+            "proof of stake",
+            "byzantine fault tolerance",
+            "bft"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.blockchain_security",
+        "label": "Blockchain Security",
+        "aliases": [
+            "blockchain security",
+            "bao mat blockchain",
+            "smart contract security",
+            "on-chain security"
+        ]
+    },
+    {
+        "key": "ai_data_science",
+        "label": "Artificial Intelligence and Data Science",
+        "aliases": [
+            "ai",
+            "data science",
+            "artificial intelligence",
+            "tri tue nhan tao",
+            "khoa hoc du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence",
+        "label": "Artificial Intelligence",
+        "aliases": [
+            "artificial intelligence",
+            "ai",
+            "tri tue nhan tao"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning",
+        "label": "Machine Learning",
+        "aliases": [
+            "machine learning",
+            "ml",
+            "hoc may"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.supervised_learning",
+        "label": "Supervised Learning",
+        "aliases": [
+            "supervised learning",
+            "hoc co giam sat"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.unsupervised_learning",
+        "label": "Unsupervised Learning",
+        "aliases": [
+            "unsupervised learning",
+            "hoc khong giam sat"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.reinforcement_learning",
+        "label": "Reinforcement Learning",
+        "aliases": [
+            "reinforcement learning",
+            "rl",
+            "hoc tang cuong"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.federated_learning",
+        "label": "Federated Learning",
+        "aliases": [
+            "federated learning"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning",
+        "label": "Deep Learning",
+        "aliases": [
+            "deep learning",
+            "dl"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.cnn",
+        "label": "Convolutional Neural Networks",
+        "aliases": [
+            "cnn",
+            "convolutional neural network"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.rnn",
+        "label": "Recurrent Neural Networks",
+        "aliases": [
+            "rnn",
+            "recurrent neural network"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.transformer_models",
+        "label": "Transformer Models",
+        "aliases": [
+            "transformer",
+            "attention model",
+            "transformer architecture"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing",
+        "label": "Natural Language Processing",
+        "aliases": [
+            "nlp",
+            "natural language processing",
+            "xu ly ngon ngu tu nhien"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.large_language_models",
+        "label": "Large Language Models",
+        "aliases": [
+            "llm",
+            "large language model"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision",
+        "label": "Computer Vision",
+        "aliases": [
+            "computer vision",
+            "cv",
+            "thi giac may tinh"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science",
+        "label": "Data Science",
+        "aliases": [
+            "data science",
+            "khoa hoc du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_analysis",
+        "label": "Data Analysis",
+        "aliases": [
+            "data analysis",
+            "phan tich du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_mining",
+        "label": "Data Mining",
+        "aliases": [
+            "data mining",
+            "khai pha du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data",
+        "label": "Big Data",
+        "aliases": [
+            "big data",
+            "du lieu lon"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.streaming_data_processing",
+        "label": "Streaming Data Processing",
+        "aliases": [
+            "streaming",
+            "stream processing",
+            "real time data"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering",
+        "label": "Data Engineering",
+        "aliases": [
+            "data engineering",
+            "ky thuat du lieu"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems",
+        "label": "Applied AI Systems",
+        "aliases": [
+            "applied ai",
+            "ung dung ai",
+            "intelligent systems"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.recommendation_systems",
+        "label": "Recommendation Systems",
+        "aliases": [
+            "recommendation system",
+            "he thong goi y"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.intelligent_information_systems",
+        "label": "Intelligent Information Systems",
+        "aliases": [
+            "intelligent information system"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.ai_in_industry",
+        "label": "AI in Industry",
+        "aliases": [
+            "ai in industry",
+            "industrial ai"
+        ]
+    },
+    {
+        "key": "software_engineering",
+        "label": "Software Engineering",
+        "aliases": [
+            "software engineering",
+            "cong nghe phan mem",
+            "ky thuat phan mem"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development",
+        "label": "Web Development",
+        "aliases": [
+            "web development",
+            "phat trien web",
+            "web application",
+            "ung dung web"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.frontend_development",
+        "label": "Frontend Development",
+        "aliases": [
+            "frontend",
+            "frontend development",
+            "client side",
+            "ui development",
+            "react",
+            "vue",
+            "angular",
+            "next.js"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.backend_development",
+        "label": "Backend Development",
+        "aliases": [
+            "backend",
+            "backend development",
+            "server side",
+            "api development",
+            "nodejs",
+            "nestjs",
+            "spring boot",
+            "django",
+            "flask"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.fullstack_development",
+        "label": "Full-stack Development",
+        "aliases": [
+            "fullstack",
+            "full stack",
+            "frontend backend",
+            "end to end web"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development",
+        "label": "Mobile Application Development",
+        "aliases": [
+            "mobile development",
+            "ung dung di dong",
+            "android",
+            "ios",
+            "mobile app",
+            "flutter",
+            "react native"
+        ]
+    },
+    {
+        "key": "software_engineering.game_development",
+        "label": "Game Development",
+        "aliases": [
+            "game development",
+            "lap trinh game",
+            "phat trien game",
+            "unity",
+            "unreal engine",
+            "game engine"
+        ]
+    },
+    {
+        "key": "software_engineering.desktop_application",
+        "label": "Desktop Application Development",
+        "aliases": [
+            "desktop application",
+            "phan mem desktop",
+            "ung dung may tinh",
+            "electron",
+            "qt",
+            "wpf",
+            "winforms"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture",
+        "label": "Software Architecture",
+        "aliases": [
+            "software architecture",
+            "kien truc phan mem",
+            "thiet ke he thong",
+            "system architecture",
+            "microservices",
+            "monolithic architecture",
+            "architecture",
+            "system"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems",
+        "label": "Distributed Systems",
+        "aliases": [
+            "distributed systems",
+            "he thong phan tan",
+            "distributed computing",
+            "phan tan"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems",
+        "label": "Blockchain Systems",
+        "aliases": [
+            "blockchain",
+            "blockchain systems",
+            "distributed ledger",
+            "he thong blockchain",
+            "cong nghe blockchain",
+            "web3"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.smart_contracts",
+        "label": "Smart Contracts",
+        "aliases": [
+            "smart contract",
+            "hop dong thong minh",
+            "on-chain contract"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.decentralized_applications",
+        "label": "Decentralized Applications",
+        "aliases": [
+            "decentralized application",
+            "dapp",
+            "ung dung phan tan"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.consensus_mechanisms",
+        "label": "Consensus Mechanisms",
+        "aliases": [
+            "consensus mechanism",
+            "dong thuan",
+            "proof of work",
+            "proof of stake",
+            "byzantine fault tolerance",
+            "bft"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.distributed_systems.blockchain_systems.blockchain_security",
+        "label": "Blockchain Security",
+        "aliases": [
+            "blockchain security",
+            "bao mat blockchain",
+            "smart contract security",
+            "on-chain security"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_processing.image_segmentation",
+        "label": "Image Segmentation",
+        "aliases": [
+            "image segmentation",
+            "phan doan anh"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_processing.feature_extraction",
+        "label": "Feature Extraction",
+        "aliases": [
+            "feature extraction",
+            "trich xuat dac trung"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_processing.feature_extraction",
+        "label": "Feature Extraction",
+        "aliases": [
+            "feature extraction",
+            "trich xuat dac trung"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.video_analysis",
+        "label": "Video Analysis",
+        "aliases": [
+            "video analysis",
+            "xu ly video",
+            "video processing"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.signal_processing",
+        "label": "Signal Processing",
+        "aliases": [
+            "signal processing",
+            "digital signal processing",
+            "xu ly tin hieu",
+            "dsp"
+        ]
+    }
+]

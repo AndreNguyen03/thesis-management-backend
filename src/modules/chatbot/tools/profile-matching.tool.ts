@@ -1,11 +1,10 @@
 import { DynamicStructuredTool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { Injectable } from '@nestjs/common'
-import { ProfileMatchingProvider } from '../../matching/providers/profile-matching.provider'
 
 @Injectable()
 export class ProfileMatchingTool {
-    constructor(private readonly profileMatchingProvider: ProfileMatchingProvider) {}
+    constructor() {}
 
     createTool(): DynamicStructuredTool {
         return new DynamicStructuredTool({
@@ -34,41 +33,7 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                 userId: z.string().optional().describe('ID của sinh viên')
             }) as any,
             func: async ({ query, limit, userId }) => {
-                try {
-                    console.log('👨‍🏫 [LECTURER TOOL] Searching lecturers:', { query, userId, limit })
-
-                    const result = await this.profileMatchingProvider.matchLecturersForStudent(userId, query, limit)
-
-                    return JSON.stringify(
-                        {
-                            total: result.total,
-                            profileSummary: result.profileSummary,
-                            lecturers: result.lecturers.map(l => ({
-                                index: l.index,
-                                name: l.fullName,
-                                email: l.email,
-                                title: l.title,
-                                faculty: l.faculty?.name,
-                                areaInterest: l.areaInterest,
-                                researchInterests: l.researchInterests,
-                                score: l.score,
-                                conceptCount: l.conceptCount,
-                                matchedConcepts: l.matchedConcepts,
-                                matchReason: l.matchReason
-                            }))
-                        },
-                        null,
-                        2
-                    )
-                } catch (error) {
-                    console.error('❌ [LECTURER TOOL] Error:', error)
-                    return error.message || 'Lỗi khi tìm giảng viên'
-                }
-            }
-        })
-    }
-}
-
+//                 try {
 //                     const res = await this.searchProvider.searchSimilarDocuments(queryVector, {
 //                         sourceTypes: [SourceType.LECTURER_PROFILE],
 //                         limit: limit * 2, // Lấy nhiều chunks để có nhiều lecturer
@@ -239,7 +204,8 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
 //                     console.error('❌ [LECTURER TOOL] Error:', error)
 //                     return `Lỗi khi tìm giảng viên: ${error.message}`
 //                 }
-//             }
-//         })
-//     }
-// }
+                return 'Chức năng đang được phát triển.'
+            }
+        })
+    }
+}
