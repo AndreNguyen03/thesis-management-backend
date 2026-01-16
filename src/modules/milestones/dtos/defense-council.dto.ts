@@ -225,6 +225,12 @@ export class PublishCouncilDto {
     sendEmail?: boolean = true
 }
 
+// DTO cập nhật ý kiến hội đồng
+export class UpdateCouncilCommentsDto {
+    @IsString()
+    councilComments: string
+}
+
 // DTO cập nhật thông tin hội đồng
 export class UpdateDefenseCouncilDto {
     @IsString()

@@ -16,7 +16,8 @@ import {
     UpdateDefenseCouncilDto,
     UpdateTopicMembersDto,
     UpdateTopicOrderDto,
-    SubmitTopicScoresDto
+    SubmitTopicScoresDto,
+    UpdateCouncilCommentsDto
 } from './dtos/defense-council.dto'
 import { SaveDraftScoreDto, SubmitDetailedScoreDto } from './dtos/detailed-score.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
@@ -71,6 +72,24 @@ export class DefenseCouncilController {
         const council = await this.defenseCouncilService.updateCouncil(councilId, dto)
         return {
             message: 'Cập nhật hội đồng thành công',
+            data: council
+        }
+    }
+
+    // Cập nhật ý kiến trao đổi của hội đồng
+    @Patch(':councilId/comments')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    @CouncilRoles('secretary') // Chỉ thư ký mới được sửa
+    @UseGuards(CouncilRoleGuard)
+    async updateCouncilComments(
+        @Param('councilId') councilId: string,
+        @Body() dto: UpdateCouncilCommentsDto,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const council = await this.defenseCouncilService.updateCouncilComments(councilId, dto.councilComments)
+        return {
+            message: 'Đã lưu ý kiến hội đồng thành công',
             data: council
         }
     }
@@ -359,6 +378,48 @@ export class DefenseCouncilController {
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': `attachment; filename="PhieuDiem_${topicId}.pdf"`,
+            'Content-Length': pdf.length
+        })
+        res.end(pdf)
+    }
+
+    @Get(':councilId/topics/:topicId/evaluation-form-pdf')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async exportEvaluationForm(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Req() req: { user: ActiveUserData },
+        @Res() res: Response
+    ) {
+        const pdf = await this.defenseCouncilService.generateEvaluationFormPdf(councilId, topicId, req.user.sub)
+
+        const filename = `PhieuDanhGia_${topicId}.pdf`
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${filename}"`,
+            'Content-Length': pdf.length
+        })
+        res.end(pdf)
+    }
+
+    // Xuất biên bản hội đồng PDF
+    @Get(':councilId/topics/:topicId/council-minutes-pdf')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async exportCouncilMinutes(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Res() res: Response
+    ) {
+        const pdf = await this.defenseCouncilService.generateCouncilMinutesPdf(councilId, topicId)
+
+        const filename = `BienBan_${topicId}.pdf`
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': `attachment; filename="${filename}"`,
             'Content-Length': pdf.length
         })
         res.end(pdf)

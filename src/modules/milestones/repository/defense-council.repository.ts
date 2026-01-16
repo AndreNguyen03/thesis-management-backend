@@ -219,7 +219,8 @@ export class DefenseCouncilRepository {
                         semester: '$periodInfo.semester',
                         currentPhase: '$periodInfo.currentPhase',
                         faculty: '$facultyInfo'
-                    }
+                    },
+                    evaluationTemplateId: 1
                 }
             }
         )
@@ -237,6 +238,23 @@ export class DefenseCouncilRepository {
             .findOneAndUpdate(
                 { _id: new mongoose.Types.ObjectId(councilId), deleted_at: null },
                 { $set: dto },
+                { new: true }
+            )
+            .exec()
+
+        if (!council) {
+            throw new NotFoundException('Không tìm thấy hội đồng bảo vệ')
+        }
+
+        return council
+    }
+
+    // Cập nhật ý kiến hội đồng
+    async updateCouncilComments(councilId: string, councilComments: string): Promise<DefenseCouncil> {
+        const council = await this.defenseCouncilModel
+            .findOneAndUpdate(
+                { _id: new mongoose.Types.ObjectId(councilId), deleted_at: null },
+                { $set: { councilComments } },
                 { new: true }
             )
             .exec()

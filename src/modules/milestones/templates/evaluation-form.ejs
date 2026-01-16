@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Đánh Giá KLTN - UIT</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.3;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 2cm 2cm 2cm 2cm;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        
+        .header-table td {
+            vertical-align: top;
+            text-align: center;
+        }
+
+        .org-name {
+            font-size: 11pt;
+            text-transform: uppercase;
+        }
+
+        .school-name {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: underline;
+        }
+
+        .motto {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .sub-motto {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 5px;
+            text-decoration: underline;
+        }
+
+        .doc-id {
+            text-align: right;
+            font-size: 10pt;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 20px 0;
+        }
+
+        /* Administrative Info */
+        .admin-info {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .admin-row {
+            margin-bottom: 8px;
+        }
+
+        /* Student Table */
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0 25px 0;
+        }
+
+        .student-table th, .student-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .student-table th {
+            font-weight: bold;
+        }
+
+        /* Evaluation Table */
+        .criteria-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .criteria-table th, .criteria-table td {
+            border: 1px solid black;
+            padding: 5px;
+            vertical-align: middle;
+        }
+
+        .criteria-table th {
+            font-weight: bold;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        .criteria-table .stt-col { width: 40px; text-align: center; }
+        .criteria-table .score-col { width: 80px; text-align: center; }
+        .criteria-table .elo-col { width: 80px; text-align: center; }
+        
+        .main-criterion td {
+            font-weight: bold;
+        }
+
+        /* Footer / Signatures */
+        .footer-table {
+            width: 100%;
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+
+        .footer-table td {
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-title {
+            font-weight: bold;
+            font-size: 13pt;
+        }
+
+        .signature-note {
+            font-style: italic;
+            font-size: 11pt;
+        }
+
+        .signature-space {
+            height: 100px;
+        }
+
+        /* Utility */
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="doc-id">KLTN-7</div>
+
+        <table class="header-table">
+            <tr>
+                <td width="50%">
+                    <div class="org-name">ĐẠI HỌC QUỐC GIA TP.HCM</div>
+                    <div class="school-name">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN</div>
+                </td>
+                <td width="50%">
+                    <div class="motto">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                    <div class="sub-motto">Độc lập – Tự do – Hạnh phúc</div>
+                </td>
+            </tr>
+        </table>
+
+        <h1>PHIẾU ĐÁNH GIÁ KHÓA LUẬN TỐT NGHIỆP</h1>
+
+        <div class="admin-info">
+            <div class="admin-row">
+                Hội đồng chấm khóa luận tốt nghiệp, thành lập theo Quyết định số: .................... ngày ....................
+            </div>
+            <div class="admin-row">
+                của Hiệu trưởng Trường Đại học Công nghệ Thông tin.
+            </div>
+            <div class="admin-row">
+                Ngày họp hội đồng: <span><%= scheduledDate %></span>
+            </div>
+            <div class="admin-row">
+                Để đánh giá khóa luận tốt nghiệp, Hội đồng Chính quy khoa: <strong><%= facultyName %></strong>
+            </div>
+            <div class="admin-row">
+                Với đề tài: <strong><%= topicTitle %></strong>
+            </div>
+            <% if (topicTitleEng) { %>
+            <div class="admin-row">
+                (Tiếng Anh: <em><%= topicTitleEng %></em>)
+            </div>
+            <% } %>
+            <div class="admin-row">
+                Do sinh viên/nhóm sinh viên thực hiện:
+            </div>
+        </div>
+
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th>Họ và tên</th>
+                    <th style="width: 150px;">MSSV</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% students.forEach((student, index) => { %>
+                <tr>
+                    <td><%= index + 1 %></td>
+                    <td style="text-align: left; padding-left: 15px;"><%= student.fullName %></td>
+                    <td><%= student.studentCode %></td>
+                </tr>
+                <% }); %>
+                <% if (students.length === 0) { %>
+                <tr><td>1</td><td></td><td></td></tr>
+                <tr><td>2</td><td></td><td></td></tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <div style="font-weight: bold; margin: 20px 0 10px 0; text-transform: uppercase;">
+            PHẦN CHẤM ĐIỂM DÀNH CHO THÀNH VIÊN HỘI ĐỒNG
+        </div>
+
+        <table class="criteria-table">
+            <thead>
+                <tr>
+                    <th class="stt-col" rowspan="2">STT</th>
+                    <th rowspan="2">Tiêu chí</th>
+                    <% students.forEach((student, index) => { %>
+                        <th class="score-col">Điểm SV<%= index + 1 %></th>
+                    <% }); %>
+                    <% if (students.length === 0) { %>
+                        <th class="score-col">Điểm SV1</th>
+                        <th class="score-col">Điểm SV2</th>
+                    <% } %>
+                    <th class="elo-col" rowspan="2">ELOS</th>
+                </tr>
+                </thead>
+            <tbody>
+                <% criteria.forEach((criterion, idx) => { %>
+                    <tr class="main-criterion">
+                        <td class="stt-col"><%= idx + 1 %>.</td>
+                        <td><%= criterion.category %></td>
+                        
+                        <% criterion.scores.forEach((score, sIdx) => { %>
+                            <td class="text-center">
+                               <strong><%= score %></strong> / <strong><%= criterion.maxScore %></strong>
+                            </td>
+                        <% }); %>
+                        <% if (students.length === 0) { %><td>.../3.0</td><td>.../3.0</td><% } %>
+                        
+                        <td class="text-center"><%= criterion.elos %></td>
+                    </tr>
+
+                    <% if (criterion.subcriteria) { %>
+                        <% criterion.subcriteria.forEach((sub, subIdx) => { %>
+                        <tr>
+                            <td class="stt-col"><%= idx + 1 %>.<%= subIdx + 1 %></td>
+                            <td style="padding-left: 20px;">
+                                <%= sub.name %>
+                                <br>
+                            </td>
+                            
+                            <% students.forEach((student, sIdx) => { %>
+                                <td class="text-center">
+                                    <% 
+                                        let displayScore = "....";
+                                        if (sub.scores && sub.scores[sIdx] !== undefined) displayScore = sub.scores[sIdx];
+                                        else if (sub.score !== undefined && sIdx === 0) displayScore = sub.score; 
+                                    %>
+                                    <%= displayScore %>
+                                </td>
+                            <% }); %>
+                            <% if (students.length === 0) { %><td>...</td><td>...</td><% } %>
+
+                            <td class="text-center"><%= sub.elos || '' %></td>
+                        </tr>
+                        <% }); %>
+                    <% } %>
+                <% }); %>
+                
+                <tr style="font-weight: bold; background-color: #f8f9fa;">
+                    <td colspan="2" style="text-align: center;">TỔNG ĐIỂM</td>
+                     <% students.forEach((student, sIdx) => { %>
+                        <td class="text-center">
+                            <%= totalScores ? (totalScores[sIdx] || '....') : '....' %> / 10.0
+                        </td>
+                    <% }); %>
+                    <% if (students.length === 0) { %><td></td><td></td><% } %>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="footer-table">
+            <tr>
+                <td width="50%"></td> <td width="50%">
+                    <div class="signature-note">Tp. Hồ Chí Minh, ngày <%= signatureDate.day %> tháng <%= signatureDate.month %> năm <%= signatureDate.year %></div>
+                    <div class="signature-title">Người chấm</div>
+                    <div class="signature-note">(Ký và ghi rõ họ tên, chức vụ trong Hội đồng)</div>
+                    <div style="font-weight: bold; margin-top: 5px;"><%= evaluatorRole %></div>
+
+                    <div class="signature-space">
+                        </div>
+                    
+                    <div style="font-weight: bold; display:flex; justify-content: center; gap: 2em; "><%= titleName %> <%= evaluatorName %></div>
+            
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

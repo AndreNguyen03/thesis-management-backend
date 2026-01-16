@@ -65,6 +65,11 @@ export class DefenseCouncilService {
         return await this.defenseCouncilRepository.updateCouncil(councilId, dto)
     }
 
+    // Cập nhật ý kiến hội đồng
+    async updateCouncilComments(councilId: string, councilComments: string): Promise<DefenseCouncil> {
+        return await this.defenseCouncilRepository.updateCouncilComments(councilId, councilComments)
+    }
+
     // Xóa hội đồng
     async deleteCouncil(councilId: string): Promise<void> {
         await this.defenseCouncilRepository.deleteCouncil(councilId)
@@ -271,6 +276,14 @@ export class DefenseCouncilService {
         return await this.defensePdfProvider.generateTopicScoreCard(councilId, topicId)
     }
 
+    async generateEvaluationFormPdf(councilId: string, topicId: string, scorerId: string): Promise<Buffer> {
+        return await this.defensePdfProvider.generateEvaluationFormPdf(councilId, topicId, scorerId)
+    }
+
+    async generateCouncilMinutesPdf(councilId: string, topicId: string): Promise<Buffer> {
+        return await this.defensePdfProvider.generateCouncilMinutesPdf(councilId, topicId)
+    }
+
     // Phase 4: Analytics
     async getCouncilAnalytics(councilId: string): Promise<CouncilAnalytics> {
         return await this.defenseAnalyticsProvider.getCouncilAnalytics(councilId)
@@ -466,17 +479,16 @@ export class DefenseCouncilService {
         }
         console.log('topic found')
         // Tìm score của user hiện tại
-        const myScore = topic.scores?.map(
-            (s) =>{if(
-
-                s.scorerId.toString() === scorerId && (studentId ? s.studentId?.toString() === studentId : !studentId)
-
-            ) return s}
-        )
+        const myScore = topic.scores?.map((s) => {
+            if (s.scorerId.toString() === scorerId && (studentId ? s.studentId?.toString() === studentId : !studentId))
+                return s
+        })
         console.log('myScore', myScore)
-        return myScore.length > 0 ? myScore.map(mc => ({
-            studentId: mc?.studentId,
-            scoreState: toScoreState(mc?.detailedScores)
-        })) : null
+        return myScore.length > 0
+            ? myScore.map((mc) => ({
+                  studentId: mc?.studentId,
+                  scoreState: toScoreState(mc?.detailedScores)
+              }))
+            : null
     }
 }

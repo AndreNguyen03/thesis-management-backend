@@ -126,7 +126,7 @@ export class Score {
     detailedScores?: DetailedCriterionScore[] // Optional để tương thích với data cũ
 
     // Nếu chấm riêng từng sinh viên trong nhóm
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name})
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name })
     studentId?: string // Optional - chỉ dùng khi topic có nhiều SV và chấm riêng
 
     @Prop({ type: Date, default: Date.now })
@@ -226,6 +226,9 @@ export class DefenseCouncil extends BaseEntity {
 
     @Prop({ type: Date })
     publishedAt?: Date
+
+    @Prop({ type: String, default: '' })
+    councilComments?: string // Ý kiến trao đổi của hội đồng (rich text HTML)
 }
 
 export const DefenseCouncilSchema = SchemaFactory.createForClass(DefenseCouncil)

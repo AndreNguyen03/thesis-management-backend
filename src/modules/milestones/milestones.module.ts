@@ -24,6 +24,7 @@ import { MailModule } from '../../mail/mail.module'
 import { StudentRegisterTopic, StudentRegisterTopicSchema } from '../registrations/schemas/ref_students_topics.schemas'
 import { UsersModule } from '../../users/users.module'
 import { EvaluationTemplatesModule } from '../evaluation-templates/evaluation-templates.module'
+import { EvaluationTemplate, EvaluationTemplateSchema } from './schemas/evaluation-template.schema'
 
 @Module({
     controllers: [MilestonesController, DefenseCouncilController],
@@ -47,7 +48,8 @@ import { EvaluationTemplatesModule } from '../evaluation-templates/evaluation-te
             { name: Topic.name, schema: TopicSchema },
             { name: DefenseCouncil.name, schema: DefenseCouncilSchema },
             { name: DraftScore.name, schema: DraftScoreSchema },
-            { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema }
+            { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
+            { name: EvaluationTemplate.name, schema: EvaluationTemplateSchema }
         ]),
         UploadFilesModule,
         TodolistsModule,
