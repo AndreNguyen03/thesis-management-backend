@@ -10,6 +10,18 @@ Hệ thống matching hoàn chỉnh với 3 pipelines:
 2. **MATCH** - Match dựa trên leaf-level concepts với weighted scoring
 3. **EVOLUTION** - Phát hiện và gợi ý concepts mới
 
+## ⚠️ IMPORTANT: Text Normalization Update
+
+**All services now normalize text before generating embeddings** (Vietnamese diacritics removal, lowercase, etc.)
+
+**After pulling latest code, you MUST re-seed concepts:**
+
+```bash
+npm run ts-node scripts/ingest-concepts-standalone.ts
+```
+
+This ensures concept embeddings match the normalized query embeddings from students/lecturers.
+
 ## 📦 Files Đã Tạo
 
 ### Core Modules (backend/scripts/matching/)

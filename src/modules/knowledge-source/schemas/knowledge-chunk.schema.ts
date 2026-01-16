@@ -11,13 +11,15 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 })
 @Schema({ collection: 'knowledge_chunks' })
 export class KnowledgeChunk extends BaseEntity {
-    // Liên kết chunk tới tài liệu gốc
+    // Liên kết chunk tới knowledge source gốc
     @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'KnowledgeSource' })
     source_id: string
+
     @Prop({ required: true })
     text: string
+
     @Prop({ required: true, type: [Number] })
-    plot_embedding_gemini_large: number[] // Đổi tên cho tổng quát
+    plot_embedding_gemini_large: number[]
 }
 
 export const KnowledgeChunkSchema = SchemaFactory.createForClass(KnowledgeChunk)

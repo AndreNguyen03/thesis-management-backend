@@ -13,26 +13,26 @@ const concepts = JSON.parse(fs.readFileSync(ontologyPath, 'utf-8'))
 
 // Test data (lecturer interests)
 const testQueries = [
-    "Cloud Computing (Điện toán đám mây)",
-    "Digital Transformation (Chuyển đổi số)",
-    "Software Engineering (Công nghệ phần mềm)",
-    "Large-scale Computing (Hệ thống lớn)",
-    "Smart Application Development (Phát triển ứng dụng thông minh)",
-    "Artificial Intelligence (AI)",
-    "Data Science",
-    "Big Data",
-    "Large Language Model",
-    "Machine Learning",
-    "Deep Learning",
-    "Neural Networks",
-    "Computer Vision",
-    "Natural Language Processing",
-    "Blockchain Technology",
-    "Internet of Things",
-    "Quantum Computing",
-    "Cybersecurity",
-    "Game Development",
-    "Virtual Reality"
+    'Cloud Computing (Điện toán đám mây)',
+    'Digital Transformation (Chuyển đổi số)',
+    'Software Engineering (Công nghệ phần mềm)',
+    'Large-scale Computing (Hệ thống lớn)',
+    'Smart Application Development (Phát triển ứng dụng thông minh)',
+    'Artificial Intelligence (AI)',
+    'Data Science',
+    'Big Data',
+    'Large Language Model',
+    'Machine Learning',
+    'Deep Learning',
+    'Neural Networks',
+    'Computer Vision',
+    'Natural Language Processing',
+    'Blockchain Technology',
+    'Internet of Things',
+    'Quantum Computing',
+    'Cybersecurity',
+    'Game Development',
+    'Virtual Reality'
 ]
 
 console.log('='.repeat(80))
@@ -44,15 +44,15 @@ console.log('='.repeat(80))
 console.log()
 
 // Method 1: Sequential scan (O(n*m))
-function sequentialScan(query: string, concepts: any[]): Array<{key: string, alias: string, score: number}> {
+function sequentialScan(query: string, concepts: any[]): Array<{ key: string; alias: string; score: number }> {
     const processed = preprocessText(query)
-    const tokens = processed.split(' ').filter(t => t.length > 0)
-    const matches: Array<{key: string, alias: string, score: number}> = []
+    const tokens = processed.split(' ').filter((t) => t.length > 0)
+    const matches: Array<{ key: string; alias: string; score: number }> = []
 
     for (const concept of concepts) {
         for (const alias of concept.aliases) {
             const processedAlias = preprocessText(alias)
-            
+
             // Exact match
             if (processed === processedAlias) {
                 matches.push({ key: concept.key, alias, score: 1.0 })
@@ -61,19 +61,20 @@ function sequentialScan(query: string, concepts: any[]): Array<{key: string, ali
 
             // Substring match
             if (processed.includes(processedAlias) || processedAlias.includes(processed)) {
-                const similarity = Math.min(processed.length, processedAlias.length) / 
-                                  Math.max(processed.length, processedAlias.length)
+                const similarity =
+                    Math.min(processed.length, processedAlias.length) /
+                    Math.max(processed.length, processedAlias.length)
                 if (similarity > 0.7) {
                     matches.push({ key: concept.key, alias, score: similarity })
                 }
             }
 
             // Token overlap
-            const aliasTokens = processedAlias.split(' ').filter(t => t.length > 0)
-            const commonTokens = tokens.filter(t => aliasTokens.includes(t))
+            const aliasTokens = processedAlias.split(' ').filter((t) => t.length > 0)
+            const commonTokens = tokens.filter((t) => aliasTokens.includes(t))
             if (commonTokens.length > 0) {
                 const tokenScore = commonTokens.length / Math.max(tokens.length, aliasTokens.length)
-                if (tokenScore > 0.6 && !matches.find(m => m.key === concept.key)) {
+                if (tokenScore > 0.6 && !matches.find((m) => m.key === concept.key)) {
                     matches.push({ key: concept.key, alias, score: tokenScore })
                 }
             }
@@ -98,7 +99,7 @@ console.log()
 console.log('1. SEQUENTIAL SCAN METHOD')
 console.log('-'.repeat(80))
 const seqStartTime = Date.now()
-const seqResults: Array<{query: string, matches: number}> = []
+const seqResults: Array<{ query: string; matches: number }> = []
 
 for (const query of testQueries) {
     const matches = sequentialScan(query, concepts)
@@ -117,26 +118,26 @@ console.log()
 console.log('2. TRIE INDEX METHOD')
 console.log('-'.repeat(80))
 const trieSearchStartTime = Date.now()
-const trieResults: Array<{query: string, matches: number}> = []
+const trieResults: Array<{ query: string; matches: number }> = []
 
 for (const query of testQueries) {
     const processed = preprocessText(query)
-    
+
     // Try exact match
     let matches = trie.searchExact(processed)
-    
+
     // Try fuzzy if no exact match
     if (matches.length === 0) {
         const fuzzy = trie.searchFuzzyTokens(processed)
-        matches = fuzzy.map(m => ({ conceptKey: m.conceptKey, matchedAlias: m.matchedAlias }))
+        matches = fuzzy.map((m) => ({ conceptKey: m.conceptKey, matchedAlias: m.matchedAlias }))
     }
-    
+
     // Try substring if still no match
     if (matches.length === 0) {
         const substring = trie.searchSubstring(processed)
-        matches = substring.map(m => ({ conceptKey: m.conceptKey, matchedAlias: m.matchedAlias }))
+        matches = substring.map((m) => ({ conceptKey: m.conceptKey, matchedAlias: m.matchedAlias }))
     }
-    
+
     trieResults.push({ query, matches: matches.length })
 }
 
@@ -152,7 +153,7 @@ console.log()
 console.log('3. PERFORMANCE COMPARISON')
 console.log('-'.repeat(80))
 const speedup = seqTotalTime / trieTotalTime
-const speedupPercent = ((seqTotalTime - trieTotalTime) / seqTotalTime * 100)
+const speedupPercent = ((seqTotalTime - trieTotalTime) / seqTotalTime) * 100
 
 console.log(`Sequential scan:  ${seqTotalTime}ms (avg ${seqAvgTime.toFixed(2)}ms/query)`)
 console.log(`Trie index:       ${trieTotalTime}ms (avg ${trieAvgTime.toFixed(2)}ms/query)`)
@@ -176,7 +177,9 @@ console.log(`m (concepts):          ${m}`)
 console.log(`avg aliases/concept:   ${avgAliases.toFixed(1)}`)
 console.log(`avg text length:       ${avgTextLength} chars`)
 console.log()
-console.log(`Sequential: O(n × m × aliases) = O(${n} × ${m} × ${avgAliases.toFixed(0)}) = ~${(n * m * avgAliases).toFixed(0)} operations`)
+console.log(
+    `Sequential: O(n × m × aliases) = O(${n} × ${m} × ${avgAliases.toFixed(0)}) = ~${(n * m * avgAliases).toFixed(0)} operations`
+)
 console.log(`Trie index: O(n × L) = O(${n} × ${avgTextLength}) = ~${n * avgTextLength} operations`)
 console.log(`Theoretical speedup: ${((n * m * avgAliases) / (n * avgTextLength)).toFixed(1)}x`)
 console.log()

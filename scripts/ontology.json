@@ -1,0 +1,3523 @@
+[
+    {
+        "key": "ai_data_science",
+        "label": "Artificial Intelligence and Data Science",
+        "description": "Comprehensive field encompassing intelligent systems, machine learning algorithms, statistical analysis, and data-driven decision making. Includes theoretical foundations, practical applications, and emerging technologies in AI and data analytics.",
+        "aliases": [
+            "ai",
+            "artificial intelligence",
+            "data science",
+            "tri tue nhan tao",
+            "khoa hoc du lieu",
+            "AI/DS",
+            "ai ds",
+            "intelligent computing",
+            "tinh toan thong minh",
+            "data analytics",
+            "phan tich du lieu",
+            "machine intelligence",
+            "tri tue may",
+            "computational intelligence"
+        ],
+        "depth": 0,
+        "keywords": [
+            "learning",
+            "prediction",
+            "classification",
+            "clustering",
+            "neural",
+            "deep",
+            "statistics",
+            "analytics",
+            "modeling",
+            "intelligence"
+        ],
+        "related_technologies": [
+            "Python",
+            "TensorFlow",
+            "PyTorch",
+            "scikit-learn",
+            "Pandas",
+            "R",
+            "Jupyter"
+        ],
+        "application_domains": [
+            "healthcare",
+            "finance",
+            "manufacturing",
+            "retail",
+            "transportation",
+            "education"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence",
+        "label": "Artificial Intelligence",
+        "description": "Development of computer systems capable of performing tasks requiring human intelligence: learning, reasoning, problem-solving, perception, and language understanding. Encompasses symbolic AI, statistical learning, and hybrid approaches.",
+        "aliases": [
+            "artificial intelligence",
+            "ai",
+            "tri tue nhan tao",
+            "intelligent systems",
+            "he thong thong minh",
+            "cognitive computing",
+            "tinh toan nhan thuc",
+            "smart systems",
+            "automated reasoning",
+            "ly luan tu dong"
+        ],
+        "depth": 1,
+        "keywords": [
+            "intelligent",
+            "autonomous",
+            "cognitive",
+            "reasoning",
+            "decision-making",
+            "learning",
+            "adaptation",
+            "perception"
+        ],
+        "subfields": [
+            "symbolic AI",
+            "connectionist AI",
+            "evolutionary AI",
+            "hybrid AI"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science",
+        "label": "Data Science",
+        "description": "Interdisciplinary field combining statistics, mathematics, programming, and domain expertise to extract insights and knowledge from structured and unstructured data. Involves data collection, cleaning, analysis, visualization, and interpretation.",
+        "aliases": [
+            "data science",
+            "khoa hoc du lieu",
+            "data analytics",
+            "phan tich du lieu",
+            "DS",
+            "data analysis",
+            "statistical analysis",
+            "phan tich thong ke",
+            "data insights",
+            "nhan dien du lieu",
+            "quantitative analysis",
+            "phan tich dinh luong"
+        ],
+        "depth": 1,
+        "keywords": [
+            "statistics",
+            "probability",
+            "visualization",
+            "exploration",
+            "hypothesis",
+            "inference",
+            "correlation",
+            "causation"
+        ],
+        "core_skills": [
+            "statistical modeling",
+            "data wrangling",
+            "feature engineering",
+            "storytelling"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems",
+        "label": "Applied AI Systems",
+        "description": "Practical implementation of AI technologies in real-world applications and industry solutions. Focus on deploying AI models, integrating with existing systems, and solving specific business or societal problems.",
+        "aliases": [
+            "applied ai",
+            "ai applications",
+            "ung dung ai",
+            "practical ai",
+            "he thong ai ung dung",
+            "ai deployment",
+            "trien khai ai",
+            "production ai",
+            "ai trong thuc te",
+            "industrial ai applications"
+        ],
+        "depth": 1,
+        "keywords": [
+            "deployment",
+            "integration",
+            "production",
+            "mlops",
+            "scalability",
+            "real-world",
+            "industry",
+            "practical"
+        ],
+        "focus_areas": [
+            "model deployment",
+            "system integration",
+            "performance optimization",
+            "monitoring"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning",
+        "label": "Machine Learning",
+        "description": "Algorithms and statistical models enabling computers to learn from data without explicit programming. Includes supervised, unsupervised, semi-supervised, and reinforcement learning approaches for pattern recognition and prediction.",
+        "aliases": [
+            "machine learning",
+            "ml",
+            "hoc may",
+            "hoc may thong ke",
+            "statistical learning",
+            "may hoc",
+            "automated learning",
+            "hoc tu dong",
+            "pattern recognition",
+            "nhan dang mau",
+            "predictive modeling",
+            "mo hinh du bao",
+            "data-driven learning"
+        ],
+        "depth": 2,
+        "keywords": [
+            "training",
+            "testing",
+            "features",
+            "labels",
+            "model",
+            "algorithm",
+            "optimization",
+            "generalization"
+        ],
+        "techniques": [
+            "regression",
+            "classification",
+            "clustering",
+            "dimensionality reduction",
+            "ensemble methods"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning",
+        "label": "Deep Learning",
+        "description": "Subset of machine learning using multi-layer artificial neural networks to learn hierarchical representations of data. Excels in computer vision, natural language processing, speech recognition, and complex pattern recognition tasks.",
+        "aliases": [
+            "deep learning",
+            "dl",
+            "hoc sau",
+            "neural networks",
+            "mang noron",
+            "deep neural networks",
+            "multi-layer networks",
+            "mang nhieu lop",
+            "representation learning",
+            "hoc bieu dien",
+            "hierarchical learning",
+            "hoc phan cap"
+        ],
+        "depth": 2,
+        "keywords": [
+            "layers",
+            "neurons",
+            "backpropagation",
+            "activation",
+            "gradient",
+            "weights",
+            "training",
+            "convergence"
+        ],
+        "architectures": [
+            "CNN",
+            "RNN",
+            "LSTM",
+            "GRU",
+            "Transformer",
+            "Autoencoder",
+            "GAN",
+            "ResNet"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing",
+        "label": "Natural Language Processing",
+        "description": "Computational techniques for analyzing, understanding, and generating human language. Covers text processing, semantic analysis, machine translation, sentiment analysis, question answering, and dialogue systems.",
+        "aliases": [
+            "natural language processing",
+            "nlp",
+            "xu ly ngon ngu tu nhien",
+            "text processing",
+            "xu ly van ban",
+            "computational linguistics",
+            "ngon ngu hoc tinh toan",
+            "language understanding",
+            "hieu ngon ngu",
+            "text analytics",
+            "phan tich van ban",
+            "linguistic computing"
+        ],
+        "depth": 2,
+        "keywords": [
+            "tokenization",
+            "parsing",
+            "semantics",
+            "syntax",
+            "entities",
+            "sentiment",
+            "translation",
+            "generation"
+        ],
+        "tasks": [
+            "named entity recognition",
+            "pos tagging",
+            "dependency parsing",
+            "coreference resolution",
+            "text summarization"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision",
+        "label": "Computer Vision",
+        "description": "Technology enabling computers to derive meaningful information from visual inputs (images, videos). Applications include object detection, facial recognition, medical imaging, autonomous vehicles, and augmented reality.",
+        "aliases": [
+            "computer vision",
+            "cv",
+            "thi giac may tinh",
+            "visual computing",
+            "tinh toan thi giac",
+            "image understanding",
+            "hieu anh",
+            "visual recognition",
+            "nhan dang thi giac",
+            "image analysis",
+            "phan tich hinh anh",
+            "visual perception",
+            "nhan thuc thi giac"
+        ],
+        "depth": 2,
+        "keywords": [
+            "detection",
+            "recognition",
+            "segmentation",
+            "tracking",
+            "reconstruction",
+            "features",
+            "pixels",
+            "convolution"
+        ],
+        "applications": [
+            "face recognition",
+            "object tracking",
+            "scene understanding",
+            "medical imaging",
+            "ocr"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.signal_processing",
+        "label": "Signal Processing",
+        "description": "Analysis, modification, and synthesis of signals including audio, video, sensor data, and communication signals. Essential for feature extraction, noise reduction, and pattern recognition in various AI applications.",
+        "aliases": [
+            "signal processing",
+            "xu ly tin hieu",
+            "digital signal processing",
+            "dsp",
+            "xu ly tin hieu so",
+            "signal analysis",
+            "phan tich tin hieu",
+            "waveform processing",
+            "xu ly dang song",
+            "frequency analysis",
+            "phan tich tan so"
+        ],
+        "depth": 2,
+        "keywords": [
+            "filtering",
+            "transform",
+            "frequency",
+            "time-domain",
+            "fourier",
+            "wavelet",
+            "sampling",
+            "quantization"
+        ],
+        "domains": [
+            "audio processing",
+            "image processing",
+            "biomedical signals",
+            "radar",
+            "telecommunications"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.supervised_learning",
+        "label": "Supervised Learning",
+        "description": "Machine learning approach using labeled training data to learn mapping from inputs to outputs. Used for classification (discrete outputs) and regression (continuous outputs) tasks with known ground truth.",
+        "aliases": [
+            "supervised learning",
+            "hoc co giam sat",
+            "labeled learning",
+            "hoc co nhan",
+            "classification",
+            "phan loai",
+            "regression",
+            "hoi quy",
+            "predictive learning",
+            "hoc du bao"
+        ],
+        "depth": 3,
+        "keywords": [
+            "labels",
+            "ground truth",
+            "accuracy",
+            "precision",
+            "recall",
+            "f1-score",
+            "confusion matrix",
+            "cross-validation"
+        ],
+        "algorithms": [
+            "linear regression",
+            "logistic regression",
+            "decision trees",
+            "random forest",
+            "svm",
+            "neural networks"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.unsupervised_learning",
+        "label": "Unsupervised Learning",
+        "description": "Learning patterns and structures from unlabeled data without predefined categories. Discovers hidden patterns through clustering, dimensionality reduction, anomaly detection, and association rule learning.",
+        "aliases": [
+            "unsupervised learning",
+            "hoc khong giam sat",
+            "unlabeled learning",
+            "hoc khong nhan",
+            "clustering",
+            "phan cum",
+            "dimensionality reduction",
+            "giam chieu du lieu",
+            "pattern discovery",
+            "kham pha mau",
+            "anomaly detection",
+            "phat hien bat thuong"
+        ],
+        "depth": 3,
+        "keywords": [
+            "clusters",
+            "patterns",
+            "similarity",
+            "distance",
+            "density",
+            "outliers",
+            "components",
+            "embeddings"
+        ],
+        "methods": [
+            "k-means",
+            "hierarchical clustering",
+            "dbscan",
+            "pca",
+            "t-sne",
+            "autoencoders"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.reinforcement_learning",
+        "label": "Reinforcement Learning",
+        "description": "Learning optimal behavior through trial-and-error interactions with an environment. Agent learns by receiving rewards or penalties, used in robotics, game playing, resource management, and autonomous systems.",
+        "aliases": [
+            "reinforcement learning",
+            "rl",
+            "hoc tang cuong",
+            "hoc cu chi",
+            "reward-based learning",
+            "hoc dua tren phan thuong",
+            "sequential decision making",
+            "quyet dinh tuan tu",
+            "interactive learning",
+            "hoc tuong tac"
+        ],
+        "depth": 3,
+        "keywords": [
+            "agent",
+            "environment",
+            "reward",
+            "policy",
+            "value",
+            "q-learning",
+            "exploration",
+            "exploitation"
+        ],
+        "algorithms": [
+            "q-learning",
+            "sarsa",
+            "policy gradient",
+            "actor-critic",
+            "dqn",
+            "ppo",
+            "ddpg"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.machine_learning.federated_learning",
+        "label": "Federated Learning",
+        "description": "Distributed machine learning approach training models across decentralized devices while keeping data localized. Preserves privacy by avoiding central data collection, crucial for healthcare, finance, and mobile applications.",
+        "aliases": [
+            "federated learning",
+            "hoc lien hop",
+            "distributed learning",
+            "hoc phan tan",
+            "privacy-preserving learning",
+            "hoc bao mat",
+            "decentralized learning",
+            "hoc phi tap trung",
+            "collaborative learning",
+            "hoc cong tac"
+        ],
+        "depth": 3,
+        "keywords": [
+            "privacy",
+            "decentralized",
+            "edge",
+            "aggregation",
+            "local training",
+            "communication",
+            "secure",
+            "distributed"
+        ],
+        "applications": [
+            "mobile keyboards",
+            "healthcare data",
+            "financial services",
+            "iot devices"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.cnn",
+        "label": "Convolutional Neural Networks",
+        "description": "Deep learning architecture designed for processing grid-like data (images, videos). Uses convolutional layers to automatically learn spatial hierarchies of features, revolutionizing computer vision tasks.",
+        "aliases": [
+            "convolutional neural networks",
+            "cnn",
+            "mang noron tich chap",
+            "convnet",
+            "convolutional networks",
+            "image neural networks",
+            "mang noron anh",
+            "spatial networks",
+            "mang khong gian"
+        ],
+        "depth": 3,
+        "keywords": [
+            "convolution",
+            "pooling",
+            "kernels",
+            "filters",
+            "feature maps",
+            "receptive field",
+            "stride",
+            "padding"
+        ],
+        "architectures": [
+            "LeNet",
+            "AlexNet",
+            "VGGNet",
+            "ResNet",
+            "Inception",
+            "EfficientNet",
+            "MobileNet"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.rnn",
+        "label": "Recurrent Neural Networks",
+        "description": "Neural networks with loops allowing information persistence, ideal for sequential data. Variants like LSTM and GRU handle long-term dependencies, used in time series, language modeling, and speech recognition.",
+        "aliases": [
+            "recurrent neural networks",
+            "rnn",
+            "mang noron hoi quy",
+            "lstm",
+            "gru",
+            "sequential models",
+            "mo hinh tuan tu",
+            "temporal networks",
+            "mang thoi gian",
+            "memory networks",
+            "mang co nho"
+        ],
+        "depth": 3,
+        "keywords": [
+            "sequence",
+            "temporal",
+            "memory",
+            "gates",
+            "hidden state",
+            "backpropagation through time",
+            "vanishing gradient"
+        ],
+        "variants": [
+            "vanilla rnn",
+            "lstm",
+            "gru",
+            "bidirectional rnn",
+            "encoder-decoder"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.transformer_models",
+        "label": "Transformer Models",
+        "description": "Attention-based architecture revolutionizing NLP and beyond. Self-attention mechanisms process entire sequences in parallel, enabling models like BERT, GPT, and T5 to achieve state-of-the-art performance.",
+        "aliases": [
+            "transformer",
+            "transformer models",
+            "attention mechanisms",
+            "kien truc transformer",
+            "self-attention",
+            "mo hinh transformer",
+            "attention networks",
+            "mang chu y",
+            "pre-trained models",
+            "mo hinh tien huan luyen"
+        ],
+        "depth": 3,
+        "keywords": [
+            "attention",
+            "query",
+            "key",
+            "value",
+            "multi-head",
+            "positional encoding",
+            "encoder",
+            "decoder"
+        ],
+        "models": [
+            "BERT",
+            "GPT",
+            "T5",
+            "RoBERTa",
+            "XLNet",
+            "BART",
+            "Vision Transformer"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.deep_learning.generative_models",
+        "label": "Generative Models",
+        "description": "Models learning to generate new data samples resembling training data. Includes GANs for image synthesis, VAEs for data generation, and diffusion models for high-quality content creation.",
+        "aliases": [
+            "generative models",
+            "mo hinh sinh",
+            "gan",
+            "generative adversarial networks",
+            "vae",
+            "variational autoencoders",
+            "diffusion models",
+            "mo hinh khuech tan",
+            "content generation",
+            "tao noi dung",
+            "synthetic data",
+            "du lieu tong hop"
+        ],
+        "depth": 3,
+        "keywords": [
+            "generation",
+            "synthesis",
+            "latent space",
+            "adversarial",
+            "reconstruction",
+            "sampling",
+            "distribution"
+        ],
+        "applications": [
+            "image synthesis",
+            "style transfer",
+            "data augmentation",
+            "text-to-image",
+            "music generation"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.information_retrieval",
+        "label": "Information Retrieval",
+        "description": "Finding relevant information from large collections based on user queries. Encompasses search engines, document ranking, query processing, and relevance feedback using statistical and neural approaches.",
+        "aliases": [
+            "information retrieval",
+            "truy xuat thong tin",
+            "search engines",
+            "dong co tim kiem",
+            "document retrieval",
+            "tim kiem thong tin",
+            "text search",
+            "tim kiem van ban",
+            "relevance ranking",
+            "xep hang lien quan"
+        ],
+        "depth": 3,
+        "keywords": [
+            "indexing",
+            "ranking",
+            "relevance",
+            "query",
+            "tf-idf",
+            "bm25",
+            "semantic search",
+            "vector search"
+        ],
+        "techniques": [
+            "boolean retrieval",
+            "vector space model",
+            "probabilistic models",
+            "neural ranking"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.text_classification",
+        "label": "Text Classification",
+        "description": "Assigning predefined categories to text documents. Applications include spam detection, sentiment analysis, topic categorization, and intent recognition using traditional ML and deep learning methods.",
+        "aliases": [
+            "text classification",
+            "phan loai van ban",
+            "sentiment analysis",
+            "phan tich cam xuc",
+            "text categorization",
+            "phan loai van ban",
+            "document classification",
+            "phan loai tai lieu",
+            "opinion mining",
+            "khai pha y kien"
+        ],
+        "depth": 3,
+        "keywords": [
+            "categories",
+            "labels",
+            "features",
+            "bag-of-words",
+            "embeddings",
+            "fine-tuning",
+            "transfer learning"
+        ],
+        "tasks": [
+            "spam detection",
+            "topic classification",
+            "emotion detection",
+            "intent classification"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.large_language_models",
+        "label": "Large Language Models",
+        "description": "Massive neural networks pre-trained on vast text corpora, capable of understanding and generating human-like text. Foundation for chatbots, translation, summarization, and code generation.",
+        "aliases": [
+            "large language models",
+            "llm",
+            "mo hinh ngon ngu lon",
+            "foundation models",
+            "mo hinh nen tang",
+            "pre-trained language models",
+            "mo hinh ngon ngu tien huan luyen",
+            "generative ai",
+            "ai sinh",
+            "conversational ai",
+            "ai doi thoai"
+        ],
+        "depth": 3,
+        "keywords": [
+            "pre-training",
+            "fine-tuning",
+            "prompting",
+            "few-shot",
+            "zero-shot",
+            "in-context learning",
+            "tokens"
+        ],
+        "models": [
+            "GPT-4",
+            "Claude",
+            "PaLM",
+            "LLaMA",
+            "Mistral",
+            "Gemini"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.natural_language_processing.machine_translation",
+        "label": "Machine Translation",
+        "description": "Automatic translation of text or speech from one language to another. Modern systems use neural machine translation with attention mechanisms for fluent, context-aware translations.",
+        "aliases": [
+            "machine translation",
+            "dich may",
+            "neural machine translation",
+            "nmt",
+            "dich tu dong",
+            "automatic translation",
+            "language translation",
+            "dich ngon ngu",
+            "multilingual translation"
+        ],
+        "depth": 3,
+        "keywords": [
+            "source language",
+            "target language",
+            "alignment",
+            "beam search",
+            "bleu score",
+            "parallel corpus"
+        ],
+        "approaches": [
+            "statistical mt",
+            "neural mt",
+            "transformer-based mt",
+            "multilingual models"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_processing",
+        "label": "Image Processing",
+        "description": "Techniques for manipulating and analyzing digital images. Includes filtering, enhancement, restoration, compression, and transformation for improved quality or feature extraction.",
+        "aliases": [
+            "image processing",
+            "xu ly anh",
+            "digital image processing",
+            "xu ly anh so",
+            "image analysis",
+            "phan tich anh",
+            "image enhancement",
+            "tang cuong anh",
+            "image filtering",
+            "loc anh"
+        ],
+        "depth": 3,
+        "keywords": [
+            "pixels",
+            "histogram",
+            "contrast",
+            "brightness",
+            "edge detection",
+            "morphology",
+            "transform",
+            "filter"
+        ],
+        "operations": [
+            "smoothing",
+            "sharpening",
+            "edge detection",
+            "morphological operations",
+            "color correction"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.image_segmentation",
+        "label": "Image Segmentation",
+        "description": "Partitioning images into meaningful regions or objects. Semantic segmentation classifies pixels, instance segmentation identifies individual objects, crucial for medical imaging and autonomous driving.",
+        "aliases": [
+            "image segmentation",
+            "phan doan anh",
+            "semantic segmentation",
+            "phan doan ngu nghia",
+            "instance segmentation",
+            "phan vung anh",
+            "object segmentation",
+            "phan doan doi tuong",
+            "pixel classification",
+            "phan loai pixel"
+        ],
+        "depth": 3,
+        "keywords": [
+            "masks",
+            "boundaries",
+            "regions",
+            "pixels",
+            "foreground",
+            "background",
+            "classes",
+            "instances"
+        ],
+        "methods": [
+            "u-net",
+            "mask r-cnn",
+            "fcn",
+            "deeplab",
+            "panoptic segmentation"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.object_detection",
+        "label": "Object Detection",
+        "description": "Locating and classifying multiple objects within images or videos. Combines classification and localization using bounding boxes, essential for surveillance, retail, and autonomous systems.",
+        "aliases": [
+            "object detection",
+            "phat hien doi tuong",
+            "object recognition",
+            "nhan dang doi tuong",
+            "visual object detection",
+            "phat hien thi giac",
+            "object localization",
+            "dinh vi doi tuong",
+            "bounding box detection",
+            "phat hien hop chua"
+        ],
+        "depth": 3,
+        "keywords": [
+            "bounding box",
+            "anchors",
+            "proposals",
+            "iou",
+            "nms",
+            "precision",
+            "recall",
+            "map"
+        ],
+        "architectures": [
+            "YOLO",
+            "Faster R-CNN",
+            "SSD",
+            "RetinaNet",
+            "EfficientDet"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.computer_vision.video_analysis",
+        "label": "Video Analysis",
+        "description": "Processing and understanding video content including action recognition, tracking, event detection, and temporal modeling. Applications in surveillance, sports analytics, and content moderation.",
+        "aliases": [
+            "video analysis",
+            "phan tich video",
+            "video understanding",
+            "hieu video",
+            "action recognition",
+            "nhan dang hanh dong",
+            "video processing",
+            "xu ly video",
+            "temporal analysis",
+            "phan tich thoi gian"
+        ],
+        "depth": 3,
+        "keywords": [
+            "frames",
+            "temporal",
+            "motion",
+            "tracking",
+            "optical flow",
+            "trajectory",
+            "events",
+            "actions"
+        ],
+        "tasks": [
+            "action recognition",
+            "video classification",
+            "object tracking",
+            "event detection"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_analysis",
+        "label": "Data Analysis",
+        "description": "Systematic examination of data to discover patterns, relationships, and insights. Combines statistical methods, visualization, and domain knowledge for exploratory and confirmatory analysis.",
+        "aliases": [
+            "data analysis",
+            "phan tich du lieu",
+            "statistical analysis",
+            "phan tich thong ke",
+            "exploratory data analysis",
+            "eda",
+            "phan tich kham pha",
+            "quantitative analysis",
+            "phan tich dinh luong"
+        ],
+        "depth": 2,
+        "keywords": [
+            "statistics",
+            "correlation",
+            "distribution",
+            "hypothesis",
+            "significance",
+            "trends",
+            "outliers",
+            "summary"
+        ],
+        "techniques": [
+            "descriptive statistics",
+            "inferential statistics",
+            "hypothesis testing",
+            "correlation analysis"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_mining",
+        "label": "Data Mining",
+        "description": "Discovering patterns and knowledge from large datasets using machine learning, statistics, and database systems. Extracts actionable insights for decision-making and prediction.",
+        "aliases": [
+            "data mining",
+            "khai pha du lieu",
+            "knowledge discovery",
+            "kham pha tri thuc",
+            "khai thac du lieu",
+            "pattern discovery",
+            "kham pha mau",
+            "data exploration",
+            "kham pha du lieu"
+        ],
+        "depth": 2,
+        "keywords": [
+            "patterns",
+            "associations",
+            "sequences",
+            "classification",
+            "clustering",
+            "anomalies",
+            "rules",
+            "trends"
+        ],
+        "processes": [
+            "data preparation",
+            "pattern extraction",
+            "knowledge evaluation",
+            "pattern deployment"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data",
+        "label": "Big Data",
+        "description": "Handling and analyzing datasets too large or complex for traditional methods. Characterized by volume, velocity, variety, requiring distributed systems and specialized tools.",
+        "aliases": [
+            "big data",
+            "du lieu lon",
+            "large-scale data",
+            "du lieu quy mo lon",
+            "massive data",
+            "du lieu khong lo",
+            "data at scale",
+            "du lieu mo rong"
+        ],
+        "depth": 2,
+        "keywords": [
+            "volume",
+            "velocity",
+            "variety",
+            "distributed",
+            "hadoop",
+            "spark",
+            "scalability",
+            "parallel processing"
+        ],
+        "technologies": [
+            "Hadoop",
+            "Spark",
+            "Kafka",
+            "Flink",
+            "Hive",
+            "NoSQL databases"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering",
+        "label": "Data Engineering",
+        "description": "Building infrastructure and architecture for data generation, storage, processing, and consumption. Develops pipelines, ensures data quality, and enables analytics at scale.",
+        "aliases": [
+            "data engineering",
+            "ky thuat du lieu",
+            "data infrastructure",
+            "ha tang du lieu",
+            "data operations",
+            "van hanh du lieu",
+            "data pipelines",
+            "duong ong du lieu",
+            "etl engineering",
+            "ky thuat etl"
+        ],
+        "depth": 2,
+        "keywords": [
+            "pipelines",
+            "etl",
+            "data lakes",
+            "data warehouse",
+            "orchestration",
+            "streaming",
+            "batch",
+            "quality"
+        ],
+        "responsibilities": [
+            "data ingestion",
+            "transformation",
+            "storage",
+            "pipeline orchestration",
+            "monitoring"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.distributed_data_processing",
+        "label": "Distributed Data Processing",
+        "description": "Processing data across multiple machines in parallel for scalability and performance. Uses frameworks like Hadoop MapReduce and Spark for batch and streaming workloads.",
+        "aliases": [
+            "distributed data processing",
+            "xu ly du lieu phan tan",
+            "parallel data processing",
+            "xu ly du lieu song song",
+            "distributed computing",
+            "tinh toan phan tan",
+            "cluster computing",
+            "tinh toan cum"
+        ],
+        "depth": 3,
+        "keywords": [
+            "parallelism",
+            "partitioning",
+            "map-reduce",
+            "resilience",
+            "fault-tolerance",
+            "scalability",
+            "nodes"
+        ],
+        "frameworks": [
+            "Apache Hadoop",
+            "Apache Spark",
+            "Dask",
+            "Ray"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.big_data.streaming_data_processing",
+        "label": "Streaming Data Processing",
+        "description": "Real-time processing of continuous data streams for immediate insights and actions. Critical for IoT, fraud detection, monitoring, and real-time analytics applications.",
+        "aliases": [
+            "streaming data",
+            "du lieu dong",
+            "real-time data processing",
+            "xu ly du lieu thoi gian thuc",
+            "data streams",
+            "dong du lieu",
+            "stream processing",
+            "xu ly dong",
+            "event streaming"
+        ],
+        "depth": 3,
+        "keywords": [
+            "real-time",
+            "low-latency",
+            "continuous",
+            "events",
+            "windows",
+            "state",
+            "watermarks",
+            "throughput"
+        ],
+        "platforms": [
+            "Apache Kafka",
+            "Apache Flink",
+            "Spark Streaming",
+            "Storm"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering.data_pipeline",
+        "label": "Data Pipeline",
+        "description": "Automated workflows moving and transforming data from sources to destinations. Orchestrates ETL/ELT processes ensuring reliable, timely data delivery for analytics and applications.",
+        "aliases": [
+            "data pipeline",
+            "duong ong du lieu",
+            "etl pipeline",
+            "duong ong etl",
+            "data flow",
+            "luong du lieu",
+            "pipeline automation",
+            "tu dong hoa pipeline",
+            "workflow orchestration",
+            "dieu phoi luong cong viec"
+        ],
+        "depth": 3,
+        "keywords": [
+            "extraction",
+            "transformation",
+            "loading",
+            "scheduling",
+            "dependencies",
+            "monitoring",
+            "retry",
+            "idempotency"
+        ],
+        "tools": [
+            "Apache Airflow",
+            "Luigi",
+            "Prefect",
+            "Dagster",
+            "Azure Data Factory"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_engineering.data_warehouse",
+        "label": "Data Warehouse",
+        "description": "Centralized repository storing integrated data from multiple sources for analysis and reporting. Optimized for complex queries, historical analysis, and business intelligence.",
+        "aliases": [
+            "data warehouse",
+            "kho du lieu",
+            "data warehousing",
+            "enterprise data warehouse",
+            "kho du lieu doanh nghiep",
+            "analytical database",
+            "co so du lieu phan tich",
+            "olap",
+            "edw"
+        ],
+        "depth": 3,
+        "keywords": [
+            "dimensional modeling",
+            "star schema",
+            "fact tables",
+            "dimension tables",
+            "olap",
+            "aggregations"
+        ],
+        "platforms": [
+            "Snowflake",
+            "BigQuery",
+            "Redshift",
+            "Synapse Analytics",
+            "Teradata"
+        ]
+    },
+    {
+        "key": "ai_data_science.data_science.data_visualization",
+        "label": "Data Visualization",
+        "description": "Graphical representation of data and information using visual elements like charts, graphs, and maps. Makes complex data accessible, revealing patterns and supporting decision-making.",
+        "aliases": [
+            "data visualization",
+            "truc quan hoa du lieu",
+            "visual analytics",
+            "phan tich truc quan",
+            "information visualization",
+            "truc quan thong tin",
+            "data graphics",
+            "do hoa du lieu",
+            "interactive visualization",
+            "truc quan tuong tac"
+        ],
+        "depth": 2,
+        "keywords": [
+            "charts",
+            "graphs",
+            "dashboards",
+            "interactive",
+            "storytelling",
+            "insights",
+            "visual encoding"
+        ],
+        "tools": [
+            "Tableau",
+            "Power BI",
+            "D3.js",
+            "Plotly",
+            "Matplotlib",
+            "Seaborn",
+            "ggplot"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.recommendation_systems",
+        "label": "Recommendation Systems",
+        "description": "Algorithms predicting user preferences and suggesting relevant items. Uses collaborative filtering, content-based, and hybrid approaches for personalized recommendations in e-commerce, streaming, and social media.",
+        "aliases": [
+            "recommendation systems",
+            "he thong goi y",
+            "recommender systems",
+            "he thong de xuat",
+            "collaborative filtering",
+            "loc cong tac",
+            "personalization",
+            "ca nhan hoa",
+            "recommendation engines",
+            "dong co goi y"
+        ],
+        "depth": 2,
+        "keywords": [
+            "ratings",
+            "preferences",
+            "similarity",
+            "matrix factorization",
+            "implicit feedback",
+            "cold start"
+        ],
+        "approaches": [
+            "collaborative filtering",
+            "content-based",
+            "hybrid",
+            "deep learning recommenders"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.intelligent_information_systems",
+        "label": "Intelligent Information Systems",
+        "description": "Information systems enhanced with AI capabilities for smarter data processing, decision support, and automation. Integrates machine learning, knowledge representation, and intelligent agents.",
+        "aliases": [
+            "intelligent information systems",
+            "he thong thong tin thong minh",
+            "smart systems",
+            "he thong thong minh",
+            "information systems",
+            "he thong thong tin",
+            "ai-powered information systems",
+            "he thong thong tin ai"
+        ],
+        "depth": 2,
+        "keywords": [
+            "knowledge base",
+            "reasoning",
+            "inference",
+            "decision support",
+            "automation",
+            "intelligent agents"
+        ],
+        "applications": [
+            "expert systems",
+            "decision support",
+            "knowledge management",
+            "intelligent search"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.ai_in_industry",
+        "label": "AI in Industry",
+        "description": "Application of artificial intelligence in manufacturing, production, supply chain, and industrial automation. Includes predictive maintenance, quality control, process optimization, and smart manufacturing.",
+        "aliases": [
+            "ai in industry",
+            "industrial ai",
+            "ai cong nghiep",
+            "applied industrial ai",
+            "ai ung dung trong cong nghiep",
+            "industry 4.0 ai",
+            "smart manufacturing",
+            "san xuat thong minh",
+            "intelligent manufacturing"
+        ],
+        "depth": 2,
+        "keywords": [
+            "automation",
+            "optimization",
+            "predictive maintenance",
+            "quality control",
+            "process control",
+            "digital twin"
+        ],
+        "use_cases": [
+            "defect detection",
+            "demand forecasting",
+            "robot coordination",
+            "energy optimization"
+        ]
+    },
+    {
+        "key": "ai_data_science.applied_ai_systems.decision_support_systems",
+        "label": "Decision Support Systems",
+        "description": "Computer-based systems supporting business decision-making through data analysis, modeling, and visualization. Combines data warehousing, analytics, and AI for strategic and operational decisions.",
+        "aliases": [
+            "decision support systems",
+            "he thong ho tro quyet dinh",
+            "dss",
+            "intelligent decision systems",
+            "he thong quyet dinh thong minh",
+            "business decision systems",
+            "he thong quyet dinh kinh doanh"
+        ],
+        "depth": 2,
+        "keywords": [
+            "decision making",
+            "what-if analysis",
+            "optimization",
+            "simulation",
+            "business rules",
+            "analytics"
+        ],
+        "components": [
+            "data management",
+            "model management",
+            "user interface",
+            "knowledge base"
+        ]
+    },
+    {
+        "key": "software_engineering",
+        "label": "Software Engineering",
+        "description": "Systematic approach to software development, operation, and maintenance. Encompasses requirements analysis, design, implementation, testing, deployment, and maintenance using engineering principles and best practices.",
+        "aliases": [
+            "software engineering",
+            "ky thuat phan mem",
+            "cong nghe phan mem",
+            "software development",
+            "phat trien phan mem",
+            "SE",
+            "phan mem",
+            "software design",
+            "thiet ke phan mem",
+            "application development",
+            "phat trien ung dung"
+        ],
+        "depth": 0,
+        "keywords": [
+            "sdlc",
+            "agile",
+            "scrum",
+            "methodology",
+            "architecture",
+            "testing",
+            "deployment",
+            "maintenance"
+        ],
+        "methodologies": [
+            "Waterfall",
+            "Agile",
+            "Scrum",
+            "XP",
+            "DevOps",
+            "Lean"
+        ],
+        "activities": [
+            "requirements",
+            "design",
+            "coding",
+            "testing",
+            "deployment",
+            "maintenance"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development",
+        "label": "Web Development",
+        "description": "Building and maintaining websites and web applications. Covers frontend (user interface), backend (server logic), databases, and deployment on web servers and cloud platforms.",
+        "aliases": [
+            "web development",
+            "phat trien web",
+            "web engineering",
+            "ky thuat web",
+            "web applications",
+            "ung dung web",
+            "web programming",
+            "lap trinh web",
+            "web design",
+            "thiet ke web",
+            "website development",
+            "phat trien website"
+        ],
+        "depth": 1,
+        "keywords": [
+            "html",
+            "css",
+            "javascript",
+            "responsive",
+            "api",
+            "server",
+            "client",
+            "http"
+        ],
+        "technologies": [
+            "HTML5",
+            "CSS3",
+            "JavaScript",
+            "React",
+            "Vue",
+            "Angular",
+            "Node.js",
+            "Django",
+            "Flask"
+        ],
+        "concepts": [
+            "responsive design",
+            "spa",
+            "pwa",
+            "rest api",
+            "graphql"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development",
+        "label": "Mobile Development",
+        "description": "Creating applications for mobile devices (smartphones, tablets). Includes native development for iOS/Android and cross-platform frameworks for building apps that run on multiple platforms.",
+        "aliases": [
+            "mobile development",
+            "phat trien ung dung di dong",
+            "di dong",
+            "thiet bi di dong",
+            "mobile app",
+            "ung dung di dong",
+            "lap trinh tren thiet bi di dong",
+            "mobile applications",
+            "ung dung mobile",
+            "mobile engineering",
+            "ky thuat di dong",
+            "app development",
+            "phat trien app"
+        ],
+        "depth": 1,
+        "keywords": [
+            "ios",
+            "android",
+            "cross-platform",
+            "native",
+            "hybrid",
+            "responsive",
+            "touch",
+            "sensors"
+        ],
+        "platforms": [
+            "iOS",
+            "Android",
+            "React Native",
+            "Flutter",
+            "Xamarin",
+            "Ionic"
+        ],
+        "features": [
+            "offline mode",
+            "push notifications",
+            "location services",
+            "camera integration"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture",
+        "label": "Software Architecture",
+        "description": "High-level structure of software systems defining components, their relationships, and principles guiding design and evolution. Critical for scalability, maintainability, and system quality.",
+        "aliases": [
+            "software architecture",
+            "kien truc phan mem",
+            "system architecture",
+            "kien truc he thong",
+            "architectural design",
+            "thiet ke kien truc",
+            "system design",
+            "thiet ke he thong",
+            "architecture patterns",
+            "mau kien truc"
+        ],
+        "depth": 1,
+        "keywords": [
+            "components",
+            "layers",
+            "patterns",
+            "scalability",
+            "modularity",
+            "coupling",
+            "cohesion",
+            "separation"
+        ],
+        "patterns": [
+            "layered",
+            "microservices",
+            "event-driven",
+            "mvc",
+            "mvvm",
+            "clean architecture"
+        ],
+        "qualities": [
+            "scalability",
+            "reliability",
+            "maintainability",
+            "security",
+            "performance"
+        ]
+    },
+    {
+        "key": "software_engineering.distributed_systems",
+        "label": "Distributed Systems",
+        "description": "Systems with components located on networked computers communicating and coordinating actions. Addresses challenges of concurrency, fault tolerance, consistency, and scalability across multiple nodes.",
+        "aliases": [
+            "distributed systems",
+            "he thong phan tan",
+            "distributed computing",
+            "tinh toan phan tan",
+            "decentralized systems",
+            "he thong phi tap trung",
+            "networked systems",
+            "he thong mang",
+            "cluster computing",
+            "tinh toan cum"
+        ],
+        "depth": 1,
+        "keywords": [
+            "consensus",
+            "replication",
+            "partitioning",
+            "consistency",
+            "availability",
+            "fault-tolerance",
+            "cap theorem"
+        ],
+        "challenges": [
+            "network latency",
+            "partial failures",
+            "concurrency",
+            "data consistency"
+        ],
+        "examples": [
+            "cloud services",
+            "cdn",
+            "distributed databases",
+            "blockchain"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations",
+        "label": "DevOps and Operations",
+        "description": "Practices combining software development (Dev) and IT operations (Ops) to shorten development lifecycle and deliver high-quality software continuously. Emphasizes automation, monitoring, and collaboration.",
+        "aliases": [
+            "devops",
+            "operations",
+            "van hanh he thong",
+            "software operations",
+            "van hanh phan mem",
+            "devops practices",
+            "thuc hanh devops",
+            "site reliability engineering",
+            "sre",
+            "continuous delivery",
+            "giao hang lien tuc"
+        ],
+        "depth": 1,
+        "keywords": [
+            "automation",
+            "ci cd",
+            "monitoring",
+            "deployment",
+            "infrastructure",
+            "containers",
+            "orchestration"
+        ],
+        "practices": [
+            "continuous integration",
+            "continuous deployment",
+            "infrastructure as code",
+            "monitoring"
+        ],
+        "tools": [
+            "Jenkins",
+            "GitLab CI",
+            "Docker",
+            "Kubernetes",
+            "Terraform",
+            "Ansible"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.frontend_development",
+        "label": "Frontend Development",
+        "description": "Building user-facing part of web applications using HTML, CSS, JavaScript and frameworks. Focuses on user experience, responsiveness, accessibility, and performance optimization.",
+        "aliases": [
+            "frontend development",
+            "phat trien giao dien",
+            "frontend engineering",
+            "ky thuat frontend",
+            "client-side development",
+            "phat trien phia client",
+            "ui development",
+            "phat trien ui",
+            "web ui",
+            "giao dien web"
+        ],
+        "depth": 2,
+        "keywords": [
+            "html",
+            "css",
+            "javascript",
+            "dom",
+            "responsive",
+            "accessibility",
+            "performance",
+            "spa"
+        ],
+        "frameworks": [
+            "React",
+            "Vue.js",
+            "Angular",
+            "Svelte",
+            "Next.js",
+            "Nuxt.js"
+        ],
+        "skills": [
+            "responsive design",
+            "accessibility",
+            "state management",
+            "optimization"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.backend_development",
+        "label": "Backend Development",
+        "description": "Building server-side logic, databases, and APIs that power web applications. Handles business logic, data processing, authentication, and integration with external services.",
+        "aliases": [
+            "backend development",
+            "phat trien server",
+            "server-side development",
+            "phat trien phia server",
+            "backend engineering",
+            "ky thuat backend",
+            "api development",
+            "phat trien api",
+            "server programming",
+            "lap trinh server"
+        ],
+        "depth": 2,
+        "keywords": [
+            "api",
+            "database",
+            "authentication",
+            "server",
+            "rest",
+            "graphql",
+            "microservices",
+            "scalability"
+        ],
+        "technologies": [
+            "Node.js",
+            "Python",
+            "Java",
+            "Go",
+            "Ruby",
+            ".NET",
+            "PHP"
+        ],
+        "responsibilities": [
+            "api design",
+            "database management",
+            "authentication",
+            "business logic"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.fullstack_development",
+        "label": "Full Stack Development",
+        "description": "Developing both frontend and backend parts of web applications. Full-stack developers work across entire technology stack from database to user interface.",
+        "aliases": [
+            "fullstack development",
+            "full stack",
+            "phat trien toan dien",
+            "full-stack engineering",
+            "ky thuat full stack",
+            "end-to-end development",
+            "phat trien toan bo",
+            "complete stack development",
+            "phat trien day du"
+        ],
+        "depth": 2,
+        "keywords": [
+            "frontend",
+            "backend",
+            "database",
+            "deployment",
+            "full cycle",
+            "end-to-end",
+            "versatile"
+        ],
+        "skills": [
+            "frontend frameworks",
+            "backend languages",
+            "databases",
+            "devops",
+            "version control"
+        ],
+        "stacks": [
+            "MERN",
+            "MEAN",
+            "LAMP",
+            "Django + React",
+            "Ruby on Rails"
+        ]
+    },
+    {
+        "key": "software_engineering.web_development.web_security",
+        "label": "Web Security",
+        "description": "Protecting web applications from vulnerabilities and attacks. Implements security measures against SQL injection, XSS, CSRF, and other web-specific threats.",
+        "aliases": [
+            "web security",
+            "an ninh web",
+            "application security",
+            "an ninh ung dung",
+            "web application security",
+            "bao mat ung dung web",
+            "cyber security web",
+            "an toan web",
+            "secure web development",
+            "phat trien web bao mat"
+        ],
+        "depth": 2,
+        "keywords": [
+            "owasp",
+            "xss",
+            "csrf",
+            "sql injection",
+            "authentication",
+            "authorization",
+            "encryption",
+            "https"
+        ],
+        "threats": [
+            "injection attacks",
+            "broken authentication",
+            "sensitive data exposure",
+            "xxe"
+        ],
+        "practices": [
+            "input validation",
+            "output encoding",
+            "secure sessions",
+            "https enforcement"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development.ios_development",
+        "label": "iOS Development",
+        "description": "Creating applications for Apple's iOS platform (iPhone, iPad). Uses Swift or Objective-C with Xcode IDE, following Apple's Human Interface Guidelines and App Store requirements.",
+        "aliases": [
+            "ios development",
+            "phat trien ios",
+            "iphone development",
+            "phat trien iphone",
+            "apple mobile development",
+            "phat trien di dong apple",
+            "ios engineering",
+            "ky thuat ios",
+            "swift development",
+            "phat trien swift"
+        ],
+        "depth": 2,
+        "keywords": [
+            "swift",
+            "objective-c",
+            "xcode",
+            "uikit",
+            "swiftui",
+            "cocoa touch",
+            "app store"
+        ],
+        "frameworks": [
+            "UIKit",
+            "SwiftUI",
+            "Core Data",
+            "Combine",
+            "ARKit",
+            "Core ML"
+        ],
+        "tools": [
+            "Xcode",
+            "TestFlight",
+            "Instruments",
+            "CocoaPods",
+            "Swift Package Manager"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development.android_development",
+        "label": "Android Development",
+        "description": "Building applications for Android platform using Kotlin or Java. Utilizes Android Studio, follows Material Design guidelines, and publishes to Google Play Store.",
+        "aliases": [
+            "android development",
+            "phat trien android",
+            "android engineering",
+            "ky thuat android",
+            "google mobile development",
+            "phat trien di dong google",
+            "ung dung android",
+            "kotlin development",
+            "phat trien kotlin"
+        ],
+        "depth": 2,
+        "keywords": [
+            "kotlin",
+            "java",
+            "android studio",
+            "gradle",
+            "material design",
+            "jetpack",
+            "play store"
+        ],
+        "components": [
+            "Activities",
+            "Fragments",
+            "Services",
+            "Broadcast Receivers",
+            "Content Providers"
+        ],
+        "libraries": [
+            "Jetpack",
+            "Retrofit",
+            "Room",
+            "Dagger",
+            "Glide"
+        ]
+    },
+    {
+        "key": "software_engineering.mobile_development.cross_platform_mobile",
+        "label": "Cross-Platform Mobile Development",
+        "description": "Building mobile apps that run on multiple platforms (iOS, Android) from single codebase. Uses frameworks like React Native, Flutter, enabling faster development and code reuse.",
+        "aliases": [
+            "cross-platform mobile",
+            "da nen tang di dong",
+            "hybrid mobile development",
+            "phat trien di dong lai",
+            "phat trien da nen tang",
+            "multiplatform mobile",
+            "mobile cross-platform",
+            "unified mobile development",
+            "phat trien di dong thong nhat"
+        ],
+        "depth": 2,
+        "keywords": [
+            "react native",
+            "flutter",
+            "xamarin",
+            "code reuse",
+            "native performance",
+            "hybrid"
+        ],
+        "frameworks": [
+            "React Native",
+            "Flutter",
+            "Xamarin",
+            "Ionic",
+            "Cordova",
+            "Capacitor"
+        ],
+        "advantages": [
+            "code sharing",
+            "faster development",
+            "consistent ui",
+            "single codebase"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.microservices_architecture",
+        "label": "Microservices Architecture",
+        "description": "Architectural style structuring application as collection of loosely coupled, independently deployable services. Each service handles specific business capability, communicating via APIs.",
+        "aliases": [
+            "microservices",
+            "kien truc vi dich vu",
+            "microservices architecture",
+            "kien truc microservices",
+            "service-oriented architecture",
+            "kien truc huong dich vu",
+            "soa",
+            "distributed services",
+            "dich vu phan tan"
+        ],
+        "depth": 2,
+        "keywords": [
+            "services",
+            "independence",
+            "scalability",
+            "resilience",
+            "api",
+            "containers",
+            "orchestration"
+        ],
+        "principles": [
+            "single responsibility",
+            "decentralization",
+            "failure isolation",
+            "independent deployment"
+        ],
+        "challenges": [
+            "service discovery",
+            "distributed transactions",
+            "data consistency",
+            "monitoring"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.monolithic_architecture",
+        "label": "Monolithic Architecture",
+        "description": "Traditional architecture where entire application is built as single unified unit. All components are tightly coupled and deployed together, simpler for small applications but harder to scale.",
+        "aliases": [
+            "monolithic architecture",
+            "kien truc nguyen khoi",
+            "monolith",
+            "nguyen khoi",
+            "traditional architecture",
+            "kien truc truyen thong",
+            "single-tier architecture",
+            "kien truc mot tang",
+            "unified application",
+            "ung dung thong nhat"
+        ],
+        "depth": 2,
+        "keywords": [
+            "unified",
+            "coupled",
+            "single deployment",
+            "simple",
+            "traditional",
+            "all-in-one"
+        ],
+        "characteristics": [
+            "tightly coupled",
+            "single codebase",
+            "shared database",
+            "synchronized deployment"
+        ],
+        "use_cases": [
+            "small applications",
+            "mvp",
+            "simple requirements",
+            "limited team"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.event_driven_architecture",
+        "label": "Event-Driven Architecture",
+        "description": "Architecture pattern where system components communicate through events. Enables loose coupling, scalability, and asynchronous processing, ideal for real-time and reactive systems.",
+        "aliases": [
+            "event-driven architecture",
+            "kien truc huong su kien",
+            "eda",
+            "event-based systems",
+            "he thong dua tren su kien",
+            "message-driven architecture",
+            "kien truc huong thong diep",
+            "reactive architecture",
+            "kien truc phan ung"
+        ],
+        "depth": 2,
+        "keywords": [
+            "events",
+            "pub-sub",
+            "messaging",
+            "asynchronous",
+            "decoupled",
+            "reactive",
+            "streams"
+        ],
+        "patterns": [
+            "event sourcing",
+            "cqrs",
+            "saga pattern",
+            "event streaming"
+        ],
+        "technologies": [
+            "Kafka",
+            "RabbitMQ",
+            "EventBridge",
+            "Azure Event Hub"
+        ]
+    },
+    {
+        "key": "software_engineering.software_architecture.serverless_architecture",
+        "label": "Serverless Architecture",
+        "description": "Cloud computing model where cloud provider manages infrastructure, auto-scaling based on demand. Developers focus on code, paying only for actual execution time (Function-as-a-Service).",
+        "aliases": [
+            "serverless",
+            "serverless architecture",
+            "kien truc khong server",
+            "function as a service",
+            "faas",
+            "dich vu ham",
+            "cloud functions",
+            "ham dam may",
+            "serverless computing",
+            "tinh toan serverless"
+        ],
+        "depth": 2,
+        "keywords": [
+            "functions",
+            "auto-scaling",
+            "pay-per-use",
+            "stateless",
+            "event-triggered",
+            "managed"
+        ],
+        "platforms": [
+            "AWS Lambda",
+            "Azure Functions",
+            "Google Cloud Functions",
+            "Cloudflare Workers"
+        ],
+        "benefits": [
+            "no server management",
+            "automatic scaling",
+            "cost optimization",
+            "faster deployment"
+        ]
+    },
+    {
+        "key": "software_engineering.distributed_systems.distributed_computing",
+        "label": "Distributed Computing",
+        "description": "Computing paradigm where tasks are divided among multiple computers working together to achieve common goal. Enables processing large datasets and complex computations through parallelization.",
+        "aliases": [
+            "distributed computing",
+            "tinh toan phan tan",
+            "parallel computing",
+            "tinh toan song song",
+            "distributed processing",
+            "xu ly phan tan",
+            "cluster computing",
+            "tinh toan cum",
+            "grid computing",
+            "tinh toan luoi"
+        ],
+        "depth": 2,
+        "keywords": [
+            "parallelism",
+            "coordination",
+            "communication",
+            "synchronization",
+            "load balancing",
+            "fault tolerance"
+        ],
+        "models": [
+            "client-server",
+            "peer-to-peer",
+            "master-slave",
+            "map-reduce"
+        ],
+        "applications": [
+            "big data processing",
+            "scientific computing",
+            "rendering farms"
+        ]
+    },
+    {
+        "key": "software_engineering.distributed_systems.cloud_computing",
+        "label": "Cloud Computing",
+        "description": "On-demand delivery of computing resources (servers, storage, databases, networking, software) over internet with pay-as-you-go pricing. Provides scalability, flexibility, and cost efficiency.",
+        "aliases": [
+            "cloud computing",
+            "dien toan dam may",
+            "cloud services",
+            "dich vu dam may",
+            "cloud infrastructure",
+            "ha tang dam may",
+            "cloud platforms",
+            "nen tang dam may",
+            "cloud technology",
+            "cong nghe dam may"
+        ],
+        "depth": 2,
+        "keywords": [
+            "iaas",
+            "paas",
+            "saas",
+            "scalability",
+            "elasticity",
+            "multi-tenancy",
+            "virtualization"
+        ],
+        "models": [
+            "IaaS",
+            "PaaS",
+            "SaaS",
+            "FaaS",
+            "public cloud",
+            "private cloud",
+            "hybrid cloud"
+        ],
+        "providers": [
+            "AWS",
+            "Azure",
+            "Google Cloud",
+            "IBM Cloud",
+            "Oracle Cloud"
+        ]
+    },
+    {
+        "key": "software_engineering.distributed_systems.large_scale_systems",
+        "label": "Large-Scale Systems",
+        "description": "Systems designed to handle massive amounts of data, users, or transactions. Requires horizontal scalability, load balancing, caching strategies, and distributed architectures.",
+        "aliases": [
+            "large-scale systems",
+            "he thong quy mo lon",
+            "he thong lon",
+            "scalable systems",
+            "he thong mo rong",
+            "distributed large systems",
+            "he thong phan tan lon",
+            "high-volume systems",
+            "he thong khoi luong cao",
+            "massive systems"
+        ],
+        "depth": 2,
+        "keywords": [
+            "scalability",
+            "throughput",
+            "latency",
+            "availability",
+            "partitioning",
+            "sharding",
+            "replication"
+        ],
+        "techniques": [
+            "horizontal scaling",
+            "caching",
+            "load balancing",
+            "data partitioning",
+            "cdn"
+        ],
+        "examples": [
+            "social media platforms",
+            "e-commerce",
+            "search engines",
+            "streaming services"
+        ]
+    },
+    {
+        "key": "software_engineering.distributed_systems.system_performance_optimization",
+        "label": "System Performance Optimization",
+        "description": "Techniques for improving system speed, efficiency, and resource utilization. Includes profiling, caching, database optimization, algorithm improvement, and infrastructure tuning.",
+        "aliases": [
+            "performance optimization",
+            "toi uu hieu nang",
+            "system optimization",
+            "toi uu he thong",
+            "performance tuning",
+            "tinh chinh hieu nang",
+            "speed optimization",
+            "toi uu toc do",
+            "efficiency improvement",
+            "cai thien hieu suat"
+        ],
+        "depth": 2,
+        "keywords": [
+            "profiling",
+            "caching",
+            "indexing",
+            "query optimization",
+            "load time",
+            "throughput",
+            "latency"
+        ],
+        "strategies": [
+            "code optimization",
+            "database tuning",
+            "caching layers",
+            "cdn usage",
+            "compression"
+        ],
+        "tools": [
+            "profilers",
+            "monitoring tools",
+            "load testing",
+            "benchmarking"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations.devops_practices",
+        "label": "DevOps Practices",
+        "description": "Cultural and technical practices promoting collaboration between development and operations teams. Emphasizes automation, continuous feedback, and iterative improvement for faster, reliable delivery.",
+        "aliases": [
+            "devops practices",
+            "thuc hanh devops",
+            "devops methodology",
+            "phuong phap devops",
+            "continuous delivery",
+            "giao hang lien tuc",
+            "devops culture",
+            "van hoa devops",
+            "agile operations",
+            "van hanh agile"
+        ],
+        "depth": 2,
+        "keywords": [
+            "automation",
+            "collaboration",
+            "continuous",
+            "feedback",
+            "iteration",
+            "measurement",
+            "sharing"
+        ],
+        "principles": [
+            "collaboration",
+            "automation",
+            "continuous improvement",
+            "customer focus"
+        ],
+        "practices": [
+            "version control",
+            "automated testing",
+            "continuous integration",
+            "monitoring"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations.ci_cd",
+        "label": "Continuous Integration and Deployment",
+        "description": "Practices of automatically building, testing code changes (CI) and deploying to production (CD). Enables frequent releases, faster feedback, and reduced integration problems.",
+        "aliases": [
+            "ci cd",
+            "continuous integration",
+            "tich hop lien tuc",
+            "continuous deployment",
+            "trien khai lien tuc",
+            "continuous delivery",
+            "giao hang lien tuc",
+            "automated deployment",
+            "trien khai tu dong",
+            "pipeline automation"
+        ],
+        "depth": 2,
+        "keywords": [
+            "automation",
+            "build",
+            "test",
+            "deploy",
+            "pipeline",
+            "integration",
+            "release",
+            "artifacts"
+        ],
+        "stages": [
+            "source control",
+            "build",
+            "test",
+            "deploy",
+            "monitor"
+        ],
+        "tools": [
+            "Jenkins",
+            "GitLab CI/CD",
+            "GitHub Actions",
+            "CircleCI",
+            "Travis CI"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations.system_monitoring",
+        "label": "System Monitoring",
+        "description": "Observing and tracking system performance, availability, and health. Collects metrics, logs, and traces to detect issues, understand behavior, and ensure reliability.",
+        "aliases": [
+            "system monitoring",
+            "giam sat he thong",
+            "observability",
+            "kha nang quan sat",
+            "monitoring and logging",
+            "giam sat va ghi nhat ky",
+            "application monitoring",
+            "giam sat ung dung",
+            "infrastructure monitoring",
+            "giam sat ha tang"
+        ],
+        "depth": 2,
+        "keywords": [
+            "metrics",
+            "logs",
+            "traces",
+            "alerts",
+            "dashboards",
+            "apm",
+            "uptime",
+            "sla"
+        ],
+        "pillars": [
+            "metrics",
+            "logs",
+            "traces",
+            "alerting"
+        ],
+        "tools": [
+            "Prometheus",
+            "Grafana",
+            "ELK Stack",
+            "Datadog",
+            "New Relic",
+            "Splunk"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations.infrastructure_automation",
+        "label": "Infrastructure Automation",
+        "description": "Managing and provisioning infrastructure through code rather than manual processes. Infrastructure-as-Code (IaC) enables version control, repeatability, and consistency across environments.",
+        "aliases": [
+            "infrastructure automation",
+            "tu dong hoa ha tang",
+            "infrastructure as code",
+            "ha tang dang ma",
+            "automated provisioning",
+            "cung cap tu dong",
+            "iac",
+            "configuration management",
+            "quan ly cau hinh"
+        ],
+        "depth": 2,
+        "keywords": [
+            "iac",
+            "provisioning",
+            "configuration",
+            "declarative",
+            "idempotent",
+            "version control"
+        ],
+        "tools": [
+            "Terraform",
+            "Ansible",
+            "Puppet",
+            "Chef",
+            "CloudFormation",
+            "Pulumi"
+        ],
+        "benefits": [
+            "consistency",
+            "repeatability",
+            "version control",
+            "disaster recovery"
+        ]
+    },
+    {
+        "key": "software_engineering.devops_and_operations.containerization",
+        "label": "Containerization",
+        "description": "Packaging applications with dependencies into isolated containers for consistent deployment across environments. Containers are lightweight, portable, and enable microservices architecture.",
+        "aliases": [
+            "containerization",
+            "dong goi container",
+            "container technology",
+            "cong nghe container",
+            "application containers",
+            "dong goi ung dung",
+            "docker containers",
+            "container hoa",
+            "container orchestration",
+            "dieu phoi container"
+        ],
+        "depth": 2,
+        "keywords": [
+            "docker",
+            "containers",
+            "images",
+            "registry",
+            "orchestration",
+            "kubernetes",
+            "isolation"
+        ],
+        "technologies": [
+            "Docker",
+            "Kubernetes",
+            "Podman",
+            "containerd",
+            "Docker Compose"
+        ],
+        "benefits": [
+            "portability",
+            "consistency",
+            "efficiency",
+            "scalability",
+            "isolation"
+        ]
+    },
+    {
+        "key": "software_engineering.database_systems",
+        "label": "Database Systems",
+        "description": "Organized collections of structured data with software to create, manage, and query data. Essential for storing, retrieving, and manipulating information in applications.",
+        "aliases": [
+            "database systems",
+            "he thong co so du lieu",
+            "databases",
+            "co so du lieu",
+            "data storage",
+            "luu tru du lieu",
+            "dbms",
+            "he quan tri co so du lieu",
+            "data management systems",
+            "he thong quan ly du lieu"
+        ],
+        "depth": 1,
+        "keywords": [
+            "tables",
+            "queries",
+            "transactions",
+            "acid",
+            "indexes",
+            "normalization",
+            "sql"
+        ],
+        "types": [
+            "relational",
+            "nosql",
+            "graph",
+            "time-series",
+            "document",
+            "key-value"
+        ],
+        "operations": [
+            "crud",
+            "joins",
+            "aggregations",
+            "transactions",
+            "backup",
+            "recovery"
+        ]
+    },
+    {
+        "key": "software_engineering.database_systems.relational_databases",
+        "label": "Relational Databases",
+        "description": "Databases organizing data in tables with rows and columns, using SQL for queries. Ensure data integrity through ACID properties, support complex joins and transactions.",
+        "aliases": [
+            "relational databases",
+            "co so du lieu quan he",
+            "sql databases",
+            "co so du lieu sql",
+            "rdbms",
+            "he quan tri co so du lieu quan he",
+            "structured databases",
+            "co so du lieu co cau truc",
+            "table-based databases"
+        ],
+        "depth": 2,
+        "keywords": [
+            "sql",
+            "tables",
+            "rows",
+            "columns",
+            "joins",
+            "foreign keys",
+            "acid",
+            "normalization"
+        ],
+        "systems": [
+            "MySQL",
+            "PostgreSQL",
+            "Oracle",
+            "SQL Server",
+            "MariaDB",
+            "SQLite"
+        ],
+        "concepts": [
+            "primary keys",
+            "foreign keys",
+            "indexes",
+            "views",
+            "stored procedures"
+        ]
+    },
+    {
+        "key": "software_engineering.database_systems.nosql_databases",
+        "label": "NoSQL Databases",
+        "description": "Non-relational databases designed for specific data models and flexible schemas. Types include document, key-value, wide-column, and graph databases, optimized for scalability and performance.",
+        "aliases": [
+            "nosql databases",
+            "co so du lieu nosql",
+            "non-relational databases",
+            "co so du lieu phi quan he",
+            "document databases",
+            "co so du lieu tai lieu",
+            "key-value stores",
+            "luu tru khoa gia tri",
+            "distributed databases",
+            "co so du lieu phan tan"
+        ],
+        "depth": 2,
+        "keywords": [
+            "schema-less",
+            "scalability",
+            "eventual consistency",
+            "horizontal scaling",
+            "flexible"
+        ],
+        "types": [
+            "document (MongoDB)",
+            "key-value (Redis)",
+            "wide-column (Cassandra)",
+            "graph (Neo4j)"
+        ],
+        "use_cases": [
+            "big data",
+            "real-time web",
+            "distributed systems",
+            "flexible schemas"
+        ]
+    },
+    {
+        "key": "software_engineering.database_systems.database_design",
+        "label": "Database Design",
+        "description": "Process of defining database structure, relationships, and constraints to efficiently store and retrieve data. Involves conceptual, logical, and physical design phases.",
+        "aliases": [
+            "database design",
+            "thiet ke co so du lieu",
+            "data modeling",
+            "mo hinh hoa du lieu",
+            "schema design",
+            "thiet ke schema",
+            "database architecture",
+            "kien truc co so du lieu",
+            "er modeling",
+            "mo hinh er"
+        ],
+        "depth": 2,
+        "keywords": [
+            "entities",
+            "relationships",
+            "attributes",
+            "normalization",
+            "denormalization",
+            "er diagram"
+        ],
+        "phases": [
+            "conceptual design",
+            "logical design",
+            "physical design"
+        ],
+        "techniques": [
+            "entity-relationship modeling",
+            "normalization",
+            "indexing strategy"
+        ]
+    },
+    {
+        "key": "software_engineering.software_testing",
+        "label": "Software Testing",
+        "description": "Process of evaluating software to find defects and verify it meets requirements. Includes various testing levels, types, and methodologies to ensure quality and reliability.",
+        "aliases": [
+            "software testing",
+            "kiem thu phan mem",
+            "quality assurance",
+            "dam bao chat luong",
+            "test engineering",
+            "ky thuat kiem thu",
+            "qa",
+            "software quality",
+            "chat luong phan mem",
+            "verification and validation",
+            "xac minh va xac thuc"
+        ],
+        "depth": 1,
+        "keywords": [
+            "test cases",
+            "bugs",
+            "defects",
+            "coverage",
+            "regression",
+            "integration",
+            "validation"
+        ],
+        "levels": [
+            "unit testing",
+            "integration testing",
+            "system testing",
+            "acceptance testing"
+        ],
+        "types": [
+            "functional",
+            "non-functional",
+            "manual",
+            "automated"
+        ]
+    },
+    {
+        "key": "software_engineering.software_testing.automated_testing",
+        "label": "Automated Testing",
+        "description": "Using software tools to execute tests automatically, comparing actual and expected results. Enables faster feedback, regression testing, and continuous integration.",
+        "aliases": [
+            "automated testing",
+            "kiem thu tu dong",
+            "test automation",
+            "tu dong hoa kiem thu",
+            "continuous testing",
+            "kiem thu lien tuc",
+            "automated qa",
+            "qa tu dong"
+        ],
+        "depth": 2,
+        "keywords": [
+            "scripts",
+            "tools",
+            "regression",
+            "ci cd",
+            "test frameworks",
+            "scripting"
+        ],
+        "tools": [
+            "Selenium",
+            "JUnit",
+            "TestNG",
+            "Cypress",
+            "Jest",
+            "Robot Framework"
+        ]
+    },
+    {
+        "key": "software_engineering.security_engineering",
+        "label": "Security Engineering",
+        "description": "Designing, implementing, and maintaining secure software systems. Focuses on protecting against threats, vulnerabilities, and ensuring confidentiality, integrity, and availability of systems and data.",
+        "aliases": [
+            "security engineering",
+            "ky thuat bao mat",
+            "computer security",
+            "an ninh may tinh",
+            "cybersecurity engineering",
+            "ky thuat an ninh mang",
+            "information security",
+            "bao mat thong tin",
+            "secure systems",
+            "he thong bao mat"
+        ],
+        "depth": 1,
+        "keywords": [
+            "encryption",
+            "authentication",
+            "authorization",
+            "vulnerabilities",
+            "threats",
+            "secure coding",
+            "penetration testing"
+        ],
+        "domains": [
+            "network security",
+            "application security",
+            "data security",
+            "cloud security"
+        ],
+        "practices": [
+            "threat modeling",
+            "security audits",
+            "vulnerability assessment",
+            "incident response"
+        ]
+    },
+    {
+        "key": "software_engineering.security_engineering.secure_coding",
+        "label": "Secure Coding",
+        "description": "Writing code that is resistant to security vulnerabilities and attacks. Follows best practices to prevent common vulnerabilities like injection, XSS, and buffer overflows.",
+        "aliases": [
+            "secure coding",
+            "lap trinh bao mat",
+            "safe programming",
+            "lap trinh an toan",
+            "defensive programming",
+            "lap trinh phong thu",
+            "security-aware coding"
+        ],
+        "depth": 2,
+        "keywords": [
+            "input validation",
+            "sanitization",
+            "secure apis",
+            "code review",
+            "static analysis"
+        ],
+        "practices": [
+            "input validation",
+            "output encoding",
+            "secure authentication",
+            "least privilege"
+        ]
+    },
+    {
+        "key": "digital_transformation",
+        "label": "Digital Transformation",
+        "description": "Integration of digital technology into all areas of business and organizations, fundamentally changing operations and value delivery. Encompasses cloud adoption, automation, data-driven decision making, and organizational culture change.",
+        "aliases": [
+            "digital transformation",
+            "chuyen doi so",
+            "digitalization",
+            "so hoa",
+            "digital innovation",
+            "doi moi so",
+            "enterprise digitalization",
+            "chuyen doi so doanh nghiep",
+            "business transformation",
+            "chuyen doi kinh doanh"
+        ],
+        "depth": 0,
+        "keywords": [
+            "digitalization",
+            "automation",
+            "cloud migration",
+            "data-driven",
+            "agile",
+            "innovation",
+            "change management"
+        ],
+        "components": [
+            "process automation",
+            "cloud adoption",
+            "data analytics",
+            "customer experience",
+            "workforce transformation"
+        ],
+        "technologies": [
+            "cloud platforms",
+            "ai/ml",
+            "iot",
+            "big data",
+            "mobile technologies"
+        ]
+    },
+    {
+        "key": "digital_transformation.smart_applications",
+        "label": "Smart Applications",
+        "description": "Intelligent software applications leveraging AI, machine learning, and automation to provide adaptive, personalized, and context-aware experiences. Includes IoT integration, predictive analytics, and intelligent automation.",
+        "aliases": [
+            "smart applications",
+            "ung dung thong minh",
+            "intelligent apps",
+            "ung dung tri thue",
+            "ai-powered applications",
+            "ung dung ai",
+            "cognitive applications",
+            "ung dung nhan thuc",
+            "adaptive applications",
+            "ung dung thich nghi"
+        ],
+        "depth": 1,
+        "keywords": [
+            "ai integration",
+            "personalization",
+            "automation",
+            "predictive",
+            "adaptive",
+            "context-aware",
+            "intelligent"
+        ],
+        "features": [
+            "machine learning models",
+            "natural language interfaces",
+            "predictive analytics",
+            "automation workflows"
+        ],
+        "examples": [
+            "smart home apps",
+            "intelligent assistants",
+            "predictive maintenance",
+            "personalized recommendations"
+        ]
+    },
+    {
+        "key": "communication_systems",
+        "label": "Communication Systems",
+        "description": "Systems for transmitting information between devices, networks, or locations using various technologies. Includes wireless, optical, and network communication protocols and infrastructure.",
+        "aliases": [
+            "communication systems",
+            "he thong truyen thong",
+            "telecommunications",
+            "vien thong",
+            "data communication",
+            "truyen thong du lieu",
+            "network communication",
+            "truyen thong mang"
+        ],
+        "depth": 0,
+        "keywords": [
+            "transmission",
+            "protocols",
+            "bandwidth",
+            "latency",
+            "wireless",
+            "optical",
+            "networking"
+        ],
+        "types": [
+            "wireless communication",
+            "optical communication",
+            "network protocols",
+            "satellite communication"
+        ],
+        "applications": [
+            "5g networks",
+            "iot connectivity",
+            "vehicle communication",
+            "industrial communication"
+        ]
+    },
+    {
+        "key": "communication_systems.optical_communication",
+        "label": "Optical Communication",
+        "description": "Communication using light waves for data transmission. Includes fiber optics, free-space optical communication, visible light communication, and optical networking technologies.",
+        "aliases": [
+            "optical communication",
+            "truyen thong quang",
+            "visible light communication",
+            "truyen thong anh sang nhin thay",
+            "vlc",
+            "optical networks",
+            "mang quang",
+            "free-space optical",
+            "quang khong gian tu do",
+            "optical camera communication",
+            "truyen thong camera quang"
+        ],
+        "depth": 1,
+        "keywords": [
+            "light waves",
+            "fiber optics",
+            "vlc",
+            "led communication",
+            "optical spectrum",
+            "line-of-sight"
+        ],
+        "technologies": [
+            "fiber optic cables",
+            "led/laser transmitters",
+            "photodetectors",
+            "optical modulation"
+        ],
+        "applications": [
+            "fiber to home",
+            "indoor positioning",
+            "vehicle to vehicle",
+            "underwater communication"
+        ]
+    },
+    {
+        "key": "communication_systems.vehicle_communication",
+        "label": "Vehicle Communication and Sensing",
+        "description": "Technologies enabling vehicles to communicate with each other (V2V), infrastructure (V2I), and surrounding environment. Includes sensing, data exchange, and coordination for autonomous and connected vehicles.",
+        "aliases": [
+            "vehicle communication",
+            "truyen thong phuong tien",
+            "v2v",
+            "v2i",
+            "v2x",
+            "vehicular networks",
+            "mang phuong tien",
+            "vehicle sensing",
+            "cam bien phuong tien",
+            "connected vehicles",
+            "xe ket noi",
+            "automotive communication"
+        ],
+        "depth": 1,
+        "keywords": [
+            "v2v",
+            "v2i",
+            "v2x",
+            "dsrc",
+            "c-v2x",
+            "autonomous",
+            "cooperative driving",
+            "safety"
+        ],
+        "technologies": [
+            "dsrc",
+            "c-v2x",
+            "lidar",
+            "radar",
+            "camera sensors",
+            "gps"
+        ],
+        "applications": [
+            "collision avoidance",
+            "traffic management",
+            "platooning",
+            "autonomous driving"
+        ]
+    },
+    {
+        "key": "hardware_systems",
+        "label": "Hardware Systems",
+        "description": "Physical computing components and integrated circuits forming the foundation of computers and embedded systems. Includes digital design, FPGA, ASIC, microprocessors, and system-on-chip technologies.",
+        "aliases": [
+            "hardware systems",
+            "he thong phan cung",
+            "computer hardware",
+            "phan cung may tinh",
+            "digital systems",
+            "he thong so",
+            "electronic systems",
+            "he thong dien tu"
+        ],
+        "depth": 0,
+        "keywords": [
+            "circuits",
+            "processors",
+            "fpga",
+            "asic",
+            "soc",
+            "vhdl",
+            "verilog",
+            "rtl"
+        ],
+        "components": [
+            "processors",
+            "memory",
+            "io interfaces",
+            "buses",
+            "controllers"
+        ],
+        "design_tools": [
+            "cadence",
+            "synopsys",
+            "xilinx vivado",
+            "intel quartus"
+        ]
+    },
+    {
+        "key": "hardware_systems.fpga_soc_design",
+        "label": "FPGA and SoC Design",
+        "description": "Field-Programmable Gate Arrays and System-on-Chip design for custom hardware solutions. Includes HDL programming, synthesis, verification, and implementation of digital systems on reconfigurable hardware.",
+        "aliases": [
+            "fpga",
+            "field programmable gate array",
+            "soc",
+            "system on chip",
+            "thiet ke fpga",
+            "thiet ke soc",
+            "programmable logic",
+            "logic lap trinh duoc",
+            "reconfigurable computing",
+            "tinh toan tai cau hinh"
+        ],
+        "depth": 1,
+        "keywords": [
+            "hdl",
+            "vhdl",
+            "verilog",
+            "synthesis",
+            "place and route",
+            "timing",
+            "fpga fabric"
+        ],
+        "applications": [
+            "signal processing",
+            "video processing",
+            "cryptography",
+            "neural network acceleration"
+        ],
+        "platforms": [
+            "xilinx",
+            "intel altera",
+            "lattice",
+            "microsemi"
+        ]
+    },
+    {
+        "key": "hardware_systems.ic_design",
+        "label": "Integrated Circuit Design",
+        "description": "Design and development of integrated circuits (ICs) including digital, analog, and mixed-signal chips. Covers VLSI design, chip architecture, verification, and fabrication processes.",
+        "aliases": [
+            "ic design",
+            "thiet ke vi mach",
+            "vlsi design",
+            "thiet ke vi mach mo rong lon",
+            "chip design",
+            "thiet ke chip",
+            "circuit design",
+            "thiet ke mach",
+            "asic design",
+            "thiet ke asic"
+        ],
+        "depth": 1,
+        "keywords": [
+            "vlsi",
+            "asic",
+            "analog",
+            "digital",
+            "mixed-signal",
+            "layout",
+            "verification",
+            "fabrication"
+        ],
+        "stages": [
+            "specification",
+            "rtl design",
+            "synthesis",
+            "physical design",
+            "verification",
+            "tape-out"
+        ],
+        "tools": [
+            "cadence",
+            "synopsys",
+            "mentor graphics",
+            "eda tools"
+        ]
+    },
+    {
+        "key": "hardware_systems.computer_architecture",
+        "label": "Computer Architecture",
+        "description": "Design and organization of computer systems including processors, memory hierarchy, I/O systems, and interconnects. Covers instruction set architecture, microarchitecture, and performance optimization.",
+        "aliases": [
+            "computer architecture",
+            "kien truc may tinh",
+            "processor architecture",
+            "kien truc bo xu ly",
+            "system architecture",
+            "kien truc he thong",
+            "microarchitecture",
+            "vi kien truc"
+        ],
+        "depth": 1,
+        "keywords": [
+            "isa",
+            "pipeline",
+            "cache",
+            "memory hierarchy",
+            "parallelism",
+            "risc",
+            "cisc",
+            "performance"
+        ],
+        "concepts": [
+            "instruction pipelining",
+            "superscalar",
+            "out-of-order execution",
+            "branch prediction"
+        ],
+        "examples": [
+            "risc-v",
+            "arm",
+            "x86",
+            "mips"
+        ]
+    },
+    {
+        "key": "hardware_systems.signal_processing_hardware",
+        "label": "Signal Processing Hardware",
+        "description": "Specialized hardware for digital signal processing including image processing, video processing, and high-speed data processing. Covers DSP processors, hardware accelerators, and real-time processing systems.",
+        "aliases": [
+            "signal processing hardware",
+            "phan cung xu ly tin hieu",
+            "dsp hardware",
+            "phan cung dsp",
+            "image processing hardware",
+            "phan cung xu ly anh",
+            "video processing hardware",
+            "phan cung xu ly video",
+            "high-speed processing",
+            "xu ly toc do cao"
+        ],
+        "depth": 1,
+        "keywords": [
+            "dsp",
+            "image processing",
+            "video processing",
+            "real-time",
+            "hardware acceleration",
+            "parallel processing"
+        ],
+        "applications": [
+            "video compression",
+            "image enhancement",
+            "audio processing",
+            "radar processing"
+        ],
+        "technologies": [
+            "dsp processors",
+            "gpu",
+            "fpga accelerators",
+            "asic accelerators"
+        ]
+    },
+    {
+        "key": "hardware_systems.cryptographic_processors",
+        "label": "Cryptographic Processors",
+        "description": "Specialized processors for cryptographic operations including encryption, decryption, and post-quantum cryptography. Includes hardware security modules and secure computation architectures.",
+        "aliases": [
+            "cryptographic processors",
+            "bo xu ly ma hoa",
+            "crypto processors",
+            "crypto hardware",
+            "post-quantum cryptography",
+            "ma hoa hau luong tu",
+            "hardware security",
+            "bao mat phan cung",
+            "cryptographic accelerators",
+            "gia toc ma hoa"
+        ],
+        "depth": 1,
+        "keywords": [
+            "encryption",
+            "decryption",
+            "post-quantum",
+            "hardware security",
+            "aes",
+            "rsa",
+            "ecc"
+        ],
+        "applications": [
+            "secure communication",
+            "blockchain",
+            "payment systems",
+            "data protection"
+        ],
+        "architectures": [
+            "risc-v crypto",
+            "arm trustzone",
+            "intel sgx",
+            "hsm"
+        ]
+    },
+    {
+        "key": "game_development.game_production",
+        "label": "Game Production and Workflow",
+        "description": "Processes, methodologies, and technologies for game development production pipeline. Covers project management, asset creation, version control, build automation, and quality assurance in game development.",
+        "aliases": [
+            "game production",
+            "san xuat game",
+            "game development workflow",
+            "quy trinh phat trien game",
+            "game project management",
+            "quan ly du an game",
+            "game pipeline",
+            "pipeline game",
+            "production process",
+            "quy trinh san xuat"
+        ],
+        "depth": 1,
+        "keywords": [
+            "pipeline",
+            "workflow",
+            "asset management",
+            "version control",
+            "build automation",
+            "qa"
+        ],
+        "stages": [
+            "pre-production",
+            "production",
+            "alpha",
+            "beta",
+            "release",
+            "post-launch"
+        ],
+        "tools": [
+            "unity",
+            "unreal engine",
+            "perforce",
+            "jira",
+            "confluence"
+        ]
+    },
+    {
+        "key": "game_development.online_game_servers",
+        "label": "Online Game Server Architecture",
+        "description": "Server-side architecture and infrastructure for online multiplayer games. Includes networking, matchmaking, state synchronization, anti-cheat, and scalable backend systems.",
+        "aliases": [
+            "online game servers",
+            "server game truc tuyen",
+            "game server architecture",
+            "kien truc server game",
+            "multiplayer servers",
+            "server da nguoi choi",
+            "game backend",
+            "backend game",
+            "dedicated servers",
+            "server chuyen dung"
+        ],
+        "depth": 1,
+        "keywords": [
+            "networking",
+            "matchmaking",
+            "state sync",
+            "lag compensation",
+            "anti-cheat",
+            "scalability"
+        ],
+        "technologies": [
+            "photon",
+            "playfab",
+            "gameserver sdks",
+            "dedicated server hosting"
+        ],
+        "challenges": [
+            "latency",
+            "cheating",
+            "scaling",
+            "state management",
+            "load balancing"
+        ]
+    },
+    {
+        "key": "enterprise_systems",
+        "label": "Enterprise Systems",
+        "description": "Large-scale integrated software systems supporting business processes across organizations. Includes ERP, CRM, supply chain management, and business intelligence systems.",
+        "aliases": [
+            "enterprise systems",
+            "he thong doanh nghiep",
+            "business systems",
+            "he thong kinh doanh",
+            "enterprise software",
+            "phan mem doanh nghiep",
+            "corporate systems",
+            "he thong cong ty"
+        ],
+        "depth": 0,
+        "keywords": [
+            "erp",
+            "crm",
+            "scm",
+            "integration",
+            "business processes",
+            "workflow",
+            "enterprise data"
+        ],
+        "types": [
+            "erp systems",
+            "crm systems",
+            "supply chain",
+            "bi systems",
+            "hr systems"
+        ],
+        "vendors": [
+            "sap",
+            "oracle",
+            "microsoft dynamics",
+            "salesforce"
+        ]
+    },
+    {
+        "key": "enterprise_systems.erp_crm",
+        "label": "ERP and CRM Systems",
+        "description": "Enterprise Resource Planning and Customer Relationship Management systems for managing business operations, resources, and customer interactions across organizations.",
+        "aliases": [
+            "erp",
+            "enterprise resource planning",
+            "lap ke hoach tai nguyen doanh nghiep",
+            "crm",
+            "customer relationship management",
+            "quan ly quan he khach hang",
+            "erp systems",
+            "he thong erp",
+            "crm systems",
+            "he thong crm"
+        ],
+        "depth": 1,
+        "keywords": [
+            "resource planning",
+            "inventory",
+            "accounting",
+            "hr",
+            "customer data",
+            "sales",
+            "marketing"
+        ],
+        "modules": [
+            "financial management",
+            "inventory management",
+            "hr management",
+            "sales force automation"
+        ],
+        "platforms": [
+            "sap",
+            "oracle",
+            "microsoft dynamics",
+            "salesforce",
+            "odoo"
+        ]
+    },
+    {
+        "key": "enterprise_systems.business_intelligence",
+        "label": "Business Intelligence Systems",
+        "description": "Technologies and practices for collecting, analyzing, and presenting business data to support decision-making. Includes data warehousing, reporting, dashboards, and predictive analytics.",
+        "aliases": [
+            "business intelligence",
+            "tri thue kinh doanh",
+            "bi systems",
+            "he thong bi",
+            "business analytics",
+            "phan tich kinh doanh",
+            "enterprise analytics",
+            "phan tich doanh nghiep",
+            "data-driven decision making",
+            "quyet dinh dua tren du lieu"
+        ],
+        "depth": 1,
+        "keywords": [
+            "dashboards",
+            "reporting",
+            "kpis",
+            "data visualization",
+            "olap",
+            "data mining",
+            "predictive analytics"
+        ],
+        "components": [
+            "data warehouse",
+            "etl",
+            "reporting tools",
+            "dashboards",
+            "analytics"
+        ],
+        "tools": [
+            "tableau",
+            "power bi",
+            "qlik",
+            "looker",
+            "sap businessobjects"
+        ]
+    },
+    {
+        "key": "enterprise_systems.process_optimization",
+        "label": "Business Process Optimization",
+        "description": "Methodologies and technologies for analyzing, improving, and automating business processes. Includes process modeling, simulation, optimization algorithms, and resource management.",
+        "aliases": [
+            "process optimization",
+            "toi uu quy trinh",
+            "business process improvement",
+            "cai tien quy trinh kinh doanh",
+            "bpm",
+            "business process management",
+            "quan ly quy trinh kinh doanh",
+            "resource optimization",
+            "toi uu nguyen luc"
+        ],
+        "depth": 1,
+        "keywords": [
+            "process modeling",
+            "bpmn",
+            "workflow",
+            "automation",
+            "optimization",
+            "efficiency",
+            "resource management"
+        ],
+        "techniques": [
+            "process mining",
+            "simulation",
+            "optimization algorithms",
+            "lean",
+            "six sigma"
+        ],
+        "tools": [
+            "bizagi",
+            "signavio",
+            "camunda",
+            "process mining tools"
+        ]
+    },
+    {
+        "key": "software_engineering.agile_methodologies",
+        "label": "Agile Software Development",
+        "description": "Iterative approach to software development emphasizing flexibility, collaboration, and rapid delivery. Includes Scrum, Kanban, XP, and other agile frameworks for project management.",
+        "aliases": [
+            "agile",
+            "agile development",
+            "phat trien agile",
+            "scrum",
+            "kanban",
+            "agile methodologies",
+            "phuong phap agile",
+            "iterative development",
+            "phat trien lap",
+            "extreme programming",
+            "xp",
+            "phuong phap lap trinh cuc han"
+        ],
+        "depth": 1,
+        "keywords": [
+            "sprints",
+            "iterations",
+            "user stories",
+            "backlog",
+            "retrospective",
+            "standup",
+            "continuous"
+        ],
+        "frameworks": [
+            "scrum",
+            "kanban",
+            "xp",
+            "safe",
+            "less",
+            "crystal"
+        ],
+        "principles": [
+            "customer collaboration",
+            "responding to change",
+            "working software",
+            "self-organizing teams"
+        ]
+    },
+    {
+        "key": "ai_data_science.artificial_intelligence.artificial_immune_systems",
+        "label": "Artificial Immune Systems",
+        "description": "Computational systems inspired by biological immune systems for pattern recognition, anomaly detection, and optimization. Used in cybersecurity, fault detection, and adaptive systems.",
+        "aliases": [
+            "artificial immune systems",
+            "he thong mien dich nhan tao",
+            "ais",
+            "immune computing",
+            "tinh toan mien dich",
+            "bio-inspired security",
+            "bao mat sinh hoc",
+            "immune algorithms",
+            "thuat toan mien dich"
+        ],
+        "depth": 2,
+        "keywords": [
+            "pattern recognition",
+            "anomaly detection",
+            "self-nonself",
+            "clonal selection",
+            "negative selection"
+        ],
+        "applications": [
+            "intrusion detection",
+            "virus detection",
+            "fault diagnosis",
+            "optimization"
+        ],
+        "algorithms": [
+            "clonal selection algorithm",
+            "negative selection",
+            "immune network",
+            "danger theory"
+        ]
+    },
+    {
+        "key": "communication_systems.wireless_networks",
+        "label": "Wireless Communication Networks",
+        "description": "Technologies for wireless data transmission including LoRa, LPWAN, WiFi, Bluetooth, and cellular networks. Covers low-power wide-area networks for IoT and long-range communication.",
+        "aliases": [
+            "wireless networks",
+            "mang khong day",
+            "lora",
+            "lpwan",
+            "mang dien rong cong suat thap",
+            "low power wide area",
+            "wireless communication",
+            "truyen thong khong day",
+            "iot networks",
+            "mang iot"
+        ],
+        "depth": 1,
+        "keywords": [
+            "lora",
+            "lorawan",
+            "lpwan",
+            "wireless",
+            "low-power",
+            "long-range",
+            "iot connectivity"
+        ],
+        "technologies": [
+            "lora",
+            "sigfox",
+            "nb-iot",
+            "wifi",
+            "bluetooth",
+            "zigbee"
+        ],
+        "applications": [
+            "smart cities",
+            "agriculture",
+            "asset tracking",
+            "environmental monitoring"
+        ]
+    },
+    {
+        "key": "hardware_systems.rf_microwave_design",
+        "label": "RF and Microwave Circuit Design",
+        "description": "Design of radio frequency and microwave circuits for communication systems. Includes high-frequency circuit design, antenna design, and RF system integration.",
+        "aliases": [
+            "rf design",
+            "thiet ke cao tan",
+            "microwave circuits",
+            "mach vi song",
+            "high frequency design",
+            "thiet ke tan so cao",
+            "rf circuit design",
+            "thiet ke mach rf",
+            "antenna design",
+            "thiet ke anten"
+        ],
+        "depth": 1,
+        "keywords": [
+            "rf",
+            "microwave",
+            "high frequency",
+            "impedance matching",
+            "s-parameters",
+            "transmission lines"
+        ],
+        "applications": [
+            "wireless transceivers",
+            "radar systems",
+            "satellite communication",
+            "5g systems"
+        ],
+        "tools": [
+            "ads",
+            "hfss",
+            "cst",
+            "ansys"
+        ]
+    }
+]

@@ -50,6 +50,22 @@ export class Lecturer extends BaseEntity {
     @Prop({ type: [Publication], default: [] })
     publications: Publication[]
 
+    @Prop({
+        type: [
+            {
+                conceptKey: { type: String, required: true },
+                label: { type: String, required: true },
+                score: { type: Number, required: true }
+            }
+        ],
+        default: []
+    })
+    lecturer_ontology_extract: Array<{
+        conceptKey: string
+        label: string
+        score: number
+    }>
+
     // @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Topic', default: [] })
     // supervisedThesisIds: Types.ObjectId[]
 }

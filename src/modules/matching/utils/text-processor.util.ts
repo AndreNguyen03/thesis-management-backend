@@ -1,129 +1,9 @@
 /**
- * Text processing utilities for concept matching
+ * Text processing utilities for Vietnamese and English text normalization
  */
 
-/**
- * English and Vietnamese stopwords to be removed during text processing
- */
-const STOPWORDS = new Set([
-    // English stopwords
-    'a',
-    'an',
-    'and',
-    'are',
-    'as',
-    'at',
-    'be',
-    'by',
-    'for',
-    'from',
-    'has',
-    'he',
-    'in',
-    'is',
-    'it',
-    'its',
-    'of',
-    'on',
-    'that',
-    'the',
-    'to',
-    'was',
-    'will',
-    'with',
-    'or',
-    'but',
-    'not',
-    'can',
-    'this',
-    'they',
-    'have',
-    'had',
-    'what',
-    'when',
-    'where',
-    'who',
-    'which',
-    'their',
-    'if',
-    'do',
-    'does',
-    'did',
-    'would',
-    'could',
-    'should',
-
-    // Vietnamese stopwords
-    'va',
-    'cua',
-    'la',
-    'co',
-    'trong',
-    'mot',
-    'cac',
-    'cho',
-    'den',
-    'voi',
-    'tu',
-    'tren',
-    'duoi',
-    'nay',
-    'do',
-    'ma',
-    'khi',
-    'nhu',
-    'se',
-    'da',
-    'roi',
-    'ra',
-    'vao',
-    'hay',
-    'nhung',
-    'con',
-    'thi',
-    'bi',
-    'duoc',
-    'ho',
-    'o',
-    'noi',
-    'sau',
-    'truoc',
-    'giua',
-    'va',
-    'cua',
-    'la',
-    'co',
-    'trong',
-    'mot',
-    'cac',
-    'cho',
-    'den',
-    'voi',
-    'tu',
-    'tren',
-    'duoi',
-    'nay',
-    'do',
-    'ma',
-    'khi',
-    'nhu',
-    'se',
-    'da',
-    'roi',
-    'ra',
-    'vao',
-    'hay',
-    'nhung',
-    'con',
-    'thi',
-    'bi',
-    'duoc',
-    'ho',
-    'o',
-    'noi',
-    'sau',
-    'truoc',
-    'giua',
+// Vietnamese stopwords
+const VIETNAMESE_STOPWORDS = new Set([
     'các',
     'của',
     'là',
@@ -137,134 +17,150 @@ const STOPWORDS = new Set([
     'tại',
     'này',
     'đó',
-    'nên',
-    'sẽ',
-    'đã',
-    'hoặc',
-    'nhưng',
-    'khi',
-    'đến',
+    'cho',
     'với',
-    'từ'
+    'trong',
+    'từ',
+    'bởi',
+    'về',
+    'theo',
+    'sau',
+    'trước',
+    'khi',
+    'nếu',
+    'vì',
+    'nên',
+    'mà',
+    'đã',
+    'sẽ',
+    'đang',
+    'vào',
+    'ra',
+    'lên',
+    'xuống',
+    'qua',
+    'lại',
+    'cũng',
+    'còn',
+    'đều',
+    'đã'
+])
+
+// English stopwords
+const ENGLISH_STOPWORDS = new Set([
+    'the',
+    'a',
+    'an',
+    'and',
+    'or',
+    'but',
+    'in',
+    'on',
+    'at',
+    'to',
+    'for',
+    'of',
+    'with',
+    'by',
+    'from',
+    'as',
+    'is',
+    'was',
+    'are',
+    'were',
+    'been',
+    'be',
+    'have',
+    'has',
+    'had',
+    'do',
+    'does',
+    'did',
+    'will',
+    'would',
+    'should',
+    'could',
+    'may',
+    'might',
+    'must',
+    'can',
+    'this',
+    'that',
+    'these',
+    'those'
 ])
 
 /**
- * Remove Vietnamese diacritics (accents)
+ * Remove Vietnamese diacritics from text
  * Converts: "Trí tuệ nhân tạo" → "tri tue nhan tao"
  */
 export function removeDiacritics(text: string): string {
     return text
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritical marks
+        .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritics
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'D')
 }
 
 /**
- * Normalize text for matching
- * - Convert to lowercase
- * - Remove parentheses content (e.g., "(AI)" or "(Điện toán đám mây)")
- * - Remove Vietnamese diacritics (accents)
- * - Remove special characters
- * - Trim whitespace
- * - Remove extra spaces
+ * Normalize text for embedding generation
+ * - Lowercase
+ * - Remove parentheses and content: "(Cơ bản)" → ""
+ * - Remove diacritics
+ * - Clean special characters
+ * - Trim extra whitespace
  */
 export function normalizeText(text: string): string {
     return text
         .toLowerCase()
-        .replace(/\([^)]*\)/g, '') // Remove text in parentheses
-        .replace(/[–—]/g, '-') // Normalize dashes
-        .trim()
+        .replace(/\([^)]*\)/g, '') // Remove parentheses and content
+        .replace(/\[[^\]]*\]/g, '') // Remove brackets and content
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritical marks
+        .replace(/[\u0300-\u036f]/g, '') // Remove combining diacritics
         .replace(/đ/g, 'd')
         .replace(/Đ/g, 'D')
-        .replace(/[^\w\s-]/g, ' ') // Remove special characters, keep alphanumeric and spaces
-        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .replace(/[^\w\s-]/g, ' ') // Replace special chars with space
+        .replace(/\s+/g, ' ') // Collapse multiple spaces
         .trim()
 }
 
 /**
  * Remove stopwords from text
  */
-export function removeStopwords(text: string): string {
-    const tokens = text.split(' ')
-    const filtered = tokens.filter((token) => !STOPWORDS.has(token) && token.length > 1)
-    return filtered.join(' ')
+export function removeStopwords(text: string, language: 'vi' | 'en' | 'both' = 'both'): string[] {
+    const words = text.toLowerCase().split(/\s+/)
+    const stopwords =
+        language === 'vi'
+            ? VIETNAMESE_STOPWORDS
+            : language === 'en'
+              ? ENGLISH_STOPWORDS
+              : new Set([...VIETNAMESE_STOPWORDS, ...ENGLISH_STOPWORDS])
+
+    return words.filter((word) => !stopwords.has(word) && word.length > 1)
 }
 
 /**
- * Full text preprocessing pipeline:
- * 1. Normalize text
- * 2. Remove stopwords
+ * Full text preprocessing pipeline
+ * Normalize → Remove stopwords → Join
  */
-export function preprocessText(text: string): string {
+export function preprocessText(text: string, removeStopwordsFlag = false): string {
     const normalized = normalizeText(text)
-    return removeStopwords(normalized)
+
+    if (removeStopwordsFlag) {
+        const words = removeStopwords(normalized)
+        return words.join(' ')
+    }
+
+    return normalized
 }
 
 /**
- * Extract tokens from text
+ * Extract keywords from text (normalized, no stopwords)
  */
-export function tokenize(text: string): string[] {
+export function extractKeywords(text: string): string[] {
     const normalized = normalizeText(text)
-    return normalized.split(' ').filter((token) => token.length > 0)
-}
+    const words = removeStopwords(normalized)
 
-/**
- * Generate n-grams from tokens
- * Useful for matching multi-word concepts
- */
-export function generateNGrams(tokens: string[], maxN: number = 3): string[] {
-    const ngrams: string[] = []
-
-    for (let n = 1; n <= Math.min(maxN, tokens.length); n++) {
-        for (let i = 0; i <= tokens.length - n; i++) {
-            ngrams.push(tokens.slice(i, i + n).join(' '))
-        }
-    }
-
-    return ngrams
-}
-
-/**
- * Calculate cosine similarity between two vectors
- */
-export function cosineSimilarity(vecA: number[], vecB: number[]): number {
-    if (vecA.length !== vecB.length) {
-        throw new Error('Vectors must have the same length')
-    }
-
-    if (vecA.length === 0) {
-        return 0
-    }
-
-    let dotProduct = 0
-    let normA = 0
-    let normB = 0
-
-    for (let i = 0; i < vecA.length; i++) {
-        dotProduct += vecA[i] * vecB[i]
-        normA += vecA[i] * vecA[i]
-        normB += vecB[i] * vecB[i]
-    }
-
-    normA = Math.sqrt(normA)
-    normB = Math.sqrt(normB)
-
-    if (normA === 0 || normB === 0) {
-        return 0
-    }
-
-    return dotProduct / (normA * normB)
-}
-
-/**
- * Group similar skills together
- * This is a simple implementation - can be enhanced with clustering
- */
-export function groupSkills(skills: string[]): string[][] {
-    // For now, return each skill as its own group
-    // TODO: Implement proper skill clustering/grouping
-    return skills.map((skill) => [skill])
+    // Remove duplicates and sort by length (longer keywords first)
+    return [...new Set(words)].sort((a, b) => b.length - a.length)
 }

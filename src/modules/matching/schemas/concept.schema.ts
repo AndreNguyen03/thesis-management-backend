@@ -15,6 +15,9 @@ export class Concept extends Document {
     @Prop({ type: Number, default: 0 })
     depth: number
 
+    @Prop({ type: [String], default: [] })
+    keywords: string[]
+
     @Prop({ type: [Number], default: [] })
     embedding?: number[]
 }

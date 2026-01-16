@@ -28,7 +28,7 @@ export class ConceptMatcherService implements OnModuleInit {
     private readonly logger = new Logger(ConceptMatcherService.name)
     private readonly EMBEDDING_SIMILARITY_THRESHOLD = 0.7
     private readonly ALIAS_MATCH_THRESHOLD = 0.9
-    
+
     // Trie index for fast alias matching
     private trieIndex: TrieIndex | null = null
     private conceptCache: Map<string, ConceptDoc> = new Map()
@@ -54,22 +54,21 @@ export class ConceptMatcherService implements OnModuleInit {
         this.logger.log('Building Trie index from concepts...')
 
         const concepts = await this.conceptModel.find().lean<ConceptDoc[]>().exec()
-        
+
         // Build cache
         this.conceptCache.clear()
-        concepts.forEach(concept => {
+        concepts.forEach((concept) => {
             this.conceptCache.set(concept.key, concept)
         })
 
         // Build Trie
         this.trieIndex = buildTrieIndex(concepts, preprocessText)
-        
+
         const stats = this.trieIndex.getStats()
         const duration = Date.now() - startTime
-        
+
         this.logger.log(
-            `Trie index built: ${stats.totalConcepts} concepts, ` +
-            `${stats.totalNodes} nodes, took ${duration}ms`
+            `Trie index built: ${stats.totalConcepts} concepts, ` + `${stats.totalNodes} nodes, took ${duration}ms`
         )
     }
 
@@ -124,7 +123,7 @@ export class ConceptMatcherService implements OnModuleInit {
             if (concept) {
                 this.logger.debug(
                     `Trie fuzzy match for "${originalText}": ${concept.key} ` +
-                    `(score: ${fuzzyMatches[0].score.toFixed(2)})`
+                        `(score: ${fuzzyMatches[0].score.toFixed(2)})`
                 )
                 return {
                     concept,
@@ -142,7 +141,7 @@ export class ConceptMatcherService implements OnModuleInit {
             if (concept) {
                 this.logger.debug(
                     `Trie substring match for "${originalText}": ${concept.key} ` +
-                    `(score: ${substringMatches[0].score.toFixed(2)})`
+                        `(score: ${substringMatches[0].score.toFixed(2)})`
                 )
                 return {
                     concept,
@@ -161,7 +160,6 @@ export class ConceptMatcherService implements OnModuleInit {
      * Legacy matching method (fallback when Trie not available)
      */
     private async matchTextLegacy(originalText: string, normalizedText: string): Promise<ConceptMatch | null> {
-
         if (!normalizedText) {
             return null
         }

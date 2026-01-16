@@ -38,6 +38,25 @@ export class Student extends BaseEntity {
 
     @Prop({ default: [] })
     interests: string[]
+
+    @Prop({
+        type: [
+            {
+                conceptKey: { type: String, required: true },
+                label: { type: String, required: true },
+                score: { type: Number, required: true }
+            }
+        ],
+        default: []
+    })
+    ontology_extract: Array<{
+        conceptKey: string
+        label: string
+        score: number
+    }>
+
+    @Prop({ type: [Number], default: [] })
+    embedding: number[]
 }
 
 export const StudentSchema = SchemaFactory.createForClass(Student)
