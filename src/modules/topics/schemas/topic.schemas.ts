@@ -13,7 +13,8 @@ import { Field } from '../../fields/schemas/fields.schemas'
 
 @Schema({
     timestamps: {
-        createdAt: 'created_at'
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     }
 })
 @Schema({ _id: false })

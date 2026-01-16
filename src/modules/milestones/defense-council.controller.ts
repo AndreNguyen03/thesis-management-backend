@@ -18,6 +18,7 @@ import {
     UpdateTopicOrderDto,
     SubmitTopicScoresDto
 } from './dtos/defense-council.dto'
+import { SaveDraftScoreDto, SubmitDetailedScoreDto } from './dtos/detailed-score.dto'
 import { ActiveUserData } from '../../auth/interface/active-user-data.interface'
 import { PaginationQueryDto } from '../../common/pagination-an/dtos/pagination-query.dto'
 import { CouncilRoleGuard, CouncilRoles } from './guards/council-role.guard'
@@ -372,6 +373,113 @@ export class DefenseCouncilController {
         return {
             message: 'Lấy thống kê thành công',
             data: analytics
+        }
+    }
+
+    // ==================== DETAILED SCORING ENDPOINTS ====================
+
+    /**
+     * Lưu nháp điểm chi tiết (auto-save từ frontend)
+     * POST /defense-councils/:councilId/topics/:topicId/draft-scores
+     */
+    @Post(':councilId/topics/:topicId/draft-scores')
+    @CouncilRoles('chairperson', 'secretary', 'member', 'reviewer', 'supervisor')
+    @UseGuards(CouncilRoleGuard)
+    async saveDraftScore(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Body() dto: SaveDraftScoreDto,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const draft = await this.defenseCouncilService.saveDraftScore(councilId, topicId, req.user.sub, dto)
+        return {
+            message: 'Lưu nháp thành công',
+            data: draft
+        }
+    }
+
+    /**
+     * Load nháp điểm của user hiện tại
+     * GET /defense-councils/:councilId/topics/:topicId/my-draft?studentId=xxx
+     */
+    @Get(':councilId/topics/:topicId/my-draft')
+    @CouncilRoles('chairperson', 'secretary', 'member', 'reviewer', 'supervisor')
+    @UseGuards(CouncilRoleGuard)
+    async getMyDraft(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Query('studentId') studentId: string | undefined,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const draft = await this.defenseCouncilService.getMyDraft(councilId, topicId, req.user.sub, studentId)
+        return {
+            message: draft ? 'Tìm thấy nháp' : 'Không có nháp',
+            data: draft
+        }
+    }
+
+    /**
+     * Submit điểm chi tiết chính thức
+     * POST /defense-councils/:councilId/topics/:topicId/submit-detailed-scores
+     */
+    @Post(':councilId/topics/:topicId/submit-detailed-scores')
+    // @CouncilRoles('chairperson', 'secretary', 'member', 'reviewer', 'supervisor')
+    // @UseGuards(CouncilRoleGuard)
+    async submitDetailedScore(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Body() dto: SubmitDetailedScoreDto,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const council = await this.defenseCouncilService.submitDetailedScore(
+            councilId,
+            topicId,
+            req.user.sub,
+            dto,
+            req.user.role === UserRole.FACULTY_BOARD
+        )
+        return {
+            message: 'Submit điểm thành công',
+            data: council
+        }
+    }
+
+    /**
+     * Xóa nháp (discard)
+     * DELETE /defense-councils/:councilId/topics/:topicId/draft-scores?studentId=xxx
+     */
+    @Delete(':councilId/topics/:topicId/draft-scores')
+    @CouncilRoles('chairperson', 'secretary', 'member', 'reviewer', 'supervisor')
+    @UseGuards(CouncilRoleGuard)
+    async deleteDraft(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Query('studentId') studentId: string | undefined,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        await this.defenseCouncilService.deleteDraft(councilId, topicId, req.user.sub, studentId)
+        return {
+            message: 'Xóa nháp thành công'
+        }
+    }
+
+    /**
+     * Lấy điểm mà user đã chấm cho topic
+     * GET /defense-councils/:councilId/topics/:topicId/my-score?studentId=xxx
+     */
+    @Get(':councilId/topics/:topicId/my-score')
+    @Roles(UserRole.FACULTY_BOARD, UserRole.LECTURER)
+    @UseGuards(RolesGuard)
+    async getMyScoreForTopic(
+        @Param('councilId') councilId: string,
+        @Param('topicId') topicId: string,
+        @Query('studentId') studentId: string | undefined,
+        @Req() req: { user: ActiveUserData }
+    ) {
+        const score = await this.defenseCouncilService.getMyScoreForTopic(councilId, topicId, req.user.sub, studentId)
+        return {
+            message: score ? 'Tìm thấy điểm' : 'Chưa chấm điểm',
+            data: score
         }
     }
 }

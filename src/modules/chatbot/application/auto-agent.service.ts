@@ -246,8 +246,8 @@ Bắt đầu!`.trim()
         this.agent = new AgentExecutor({
             agent,
             tools,
-            verbose: true, // Log chi tiết quá trình
-            maxIterations: 3, // Chỉ 1 vòng để tránh multi-tool calling với Groq
+            verbose: false, // Log chi tiết quá trình
+            maxIterations: 10, // Chỉ 1 vòng để tránh multi-tool calling với Groq
             returnIntermediateSteps: true, // Trả về các bước trung gian,
             earlyStoppingMethod: 'force' // Dừng khi LLM tạo Final Answer
         })
@@ -371,6 +371,10 @@ Bắt đầu!`.trim()
                             console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
                         } catch (error) {
                             console.error('❌ Failed to parse lecturers data:', error)
+                            // Nếu không parse được JSON, check xem có phải error message không
+                            if (typeof output === 'string' && output.startsWith('Lỗi')) {
+                                console.log('⚠️ Tool returned error message, skipping buffer')
+                            }
                         }
                     }
                 }
@@ -384,6 +388,13 @@ Bắt đầu!`.trim()
                             console.log('📦 Lecturers data buffered:', bufferedLecturerData.total || 0, 'lecturers')
                         } catch (error) {
                             console.error('❌ Failed to parse lecturers data:', error)
+                            // Nếu không parse được JSON, check xem có phải error message không
+                            if (
+                                typeof output === 'string' &&
+                                (output.startsWith('Lỗi') || output.includes('chưa có profile'))
+                            ) {
+                                console.log('⚠️ Tool returned error/info message, skipping buffer')
+                            }
                         }
                     }
                 }

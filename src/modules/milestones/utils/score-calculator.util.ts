@@ -50,3 +50,18 @@ export function calculateScoreAndGrade(scores: number[]): { finalScore: number; 
 
     return { finalScore, gradeText }
 }
+export function toScoreState(detailedScores) {
+    console.log('Converting detailed scores to score state:', detailedScores)
+    const scoreState = {}
+    detailedScores.forEach((ds) => {
+        if (!scoreState[ds.criterionId]) {
+            scoreState[ds.criterionId] = { mainScore: null, subScores: {} }
+        }
+        if (ds.subcriterionId) {
+            scoreState[ds.criterionId].subScores[ds.subcriterionId] = ds.score
+        } else {
+            scoreState[ds.criterionId].mainScore = ds.score
+        }
+    })
+    return scoreState
+}

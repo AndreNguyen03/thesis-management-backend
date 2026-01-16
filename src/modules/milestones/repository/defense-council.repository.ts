@@ -264,8 +264,6 @@ export class DefenseCouncilRepository {
 
     // Thêm đề tài vào hội đồng
     async addTopicToCouncil(councilId: string, dto: AddTopicToCouncilDto): Promise<DefenseCouncil> {
-        console.log('topicAssignment dto', dto)
-
         const councilDoc = await this.defenseCouncilModel.findOne({
             _id: new mongoose.Types.ObjectId(councilId),
             deleted_at: null
@@ -299,8 +297,8 @@ export class DefenseCouncilRepository {
             topicId: dto.topicId,
             titleVN: dto.titleVN,
             titleEng: dto.titleEng || '',
-            studentNames: dto.studentNames || [],
-            lecturerNames: dto.lecturerNames || [],
+            students: dto.students || [],
+            lecturers: dto.lecturers || [],
             members: dto.members,
             defenseOrder: dto.defenseOrder || councilDoc.topics.length + 1,
             scores: [],
@@ -354,8 +352,8 @@ export class DefenseCouncilRepository {
             topicId: topicDto.topicId,
             titleVN: topicDto.titleVN,
             titleEng: topicDto.titleEng || '',
-            studentNames: topicDto.studentNames || [],
-            lecturerNames: topicDto.lecturerNames || [],
+            students: topicDto.students || [],
+            lecturers: topicDto.lecturers || [],
             members: topicDto.members,
             defenseOrder: topicDto.defenseOrder || councilDoc.topics.length + 1,
             scores: [],
@@ -639,6 +637,7 @@ export class DefenseCouncilRepository {
     }
     async getDetailScoringDefenseCouncil(councilId: string, lecturerId?: string): Promise<DefenseCouncil> {
         const pipeline: any = []
+        console.log('lecturerId', lecturerId)
         pipeline.push(
             {
                 $match: {
@@ -774,7 +773,8 @@ export class DefenseCouncilRepository {
                         semester: '$periodInfo.semester',
                         currentPhase: '$periodInfo.currentPhase',
                         faculty: '$facultyInfo'
-                    }
+                    },
+                    evaluationTemplateId: 1
                 }
             }
         )
@@ -1098,7 +1098,7 @@ export class DefenseCouncilRepository {
                 const row: any = {
                     order: topic.defenseOrder || index + 1,
                     titleVN: topic.titleVN,
-                    students: topic.studentNames.join(', ')
+                    students: topic.students?.map((s) => s.fullName).join(', ') || ''
                 }
 
                 // Add member names and scores

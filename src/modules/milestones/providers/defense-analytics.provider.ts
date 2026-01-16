@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DefenseCouncilRepository } from '../repository/defense-council.repository'
 import { DefenseCouncil, TopicAssignment } from '../schemas/defense-council.schema'
+import { StudentInCouncilDto } from '../dtos/defense-council.dto'
 
 export interface CouncilAnalytics {
     overview: {
@@ -35,7 +36,7 @@ export interface CouncilAnalytics {
     topPerformers: Array<{
         topicId: string
         titleVN: string
-        studentNames: string[]
+        students: Array<StudentInCouncilDto>
         finalScore: number
         gradeText: string
     }>
@@ -205,7 +206,7 @@ export class DefenseAnalyticsProvider {
             .map((t) => ({
                 topicId: t.topicId.toString(),
                 titleVN: t.titleVN,
-                studentNames: t.studentNames,
+                students: t.students || [],
                 finalScore: t.finalScore || 0,
                 gradeText: t.gradeText || ''
             }))

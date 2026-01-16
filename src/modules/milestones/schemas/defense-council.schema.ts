@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 import { BaseEntity } from '../../../shared/base/entity/base.entity'
 import { MilestoneTemplate } from './milestones-templates.schema'
+import { EvaluationTemplate } from './evaluation-template.schema'
 import { User } from '../../../users/schemas/users.schema'
 import { Topic } from '../../topics/schemas/topic.schemas'
 export enum CouncilMemberRole {
@@ -11,6 +12,43 @@ export enum CouncilMemberRole {
     REVIEWER = 'reviewer',
     SUPERVISOR = 'supervisor'
 }
+
+// Student in council
+@Schema({ _id: false })
+export class StudentInCouncil {
+    @Prop({ required: true })
+    userId: string
+
+    @Prop({ required: true })
+    fullName: string
+
+    @Prop()
+    studentCode?: string
+
+    @Prop()
+    email?: string
+}
+
+export const StudentInCouncilSchema = SchemaFactory.createForClass(StudentInCouncil)
+
+// Lecturer in council
+@Schema({ _id: false })
+export class LecturerInCouncil {
+    @Prop({ required: true })
+    userId: string
+
+    @Prop({ required: true })
+    fullName: string
+
+    @Prop({ required: true })
+    title: string
+
+    @Prop()
+    email?: string
+}
+
+export const LecturerInCouncilSchema = SchemaFactory.createForClass(LecturerInCouncil)
+
 // Thành viên hội đồng (CHUNG cho tất cả đề tài trong hội đồng)
 @Schema({ _id: false })
 export class CouncilMember {
@@ -41,7 +79,27 @@ export enum ScoreType {
     SUPERVISOR = 'supervisor'
 }
 
-// Điểm số từ 1 thành viên
+// Điểm chi tiết cho từng tiêu chí (reference đến EvaluationTemplate)
+@Schema({ _id: false })
+export class DetailedCriterionScore {
+    @Prop({ required: true })
+    criterionId: string // "1", "2", "3", "4" - reference to EvaluationCriterion.id
+
+    @Prop() // Optional - chỉ có khi chấm subcriteria
+    subcriterionId?: string // "1.1", "1.2" - reference to SubCriterion.id
+
+    @Prop({ type: Number, min: 0, required: true })
+    score: number // Điểm thực tế giảng viên chấm
+
+    @Prop({ type: Number, min: 0, required: true })
+    maxScore: number // Copy từ template để preserve khi template thay đổi
+
+    @Prop({ default: '' })
+    elo: string // Copy từ template để preserve
+}
+
+export const DetailedCriterionScoreSchema = SchemaFactory.createForClass(DetailedCriterionScore)
+// Điểm số từ 1 thành viên hội đồng
 @Schema({ _id: false })
 export class Score {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name, required: true })
@@ -58,10 +116,18 @@ export class Score {
     scoreType: ScoreType
 
     @Prop({ type: Number, min: 0, max: 10 })
-    total: number // Tổng điểm
+    total: number // Tổng điểm (tự động tính từ detailedScores hoặc nhập thủ công cho hệ thống cũ)
 
     @Prop({ default: '' })
     comment: string
+
+    // Điểm chi tiết theo từng tiêu chí - NEW FEATURE
+    @Prop({ type: [DetailedCriterionScore], default: [] })
+    detailedScores?: DetailedCriterionScore[] // Optional để tương thích với data cũ
+
+    // Nếu chấm riêng từng sinh viên trong nhóm
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: User.name})
+    studentId?: string // Optional - chỉ dùng khi topic có nhiều SV và chấm riêng
 
     @Prop({ type: Date, default: Date.now })
     scoredAt: Date
@@ -88,11 +154,11 @@ export class TopicAssignment {
     @Prop({ default: '' })
     titleEng: string
 
-    @Prop({ type: [String], default: [] })
-    studentNames: string[]
+    @Prop({ type: [StudentInCouncil], default: [] })
+    students: StudentInCouncil[]
 
-    @Prop({ type: [String], default: [] })
-    lecturerNames: string[]
+    @Prop({ type: [LecturerInCouncil], default: [] })
+    lecturers: LecturerInCouncil[]
 
     @Prop({ type: Number, default: 0 })
     defenseOrder: number // Thứ tự bảo vệ (1, 2, 3...)
@@ -120,6 +186,12 @@ export const TopicAssignmentSchema = SchemaFactory.createForClass(TopicAssignmen
 export class DefenseCouncil extends BaseEntity {
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: MilestoneTemplate.name, required: true })
     milestoneTemplateId: string // Đợt bảo vệ
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: EvaluationTemplate.name })
+    evaluationTemplateId?: string // Template tiêu chí đánh giá - link tới EvaluationTemplate
+
+    @Prop({ type: Number, default: 1 })
+    templateVersion?: number
 
     @Prop({ required: true })
     name: string // VD: "Hội đồng 1 - Phòng E03.2"

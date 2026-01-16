@@ -18,6 +18,44 @@ import { CouncilMemberRole, ScoreType } from '../schemas/defense-council.schema'
 import { IntersectionType } from '@nestjs/mapped-types'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
+// DTO cho student trong hội đồng
+export class StudentInCouncilDto {
+    @IsString()
+    @IsNotEmpty()
+    userId: string
+
+    @IsString()
+    @IsNotEmpty()
+    fullName: string
+
+    @IsString()
+    @IsOptional()
+    studentCode?: string
+
+    @IsString()
+    @IsOptional()
+    email?: string
+}
+
+// DTO cho lecturer trong hội đồng
+export class LecturerInCouncilDto {
+    @IsString()
+    @IsNotEmpty()
+    userId: string
+
+    @IsString()
+    @IsNotEmpty()
+    fullName: string
+
+    @IsString()
+    @IsNotEmpty()
+    title: string
+
+    @IsString()
+    @IsOptional()
+    email?: string
+}
+
 // DTO cho thành viên hội đồng
 export class CouncilMemberDto {
     @IsMongoId()
@@ -42,6 +80,10 @@ export class CreateDefenseCouncilDto {
     @IsMongoId()
     @IsNotEmpty()
     milestoneTemplateId: string
+
+    @IsMongoId()
+    @IsOptional()
+    evaluationTemplateId?: string
 
     @IsString()
     @IsNotEmpty()
@@ -72,14 +114,16 @@ export class AddTopicToCouncilDto {
     titleEng?: string
 
     @IsArray()
-    @IsString({ each: true })
+    @ValidateNested({ each: true })
+    @Type(() => StudentInCouncilDto)
     @IsOptional()
-    studentNames?: string[]
+    students?: StudentInCouncilDto[]
 
     @IsArray()
-    @IsString({ each: true })
+    @ValidateNested({ each: true })
+    @Type(() => LecturerInCouncilDto)
     @IsOptional()
-    lecturerNames?: string[]
+    lecturers?: LecturerInCouncilDto[]
 
     @IsArray()
     @ValidateNested({ each: true })

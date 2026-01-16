@@ -38,12 +38,21 @@ import { UploadFilesModule } from '../upload-files/upload-files.module'
 import { ChatbotGateway } from './gateways/chatbot.gateway'
 import { Student, StudentSchema } from '../../users/schemas/student.schema'
 import { ProfileMatchingTool } from './tools/profile-matching.tool'
+import { QueryParserProvider } from './providers/query-parser.provider'
+import { EnhancedEmbeddingProvider } from './providers/enhanced-embedding.provider'
+import { LecturerRerankerProvider } from './providers/lecturer-reranker.provider'
+import { LecturerSearchCacheProvider } from './providers/lecturer-search-cache.provider'
+import groqConfig from '../../config/groq.config'
 
 @Module({
     controllers: [ChatController, AutoAgentController, ChatbotConversationController],
     providers: [
         ChatBotService,
         GetEmbeddingProvider,
+        EnhancedEmbeddingProvider,
+        QueryParserProvider,
+        LecturerRerankerProvider,
+        LecturerSearchCacheProvider,
         RetrievalProvider,
         GenerationProvider,
         {
@@ -64,6 +73,7 @@ import { ProfileMatchingTool } from './tools/profile-matching.tool'
     ],
     imports: [
         ConfigModule.forFeature(googleAIConfig),
+        ConfigModule.forFeature(groqConfig),
         MongooseModule.forFeature([
             { name: ChatBot.name, schema: ChatBotSchema },
             { name: ChatbotVersion.name, schema: ChatBotVersionSchema },
@@ -83,6 +93,16 @@ import { ProfileMatchingTool } from './tools/profile-matching.tool'
         forwardRef(() => PeriodsModule),
         forwardRef(() => UploadFilesModule)
     ],
-    exports: [ChatBotService, GetEmbeddingProvider, RetrievalProvider, GenerationProvider, ChatbotGateway]
+    exports: [
+        ChatBotService,
+        GetEmbeddingProvider,
+        EnhancedEmbeddingProvider,
+        QueryParserProvider,
+        LecturerRerankerProvider,
+        LecturerSearchCacheProvider,
+        RetrievalProvider,
+        GenerationProvider,
+        ChatbotGateway
+    ]
 })
 export class ChatBotModule {}

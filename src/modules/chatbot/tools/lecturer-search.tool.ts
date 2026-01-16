@@ -13,6 +13,9 @@ import { Lecturer } from '../../../users/schemas/lecturer.schema'
 import { User } from '../../../users/schemas/users.schema'
 import mongoose from 'mongoose'
 import { LecturerKnowledgeDto } from '../dtos/get-enough-knowledge-result.dto'
+import { HybridLecturerSearchProvider } from '../../knowledge-source/application/hybrid-lecturer-search.provider'
+import { LecturerRerankerProvider } from '../providers/lecturer-reranker.provider'
+import { LecturerSearchCacheProvider } from '../providers/lecturer-search-cache.provider'
 
 @Injectable()
 export class LecturerSearchTool {
@@ -21,7 +24,10 @@ export class LecturerSearchTool {
         private readonly embeddingProvider: GetEmbeddingProvider,
         @InjectModel(KnowledgeSource.name) private readonly knowledgeSourceModel: Model<KnowledgeSource>,
         @InjectModel(Lecturer.name) private readonly lecturerModel: Model<Lecturer>,
-        @InjectModel(User.name) private readonly userModel: Model<User>
+        @InjectModel(User.name) private readonly userModel: Model<User>,
+        private readonly hybridSearch: HybridLecturerSearchProvider,
+        private readonly reranker: LecturerRerankerProvider,
+        private readonly cache: LecturerSearchCacheProvider
     ) {}
 
     createTool(): DynamicStructuredTool {
@@ -50,116 +56,58 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
             }) as any,
             func: async ({ query, limit }) => {
                 try {
-                    console.log('👨‍🏫 [LECTURER TOOL] Searching lecturers:', query)
+                    console.log('👨‍🏫 [LECTURER SEARCH] Starting search for:', query)
 
-                    // B1: Tạo embedding cho query
-                    const queryVector = await this.embeddingProvider.getEmbedding(query)
+                    // Check cache first
+                    const cacheResult = await this.cache.cacheSearchResults(
+                        query,
+                        { limit },
+                        async () => {
+                            // Use hybrid search with query parsing
+                            const searchResults = await this.hybridSearch.search(query, {
+                                limit: limit * 3, // Get more candidates for reranking
+                                semanticWeight: 0.6,
+                                nameWeight: 0.4,
+                                useDiversityFilter: true
+                            })
 
-                    // B2: Vector search với filter LECTURER
-                    const res = await this.searchProvider.searchSimilarDocuments(queryVector, {
-                        sourceTypes: [SourceType.LECTURER_PROFILE],
-                        limit: limit * 2, // Lấy nhiều chunks để có nhiều lecturer
-                        scoreThreshold: 0.7
-                    })
-                    if (res.length === 0) {
+                            if (searchResults.length === 0) {
+                                return null
+                            }
+
+                            console.log(`🔍 [LECTURER SEARCH] Found ${searchResults.length} candidates, reranking...`)
+
+                            // Rerank with LLM
+                            const rerankedResults = await this.reranker.rerank(query, searchResults, limit)
+
+                            console.log(
+                                `✅ [LECTURER SEARCH] Reranking completed, top result: ${rerankedResults[0]?.fullName}`
+                            )
+
+                            return rerankedResults
+                        },
+                        5 * 60 * 1000 // 5 min cache
+                    )
+
+                    if (!cacheResult || cacheResult.length === 0) {
                         return 'Không tìm thấy giảng viên phù hợp với yêu cầu.'
                     }
 
-                    const chunks = plainToInstance(GetKnowledgeChunkDto, res, {
-                        excludeExtraneousValues: true,
-                        enableImplicitConversion: true
-                    })
-
-                    // B3: Lấy userIds từ chunks qua knowledge source (source_location là userId)
-                    const sourceIds = chunks.map((c) => new mongoose.Types.ObjectId(c.source_id))
-                    const knowledgeSources = await this.knowledgeSourceModel
-                        .find({ _id: { $in: sourceIds } })
-                        .select('_id source_location')
-                    /// console.log('knowledgeSources', knowledgeSources)
-                    const userIds = knowledgeSources.map((ks) => new mongoose.Types.ObjectId(ks.source_location))
-
-                    // B4: Query lecturer bằng userId và populate thông tin user + faculty
-                    let lecturers = await this.lecturerModel.aggregate([
-                        {
-                            $match: {
-                                userId: { $in: userIds }
-                            }
-                        },
-                        {
-                            $lookup: {
-                                from: 'users',
-                                localField: 'userId',
-                                foreignField: '_id',
-                                as: 'userInfo'
-                            }
-                        },
-                        {
-                            $unwind: {
-                                path: '$userInfo',
-                                preserveNullAndEmptyArrays: true
-                            }
-                        },
-                        {
-                            $lookup: {
-                                from: 'faculties',
-                                localField: 'facultyId',
-                                foreignField: '_id',
-                                as: 'facultyInfo'
-                            }
-                        },
-                        {
-                            $unwind: {
-                                path: '$facultyInfo',
-                                preserveNullAndEmptyArrays: true
-                            }
-                        },
-                        {
-                            $project: {
-                                _id: '$userInfo._id',
-                                fullName: '$userInfo.fullName',
-                                email: '$userInfo.email',
-                                bio: '$userInfo.bio',
-                                title: 1,
-                                faculty: {
-                                    name: '$facultyInfo.name',
-                                    email: '$facultyInfo.email',
-                                    urlDirection: '$facultyInfo.urlDirection'
-                                },
-                                areaInterest: 1,
-                                researchInterests: 1,
-                                publications: 1
-                            }
-                        }
-                    ])
-                    if (lecturers.length === 0) {
-                        return 'Không tìm thấy thông tin giảng viên.'
-                    }
-                    lecturers = plainToInstance(LecturerKnowledgeDto, lecturers, {
-                        excludeExtraneousValues: true,
-                        enableImplicitConversion: true
-                    })
-                    // B5: Format kết quả cho LLM
-                    const formattedLecturers = lecturers.slice(0, limit).map((lecturer, idx) => {
-                        // Tìm chunk tương ứng để lấy score
-                        const matchingChunk = chunks.find((chunk) => {
-                            const ks = knowledgeSources.find((ks) => ks._id.toString() === chunk.source_id)
-                            return ks?.source_location.toString() === (lecturer as any)._id?.toString()
-                        })
-
-                        return {
-                            index: idx + 1,
-                            _id: lecturer._id,
-                            fullName: lecturer.fullName,
-                            email: lecturer.email,
-                            bio: lecturer.bio,
-                            title: lecturer.title,
-                            faculty: lecturer.faculty,
-                            areaInterest: lecturer.areaInterest,
-                            researchInterests: lecturer.researchInterests,
-                            publications: lecturer.publications,
-                            similarityScore: matchingChunk?.score || 0
-                        }
-                    })
+                    // Format results with rerank score as similarityScore
+                    const formattedLecturers = cacheResult.map((lecturer, idx) => ({
+                        index: idx + 1,
+                        _id: lecturer._id,
+                        fullName: lecturer.fullName,
+                        email: lecturer.email,
+                        bio: lecturer.bio,
+                        title: lecturer.title,
+                        faculty: lecturer.faculty,
+                        areaInterest: lecturer.areaInterest,
+                        researchInterests: lecturer.researchInterests,
+                        publications: lecturer.publications?.slice(0, 3), // Top 3 publications
+                        similarityScore: lecturer.rerankScore || lecturer.finalScore || 0, // Use rerank score as main score
+                        matchReason: lecturer.rerankReason // LLM-generated reason
+                    }))
 
                     return JSON.stringify(
                         {
@@ -170,7 +118,7 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                         2
                     )
                 } catch (error) {
-                    console.error('❌ [LECTURER TOOL] Error:', error)
+                    console.error('❌ [LECTURER SEARCH] Error:', error)
                     return `Lỗi khi tìm giảng viên: ${error.message}`
                 }
             }

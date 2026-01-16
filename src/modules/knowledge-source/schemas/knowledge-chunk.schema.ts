@@ -12,7 +12,7 @@ import { BaseEntity } from '../../../shared/base/entity/base.entity'
 @Schema({ collection: 'knowledge_chunks' })
 export class KnowledgeChunk extends BaseEntity {
     // Liên kết chunk tới tài liệu gốc
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'KnowledgeSource' })
+    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'KnowledgeSource', index: true })
     source_id: string
     @Prop({ required: true })
     text: string

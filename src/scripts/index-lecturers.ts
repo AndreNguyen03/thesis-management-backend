@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from '../app.module'
 import { GetEmbeddingProvider } from '../modules/chatbot/providers/get-embedding.provider'
+import { EnhancedEmbeddingProvider } from '../modules/chatbot/providers/enhanced-embedding.provider'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Lecturer } from '../users/schemas/lecturer.schema'
@@ -8,7 +9,7 @@ import { User } from '../users/schemas/users.schema'
 import { KnowledgeSource } from '../modules/knowledge-source/schemas/knowledge-source.schema'
 import { KnowledgeChunk } from '../modules/knowledge-source/schemas/knowledge-chunk.schema'
 import { SourceType } from '../modules/knowledge-source/enums/source_type.enum'
-import { string } from 'joi'
+import { buildProfileText } from '../modules/knowledge-source/utils/build-lecturer-profile.utils'
 
 /**
  * Script để index lecturer profiles vào knowledge base
@@ -24,9 +25,9 @@ async function bootstrap() {
     const userModel = app.get<Model<User>>('UserModel')
     const knowledgeSourceModel = app.get<Model<KnowledgeSource>>('KnowledgeSourceModel')
     const knowledgeChunkModel = app.get<Model<KnowledgeChunk>>('KnowledgeChunkModel')
-    const embeddingProvider = app.get(GetEmbeddingProvider)
+    const embeddingProvider = app.get(EnhancedEmbeddingProvider)
 
-    console.log('🚀 Starting lecturer indexing...\n')
+    console.log('🚀 Starting ENHANCED lecturer indexing with new profile format...\n')
 
     try {
         // Xóa data cũ (nếu có)
@@ -63,9 +64,16 @@ async function bootstrap() {
                 console.log(`\n👤 Processing: ${user.fullName}`)
                 console.log(`   📝 Profile length: ${profileText.length} chars`)
 
-                // Tạo embedding
-                const embedding = await embeddingProvider.getEmbedding(profileText)
-                console.log(`   ✅ Generated embedding (${embedding.length} dimensions)`)
+                // Tạo embedding với EnhancedEmbeddingProvider
+                const embedding = await embeddingProvider.embedLecturerProfile({
+                    fullName: user.fullName,
+                    title: lecturer.title,
+                    bio: user.bio,
+                    researchInterests: lecturer.researchInterests,
+                    areaInterest: lecturer.areaInterest,
+                    publications: lecturer.publications
+                })
+                console.log(`   ✅ Generated ENHANCED embedding (${embedding.length} dimensions)`)
 
                 // Tạo knowledge source
                 const knowledgeSource = await knowledgeSourceModel.create({
@@ -106,11 +114,17 @@ async function bootstrap() {
         }
 
         console.log('\n' + '='.repeat(60))
-        console.log('📊 INDEXING SUMMARY')
+        console.log('📊 ENHANCED INDEXING SUMMARY')
         console.log('='.repeat(60))
         console.log(`✅ Successfully indexed: ${successCount} lecturers`)
         console.log(`❌ Failed: ${errorCount} lecturers`)
         console.log(`📦 Total: ${lecturers.length} lecturers`)
+        console.log('='.repeat(60))
+        console.log('\n🎯 NEW FEATURES:')
+        console.log('  ✅ Structured fields with [NAME], [EXPERTISE] markers')
+        console.log('  ✅ Technical abbreviation expansion (AI → AI artificial intelligence...)')
+        console.log('  ✅ 3x repetition for name and expertise')
+        console.log('  ✅ Field boosting for better semantic matching')
         console.log('='.repeat(60))
 
         // Verify data
@@ -118,76 +132,13 @@ async function bootstrap() {
             'metadata.lecturerId': { $exists: true }
         })
         console.log(`\n🔍 Verification: Found ${totalChunks} lecturer chunks in database`)
-
     } catch (error) {
         console.error('❌ Fatal error:', error)
     } finally {
         await app.close()
-        console.log('\n✅ Script completed')
+        console.log('\n✅ Enhanced indexing script completed')
+        console.log('🔄 Please restart the backend to use new embeddings')
     }
-}
-
-/**
- * Build comprehensive profile text for embedding
- * Cấu trúc text để tối ưu cho semantic search
- */
-function buildProfileText(lecturer: any, user: any, faculty: any): string {
-    const sections: string[] = []
-
-    // 1. Basic info (lặp lại để tăng trọng số)
-    sections.push(`Giảng viên: ${user.fullName}`)
-    sections.push(`Tên: ${user.fullName}`)
-    sections.push(`Email: ${user.email}`)
-    sections.push(`Học hàm: ${lecturer.title}`)
-
-    // 2. Faculty
-    if (faculty?.name) {
-        sections.push(`Khoa: ${faculty.name}`)
-    }
-
-    // 3. Bio (nếu có)
-    if (user.bio) {
-        sections.push(`\nTiểu sử:\n${user.bio}`)
-    }
-
-    // 4. Research interests (LẶP 2 LẦN để tăng độ ưu tiên)
-    if (lecturer.researchInterests && lecturer.researchInterests.length > 0) {
-        const interests = lecturer.researchInterests.join(', ')
-        sections.push(`\nLĩnh vực nghiên cứu: ${interests}`)
-        sections.push(`Chuyên môn: ${interests}`) // Lặp lại với từ khóa khác
-    }
-
-    // 5. Area of interest
-    if (lecturer.areaInterest && lecturer.areaInterest.length > 0) {
-        sections.push(`Lĩnh vực quan tâm: ${lecturer.areaInterest.join(', ')}`)
-    }
-
-    // 6. Publications (top 5 most cited)
-    if (lecturer.publications && lecturer.publications.length > 0) {
-        const topPubs = lecturer.publications
-            .sort((a, b) => (b.citations || 0) - (a.citations || 0))
-            .slice(0, 5)
-            .map((p) => `- ${p.title} (${p.year}${p.citations ? `, ${p.citations} citations` : ''})`)
-            .join('\n')
-
-        sections.push(`\nCông trình nghiên cứu:\n${topPubs}`)
-    }
-
-    // 7. Keywords extraction từ publications
-    if (lecturer.publications && lecturer.publications.length > 0) {
-        const keywords = lecturer.publications
-            .map((p) => p.title)
-            .join(' ')
-            .toLowerCase()
-            .split(/\s+/)
-            .filter((w) => w.length > 4) // Lọc từ ngắn
-            .slice(0, 20) // Top 20 keywords
-            .join(' ')
-
-        sections.push(`\nTừ khóa nghiên cứu: ${keywords}`)
-    }
-
-    return sections.join('\n').trim()
 }
 
 // Run script
