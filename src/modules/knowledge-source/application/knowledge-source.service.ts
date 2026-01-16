@@ -20,6 +20,7 @@ import { KnowledgeStatus } from '../enums/knowledge-status.enum'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bull'
 import { UserRole } from '../../../auth/enum/user-role.enum'
+import { ProcessingStatus } from '../enums/processing-status.enum'
 
 @Injectable()
 export class KnowledgeSourceService {
@@ -37,6 +38,7 @@ export class KnowledgeSourceService {
         private readonly retrievalProvider: RetrievalProvider,
         @InjectQueue('knowledge-sync-queue') private readonly knowledgeQueue: Queue
     ) {}
+
     async findAll(query: RequestKnowledgeSourceDto): Promise<Paginated<KnowledgeSource & Document>> {
         // pipeline getting Owner information
         let pipelineSub: any[] = []
@@ -79,6 +81,7 @@ export class KnowledgeSourceService {
             message: `Đã đồng bộ ${totalInLibrary + totalRegistering} đề tài vào nguồn tri thức`
         }
     }
+
     async syncRegisteringTopicsDataToKnowledgeSource(
         periodId: string,
         userId?: string
@@ -99,16 +102,20 @@ export class KnowledgeSourceService {
             total: registeringTopics.data.length
         }
     }
+
     async syncTopicsInLibraryDataToKnowledgeSource(
         periodId: string,
         userId?: string
     ): Promise<{ message: string; total: number }> {
         //lấy tất cả các đề tài trong thư viện
-        const topicsInLibrary = await this.getTopicProvider.getTopicsInLibrary({
-            page: 1,
-            limit: 0,
-            status: TopicStatus.Archived,
-        }, UserRole.FACULTY_BOARD)
+        const topicsInLibrary = await this.getTopicProvider.getTopicsInLibrary(
+            {
+                page: 1,
+                limit: 0,
+                status: TopicStatus.Archived
+            },
+            UserRole.FACULTY_BOARD
+        )
         await this.knowledgeQueue.add('sync-topics-in-library-knowledge-source', {
             topicsInLibrary: topicsInLibrary.data,
             userId
@@ -123,6 +130,23 @@ export class KnowledgeSourceService {
     async syncLecturerProfiles(userId: string): Promise<{ message: string }> {
         try {
             // Xóa data cũ (nếu có)
+            // 1. Lấy danh sách knowledge sources cần xóa
+            const oldSources = await this.knowledgeSourceModel
+                .find({
+                    source_type: SourceType.LECTURER_PROFILE
+                })
+                .select('_id')
+                .lean()
+
+            const oldSourceIds = oldSources.map((s) => s._id)
+
+            // 2. Xóa knowledge chunks liên quan
+            const deleteChunksResult = await this.knowledgeChunkModel.deleteMany({
+                source_id: { $in: oldSourceIds }
+            })
+            console.log(`🗑️  Deleted ${deleteChunksResult.deletedCount} old lecturer knowledge chunks`)
+
+            // 3. Xóa knowledge sources
             const deleteResult = await this.knowledgeSourceModel.deleteMany({
                 source_type: SourceType.LECTURER_PROFILE
             })
@@ -193,6 +217,12 @@ export class KnowledgeSourceService {
                         }
                     })
                     console.log(`   ✅ Created knowledge chunk: ${chunk._id}`)
+
+                    // Cập nhật process status thành completed
+                    await this.knowledgeSourceModel.findByIdAndUpdate(knowledgeSource._id, {
+                        process_status: ProcessingStatus.COMPLETED
+                    })
+                    console.log(`   ✅ Updated knowledge source status to completed`)
 
                     successCount++
                 } catch (error) {
