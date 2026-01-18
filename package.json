@@ -22,7 +22,9 @@
         "doc": "npx @compodoc/compodoc -p tsconfig.json -s --port 3001 --watch -d ./documentation",
         "swagger:export": "ts-node scripts/export-swagger.ts",
         "seed:evaluation-template": "cross-env NODE_ENV=development ts-node src/modules/evaluation-templates/seeds/seed-kltn7.ts",
-        "index:lecturers": "cross-env NODE_ENV=development ts-node src/scripts/index-lecturers.ts"
+        "index:lecturers": "cross-env NODE_ENV=development ts-node src/scripts/index-lecturers.ts",
+        "migrate:chunk-source-type": " cross-env NODE_ENV=development ts-node src/scripts/migrate-chunk-source-type.ts",
+        "cleanup:orphan-chunks": " cross-env NODE_ENV=development ts-node src/scripts/cleanup-orphan-chunks.ts"
     },
     "dependencies": {
         "@ai-sdk/google": "^2.0.17",
@@ -71,6 +73,7 @@
         "groq-sdk": "^0.37.0",
         "ioredis": "^5.8.2",
         "joi": "^17.13.3",
+        "jsdom": "^27.4.0",
         "langchain": "^0.3.36",
         "mongodb": "^6.21.0",
         "mongoose": "^8.20.1",

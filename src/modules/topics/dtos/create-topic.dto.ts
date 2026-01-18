@@ -4,6 +4,7 @@ import { IsOptional, IsNumber, IsDate, IsArray, IsEnum } from 'class-validator'
 import { TopicType } from '../enum/topic-type.enum'
 import { PeriodPhaseName } from '../../periods/enums/period-phases.enum'
 import { PhaseHistory } from '../schemas/topic.schemas'
+import { Transform } from 'class-transformer'
 export class CreateTopicDto {
     @IsNotEmpty()
     @IsString()
@@ -63,6 +64,16 @@ export class CreateTopicDto {
     phaseHistories: PhaseHistory[]
 
     @IsOptional()
-    @IsBoolean()
-    allowManualApproval: boolean = false
+    @Transform(({ value }) => {
+        console.log('🔍 Transform allowManualApproval - input:', value, typeof value)
+        if (typeof value === 'string') {
+            if (value === '1' || value === 'true') return 'true'
+            if (value === '0' || value === 'false') return 'false'
+            return 'false'
+        }
+        if (typeof value === 'boolean') return 'value'
+        if (typeof value === 'number') return value === 1
+        return false
+    })
+    allowManualApproval: string
 }

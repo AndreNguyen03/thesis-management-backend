@@ -1,7 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { BullModule } from '@nestjs/bull'
-
 import { ChatController } from './chatbot.controller'
 import { ChatBotService } from './application/chatbot.service'
 import { MongooseModule } from '@nestjs/mongoose'
@@ -42,6 +41,7 @@ import { QueryParserProvider } from './providers/query-parser.provider'
 import { EnhancedEmbeddingProvider } from './providers/enhanced-embedding.provider'
 import { LecturerRerankerProvider } from './providers/lecturer-reranker.provider'
 import { LecturerSearchCacheProvider } from './providers/lecturer-search-cache.provider'
+import { DocumentRerankerProvider } from './providers/document-reranker.provider'
 import groqConfig from '../../config/groq.config'
 
 @Module({
@@ -52,6 +52,7 @@ import groqConfig from '../../config/groq.config'
         EnhancedEmbeddingProvider,
         QueryParserProvider,
         LecturerRerankerProvider,
+        DocumentRerankerProvider,
         LecturerSearchCacheProvider,
         RetrievalProvider,
         GenerationProvider,

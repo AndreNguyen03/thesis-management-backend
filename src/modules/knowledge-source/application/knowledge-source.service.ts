@@ -1,4 +1,4 @@
-import { forwardRef, Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { KnowledgeSource } from '../schemas/knowledge-source.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model, Document } from 'mongoose'
@@ -20,6 +20,8 @@ import { KnowledgeStatus } from '../enums/knowledge-status.enum'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bull'
 import { UserRole } from '../../../auth/enum/user-role.enum'
+import { ProcessingStatus } from '../enums/processing-status.enum'
+import { ChatbotGateway } from '../../chatbot/gateways/chatbot.gateway'
 
 @Injectable()
 export class KnowledgeSourceService {
@@ -35,11 +37,23 @@ export class KnowledgeSourceService {
         private readonly getEmbeddingProvider: GetEmbeddingProvider,
         private readonly knowledgeChunksProvider: CreateKnowledgeChunksProvider,
         private readonly retrievalProvider: RetrievalProvider,
-        @InjectQueue('knowledge-sync-queue') private readonly knowledgeQueue: Queue
+        @InjectQueue('knowledge-sync-queue') private readonly knowledgeQueue: Queue,
+        private readonly chatbotGateway: ChatbotGateway
     ) {}
+
     async findAll(query: RequestKnowledgeSourceDto): Promise<Paginated<KnowledgeSource & Document>> {
         // pipeline getting Owner information
         let pipelineSub: any[] = []
+
+        // Add filter by source_type if provided
+        if (query.source_type) {
+            pipelineSub.push({
+                $match: {
+                    source_type: query.source_type
+                }
+            })
+        }
+
         pipelineSub.push({
             $lookup: {
                 from: 'users',
@@ -79,6 +93,7 @@ export class KnowledgeSourceService {
             message: `Đã đồng bộ ${totalInLibrary + totalRegistering} đề tài vào nguồn tri thức`
         }
     }
+
     async syncRegisteringTopicsDataToKnowledgeSource(
         periodId: string,
         userId?: string
@@ -99,16 +114,20 @@ export class KnowledgeSourceService {
             total: registeringTopics.data.length
         }
     }
+
     async syncTopicsInLibraryDataToKnowledgeSource(
         periodId: string,
         userId?: string
     ): Promise<{ message: string; total: number }> {
         //lấy tất cả các đề tài trong thư viện
-        const topicsInLibrary = await this.getTopicProvider.getTopicsInLibrary({
-            page: 1,
-            limit: 0,
-            status: TopicStatus.Archived,
-        }, UserRole.FACULTY_BOARD)
+        const topicsInLibrary = await this.getTopicProvider.getTopicsInLibrary(
+            {
+                page: 1,
+                limit: 0,
+                status: TopicStatus.Archived
+            },
+            UserRole.FACULTY_BOARD
+        )
         await this.knowledgeQueue.add('sync-topics-in-library-knowledge-source', {
             topicsInLibrary: topicsInLibrary.data,
             userId
@@ -123,6 +142,23 @@ export class KnowledgeSourceService {
     async syncLecturerProfiles(userId: string): Promise<{ message: string }> {
         try {
             // Xóa data cũ (nếu có)
+            // 1. Lấy danh sách knowledge sources cần xóa
+            const oldSources = await this.knowledgeSourceModel
+                .find({
+                    source_type: SourceType.LECTURER_PROFILE
+                })
+                .select('_id')
+                .lean()
+
+            const oldSourceIds = oldSources.map((s) => s._id)
+
+            // 2. Xóa knowledge chunks liên quan
+            const deleteChunksResult = await this.knowledgeChunkModel.deleteMany({
+                source_id: { $in: oldSourceIds }
+            })
+            console.log(`🗑️  Deleted ${deleteChunksResult.deletedCount} old lecturer knowledge chunks`)
+
+            // 3. Xóa knowledge sources
             const deleteResult = await this.knowledgeSourceModel.deleteMany({
                 source_type: SourceType.LECTURER_PROFILE
             })
@@ -136,6 +172,14 @@ export class KnowledgeSourceService {
                 .lean()
 
             console.log(`📋 Found ${lecturers.length} lecturers to index\n`)
+
+            // Emit start event
+            this.chatbotGateway.emitCrawlProgress({
+                resourceId: 'lecturer-sync',
+                progress: 0,
+                status: 'crawling',
+                message: `Bắt đầu đồng bộ ${lecturers.length} giảng viên...`
+            })
 
             let successCount = 0
             let errorCount = 0
@@ -181,6 +225,7 @@ export class KnowledgeSourceService {
                     // Tạo knowledge chunk
                     const chunk = await this.knowledgeChunkModel.create({
                         source_id: knowledgeSource._id,
+                        source_type: SourceType.LECTURER_PROFILE, // Thêm source_type
                         text: profileText,
                         plot_embedding_gemini_large: embedding,
                         metadata: {
@@ -194,7 +239,28 @@ export class KnowledgeSourceService {
                     })
                     console.log(`   ✅ Created knowledge chunk: ${chunk._id}`)
 
+                    // Cập nhật process status thành completed
+                    const updateResult = await this.knowledgeSourceModel.findByIdAndUpdate(
+                        knowledgeSource._id,
+                        { processing_status: ProcessingStatus.COMPLETED },
+                        { new: true }
+                    )
+                    console.log(`   ✅ Updated knowledge source status to: ${updateResult?.processing_status}`)
+
+                    if (!updateResult) {
+                        console.error(`   ❌ Failed to update knowledge source: ${knowledgeSource._id}`)
+                    }
+
                     successCount++
+
+                    // Emit progress update
+                    const progress = Math.round((successCount / lecturers.length) * 100)
+                    this.chatbotGateway.emitEmbeddingProgress({
+                        resourceId: 'lecturer-sync',
+                        progress,
+                        status: 'embedding',
+                        message: `Đã xử lý ${successCount}/${lecturers.length} giảng viên`
+                    })
                 } catch (error) {
                     console.error(`   ❌ Error processing lecturer ${lecturer._id}:`, error.message)
                     errorCount++
@@ -214,19 +280,67 @@ export class KnowledgeSourceService {
                 'metadata.lecturerId': { $exists: true }
             })
             console.log(`\n🔍 Verification: Found ${totalChunks} lecturer chunks in database`)
+
+            // Emit completed event
+            this.chatbotGateway.emitEmbeddingCompleted({
+                resourceId: 'lecturer-sync',
+                progress: 100,
+                status: 'completed',
+                message: `Đã hoàn thành đồng bộ ${successCount}/${lecturers.length} giảng viên`
+            })
         } catch (error) {
             console.error('❌ Fatal error:', error)
+
+            // Emit error event
+            this.chatbotGateway.emitCrawlFailed({
+                resourceId: 'lecturer-sync',
+                progress: 0,
+                status: 'failed',
+                message: `Lỗi: ${error.message}`,
+                error: error.message
+            })
         } finally {
             console.log('\n✅ Script completed')
         }
         return { message: `Đã đồng bộ hồ sơ của giảng viên vào nguồn tri thức` }
     }
+    async crawlUrl(
+        userId: string,
+        data: { url: string; name: string; description?: string }
+    ): Promise<{ message: string; knowledgeSourceId: string }> {
+        // 1. Tạo knowledge source với status PENDING
+        const knowledgeSource = await this.knowledgeSourceModel.create({
+            name: data.name,
+            description: data.description || `Nội dung từ ${data.url}`,
+            source_type: SourceType.URL,
+            source_location: data.url,
+            source_url: data.url,
+            status: KnowledgeStatus.ENABLED,
+            processing_status: ProcessingStatus.PENDING,
+            owner: userId,
+            metadata: { progress: 0 }
+        })
+
+        // 2. Gọi retrievalProvider.loadSampleDataWithProgress async (không chờ)
+        this.retrievalProvider.loadSampleDataWithProgress(knowledgeSource._id.toString(), data.url).catch((error) => {
+            console.error('❌ Error crawling URL:', error)
+            console.error('Error stack:', error.stack)
+        })
+
+        console.log(`✅ Created knowledge source ${knowledgeSource._id} and started crawling ${data.url}`)
+
+        return {
+            message: 'Bắt đầu crawl URL, vui lòng đợi...',
+            knowledgeSourceId: knowledgeSource._id.toString()
+        }
+    }
+
     async semanticSearchKnowledgeSources(query: string): Promise<KnowledgeChunk[]> {
         const embedding = await this.getEmbeddingProvider.getEmbedding(query)
         return await this.retrievalProvider.searchSimilarDocuments(embedding, {
             limit: 20,
-            sourceTypes: [SourceType.TOPIC_REGISTERING],
-            scoreThreshold: 0.1 // Thêm threshold để đồng nhất với tool
+            sourceTypes: [SourceType.FILE],
+            scoreThreshold: 0.6 // Thêm threshold để đồng nhất với tool
         })
     }
     async deleteKnowledgeSource(klid: string): Promise<{ message: string }> {

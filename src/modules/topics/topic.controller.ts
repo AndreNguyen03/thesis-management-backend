@@ -61,9 +61,13 @@ export class TopicController {
     @Patch(':topicId/hide')
     @Roles(UserRole.ADMIN)
     @UseGuards(RolesGuard)
-    async hideTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body('hide') hide: boolean) {
+    async hideTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Body('hide') hide: boolean
+    ) {
         await this.topicService.setHiddenInLibrary(topicId, req.user.sub, hide)
-        this.periodGateway.emitLibraryUpdate({}) 
+        this.periodGateway.emitLibraryUpdate({})
         return { message: hide ? 'Đã ẩn đề tài khỏi thư viện' : 'Đã hiện lại đề tài trong thư viện' }
     }
 
@@ -186,10 +190,12 @@ export class TopicController {
     async createTopic(
         @Req() req: { user: ActiveUserData },
         @UploadedFiles() files: Express.Multer.File[],
-        @Body() topic: CreateTopicDto
+        @Body() topic: CreateTopicDto,
+        @Body() rawBody: any
     ) {
+
         topic.createBy = req.user.sub
-        const topicId = await this.topicService.createTopic(req.user.sub, topic, files)
+        const topicId = await this.topicService.createTopic(req.user.sub, rawBody, files)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
     @Patch()

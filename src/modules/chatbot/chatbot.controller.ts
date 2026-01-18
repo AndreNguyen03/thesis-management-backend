@@ -1,5 +1,21 @@
-import { Controller, Post, Body, Res, Get, Param, Req, Patch, UseGuards, Delete, Query } from '@nestjs/common'
+import {
+    Controller,
+    Post,
+    Body,
+    Res,
+    Get,
+    Param,
+    Req,
+    Patch,
+    UseGuards,
+    Delete,
+    Query,
+    UseInterceptors,
+    UploadedFile,
+    BadRequestException
+} from '@nestjs/common'
 import { Response } from 'express'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { ChatBotService } from './application/chatbot.service'
 import { ChatRequestDto } from './dtos'
 import { Auth } from '../../auth/decorator/auth.decorator'
@@ -15,11 +31,14 @@ import { UserRole } from '../../auth/enum/user-role.enum'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { TopicGenerationService } from './application/topic-generation.service'
 import { ApplyGeneratedTopicDto, GenerateTopicDto } from './dtos/create-topic-generation.dto'
+import { RetrievalProvider } from './providers/retrieval.provider'
+import { ActiveUser } from '../../auth/decorator/active-user.decorator'
 @Controller('chatbots')
 export class ChatController {
     constructor(
         private readonly chatBotService: ChatBotService,
-        private readonly topicGenerationService: TopicGenerationService
+        private readonly topicGenerationService: TopicGenerationService,
+        private readonly retrievalProvider: RetrievalProvider
     ) {}
 
     @Post('/generate-topic')
@@ -182,5 +201,37 @@ export class ChatController {
         return result
             ? { message: `Đã thay đổi trạng thái chatbot thành công. ${body.status}` }
             : { message: 'Thay đổi trạng thái chatbot thất bại' }
+    }
+
+    // ========== Resources Management ==========
+    @Post('/resources/upload-file')
+    @Auth(AuthType.Bearer)
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadResourceFile(
+        @UploadedFile() file: Express.Multer.File,
+        @Body() body: { title: string; description?: string },
+        @ActiveUser() user: ActiveUserData
+    ) {
+        if (!file) {
+            throw new BadRequestException('Chưa có file được tải lên')
+        }
+
+        // Validate file type (only PDF)
+        if (file.mimetype !== 'application/pdf') {
+            throw new BadRequestException('Chỉ chấp nhận file PDF')
+        }
+
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024 // 10MB
+        if (file.size > maxSize) {
+            throw new BadRequestException('File không được vượt quá 10MB')
+        }
+
+        const result = await this.retrievalProvider.processUploadedFileInNewKnowledge(user.sub, file, {
+            name: body.title,
+            description: body.description
+        })
+
+        return result
     }
 }

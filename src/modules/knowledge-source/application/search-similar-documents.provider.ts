@@ -23,83 +23,53 @@ export class SearchSimilarDocumentsProvider {
     public async searchSimilarDocuments(queryVector: number[], options: SearchOptions): Promise<KnowledgeChunk[]> {
         const { sourceTypes, limit = 10, scoreThreshold = 0.7 } = options
 
-        console.log('Searching similar documents with query vector of length:', JSON.stringify(queryVector))
-        const sourceQuery: any = {
-            status: KnowledgeStatus.ENABLED,
-            deleted_at: null
+        console.log('Searching similar documents with query vector of length:', JSON.stringify(queryVector).length)
+      
+       
+        // Build filter for vector search - bao gồm cả source_type để filter ngay
+        const vectorSearchFilter: any = {
         }
-        // Nếu có filter theo sourceTypes, thêm điều kiện
+        
+        // Thêm filter source_type trực tiếp trong vector search để tăng hiệu năng
         if (sourceTypes && sourceTypes.length > 0) {
-            sourceQuery.source_type = { $in: sourceTypes }
+            vectorSearchFilter.source_type = { $in: sourceTypes }
         }
-        // Lấy sourceIds mà được người dùng set có thể thực hiện được
-        const sourceIds = await this.knowledgeSourceModel.find(sourceQuery).distinct('_id')
-        console.log('Found enabled source IDs count:', sourceIds, sourceTypes)
+        
         const agg: any[] = [
-            // Stage 1: Vector Search
+            // Stage 1: Vector Search với filter ngay
             {
                 $vectorSearch: {
                     index: 'search_knowledge_chunk',
                     path: 'plot_embedding_gemini_large',
                     queryVector: queryVector,
+                    filter: vectorSearchFilter,
                     limit: limit * 2,
                     numCandidates: limit * 20
                 }
             },
-            // Stage 2: Match với sources đã enable
-            {
-                $match: {
-                    source_id: { $in: sourceIds }
-                }
-            }, // Stage 3: Add similarity score
+            // Stage 2: Add similarity score
             {
                 $addFields: {
                     score: { $meta: 'vectorSearchScore' }
                 }
             },
-            // Stage 4: Filter theo score threshold
+            // Stage 3: Filter theo score threshold
             {
                 $match: {
                     score: { $gte: scoreThreshold }
                 }
             },
-            // Stage 5: Lookup để lấy source_type từ KnowledgeSource
-            {
-                $lookup: {
-                    from: 'knowledge_sources',
-                    localField: 'source_id',
-                    foreignField: '_id',
-                    as: 'source_info'
-                }
-            },
-            // Stage 6: Unwind source_info
-            {
-                $unwind: {
-                    path: '$source_info',
-                    preserveNullAndEmptyArrays: false
-                }
-            },
-            // Stage 7: Filter theo source_type nếu có
-            ...(sourceTypes && sourceTypes.length > 0
-                ? [
-                      {
-                          $match: {
-                              'source_info.source_type': { $in: sourceTypes }
-                          }
-                      }
-                  ]
-                : []),
-            // Stage 8: Project fields cần thiết
+            // Stage 4: Project fields cần thiết (source_type đã có sẵn trong chunk)
             {
                 $project: {
                     text: 1,
                     source_id: 1,
-                    source_type: '$source_info.source_type',
+                    source_type: 1,
                     original_id: 1,
                     score: 1
                 }
             },
-            // Stage 9: Limit kết quả
+            // Stage 5: Sort và Limit kết quả
             { $sort: { score: -1 } },
             { $limit: limit }
         ]

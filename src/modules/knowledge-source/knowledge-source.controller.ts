@@ -82,6 +82,17 @@ export class KnowledgeSourceController {
     async syncLecturerProfiles(@Req() req: { user: ActiveUserData }) {
         return await this.knowledgeSourceService.syncLecturerProfiles(req.user.sub)
     }
+
+    //crawl url and index to knowledge source
+    @Post('/crawl-url')
+    @Auth(AuthType.Bearer)
+    async crawlUrl(
+        @Body() body: { url: string; name: string; description?: string },
+        @ActiveUser() user: ActiveUserData
+    ) {
+        return await this.knowledgeSourceService.crawlUrl(user.sub, body)
+    }
+
     @Get('/search-semantic')
     async semanticSearchKnowledgeSources(@Query('query') query: string) {
         return await this.knowledgeSourceService.semanticSearchKnowledgeSources(query)

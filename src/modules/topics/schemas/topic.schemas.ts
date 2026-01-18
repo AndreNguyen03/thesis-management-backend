@@ -183,4 +183,3 @@ export class Topic extends BaseEntity {
 export const TopicSchema = SchemaFactory.createForClass(Topic)
 // Index to speed up library visibility queries
 TopicSchema.index({ isPublishedToLibrary: 1, isHiddenInLibrary: 1 })
-TopicSchema.index({ isHiddenInLibrary: 1 })
