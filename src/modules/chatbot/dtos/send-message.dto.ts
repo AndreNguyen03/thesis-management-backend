@@ -79,6 +79,22 @@ export class LecturerSnapshot {
     @Expose()
     @IsNumber()
     similarityScore: number
+    @IsOptional()
+    @Expose()
+    @IsString()
+    matchReason?: string
+    @IsOptional()
+    @Expose()
+    @IsString()
+    matchType?: string
+    @IsOptional()
+    @Expose()
+    scores?: {
+        name?: number
+        semantic?: number
+        combined?: number
+        rerank?: number
+    }
 }
 export class SendMessageDto {
     @IsNotEmpty()

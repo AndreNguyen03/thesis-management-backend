@@ -61,9 +61,13 @@ export class TopicController {
     @Patch(':topicId/hide')
     @Roles(UserRole.ADMIN)
     @UseGuards(RolesGuard)
-    async hideTopic(@Req() req: { user: ActiveUserData }, @Param('topicId') topicId: string, @Body('hide') hide: boolean) {
+    async hideTopic(
+        @Req() req: { user: ActiveUserData },
+        @Param('topicId') topicId: string,
+        @Body('hide') hide: boolean
+    ) {
         await this.topicService.setHiddenInLibrary(topicId, req.user.sub, hide)
-        this.periodGateway.emitLibraryUpdate({}) 
+        this.periodGateway.emitLibraryUpdate({})
         return { message: hide ? 'Đã ẩn đề tài khỏi thư viện' : 'Đã hiện lại đề tài trong thư viện' }
     }
 
@@ -186,10 +190,12 @@ export class TopicController {
     async createTopic(
         @Req() req: { user: ActiveUserData },
         @UploadedFiles() files: Express.Multer.File[],
-        @Body() topic: CreateTopicDto
+        @Body() topic: CreateTopicDto,
+        @Body() rawBody: any
     ) {
+
         topic.createBy = req.user.sub
-        const topicId = await this.topicService.createTopic(req.user.sub, topic, files)
+        const topicId = await this.topicService.createTopic(req.user.sub, rawBody, files)
         return { topicId, message: 'Tạo đề tài thành công' }
     }
     @Patch()
@@ -605,26 +611,7 @@ export class TopicController {
         return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
-    //cập nhật kết quả
-    @Patch('/batch-update-defense-results')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async batchUpdateDefenseResults(@Body() body: BatchUpdateDefenseResultDto, @Req() req: { user: ActiveUserData }) {
-        return await this.topicService.batchUpdateDefenseResults(body.results, req.user.sub)
-    }
-    //Công bố kết quả
-    @Patch('/batch-publish-defense-results')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async batchPublishDefenseResults(
-        @Body() body: BatchPublishTopic,
-        @Req() req: { user: ActiveUserData },
-        @Query('templateMilestoneId') templateMilestoneId: string
-    ) {
-        return await this.topicService.batchPublishOrNotDefenseResults(body.topics, req.user.sub, templateMilestoneId)
-    }
+
 
     //Lưu đề tài vào thư viện số
     @Patch('/batch-archive')

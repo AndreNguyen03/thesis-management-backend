@@ -23,6 +23,8 @@ import { TopicModule } from '../topics/topic.module'
 import { Lecturer, LecturerSchema } from '../../users/schemas/lecturer.schema'
 import { BullModule } from '@nestjs/bull'
 import { KnowledgeSyncProvider } from './provider/knowledge-sync.processor'
+import { HybridLecturerSearchProvider } from './application/hybrid-lecturer-search.provider'
+import { User, UserSchema } from '../../users/schemas/users.schema'
 
 @Module({
     providers: [
@@ -42,17 +44,16 @@ import { KnowledgeSyncProvider } from './provider/knowledge-sync.processor'
         SearchSimilarTopicsProvider,
         UpdateKnowledgeChunkProvider,
         KnowledgeSourceService,
-        KnowledgeSyncProvider
+        KnowledgeSyncProvider,
+        HybridLecturerSearchProvider
     ],
     imports: [
         MongooseModule.forFeature([
             { name: KnowledgeSource.name, schema: KnowledgeSourceSchema },
             { name: KnowledgeChunk.name, schema: KnowledgeChunkSchema },
             { name: TopicVector.name, schema: TopicVectorSchema },
-            {
-                name: Lecturer.name,
-                schema: LecturerSchema
-            }
+            { name: Lecturer.name, schema: LecturerSchema },
+            { name: User.name, schema: UserSchema }
         ]),
         BullModule.registerQueue({ name: 'knowledge-sync-queue' }),
         ConfigModule.forFeature(googleAIConfig),
@@ -69,6 +70,7 @@ import { KnowledgeSyncProvider } from './provider/knowledge-sync.processor'
         CreateSearchIndexerProvider,
         CreateKnowledgeChunksProvider,
         UpdateKnowledgeChunkProvider,
+        HybridLecturerSearchProvider,
         'IKnowledgeChunkRepository',
         'IKnowledgeSourceRepository',
         KnowledgeSourceService

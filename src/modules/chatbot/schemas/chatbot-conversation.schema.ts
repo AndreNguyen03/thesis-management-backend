@@ -52,8 +52,10 @@ export class LecturerSnapshot {
     researchInterests?: string[]
     @Prop({ required: true, type: String })
     publications?: PublicationDto[]
-    @Prop({ required: true, type: String })
+    @Prop({ required: true, type: Number })
     similarityScore?: number
+    @Prop({ required: false, type: String })
+    matchReason?: string
 }
 // Message trong conversation
 @Schema({ _id: false })

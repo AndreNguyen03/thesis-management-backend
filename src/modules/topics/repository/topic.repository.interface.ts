@@ -161,5 +161,4 @@ export interface TopicRepositoryInterface extends BaseRepositoryInterface<Topic>
 
     getTrendingKeywords(limit: number): Promise<{ label: string; count: number; score: number; color?: string }[]>
     setHiddenInLibrary(topicId: string, adminId: string, hide: boolean): Promise<boolean>
-
 }

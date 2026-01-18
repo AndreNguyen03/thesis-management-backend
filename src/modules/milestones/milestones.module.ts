@@ -13,9 +13,19 @@ import { Topic, TopicSchema } from '../topics/schemas/topic.schemas'
 import { TopicModule } from '../topics/topic.module'
 import { PeriodsModule } from '../periods/periods.module'
 import { DefenseCouncil, DefenseCouncilSchema } from './schemas/defense-council.schema'
+import { DraftScore, DraftScoreSchema } from './schemas/draft-score.schema'
 import { DefenseCouncilController } from './defense-council.controller'
 import { DefenseCouncilService } from './application/defense-council.service'
 import { DefenseCouncilRepository } from './repository/defense-council.repository'
+import { DefensePdfProvider } from './providers/defense-pdf.provider'
+import { DefenseAnalyticsProvider } from './providers/defense-analytics.provider'
+import { CouncilRoleGuard } from './guards/council-role.guard'
+import { MailModule } from '../../mail/mail.module'
+import { StudentRegisterTopic, StudentRegisterTopicSchema } from '../registrations/schemas/ref_students_topics.schemas'
+import { UsersModule } from '../../users/users.module'
+import { EvaluationTemplatesModule } from '../evaluation-templates/evaluation-templates.module'
+import { EvaluationTemplate, EvaluationTemplateSchema } from './schemas/evaluation-template.schema'
+import { LecturerRegisterTopic, LecturerRegisterTopicSchema } from '../registrations/schemas/ref_lecturers_topics.schemas'
 
 @Module({
     controllers: [MilestonesController, DefenseCouncilController],
@@ -23,6 +33,9 @@ import { DefenseCouncilRepository } from './repository/defense-council.repositor
         MilestonesService,
         DefenseCouncilService,
         DefenseCouncilRepository,
+        DefensePdfProvider,
+        DefenseAnalyticsProvider,
+        CouncilRoleGuard,
         {
             provide: 'IMilestoneRepository',
             useClass: MilestoneRepository
@@ -34,12 +47,19 @@ import { DefenseCouncilRepository } from './repository/defense-council.repositor
             { name: Milestone.name, schema: MilestoneSchema },
             { name: MilestoneTemplate.name, schema: MilestoneTemplateSchema },
             { name: Topic.name, schema: TopicSchema },
-            { name: DefenseCouncil.name, schema: DefenseCouncilSchema }
+            { name: DefenseCouncil.name, schema: DefenseCouncilSchema },
+            { name: DraftScore.name, schema: DraftScoreSchema },
+            { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
+            { name: EvaluationTemplate.name, schema: EvaluationTemplateSchema },
+            { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
         ]),
         UploadFilesModule,
         TodolistsModule,
         GroupsModule,
         PaginationAnModule,
+        UsersModule,
+        EvaluationTemplatesModule,
+        forwardRef(() => MailModule),
         forwardRef(() => PeriodsModule),
         forwardRef(() => TopicModule)
     ]

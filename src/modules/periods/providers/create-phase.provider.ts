@@ -119,11 +119,15 @@ export class CreatePhaseProvider {
         await this.iPeriodRepository.updateCurrentPhaseToCompleted(periodId)
         await this.iPeriodRepository.configPhaseInPeriod(newPeriodPhase, periodId)
         //sync dữ liệu
-        await this.vectorSyncProvider.syncDataInPeriodOnPhase(periodId, {
-            limit: 0,
-            page: 1,
-            phase: PeriodPhaseName.OPEN_REGISTRATION
-        },actorId)
+        await this.vectorSyncProvider.syncDataInPeriodOnPhase(
+            periodId,
+            {
+                limit: 0,
+                page: 1,
+                phase: PeriodPhaseName.OPEN_REGISTRATION
+            },
+            actorId
+        )
         await this.knowledgeSourceService.syncRegisteringTopicsDataToKnowledgeSource(periodId, actorId)
         return {
             success: true,

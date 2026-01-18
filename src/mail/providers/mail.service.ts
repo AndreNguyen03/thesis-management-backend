@@ -212,7 +212,12 @@ export class MailService {
         }
     }
 
-    async sendNeedAdjustmentNotification(comment:string, user: User, topicInfo: GetMiniTopicInfo, faculty: GetFacultyDto) {
+    async sendNeedAdjustmentNotification(
+        comment: string,
+        user: User,
+        topicInfo: GetMiniTopicInfo,
+        faculty: GetFacultyDto
+    ) {
         if (user && user.email) {
             await this.mailQueue.add('send-topic-need-adjustment', {
                 comment,
@@ -338,5 +343,49 @@ export class MailService {
         }
     }
 
-    async send() {}
+    async sendDefenseScoresPublished(data: {
+        students: User[]
+        topicTitle: string
+        councilName: string
+        location: string
+        defenseDate: Date
+        finalScore: number
+        gradeText: string
+        scores: Array<{ roleLabel: string; scorerName: string; total: number; comment?: string }>
+        facultyName: string
+    }): Promise<void> {
+        if (this.isTestEnv()) return
+
+        const { students, topicTitle, councilName, location, defenseDate, finalScore, gradeText, scores, facultyName } =
+            data
+        const portalUrl = this.configService.get('appConfig.CLIENT_URL')
+
+        for (let i = 0; i < students.length; i++) {
+            await this.mailQueue.add(
+                'send-defense-scores-published',
+                {
+                    to: students[i].email,
+                    studentName: students[i].fullName,
+                    topicTitle,
+                    councilName,
+                    location,
+                    defenseDate: new Date(defenseDate).toLocaleDateString('vi-VN'),
+                    finalScore: finalScore.toFixed(2),
+                    gradeText,
+                    scores,
+                    hasComments: scores.some((s) => s.comment),
+                    portalUrl,
+                    facultyName
+                },
+                {
+                    delay: i * 1000, // Delay 1s per email
+                    attempts: 3,
+                    backoff: {
+                        type: 'exponential',
+                        delay: 2000
+                    }
+                }
+            )
+        }
+    }
 }

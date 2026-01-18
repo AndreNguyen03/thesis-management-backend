@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biên Bản Hội Đồng KLTN - UIT</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.4;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @page {
+            size: A4;
+            margin: 2cm 2cm 2cm 2cm;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header-table {
+            width: 100%;
+            margin-bottom: 15px;
+            border-collapse: collapse;
+        }
+        
+        .header-table td {
+            vertical-align: top;
+            text-align: center;
+        }
+
+        .org-name {
+            font-size: 11pt;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .school-name {
+            font-size: 12pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-decoration: underline;
+        }
+
+        .motto {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .sub-motto {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 5px;
+            text-decoration: underline;
+        }
+
+        .doc-id {
+            text-align: right;
+            font-size: 10pt;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 15px 0;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 13pt;
+            margin: 15px 0 10px 0;
+        }
+
+        .info-row {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        /* Score Table */
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .score-table th, .score-table td {
+            border: 1px solid black;
+            padding: 8px 5px;
+            text-align: center;
+        }
+
+        .score-table th {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+
+        .score-table .name-col {
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .score-table .stt-col {
+            width: 40px;
+        }
+
+        .score-table .score-col {
+            width: 60px;
+        }
+
+        /* Council Members List */
+        .member-list {
+            margin: 10px 0;
+        }
+
+        .member-item {
+            margin-bottom: 6px;
+            padding-left: 30px;
+            text-indent: -30px;
+        }
+
+        /* Footer / Signatures */
+        .signature-section {
+            margin-top: 30px;
+            page-break-inside: avoid;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-block {
+            width: 45%;
+            text-align: center;
+        }
+
+        .signature-title {
+            font-weight: bold;
+            font-size: 13pt;
+            margin-bottom: 5px;
+        }
+
+        .signature-note {
+            font-style: italic;
+            font-size: 11pt;
+            margin-bottom: 80px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+        }
+
+        /* Utility */
+        .bold { font-weight: bold; }
+        .italic { font-style: italic; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="doc-id">KLTN-8</div>
+
+        <table class="header-table">
+            <tr>
+                <td width="50%">
+                    <div class="org-name">ĐẠI HỌC QUỐC GIA TP.HCM</div>
+                    <div class="school-name">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN</div>
+                </td>
+                <td width="50%">
+                    <div class="motto">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                    <div class="sub-motto">Độc lập – Tự do – Hạnh phúc</div>
+                </td>
+            </tr>
+        </table>
+
+        <h1>BIÊN BẢN HỘI ĐỒNG KHÓA LUẬN TỐT NGHIỆP</h1>
+
+        <div class="info-row">
+            <strong>Đợt:</strong> <%= batch %> - <strong>Năm học:</strong> <%= academicYear %>
+        </div>
+        <div class="info-row">
+            <strong>Khoa:</strong> <%= facultyName %>
+        </div>
+
+        <!-- I. Thời gian - Địa điểm -->
+        <div class="section-title">I. THỜI GIAN - ĐỊA ĐIỂM</div>
+        <div class="info-row">
+            <strong>Thời gian bắt đầu:</strong> <%= scheduledTime %> ngày <%= scheduledDate %>
+        </div>
+        <div class="info-row">
+            <strong>Địa điểm:</strong> <%= location %>
+        </div>
+
+        <!-- II. Thành phần hội đồng -->
+        <div class="section-title">II. THÀNH PHẦN HỘI ĐỒNG</div>
+        <table class="score-table" style="margin: 10px 0;">
+            <thead>
+                <tr>
+                    <th class="stt-col">STT</th>
+                    <th>Họ và tên</th>
+                    <th style="width: 200px;">Vai trò</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% councilMembers.forEach((member, idx) => { %>
+                <tr>
+                    <td><%= idx + 1 %></td>
+                    <td class="name-col"><%= member.title %> <%= member.fullName %></td>
+                    <td style="text-align: center;"><%= member.roleLabels %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <!-- III. Nội dung -->
+        <div class="section-title">III. NỘI DUNG</div>
+        
+        <div style="margin: 10px 0;">
+            <strong>1. Thông tin đề tài</strong>
+        </div>
+        <table class="score-table" style="margin: 10px 0;">
+            <thead>
+                <tr>
+                    <th class="stt-col">STT</th>
+                    <th style="width: 35%;">Tên đề tài</th>
+                    <th style="width: 25%;">Sinh viên thực hiện</th>
+                    <th style="width: 18%;">CBHD</th>
+                    <th style="width: 18%;">CBPB</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% allTopics.forEach((topic) => { %>
+                <tr>
+                    <td><%= topic.stt %></td>
+                    <td class="name-col">
+                        <%= topic.titleVN %>
+                        <% if (topic.titleEng) { %>
+                            <br><em style="font-size: 11pt;"><%= topic.titleEng %></em>
+                        <% } %>
+                    </td>
+                    <td style="text-align: left; padding-left: 5px; font-size: 11pt;"><%= topic.students %></td>
+                    <td style="text-align: center; font-size: 11pt;"><%= topic.advisorName %></td>
+                    <td style="text-align: center; font-size: 11pt;"><%= topic.reviewerName %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <div style="margin: 15px 0 10px 0;">
+            <strong>2. Sinh viên thực hiện</strong>
+        </div>
+        <table class="score-table" style="margin: 10px 0;">
+            <thead>
+                <tr>
+                    <th class="stt-col">STT</th>
+                    <th style="width: 100px;">MSSV</th>
+                    <th>Họ và tên</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% allStudents.forEach((student) => { %>
+                <tr>
+                    <td><%= student.stt %></td>
+                    <td style="text-align: center;"><%= student.studentCode %></td>
+                    <td class="name-col"><%= student.fullName %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <!-- IV. Nội dung -->
+        <div class="section-title">IV. NỘI DUNG</div>
+        
+        <div style="margin: 10px 0;">
+            <strong>1. Hội đồng làm việc</strong>
+        </div>
+        <div style="margin-left: 20px; line-height: 1.8;">
+            <div style="margin-bottom: 5px;">a. Thư ký đọc quyết định thành lập hội đồng.</div>
+            <div style="margin-bottom: 5px;">b. Chủ tịch hội đồng điều khiển buổi bảo vệ.</div>
+            <div style="margin-bottom: 5px;">c. Sinh viên trình bày đề tài.</div>
+            <div style="margin-bottom: 5px;">d. CBPB (hoặc thư ký) đọc nhận xét.</div>
+            <div style="margin-bottom: 5px;">e. Sinh viên trả lời các câu hỏi của CBPB và hội đồng.</div>
+            <div style="margin-bottom: 5px;">f. CBHD (hoặc thư ký) đọc nhận xét.</div>
+            <div style="margin-bottom: 5px;">g. Hội đồng trao đổi và chấm điểm.</div>
+        </div>
+
+        <div style="margin: 15px 0 10px 0;">
+            <strong>2. Ý kiến trao đổi của hội đồng</strong>
+        </div>
+        <% if (councilComments && councilComments.trim()) { %>
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0; background: #f9f9f9;">
+                <%- councilComments %>
+            </div>
+        <% } else { %>
+            <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0; min-height: 80px; background: #f9f9f9;">
+                <em style="color: #666;">(Chưa có ý kiến trao đổi)</em>
+            </div>
+        <% } %>
+
+        <!-- V. Kết luận - Điểm tổng kết -->
+        <div class="section-title">V. KẾT LUẬN - ĐIỂM TỔNG KẾT</div>
+        
+        <table class="score-table">
+            <thead>
+                <tr>
+                    <th class="stt-col">STT</th>
+                    <th>Họ và tên</th>
+                    <th class="score-col">CBHD</th>
+                    <th class="score-col">CBPB</th>
+                    <th class="score-col">CTHĐ</th>
+                    <th class="score-col">TKHĐ</th>
+                    <th class="score-col">UVHĐ</th>
+                    <th class="score-col">Tổng kết</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% studentScores.forEach((student) => { %>
+                <tr>
+                    <td><%= student.stt %></td>
+                    <td class="name-col"><%= student.fullName %></td>
+                    <td><%= student.advisorScore %></td>
+                    <td><%= student.reviewerScore %></td>
+                    <td><%= student.chairmanScore %></td>
+                    <td><%= student.secretaryScore %></td>
+                    <td><%= student.memberScore %></td>
+                    <td><strong><%= student.finalScore %></strong></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <div class="info-row" style="font-size: 11pt; font-style: italic;">
+            <strong>Công thức:</strong> (CTHĐ + TKHĐ + CBHD×2 + CBPB×2) / 6
+        </div>
+
+        <!-- VI. Kết luận chung -->
+        <div class="section-title">VI. KẾT LUẬN CHUNG</div>
+        <div style="margin: 10px 0; line-height: 1.6;">
+            <p>Hội đồng đã thảo luận và thống nhất kết quả chấm điểm cho các sinh viên thực hiện đề tài như trên.</p>
+            <p style="margin-top: 10px;"><strong>Biên bản được lập thành 02 bản:</strong></p>
+            <ul style="margin-left: 30px;">
+                <li>01 bản lưu tại Phòng Đào tạo</li>
+                <li>01 bản lưu tại Khoa</li>
+            </ul>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-block">
+                <div style="margin-bottom: 5px;">Tp. Hồ Chí Minh, ngày     tháng    năm    </div>
+                <div class="signature-title">THƯ KÝ HỘI ĐỒNG</div>
+                <div class="signature-note">(Ký và ghi rõ họ tên)</div>
+                <div class="signature-name">&nbsp;</div>
+            </div>
+            <div class="signature-block">
+                <div style="margin-bottom: 5px;">Tp. Hồ Chí Minh, ngày     tháng    năm    </div>
+                <div class="signature-title">CHỦ TỊCH HỘI ĐỒNG</div>
+                <div class="signature-note">(Ký và ghi rõ họ tên)</div>
+                <div class="signature-name">&nbsp;</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

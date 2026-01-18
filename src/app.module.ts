@@ -47,6 +47,7 @@ import { TopicInteractionModule } from './modules/topic_interaction/topic_intera
 import { RecommendModule } from './modules/recommend/recommend.module'
 import { DashboardModule } from './modules/dashboard/dashboard.module'
 import { RatingModule } from './modules/ratings/rating.module'
+import { EvaluationTemplatesModule } from './modules/evaluation-templates/evaluation-templates.module'
 
 import groqConfig from './config/groq.config'
 
@@ -126,7 +127,8 @@ const ENV = process.env.NODE_ENV
         TopicInteractionModule,
         RecommendModule,
         DashboardModule,
-        RatingModule
+        RatingModule,
+        EvaluationTemplatesModule
     ],
     controllers: [AppController],
     providers: [

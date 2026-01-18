@@ -11,3 +11,4 @@ export class UpdateKnowledgeChunkProvider {
         return await this.knowledgeChunkRepository.updateKnowledgeChunks(sourceId, isDeleteNeeded)
     }
 }
+    

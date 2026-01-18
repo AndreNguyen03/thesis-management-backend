@@ -35,6 +35,7 @@ export class CreateKnowledgeSourceProvider {
     }
 
     public async updateKnowledgeSourceStatus(knowledgeSourceId: string, status: any): Promise<KnowledgeSource | null> {
+        console.log('Updating knowledge source status:', { knowledgeSourceId, status })
         return await this.knowledgeSourceRepository.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(knowledgeSourceId) },
             { processing_status: status }

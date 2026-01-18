@@ -13,7 +13,8 @@ import { Field } from '../../fields/schemas/fields.schemas'
 
 @Schema({
     timestamps: {
-        createdAt: 'created_at'
+        createdAt: 'created_at',
+        updatedAt: 'updated_at'
     }
 })
 @Schema({ _id: false })
@@ -182,4 +183,3 @@ export class Topic extends BaseEntity {
 export const TopicSchema = SchemaFactory.createForClass(Topic)
 // Index to speed up library visibility queries
 TopicSchema.index({ isPublishedToLibrary: 1, isHiddenInLibrary: 1 })
-TopicSchema.index({ isHiddenInLibrary: 1 })

@@ -18,6 +18,44 @@ import { CouncilMemberRole, ScoreType } from '../schemas/defense-council.schema'
 import { IntersectionType } from '@nestjs/mapped-types'
 import { PaginationQueryDto } from '../../../common/pagination-an/dtos/pagination-query.dto'
 
+// DTO cho student trong hội đồng
+export class StudentInCouncilDto {
+    @IsString()
+    @IsNotEmpty()
+    userId: string
+
+    @IsString()
+    @IsNotEmpty()
+    fullName: string
+
+    @IsString()
+    @IsOptional()
+    studentCode?: string
+
+    @IsString()
+    @IsOptional()
+    email?: string
+}
+
+// DTO cho lecturer trong hội đồng
+export class LecturerInCouncilDto {
+    @IsString()
+    @IsNotEmpty()
+    userId: string
+
+    @IsString()
+    @IsNotEmpty()
+    fullName: string
+
+    @IsString()
+    @IsNotEmpty()
+    title: string
+
+    @IsString()
+    @IsOptional()
+    email?: string
+}
+
 // DTO cho thành viên hội đồng
 export class CouncilMemberDto {
     @IsMongoId()
@@ -42,6 +80,10 @@ export class CreateDefenseCouncilDto {
     @IsMongoId()
     @IsNotEmpty()
     milestoneTemplateId: string
+
+    @IsMongoId()
+    @IsOptional()
+    evaluationTemplateId?: string
 
     @IsString()
     @IsNotEmpty()
@@ -72,9 +114,16 @@ export class AddTopicToCouncilDto {
     titleEng?: string
 
     @IsArray()
-    @IsString({ each: true })
+    @ValidateNested({ each: true })
+    @Type(() => StudentInCouncilDto)
     @IsOptional()
-    studentNames?: string[]
+    students?: StudentInCouncilDto[]
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => LecturerInCouncilDto)
+    @IsOptional()
+    lecturers?: LecturerInCouncilDto[]
 
     @IsArray()
     @ValidateNested({ each: true })
@@ -94,6 +143,8 @@ export class AddMultipleTopicsToCouncilDto {
     @Type(() => AddTopicToCouncilDto)
     @IsNotEmpty()
     topics: AddTopicToCouncilDto[]
+    @IsNotEmpty()
+    periodId: string
 }
 
 // DTO cập nhật bộ ba giảng viên cho đề tài
@@ -105,7 +156,32 @@ export class UpdateTopicMembersDto {
     members: CouncilMemberDto[]
 }
 
-// DTO chấm điểm
+// DTO chấm điểm đơn lẻ (1 người chấm)
+export class ScoreItemDto {
+    @IsMongoId()
+    @IsNotEmpty()
+    scorerId: string
+
+    @IsString()
+    @IsNotEmpty()
+    scorerName: string
+
+    @IsEnum(ScoreType)
+    @IsNotEmpty()
+    scoreType: ScoreType
+
+    @IsNumber()
+    @Min(0)
+    @Max(10)
+    @IsNotEmpty()
+    total: number
+
+    @IsString()
+    @IsOptional()
+    comment?: string
+}
+
+// DTO chấm điểm (giảng viên tự chấm)
 export class SubmitScoreDto {
     @IsMongoId()
     @IsNotEmpty()
@@ -124,6 +200,35 @@ export class SubmitScoreDto {
     @IsString()
     @IsOptional()
     comment?: string
+}
+
+// DTO thư ký nhập điểm cho đề tài (tất cả thành viên cùng lúc)
+export class SubmitTopicScoresDto {
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ScoreItemDto)
+    @IsNotEmpty()
+    scores: ScoreItemDto[]
+}
+
+// DTO khóa hội đồng
+export class CompleteCouncilDto {
+    @IsString()
+    @IsOptional()
+    note?: string
+}
+
+// DTO công bố điểm
+export class PublishCouncilDto {
+    @IsBoolean()
+    @IsOptional()
+    sendEmail?: boolean = true
+}
+
+// DTO cập nhật ý kiến hội đồng
+export class UpdateCouncilCommentsDto {
+    @IsString()
+    councilComments: string
 }
 
 // DTO cập nhật thông tin hội đồng

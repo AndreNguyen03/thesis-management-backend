@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Điểm Bảo vệ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.6;
+            color: #000;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 22pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 14pt;
+            color: #555;
+            font-style: italic;
+        }
+        
+        .info-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .info-row {
+            margin: 10px 0;
+            display: grid;
+            grid-template-columns: 180px 1fr;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .info-value {
+            color: #000;
+        }
+        
+        .final-score-box {
+            text-align: center;
+            padding: 25px;
+            margin: 30px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .final-score-label {
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .final-score-value {
+            font-size: 48pt;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .final-grade {
+            font-size: 20pt;
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px 25px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 25px;
+            display: inline-block;
+        }
+        
+        .scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+        }
+        
+        .scores-table thead {
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .scores-table th,
+        .scores-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .scores-table th {
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .scores-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .score-value {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .formula-note {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+        
+        .formula-note strong {
+            color: #856404;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        
+        .signature-box .title {
+            font-weight: bold;
+            font-size: 13pt;
+            margin-bottom: 80px;
+        }
+        
+        .signature-box .name {
+            font-style: italic;
+            color: #555;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            font-size: 10pt;
+            color: #777;
+        }
+        
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>PHIẾU ĐIỂM BẢO VỆ KHÓA LUẬN</h1>
+        <p class="subtitle"><%= council.name %></p>
+    </div>
+
+    <!-- Council Info -->
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Tên đề tài:</span>
+            <span class="info-value"><strong><%= topic.titleVN %></strong></span>
+        </div>
+        
+        <% if (topic.titleEng) { %>
+        <div class="info-row">
+            <span class="info-label">Tên tiếng Anh:</span>
+            <span class="info-value"><em><%= topic.titleEng %></em></span>
+        </div>
+        <% } %>
+        
+        <div class="info-row">
+            <span class="info-label">Sinh viên thực hiện:</span>
+            <span class="info-value"><%= topic.studentNames.join(', ') %></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Giảng viên hướng dẫn:</span>
+            <span class="info-value"><%= topic.lecturerNames.join(', ') %></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Ngày bảo vệ:</span>
+            <span class="info-value"><%= formatDate(council.scheduledDate) %></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Địa điểm:</span>
+            <span class="info-value"><%= council.location %></span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Thứ tự bảo vệ:</span>
+            <span class="info-value">Số <%= topic.defenseOrder %></span>
+        </div>
+    </div>
+
+    <!-- Formula Note -->
+    <div class="formula-note">
+        <strong>Công thức tính điểm:</strong> ((GVHD + GVPB) × 2 + Thư ký + Chủ tịch) / 6
+    </div>
+
+    <!-- Scores Table -->
+    <table class="scores-table">
+        <thead>
+            <tr>
+                <th style="width: 50px;">STT</th>
+                <th style="width: 150px;">Vai trò</th>
+                <th>Họ và tên</th>
+                <th style="width: 100px;">Điểm</th>
+                <th style="width: 250px;">Nhận xét</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% 
+            let stt = 1;
+            const roleOrder = ['supervisor', 'reviewer', 'secretary', 'chairperson', 'member'];
+            
+            roleOrder.forEach(role => {
+                const score = topic.scores.find(s => s.scoreType === role);
+                if (score) {
+            %>
+            <tr>
+                <td style="text-align: center;"><%= stt++ %></td>
+                <td><strong><%= roleLabels[score.scoreType] %></strong></td>
+                <td><%= score.scorerName %></td>
+                <td class="score-value"><%= score.total.toFixed(1) %></td>
+                <td style="font-size: 11pt;"><%= score.comment || '-' %></td>
+            </tr>
+            <% 
+                }
+            });
+            %>
+        </tbody>
+    </table>
+
+    <!-- Final Score Box -->
+    <div class="final-score-box">
+        <div class="final-score-label">ĐIỂM TRUNG BÌNH</div>
+        <div class="final-score-value"><%= topic.finalScore ? topic.finalScore.toFixed(2) : '-' %></div>
+        <div class="final-grade"><%= topic.gradeText || '-' %></div>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="title">THƯ KÝ HỘI ĐỒNG</div>
+            <div class="name">(Ký và ghi rõ họ tên)</div>
+        </div>
+        
+        <div class="signature-box">
+            <div class="title">CHỦ TỊCH HỘI ĐỒNG</div>
+            <div class="name">(Ký và ghi rõ họ tên)</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Phiếu điểm được tạo tự động bởi Hệ thống Quản lý Khóa luận</p>
+        <p>Ngày tạo: <%= formatDate(generatedDate) %></p>
+    </div>
+</body>
+</html>
