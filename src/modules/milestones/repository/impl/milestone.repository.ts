@@ -129,12 +129,61 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
     async getMilestonesOfGroup(groupId: string, role: string): Promise<Milestone[]> {
         const groupObjectId = new mongoose.Types.ObjectId(groupId)
 
+        // Lấy thông tin group và topic để biết periodId và topicId
+        const groupInfo = await this.milestoneModel
+            .aggregate([
+                {
+                    $match: { groupId: groupObjectId }
+                },
+                {
+                    $lookup: {
+                        from: 'groups',
+                        localField: 'groupId',
+                        foreignField: '_id',
+                        as: 'group'
+                    }
+                },
+                { $unwind: '$group' },
+                {
+                    $lookup: {
+                        from: 'topics',
+                        localField: 'group.topicId',
+                        foreignField: '_id',
+                        as: 'topic'
+                    }
+                },
+                { $unwind: '$topic' },
+                {
+                    $project: {
+                        periodId: '$topic.periodId',
+                        topicId: '$topic._id'
+                    }
+                },
+                { $limit: 1 }
+            ])
+            .exec()
+
+        const periodId = groupInfo[0]?.periodId
+        const topicId = groupInfo[0]?.topicId
+
         const pipeline: any[] = [
             {
                 $match: {
                     groupId: groupObjectId,
                     deleted_at: null
                 }
+            },
+            // Lookup group để lấy topicId
+            {
+                $lookup: {
+                    from: 'groups',
+                    localField: 'groupId',
+                    foreignField: '_id',
+                    as: 'groupInfo'
+                }
+            },
+            {
+                $unwind: { path: '$groupInfo', preserveNullAndEmptyArrays: true }
             },
             {
                 $lookup: {
@@ -214,17 +263,6 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                 }
             },
             {
-                $lookup: {
-                    from: 'groups',
-                    localField: 'groupId',
-                    foreignField: '_id',
-                    as: 'group'
-                }
-            },
-            {
-                $unwind: { path: '$group', preserveNullAndEmptyArrays: true }
-            },
-            {
                 $addFields: {
                     submissionHistory: {
                         $map: {
@@ -251,7 +289,8 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                             }
                         }
                     },
-                    topicId: '$group.topicId'
+                    topicId: '$groupInfo.topicId',
+                    group: '$groupInfo'
                 }
             },
             {
@@ -331,14 +370,134 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
                     tasks: 1,
                     status: 1,
                     creatorType: 1,
-                    isAbleEdit: { $cond: [{ $eq: ['$creatorType', role] }, true, false] }
+                    isAbleEdit: { $cond: [{ $eq: ['$creatorType', role] }, true, false] },
+                    // Thêm field để phân biệt nguồn milestone cho frontend
+                    source: {
+                        $cond: [
+                            { $ifNull: ['$parentId', false] },
+                            'faculty_batch', // Milestone từ template ban chủ nhiệm (submission)
+                            'lecturer_individual' // Milestone giảng viên tạo riêng
+                        ]
+                    }
                 }
             },
             {
                 $sort: { dueDate: -1 }
             }
         )
-        const results = await this.milestoneModel.aggregate(pipeline).exec()
+        let results = await this.milestoneModel.aggregate(pipeline).exec()
+
+        // Lấy milestone template defense nếu topic được assign vào hội đồng
+        if (periodId && topicId) {
+            const defenseTemplates = await this.milestoneTemplateModel
+                .aggregate([
+                    {
+                        $match: {
+                            periodId: periodId,
+                            type: MilestoneType.DEFENSE,
+                            deleted_at: null
+                        }
+                    },
+                    // Kiểm tra topic có trong defense_councils không
+                    {
+                        $lookup: {
+                            from: 'defense_councils',
+                            let: { templateId: '$_id' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$milestoneTemplateId', '$$templateId'] },
+                                                { $in: [topicId, '$topics.topicId'] },
+                                                { $eq: ['$deleted_at', null] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'defenseCouncils'
+                        }
+                    },
+                    {
+                        $match: {
+                            defenseCouncils: { $ne: [] } // Chỉ lấy nếu có trong hội đồng
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: 'tasks',
+                            let: { templateId: '$_id' },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $and: [
+                                                { $eq: ['$milestoneId', '$$templateId'] },
+                                                { $eq: ['$deleted_at', null] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            as: 'tasks'
+                        }
+                    },
+                    {
+                        $addFields: {
+                            totalTasks: { $size: { $ifNull: ['$tasks', []] } },
+                            tasksCompleted: {
+                                $size: {
+                                    $filter: {
+                                        input: { $ifNull: ['$tasks', []] },
+                                        as: 'task',
+                                        cond: { $eq: ['$$task.status', 'Done'] }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $addFields: {
+                            progress: {
+                                $cond: [
+                                    { $eq: ['$totalTasks', 0] },
+                                    0,
+                                    { $multiply: [{ $divide: ['$tasksCompleted', '$totalTasks'] }, 100] }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            title: 1,
+                            description: 1,
+                            dueDate: 1,
+                            type: 1,
+                            progress: 1,
+                            totalTasks: 1,
+                            tasksCompleted: 1,
+                            submission: { $literal: null },
+                            submissionHistory: { $literal: [] },
+                            topicId: { $literal: topicId },
+                            group: { $literal: null },
+                            tasks: 1,
+                            status: { $literal: MilestoneStatus.TODO },
+                            creatorType: { $literal: MilestoneCreator.FACULTY },
+                            isAbleEdit: { $literal: false }, // Defense template không cho edit
+                            source: { $literal: 'faculty_defense' } // Defense milestone từ template
+                        }
+                    }
+                ])
+                .exec()
+
+            // Merge defense templates vào results
+            results = [...results, ...defenseTemplates]
+            // Sort lại theo dueDate
+            results.sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
+        }
+
         return results
     }
     async createMilestone(body: PayloadCreateMilestone, user: ActiveUserData) {
@@ -398,7 +557,7 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
         return await createdMilestone.save()
     }
     async facultyCreateMilestone(body: PayloadFacultyCreateMilestone, user: ActiveUserData, groupIds: string[]) {
-        if (groupIds && groupIds.length === 0) {
+        if (groupIds && groupIds.length === 0 && body.type !== MilestoneType.DEFENSE) {
             throw new NotFoundException('Chưa có đề tài nào tiến hành cả')
         }
         const { phaseName, ...payloadFinal } = body
@@ -410,16 +569,17 @@ export class MilestoneRepository extends BaseRepositoryAbstract<Milestone> imple
             dueDate: body.dueDate,
             type: body.type
         })
-
-        const milestonesToInsert = groupIds.map((groupId) => ({
-            ...payloadFinal,
-            groupId: groupId,
-            parentId: template._id,
-            creatorType: user.role,
-            createdBy: user.sub
-        }))
-        //kiểm tra xem trong group có milestone của ban chu nhiệm trước đó hay không
-        await this.milestoneModel.insertMany(milestonesToInsert)
+        if (body.type !== MilestoneType.DEFENSE) {
+            const milestonesToInsert = groupIds.map((groupId) => ({
+                ...payloadFinal,
+                groupId: groupId,
+                parentId: template._id,
+                creatorType: user.role,
+                createdBy: user.sub
+            }))
+            //kiểm tra xem trong group có milestone của ban chu nhiệm trước đó hay không
+            await this.milestoneModel.insertMany(milestonesToInsert)
+        }
     }
     async uploadReport(miletoneId: string, files: FileInfo[], userId: string): Promise<Milestone> {
         const existingMilestone = await this.milestoneModel

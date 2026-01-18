@@ -25,6 +25,7 @@ import { StudentRegisterTopic, StudentRegisterTopicSchema } from '../registratio
 import { UsersModule } from '../../users/users.module'
 import { EvaluationTemplatesModule } from '../evaluation-templates/evaluation-templates.module'
 import { EvaluationTemplate, EvaluationTemplateSchema } from './schemas/evaluation-template.schema'
+import { LecturerRegisterTopic, LecturerRegisterTopicSchema } from '../registrations/schemas/ref_lecturers_topics.schemas'
 
 @Module({
     controllers: [MilestonesController, DefenseCouncilController],
@@ -49,7 +50,8 @@ import { EvaluationTemplate, EvaluationTemplateSchema } from './schemas/evaluati
             { name: DefenseCouncil.name, schema: DefenseCouncilSchema },
             { name: DraftScore.name, schema: DraftScoreSchema },
             { name: StudentRegisterTopic.name, schema: StudentRegisterTopicSchema },
-            { name: EvaluationTemplate.name, schema: EvaluationTemplateSchema }
+            { name: EvaluationTemplate.name, schema: EvaluationTemplateSchema },
+            { name: LecturerRegisterTopic.name, schema: LecturerRegisterTopicSchema },
         ]),
         UploadFilesModule,
         TodolistsModule,

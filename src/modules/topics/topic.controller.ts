@@ -605,26 +605,7 @@ export class TopicController {
         return await this.topicService.getDetailTopicsInDefenseMilestones(templateMilestoneId, query)
     }
 
-    //cập nhật kết quả
-    @Patch('/batch-update-defense-results')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async batchUpdateDefenseResults(@Body() body: BatchUpdateDefenseResultDto, @Req() req: { user: ActiveUserData }) {
-        return await this.topicService.batchUpdateDefenseResults(body.results, req.user.sub)
-    }
-    //Công bố kết quả
-    @Patch('/batch-publish-defense-results')
-    @Auth(AuthType.Bearer)
-    @Roles(UserRole.FACULTY_BOARD)
-    @UseGuards(RolesGuard)
-    async batchPublishDefenseResults(
-        @Body() body: BatchPublishTopic,
-        @Req() req: { user: ActiveUserData },
-        @Query('templateMilestoneId') templateMilestoneId: string
-    ) {
-        return await this.topicService.batchPublishOrNotDefenseResults(body.topics, req.user.sub, templateMilestoneId)
-    }
+
 
     //Lưu đề tài vào thư viện số
     @Patch('/batch-archive')

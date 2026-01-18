@@ -49,18 +49,19 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     path: '$topic',
                     preserveNullAndEmptyArrays: true
                 }
-            },
+            }, // Lấy tất cả milestone templates của BCN cho period này
             {
                 $lookup: {
-                    from: 'milestones',
-                    let: { groupId: '_id' },
+                    from: 'milestones_templates',
+                    let: { periodId: '$topic.periodId' },
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
                                     $and: [
-                                        { $eq: ['$groupId', '$$groupId'] },
-                                        { $ne: ['$refId', null] },
+                                        { $eq: ['$periodId', '$$periodId'] },
+                                        { $eq: ['$creator', 'faculty_board'] }, // Chỉ lấy của BCN
+                                        { $eq: ['$type', 'submission'] }, // Chỉ milestone submission
                                         { $eq: ['$isActive', true] },
                                         { $eq: ['$deleted_at', null] }
                                     ]
@@ -68,10 +69,36 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                             }
                         },
                         {
-                            $sort: { dueDate: 1 }
+                            $project: { _id: 1 }
                         }
                     ],
-                    as: 'milestones'
+                    as: 'facultyMilestoneTemplates'
+                }
+            },
+            // Lấy các milestone mà nhóm đã hoàn thành
+            {
+                $lookup: {
+                    from: 'milestones',
+                    let: { groupId: '$_id', templateIds: '$facultyMilestoneTemplates._id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$groupId', '$$groupId'] },
+                                        { $in: ['$refId', '$$templateIds'] },
+                                        { $eq: ['$status', 'Completed'] }, // Đã hoàn thành
+                                        { $eq: ['$isActive', true] },
+                                        { $eq: ['$deleted_at', null] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $project: { refId: 1 }
+                        }
+                    ],
+                    as: 'completedMilestones'
                 }
             },
             {
@@ -91,7 +118,21 @@ export class GroupRepository extends BaseRepositoryAbstract<Group> implements IG
                     lastSeenAtByUser: 1,
                     unreadCounts: 1,
                     isAbleGoToDefense: {
-                        $cond: [{ $gt: [{ $size: '$milestones' }, 0] }, false, true]
+                        $cond: [
+                            {
+                                $and: [
+                                    { $gt: [{ $size: '$facultyMilestoneTemplates' }, 0] }, // Có ít nhất 1 template
+                                    {
+                                        $eq: [
+                                            { $size: '$facultyMilestoneTemplates' },
+                                            { $size: '$completedMilestones' }
+                                        ]
+                                    }
+                                ]
+                            },
+                            true,
+                            false
+                        ]
                     }
                 }
             }

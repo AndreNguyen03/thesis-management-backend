@@ -28,6 +28,7 @@ import { StudentRegisterTopic } from '../../registrations/schemas/ref_students_t
 import { EvaluationTemplateService } from '../../evaluation-templates/evaluation-template.service'
 import mongoose from 'mongoose'
 import { toScoreState } from '../utils/score-calculator.util'
+import { Topic } from '../../topics/schemas/topic.schemas'
 
 @Injectable()
 export class DefenseCouncilService {
@@ -42,7 +43,9 @@ export class DefenseCouncilService {
         @InjectModel(StudentRegisterTopic.name)
         private readonly studentRegisterTopicModel: Model<StudentRegisterTopic>,
         @InjectModel(DraftScore.name)
-        private readonly draftScoreModel: Model<DraftScore>
+        private readonly draftScoreModel: Model<DraftScore>,
+        @InjectModel(Topic.name)
+        private readonly topicModel: Model<Topic>
     ) {}
 
     // Tạo hội đồng mới
@@ -250,6 +253,52 @@ export class DefenseCouncilService {
                 console.log(`✅ Đã gửi email điểm cho ${validStudents.length} sinh viên - Đề tài: ${topic.titleVN}`)
             } catch (error) {
                 console.error(`❌ Lỗi khi gửi email cho đề tài ${topic.titleVN}:`, error)
+                // Không throw error để không làm gián đoạn quá trình công bố
+            }
+        }
+
+        // Chuyển trạng thái topic sang Graded và lưu kết quả bảo vệ
+        for (const topic of council.topics) {
+            try {
+                const topicId = topic.topicId.toString()
+
+                // 1. Chuyển trạng thái sang Graded
+                await this.tranferStatusAndAddHistory.transferStatusAndAddPhaseHistory(
+                    topicId,
+                    TopicStatus.Graded,
+                    userId,
+                    `Đã công bố điểm bảo vệ - Hội đồng: ${council.name}`
+                )
+
+                // 2. Lưu kết quả bảo vệ vào topic schema
+                const defenseResult = {
+                    defenseDate: council.scheduledDate,
+                    periodName: council.name, // Hoặc lấy từ period nếu có
+                    finalScore: topic.finalScore || 0,
+                    gradeText: topic.gradeText || 'Chưa xếp loại',
+                    councilMembers: topic.scores.map((s) => ({
+                        fullName: s.scorerName,
+                        role: roleLabels[s.scoreType] || s.scoreType,
+                        score: s.total,
+                        note: s.comment || ''
+                    })),
+                    councilName: council.name,
+                    isPublished: true
+                }
+
+                await this.topicModel.findByIdAndUpdate(
+                    topicId,
+                    {
+                        $set: {
+                            defenseResult: defenseResult
+                        }
+                    },
+                    { new: true }
+                )
+
+                console.log(`✅ Đã lưu kết quả bảo vệ cho đề tài: ${topic.titleVN}`)
+            } catch (error) {
+                console.error(`❌ Lỗi khi lưu kết quả bảo vệ cho đề tài ${topic.titleVN}:`, error)
                 // Không throw error để không làm gián đoạn quá trình công bố
             }
         }

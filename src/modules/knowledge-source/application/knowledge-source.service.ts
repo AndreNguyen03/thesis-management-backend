@@ -225,8 +225,8 @@ export class KnowledgeSourceService {
         const embedding = await this.getEmbeddingProvider.getEmbedding(query)
         return await this.retrievalProvider.searchSimilarDocuments(embedding, {
             limit: 20,
-            sourceTypes: [SourceType.URL, SourceType.FILE],
-            scoreThreshold: 0.65 // Thêm threshold để đồng nhất với tool
+            sourceTypes: [SourceType.TOPIC_REGISTERING],
+            scoreThreshold: 0.1 // Thêm threshold để đồng nhất với tool
         })
     }
     async deleteKnowledgeSource(klid: string): Promise<{ message: string }> {

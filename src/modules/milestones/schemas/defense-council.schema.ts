@@ -116,7 +116,7 @@ export class Score {
     scoreType: ScoreType
 
     @Prop({ type: Number, min: 0, max: 10 })
-    total: number // Tổng điểm (tự động tính từ detailedScores hoặc nhập thủ công cho hệ thống cũ)
+    total: number // Tổng điểm (tự động tính từ detailedScores 
 
     @Prop({ default: '' })
     comment: string

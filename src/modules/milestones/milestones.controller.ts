@@ -24,6 +24,8 @@ import {
     PayloadFacultyCreateMilestone,
     RequestLecturerReview
 } from './dtos/request-milestone.dto'
+import { BulkHideTopicsDto, GetTopicsInDefenseMilestoneQuery } from './dtos/request-defense-topics.dto'
+import { BulkOperationResultDto, PaginatedDefenseTopicsDto } from './dtos/response-defense-topics.dto'
 import { RolesGuard } from '../../auth/guards/roles/roles.guard'
 import { UserRole } from '../../auth/enum/user-role.enum'
 import { Roles } from '../../auth/decorator/roles.decorator'
@@ -35,10 +37,40 @@ import { FileInfo } from './schemas/milestones.schemas'
 import { RequestCreate } from '../todolists/dtos/request-update.dtos'
 import { Response } from 'express'
 import { PaginationAllDefenseMilestonesQuery } from './dtos/query-params.dto'
+import { BulkArchiveTopicsDto, GetTopicsForArchiveQuery } from './dtos/archive-topics.dto'
 
 @Controller('milestones')
 export class MilestonesController {
     constructor(@Inject() private readonly milestonesService: MilestonesService) {}
+
+    // API: Lấy danh sách đề tài có thể lưu trữ trong kỳ
+    @Get('/period/:periodId/topics-for-archive')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getTopicsForArchiveInPeriod(@Param('periodId') periodId: string, @Query() query: GetTopicsForArchiveQuery) {
+        const result = await this.milestonesService.getTopicsForArchiveInPeriod(periodId, query)
+        return {
+            message: 'Lấy danh sách đề tài thành công',
+            data: result.data,
+            meta: result.meta
+        }
+    }
+
+    // API: Bulk lưu đề tài vào thư viện từ kỳ
+    @Post('/period/:periodId/bulk-archive-topics')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async bulkArchiveTopicsInPeriod(
+        @Req() req: { user: ActiveUserData },
+        @Param('periodId') periodId: string,
+        @Body() body: BulkArchiveTopicsDto
+    ) {
+        const result = await this.milestonesService.bulkArchiveTopicsInPeriod(body.topicIds, req.user.sub, periodId)
+        return {
+            message: 'Lưu trữ đề tài thành công',
+            data: result
+        }
+    }
 
     @Patch('/:milestoneId/lecturer-review')
     async reviewMilestone(
@@ -233,5 +265,44 @@ export class MilestonesController {
     @Get('/:milestoneTemplateId/detail')
     async getDefenseMilestoneDetailById(@Param('milestoneTemplateId') milestoneTemplateId: string) {
         return await this.milestonesService.getDefenseMilestoneDetailById(milestoneTemplateId)
+    }
+
+    // API: Lấy danh sách đề tài trong defense milestone để quản lý lưu trữ
+    @Get('/:milestoneTemplateId/topics-for-archive')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async getTopicsInDefenseMilestoneForArchive(
+        @Param('milestoneTemplateId') milestoneTemplateId: string,
+        @Query() query: GetTopicsInDefenseMilestoneQuery
+    ) {
+        const result = await this.milestonesService.getTopicsInDefenseMilestoneForArchive(milestoneTemplateId, query)
+        return plainToInstance(PaginatedDefenseTopicsDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    // API: Bulk lưu đề tài vào thư viện
+    @Post('/topics/bulk-archive')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async bulkArchiveTopics(@Req() req: { user: ActiveUserData }, @Body() body: BulkArchiveTopicsDto) {
+        const result = await this.milestonesService.bulkArchiveTopics(body.topicIds, req.user.sub)
+        return plainToInstance(BulkOperationResultDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
+    }
+
+    // API: Bulk ẩn/hiện đề tài trong thư viện
+    @Patch('/topics/bulk-hide')
+    @Roles(UserRole.FACULTY_BOARD)
+    @UseGuards(RolesGuard)
+    async bulkHideTopics(@Req() req: { user: ActiveUserData }, @Body() body: BulkHideTopicsDto) {
+        const result = await this.milestonesService.bulkHideTopics(body.topicIds, body.isHidden, req.user.sub)
+        return plainToInstance(BulkOperationResultDto, result, {
+            excludeExtraneousValues: true,
+            enableImplicitConversion: true
+        })
     }
 }

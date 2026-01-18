@@ -34,7 +34,7 @@ export class SearchSimilarDocumentsProvider {
         }
         // Lấy sourceIds mà được người dùng set có thể thực hiện được
         const sourceIds = await this.knowledgeSourceModel.find(sourceQuery).distinct('_id')
-
+        console.log('Found enabled source IDs count:', sourceIds, sourceTypes)
         const agg: any[] = [
             // Stage 1: Vector Search
             {
@@ -43,7 +43,7 @@ export class SearchSimilarDocumentsProvider {
                     path: 'plot_embedding_gemini_large',
                     queryVector: queryVector,
                     limit: limit * 2,
-                    numCandidates: limit * 10
+                    numCandidates: limit * 20
                 }
             },
             // Stage 2: Match với sources đã enable

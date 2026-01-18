@@ -74,7 +74,9 @@ export class ResponseMilestone {
     @Expose()
     totalTasks: number
     @Expose()
-    tasksCompleted:number
+    tasksCompleted: number
+    @Expose()
+    source: string // 'lecturer_individual' | 'faculty_batch' | 'faculty_defense'
 }
 
 export class MilestoneDto {

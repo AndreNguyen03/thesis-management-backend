@@ -25,7 +25,7 @@ export class TopicRegisteringSearchTool {
         return new DynamicStructuredTool({
             name: 'search_registering_topics',
             description: `
-Công cụ tìm kiếm ĐỀ TÀI KHÓA LUẬN/ĐỒ ÁN tốt nghiệp.
+Công cụ tìm kiếm ĐỀ TÀI KHÓA LUẬN/ĐỒ ÁN tốt nghiệp đang được mở đăng ký.
 
 SỬ DỤNG KHI:
 - Người dùng hỏi về đề tài khóa luận, đồ án
@@ -55,7 +55,7 @@ OUTPUT: Danh sách đề tài kèm thông tin chi tiết (tên, mô tả, yêu c
                     const res = await this.searchProvider.searchSimilarDocuments(queryVector, {
                         sourceTypes: [SourceType.TOPIC_REGISTERING],
                         limit: limit * 3, // Lấy nhiều chunks
-                        scoreThreshold: 0.7
+                        scoreThreshold: 0.5
                     })
                     if (res.length === 0) {
                         return 'Không tìm thấy đề tài phù hợp với yêu cầu.'
