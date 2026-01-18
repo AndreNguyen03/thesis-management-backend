@@ -409,6 +409,165 @@ export class RetrievalProvider {
             throw new BadRequestException(error.message)
         }
     }
+
+    /**
+     * Crawl URL with progress tracking via WebSocket
+     */
+    public async loadSampleDataWithProgress(sourceId: string, url: string): Promise<void> {
+        console.log(`🚀 Starting loadSampleDataWithProgress for sourceId: ${sourceId}, url: ${url}`)
+
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1024,
+            chunkOverlap: 100,
+            separators: ['\n\n', '\n', '. ']
+        })
+
+        try {
+            console.log('📡 Emitting crawl progress...')
+            // Emit crawling started
+            this.chatbotGateway.emitCrawlProgress({
+                resourceId: sourceId,
+                status: 'crawling',
+                progress: 10,
+                message: 'Đang crawl nội dung từ URL...'
+            })
+
+            console.log('🔄 Updating knowledge source status to PENDING...')
+            // Update status to PENDING
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(sourceId, ProcessingStatus.PENDING)
+
+            console.log('🌐 Scraping page...')
+            // Scrape page
+            const content = await this.scrapePage(url)
+            console.log(`✅ Scraped ${content.length} characters from URL`)
+            const wordCount = content.split(/\s+/).length
+
+            this.chatbotGateway.emitCrawlProgress({
+                resourceId: sourceId,
+                status: 'crawling',
+                progress: 40,
+                message: `Đã crawl ${wordCount} từ. Đang phân chia chunks...`
+            })
+
+            console.log('✂️ Splitting into chunks...')
+            // Split into chunks
+            const chunks = await splitter.splitText(content)
+            console.log(`✅ Created ${chunks.length} chunks`)
+
+            this.chatbotGateway.emitCrawlCompleted({
+                resourceId: sourceId,
+                status: 'completed',
+                progress: 60,
+                message: `Đã tạo ${chunks.length} chunks. Bắt đầu embedding...`
+            })
+
+            // Create embeddings
+            console.log('🧠 Starting embedding process...')
+            this.chatbotGateway.emitEmbeddingProgress({
+                resourceId: sourceId,
+                status: 'embedding',
+                progress: 60,
+                message: `Đang tạo embedding cho ${chunks.length} chunks...`
+            })
+
+            const knowledgeChunks: CreateKnowledgeChunkDto[] = []
+            let processedChunks = 0
+
+            for (const chunk of chunks) {
+                const vector = await this.getEmbeddingProvider.getEmbedding(chunk)
+                knowledgeChunks.push({
+                    source_id: sourceId,
+                    text: chunk,
+                    plot_embedding_gemini_large: vector
+                })
+
+                processedChunks++
+                const embeddingProgress = 60 + (processedChunks / chunks.length) * 30
+
+                if (processedChunks % 5 === 0 || processedChunks === chunks.length) {
+                    console.log(`📊 Embedding progress: ${processedChunks}/${chunks.length}`)
+                    this.chatbotGateway.emitEmbeddingProgress({
+                        resourceId: sourceId,
+                        status: 'embedding',
+                        progress: Math.round(embeddingProgress),
+                        message: `Đã embedding ${processedChunks}/${chunks.length} chunks...`
+                    })
+                }
+            }
+
+            console.log(`💾 Saving ${knowledgeChunks.length} chunks to database...`)
+            console.log('📋 First chunk sample:', {
+                source_id: knowledgeChunks[0]?.source_id,
+                text_length: knowledgeChunks[0]?.text?.length,
+                has_embedding: !!knowledgeChunks[0]?.plot_embedding_gemini_large,
+                embedding_length: knowledgeChunks[0]?.plot_embedding_gemini_large?.length
+            })
+
+            // Save chunks
+            const saveResult = await this.knowledgeChunksProvider.createKnowledgeChunks(knowledgeChunks)
+            console.log('✅ Chunks save result:', saveResult)
+
+            // Direct verification using mongoose model
+            const KnowledgeChunkModel = this.knowledgeChunksProvider['knowledgeChunkRepository']['knowledgeChunkModel']
+            const directCount = await KnowledgeChunkModel.countDocuments({ source_id: sourceId })
+            console.log(`🔍 Direct count query: Found ${directCount} chunks with source_id: ${sourceId}`)
+
+            if (directCount > 0) {
+                const sampleChunks = await KnowledgeChunkModel.find({ source_id: sourceId }).limit(3).lean()
+                console.log(
+                    '📋 Sample chunk IDs:',
+                    sampleChunks.map((c) => c._id.toString())
+                )
+                console.log(
+                    '📋 Sample chunk texts:',
+                    sampleChunks.map((c) => c.text.substring(0, 50) + '...')
+                )
+            } else {
+                console.error('⚠️  WARNING: No chunks found in database after save!')
+                console.error('⚠️  Check if sourceId matches:', sourceId)
+            }
+
+            console.log('📝 Updating metadata...')
+            // Update metadata and status
+            await this.knowledgeSourceProvider.updateKnowledgeSourceMetadata(sourceId, {
+                wordCount,
+                chunkCount: chunks.length,
+                progress: 100
+            })
+
+            console.log('✅ Updating status to COMPLETED...')
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(sourceId, ProcessingStatus.COMPLETED)
+
+            console.log('🎉 Emitting completion event...')
+            this.chatbotGateway.emitEmbeddingCompleted({
+                resourceId: sourceId,
+                status: 'completed',
+                progress: 100,
+                message: `Hoàn thành! Đã tạo ${chunks.length} chunks từ ${wordCount} từ.`
+            })
+
+            console.log(`✅ loadSampleDataWithProgress completed successfully for sourceId: ${sourceId}`)
+        } catch (error) {
+            console.error('❌ Error in loadSampleDataWithProgress:', error)
+            console.error('Error stack:', error.stack)
+
+            await this.knowledgeSourceProvider.updateKnowledgeSourceStatus(sourceId, ProcessingStatus.FAILED)
+            await this.knowledgeSourceProvider.updateKnowledgeSourceMetadata(sourceId, {
+                errorMessage: error.message
+            })
+
+            this.chatbotGateway.emitCrawlFailed({
+                resourceId: sourceId,
+                status: 'failed',
+                progress: 0,
+                message: 'Crawl thất bại',
+                error: error.message
+            })
+
+            throw error
+        }
+    }
+
     scrapePage = async (url: string) => {
         const loader = new PuppeteerWebBaseLoader(url, {
             launchOptions: {

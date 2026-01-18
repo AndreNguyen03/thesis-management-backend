@@ -6,11 +6,14 @@ import { SourceType } from '../../knowledge-source/enums/source_type.enum'
 import { plainToInstance } from 'class-transformer'
 import { GetKnowledgeChunkDto } from '../../knowledge-source/dto/get-knowledge-chunk.dto'
 import { Injectable } from '@nestjs/common'
+import { DocumentRerankerProvider } from '../providers/document-reranker.provider'
+
 @Injectable()
 export class DocumentSearchTool {
     constructor(
         private readonly searchProvider: SearchSimilarDocumentsProvider,
-        private readonly embeddingProvider: GetEmbeddingProvider
+        private readonly embeddingProvider: GetEmbeddingProvider,
+        private readonly rerankerProvider: DocumentRerankerProvider
     ) {}
 
     createTool(): DynamicStructuredTool {
@@ -38,35 +41,89 @@ OUTPUT: Đoạn text trích dẫn từ tài liệu + link nguồn
             }) as any,
             func: async ({ query, limit }) => {
                 try {
-                    console.log('📄 [DOCUMENT TOOL] Searching documents:', query)
+                    console.log('📄 [DOCUMENT TOOL] Original query:', query)
 
-                    // Query expansion: tự động mở rộng nếu query quá ngắn
-                    let expandedQuery = query
-                    const wordCount = query.trim().split(/\s+/).length
-                    if (wordCount < 5) {
-                        expandedQuery = `${query} quy trình hướng dẫn thực hiện khóa luận tốt nghiệp nghiên cứu khoa học yêu cầu đăng ký bảo vệ báo cáo`
-                        console.log('📄 [DOCUMENT TOOL] Query expanded:', expandedQuery)
-                    }
-                    const queryVector = await this.embeddingProvider.getEmbedding(expandedQuery)
+                    // Step 1: Preprocess query to optimize search
+                    const processedQuery = this.rerankerProvider.preprocessQuery(query)
+                    console.log('📄 [DOCUMENT TOOL] Processed query:', processedQuery)
 
+                    // Step 2: Detect if asking about process vs forms
+                    const hasProcessIntent = ['quy trình', 'hướng dẫn', 'thủ tục', 'như thế nào'].some((keyword) =>
+                        query.toLowerCase().includes(keyword)
+                    )
+
+                    // Step 3: Create embedding with processed query
+                    const queryVector = await this.embeddingProvider.getEmbedding(processedQuery)
+
+                    // Step 4: Search with higher threshold for better quality
+                    const searchLimit = Math.min(limit * 2, 20) // Giảm từ 30 xuống 20 để nhanh hơn
                     const results = await this.searchProvider.searchSimilarDocuments(queryVector, {
-                        sourceTypes: [SourceType.URL, SourceType.FILE],
-                        limit,
-                        scoreThreshold: 0.8 // Giữ threshold thấp như bạn đã chỉnh
+                        sourceTypes: hasProcessIntent ? [SourceType.URL] : [SourceType.URL, SourceType.FILE],
+                        limit: searchLimit,
+                        scoreThreshold: 0.85
                     })
+
                     if (results.length === 0) {
-                        console.log('📄 [DOCUMENT TOOL] No documents found for query:', expandedQuery)
+                        console.log('📄 [DOCUMENT TOOL] No documents found')
                         return 'Không tìm thấy tài liệu phù hợp.'
                     }
-                    const chunks = plainToInstance(GetKnowledgeChunkDto, results, {
-                        excludeExtraneousValues: true,
-                        enableImplicitConversion: true
-                    })
-                    // Format: text + source link
+
+                    console.log(`📄 [DOCUMENT TOOL] Found ${results.length} initial results`)
+
+                    // Step 5: Post-filter to remove form-heavy documents if asking about process
+                    let filteredResults = results
+                    if (hasProcessIntent) {
+                        filteredResults = results.filter((doc) => {
+                            const text = doc.text.toLowerCase()
+                            // Count form-related keywords
+                            const formKeywords = (text.match(/biểu mẫu|mẫu \d+|form template|tải mẫu/g) || []).length
+                            // Reject if more than 3 mentions of forms
+                            return formKeywords < 3
+                        })
+                        console.log(
+                            `📄 [DOCUMENT TOOL] After form filter: ${filteredResults.length}/${results.length} docs`
+                        )
+                    }
+
+                    if (filteredResults.length === 0) {
+                        return 'Không tìm thấy tài liệu về quy trình phù hợp (chỉ có biểu mẫu).'
+                    }
+
+                    // Step 6: LLM Reranking - skip nếu ít kết quả để giảm latency
+                    let finalResults :any[] = filteredResults
+                    if (filteredResults.length > 5) {
+                        // Chỉ rerank nếu có > 5 docs, nếu ít thì skip để nhanh hơn
+                        console.log('📄 [DOCUMENT TOOL] Reranking with LLM...')
+                        const rerankedResults = await this.rerankerProvider.rerankDocuments(
+                            query,
+                            filteredResults.map((r) => ({ text: r.text, source_id: r.source_id })),
+                            Math.min(limit, 8) // Giảm từ 10 xuống 8
+                        )
+                        finalResults = rerankedResults
+                    } else {
+                        console.log('📄 [DOCUMENT TOOL] Skip reranking (too few results)')
+                        // Chỉ lấy top results theo score
+                    }
+
+                    console.log(`📄 [DOCUMENT TOOL] Final results: ${finalResults.length} docs`)
+
+                    // Step 7: Format output
+                    const chunks = plainToInstance(
+                        GetKnowledgeChunkDto,
+                        finalResults.map((r, idx) => ({
+                            ...r,
+                            score: r.score || 0.8 // Default score if missing
+                        })),
+                        {
+                            excludeExtraneousValues: true,
+                            enableImplicitConversion: true
+                        }
+                    )
+
                     const formattedDocs = chunks.map((chunk, idx) => ({
                         index: idx + 1,
                         text: chunk.text,
-                        score: chunk.score.toFixed(3),
+                        score: chunk.score?.toFixed(3) || 'N/A',
                         sourceId: chunk.source_id
                     }))
 

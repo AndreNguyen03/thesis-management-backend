@@ -23,7 +23,7 @@ export class SearchSimilarDocumentsProvider {
     public async searchSimilarDocuments(queryVector: number[], options: SearchOptions): Promise<KnowledgeChunk[]> {
         const { sourceTypes, limit = 10, scoreThreshold = 0.7 } = options
 
-        console.log('Searching similar documents with query vector of length:', JSON.stringify(queryVector))
+        console.log('Searching similar documents with query vector of length:', JSON.stringify(queryVector).length)
         const sourceQuery: any = {
             status: KnowledgeStatus.ENABLED,
             deleted_at: null
