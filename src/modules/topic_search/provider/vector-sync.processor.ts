@@ -28,7 +28,7 @@ export class VectorSyncProcessor implements OnModuleInit {
     async onModuleInit() {
         try {
             this.embeddings = new GoogleGenerativeAIEmbeddings({
-                modelName: 'text-embedding-004',
+                modelName: 'gemini-embedding-001',
                 apiKey: this.googleAIConfiguration.apiKey
             })
             //tạo vector_index nếu có

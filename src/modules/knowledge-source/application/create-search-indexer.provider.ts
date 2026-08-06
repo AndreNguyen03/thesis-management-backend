@@ -36,10 +36,18 @@ export class CreateSearchIndexerProvider {
                 fields: [
                     {
                         type: 'vector',
-                        numDimensions: 768, //depending on the embedding model dimension
+                        numDimensions: 768, //gemini-embedding-001 produces 768 dimensions
                         path: embeddingField,
                         similarity: 'dotProduct',
                         quantization: 'scalar'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'source_id'
+                    },
+                    {
+                        type: 'filter',
+                        path: 'source_type'
                     }
                 ]
             }
@@ -59,5 +67,4 @@ export class CreateSearchIndexerProvider {
             }
         }
     }
-  
 }

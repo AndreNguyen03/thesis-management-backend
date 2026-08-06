@@ -35,7 +35,7 @@ export class EnhancedEmbeddingProvider {
     ) {
         const apiKey = this.googleAIConfiguration.apiKey
         this.genAI = new GoogleGenerativeAI(apiKey)
-        this.embeddingModel = this.genAI.getGenerativeModel({ model: 'text-embedding-004' })
+        this.embeddingModel = this.genAI.getGenerativeModel({ model: 'gemini-embedding-001' })
     }
 
     /**

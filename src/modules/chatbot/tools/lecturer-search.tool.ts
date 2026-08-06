@@ -52,36 +52,42 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
             `.trim(),
             schema: z.object({
                 query: z.string().describe('Câu hỏi hoặc từ khóa về chuyên môn/lĩnh vực giảng viên'),
-                name: z.string().optional().describe('Tên đầy đủ của giảng viên (nếu tìm người cụ thể). VD: "Lê Văn Tuấn", "Nguyễn Minh Huy"'),
+                name: z
+                    .string()
+                    .optional()
+                    .describe('Tên đầy đủ của giảng viên (nếu tìm người cụ thể). VD: "Lê Văn Tuấn", "Nguyễn Minh Huy"'),
                 limit: z.number().optional().default(5).describe('Số lượng giảng viên tối đa trả về')
             }) as any,
             func: async ({ query, name, limit }) => {
                 try {
-                    console.log('👨‍🏫 [LECTURER SEARCH] Starting search for:', { query, name, limit })
+                    // Validate and ensure limit is positive
+                    const validLimit = Math.max(1, limit || 5)
+
+                    console.log('👨‍🏫 [LECTURER SEARCH] Starting search for:', { query, name, limit: validLimit })
 
                     // Detect search mode based on name parameter
                     const hasExactName = name && name.trim().length > 0
                     const searchMode = hasExactName ? 'exact_name_first' : 'hybrid'
-                    
+
                     console.log(`🎯 [LECTURER SEARCH] Mode: ${searchMode}`)
 
                     // Check cache first
                     const cacheKey = hasExactName ? `${query}||${name}` : query
                     const cacheResult = await this.cache.cacheSearchResults(
                         cacheKey,
-                        { limit },
+                        { limit: validLimit },
                         async () => {
                             // Adjust search options based on mode
                             const searchOptions = hasExactName
                                 ? {
-                                      limit: limit * 2,
-                                      semanticWeight: 1, // Lower semantic weight when name is specified
-                                      nameWeight: 0, // Higher name weight
+                                      limit: validLimit * 2,
+                                      semanticWeight: 0.3, // Lower semantic weight when name is specified
+                                      nameWeight: 0.7, // Higher name weight
                                       scoreThreshold: 0.6,
                                       useDiversityFilter: false // Don't filter when looking for specific person
                                   }
                                 : {
-                                      limit: limit * 3,
+                                      limit: validLimit * 3,
                                       semanticWeight: 1,
                                       nameWeight: 0,
                                       scoreThreshold: 0.65,
@@ -98,7 +104,7 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                             console.log(`🔍 [LECTURER SEARCH] Found ${searchResults.length} candidates, reranking...`)
 
                             // Rerank with LLM
-                            const rerankedResults = await this.reranker.rerank(query, searchResults, limit)
+                            const rerankedResults = await this.reranker.rerank(query, searchResults, validLimit)
 
                             console.log(
                                 `✅ [LECTURER SEARCH] Reranking completed, top result: ${rerankedResults[0]?.fullName}`
@@ -110,10 +116,21 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                     )
 
                     if (!cacheResult || cacheResult.length === 0) {
-                        if (hasExactName) {
-                            return `Không tìm thấy giảng viên tên "${name}" phù hợp với yêu cầu. Bạn có thể thử tìm theo lĩnh vực thay vì tên cụ thể không?`
-                        }
-                        return 'Không tìm thấy giảng viên phù hợp với yêu cầu.'
+                        const message = hasExactName
+                            ? `Không tìm thấy giảng viên tên "${name}" phù hợp với yêu cầu. Bạn có thể thử tìm theo lĩnh vực thay vì tên cụ thể không?`
+                            : 'Không tìm thấy giảng viên phù hợp với yêu cầu.'
+                        return JSON.stringify(
+                            {
+                                total: 0,
+                                message,
+                                searchMode: hasExactName ? 'exact_name' : 'hybrid',
+                                query,
+                                requestedName: name || null,
+                                lecturers: []
+                            },
+                            null,
+                            2
+                        )
                     }
 
                     // If exact name search, filter to keep only exact matches in final results
@@ -135,7 +152,31 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                         )
 
                         if (finalResults.length === 0) {
-                            return `Không tìm thấy giảng viên tên chính xác "${name}". Có ${cacheResult.length} giảng viên phù hợp với lĩnh vực nhưng tên không khớp. Bạn có muốn xem danh sách này không?`
+                            return JSON.stringify(
+                                {
+                                    total: cacheResult.length,
+                                    message: `Không tìm thấy giảng viên tên chính xác "${name}". Có ${cacheResult.length} giảng viên phù hợp với lĩnh vực nhưng tên không khớp.`,
+                                    searchMode: 'exact_name',
+                                    query,
+                                    requestedName: name || null,
+                                    lecturers: cacheResult.map((lecturer, idx) => ({
+                                        index: idx + 1,
+                                        _id: lecturer._id,
+                                        fullName: lecturer.fullName,
+                                        email: lecturer.email,
+                                        bio: lecturer.bio,
+                                        title: lecturer.title,
+                                        faculty: lecturer.faculty,
+                                        areaInterest: lecturer.areaInterest,
+                                        researchInterests: lecturer.researchInterests,
+                                        publications: lecturer.publications?.slice(0, 3),
+                                        similarityScore: lecturer.rerankScore || lecturer.finalScore || 0,
+                                        matchReason: lecturer.rerankReason
+                                    }))
+                                },
+                                null,
+                                2
+                            )
                         }
                     }
 
@@ -168,7 +209,17 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                     )
                 } catch (error) {
                     console.error('❌ [LECTURER SEARCH] Error:', error)
-                    return `Lỗi khi tìm giảng viên: ${error.message}`
+                    return JSON.stringify(
+                        {
+                            total: 0,
+                            error: true,
+                            message: `Lỗi khi tìm giảng viên: ${error.message}`,
+                            query,
+                            lecturers: []
+                        },
+                        null,
+                        2
+                    )
                 }
             }
         })

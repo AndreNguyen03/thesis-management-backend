@@ -174,6 +174,7 @@ OUTPUT: Danh sách giảng viên + thông tin chuyên môn, lĩnh vực nghiên 
                             combined: lecturer.finalScore,
                             rerank: lecturer.rerankScore
                         },
+                        similarityScore: lecturer.rerankScore || lecturer.finalScore, // For UI display
                         matchReason: lecturer.rerankReason // LLM-generated reason
                     }))
 
